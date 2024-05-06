@@ -88,7 +88,7 @@ export default function StudentQuiz() {
             quiz {
               assessmentId
               selectedQuestions {
-                id
+                itemId
                 ...studentQuestionFragment
               }
             }
@@ -128,7 +128,7 @@ export default function StudentQuiz() {
     }
 
     const currentAnswer = {
-      questionId: currentQuestion.id,
+      questionId: currentQuestion.itemId,
       usedHint,
       correct,
     };

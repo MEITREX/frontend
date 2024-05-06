@@ -22,9 +22,11 @@ import { AddAssociationQuestionModal } from "./AddAssociationQuestionModal";
 export function AddQuestionButton({
   _allRecords,
   assessmentId,
+  courseId
 }: {
   _allRecords: MediaRecordSelector$key;
   assessmentId: string;
+  courseId:string;
 }) {
   const [open, setOpen] = useState(false);
   const [addMultipleChoice, setAddMultipleChoice] = useState(false);
@@ -77,18 +79,21 @@ export function AddQuestionButton({
       <AddMultipleChoiceQuestionModal
         _allRecords={_allRecords}
         assessmentId={assessmentId}
+        courseId={courseId}
         open={addMultipleChoice}
         onClose={() => setAddMultipleChoice(false)}
       />
       <AddClozeQuestionModal
         _allRecords={_allRecords}
         assessmentId={assessmentId}
+        courseId={courseId}
         open={addCloze}
         onClose={() => setAddCloze(false)}
       />
       <AddAssociationQuestionModal
         _allRecords={_allRecords}
         assessmentId={assessmentId}
+        courseId={courseId}
         open={addAssociation}
         onClose={() => setAddAssociation(false)}
       />

@@ -16,7 +16,7 @@ export function StudentFlashcard({
   const flashcard = useFragment(
     graphql`
       fragment StudentFlashcard on Flashcard {
-        id
+        itemId
         sides {
           ...StudentFlashcardSide
           isQuestion

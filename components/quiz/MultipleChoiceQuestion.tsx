@@ -23,7 +23,7 @@ export function MultipleChoiceQuestion({
   const question = useFragment(
     graphql`
       fragment MultipleChoiceQuestionFragment on MultipleChoiceQuestion {
-        id
+        itemId
 
         text
 

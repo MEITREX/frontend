@@ -18,7 +18,7 @@ import { Button } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
-
+import { ItemData } from "@/components/ItemFormSection";
 export default function LecturerQuiz() {
   const { quizId, courseId } = useParams();
   const router = useRouter();
@@ -39,7 +39,7 @@ export default function LecturerQuiz() {
             quiz {
               assessmentId
               questionPool {
-                id
+                itemId
                 type
                 number
                 ...MultipleChoiceQuestionPreviewFragment
@@ -50,6 +50,14 @@ export default function LecturerQuiz() {
                 ...EditAssociationQuestionButtonFragment
               }
               ...QuizModalFragment
+            }
+            items{
+              id
+              associatedSkills {
+                id
+                skillName
+              }
+              associatedBloomLevels
             }
           }
         }
@@ -73,6 +81,18 @@ export default function LecturerQuiz() {
       />
     );
   }
+  function getItem(itemId: string): ItemData  {
+    if(content && content.items){
+      for(let i = 0; i < content.items.length; i++){
+        if(content.items[i].id === itemId){
+          return { associatedBloomLevels: [...content.items[i].associatedBloomLevels],
+            associatedSkills:[...content.items[i].associatedSkills] ,id:itemId};
+        }
+      }
+  }
+  return { associatedBloomLevels: [],
+    associatedSkills:[] };
+}
 
   return (
     <main>
@@ -102,7 +122,7 @@ export default function LecturerQuiz() {
 
       {quiz.questionPool.map((question, index) => (
         <div
-          key={question.id}
+          key={question.itemId}
           className="my-3 py-3 border-b flex justify-between items-start"
         >
           {question.type === "MULTIPLE_CHOICE" && (
@@ -113,10 +133,12 @@ export default function LecturerQuiz() {
                   _allRecords={query}
                   _question={question}
                   assessmentId={content.id!}
+                  courseId={courseId}
+                  item={getItem(question.itemId)}
                 />
                 <DeleteQuestionButton
                   assessmentId={content.id!}
-                  questionId={question.id}
+                  questionId={question.itemId}
                   num={question.number}
                 />
               </div>
@@ -130,10 +152,12 @@ export default function LecturerQuiz() {
                   _allRecords={query}
                   _question={question}
                   assessmentId={content.id}
+                  courseId={courseId}
+                  item={getItem(question.itemId)}
                 />
                 <DeleteQuestionButton
                   assessmentId={content.id}
-                  questionId={question.id}
+                  questionId={question.itemId}
                   num={question.number}
                 />
               </div>
@@ -147,10 +171,12 @@ export default function LecturerQuiz() {
                   _allRecords={query}
                   _question={question}
                   assessmentId={content.id}
+                  courseId={courseId}
+                  item={getItem(question.itemId)}
                 />
                 <DeleteQuestionButton
                   assessmentId={content.id}
-                  questionId={question.id}
+                  questionId={question.itemId}
                   num={question.number}
                 />
               </div>
@@ -159,7 +185,7 @@ export default function LecturerQuiz() {
         </div>
       ))}
       <div className="mt-8 flex flex-col items-start">
-        <AddQuestionButton _allRecords={query} assessmentId={content.id} />
+        <AddQuestionButton _allRecords={query} assessmentId={content.id} courseId={courseId} />
       </div>
 
       <QuizModal

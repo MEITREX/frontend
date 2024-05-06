@@ -110,7 +110,7 @@ type AssociationQuestion implements Question {
   rightSide: [String!]!
 
   # Unique identifier of the question.
-  id: UUID!
+  itemId: UUID!
 
   # Number of the question, i.e., the position of the question in the list of questions.
   # Only relevant if questionPoolingMode is ORDERED.
@@ -121,6 +121,16 @@ type AssociationQuestion implements Question {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+}
+
+#Level of Blooms Taxonomy
+enum BloomLevel {
+  REMEMBER
+  UNDERSTAND
+  APPLY
+  ANALYZE
+  EVALUATE
+  CREATE
 }
 
 # A chapter is a part of a course.
@@ -172,6 +182,9 @@ type Chapter {
 
   # The progress of the current user in this chapter.
   userProgress: CompositeProgressInformation!
+
+    #The skills, that belong to the given chapter
+  skills: [Skill!]!
 }
 
 input ChapterFilter {
@@ -236,7 +249,7 @@ type ClozeQuestion implements Question {
   showBlanksList: Boolean!
 
   # Unique identifier of the question.
-  id: UUID!
+  itemId: UUID!
 
   # Number of the question, i.e., the position of the question in the list of questions.
   # Only relevant if questionPoolingMode is ORDERED.
@@ -410,6 +423,9 @@ type Course {
 
   # The progress of the current user in this course.
   userProgress: CompositeProgressInformation!
+
+  #The skills, that belong to the given course
+  skills: [Skill!]!
 }
 
 # Input type for filtering courses. All fields are optional.
@@ -468,6 +484,10 @@ input CreateAssessmentInput {
 
   # Assessment metadata
   assessmentMetadata: AssessmentMetadataInput!
+   """
+    items of the new assessments
+    """
+    items: [CreateItemInput!]
 }
 
 input CreateAssociationQuestionInput {
@@ -483,6 +503,8 @@ input CreateAssociationQuestionInput {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+
+  itemId:UUID
 }
 
 # Input type for creating chapters.
@@ -533,6 +555,8 @@ input CreateClozeQuestionInput {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+
+  itemId:UUID
 }
 
 input CreateContentMetadataInput {
@@ -600,18 +624,32 @@ input CreateExactAnswerQuestionInput {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+
+  itemId:UUID!
 }
 
 input CreateFlashcardInput {
   # List of sides of this flashcard. Must be at least two sides.
   sides: [FlashcardSideInput!]!
+  #id of the item
+  itemId:UUID
 }
 
 input CreateFlashcardSetInput {
   # List of flashcards in this set.
   flashcards: [CreateFlashcardInput!]!
 }
+input CreateItemInput{
+    """
+    The skills or the competencies the item belongs to.
+    """
+    associatedSkills:[SkillInput!]!
+    """
+    The Level of Blooms Taxonomy the item belongs to
+    """
+    associatedBloomLevels:[BloomLevel!]!
 
+}
 # Input for creating new media content. Media specific fields are stored in the Media Service.
 input CreateMediaContentInput {
   # Metadata for the new Content
@@ -642,6 +680,8 @@ input CreateMultipleChoiceQuestionInput {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+
+  itemId:UUID
 }
 
 input CreateNumericQuestionInput {
@@ -663,6 +703,8 @@ input CreateNumericQuestionInput {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+
+  itemId:UUID
 }
 
 input CreateQuizInput {
@@ -683,6 +725,7 @@ input CreateQuizInput {
   #
   # If this is null or not set, the behavior is the same as if it was equal to the number of questions.
   numberOfRandomlySelectedQuestions: Int
+
 }
 
 input CreateSectionInput {
@@ -706,6 +749,8 @@ input CreateSelfAssessmentQuestionInput {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+
+  itemId:UUID
 }
 
 input CreateStageInput {
@@ -749,7 +794,7 @@ type ExactAnswerQuestion implements Question {
   feedback: JSON
 
   # Unique identifier of the question.
-  id: UUID!
+  itemId: UUID!
 
   # Number of the question, i.e., the position of the question in the list of questions.
   # Only relevant if questionPoolingMode is ORDERED.
@@ -767,7 +812,7 @@ type ExactAnswerQuestion implements Question {
 # and which sides he has to guess.
 type Flashcard {
   # Unique identifier of this flashcard.
-  id: UUID!
+  itemId: UUID!
 
   # List of sides of this flashcard.
   sides: [FlashcardSide!]!
@@ -813,7 +858,14 @@ type FlashcardProgressDataLog {
   # Whether the user knew the flashcard or not.
   success: Boolean!
 }
+ 
 
+type FlashcardOutput{
+  
+  flashcard:Flashcard!
+
+  item:Item!
+}
 # A set of flashcards. A flashcard set belongs to exactly one assessment. Therefore, the uuid of the assessment
 # also serves as the identifier of a flashcard set.
 type FlashcardSet {
@@ -850,17 +902,21 @@ type FlashcardSetAssessment implements Assessment & Content {
 
   # The FlashcardSet of the assessment.
   flashcardSet: FlashcardSet
+
+  """
+    the items that belong to the Flashcard
+    """
+    items:[Item!]
 }
 
 type FlashcardSetMutation {
   # ID of the flashcard set that is being modified.
   assessmentId: UUID!
-
-  # Creates a new flashcard. Throws an error if the flashcard set does not exist.
-  createFlashcard(input: CreateFlashcardInput!): Flashcard!
+  #creates a new flashcard
+   createFlashcard(item:ItemInput!,assessmentId:UUID!,flashcardInput:CreateFlashcardInput!):FlashcardOutput! 
 
   # Updates a flashcard. Throws an error if the flashcard does not exist.
-  updateFlashcard(input: UpdateFlashcardInput!): Flashcard!
+  updateFlashcard(item:ItemInput!,assessmentId:UUID!,flashcardInput:UpdateFlashcardInput!): FlashcardOutput!
 
   # Deletes the flashcard with the specified ID. Throws an error if the flashcard does not exist.
   deleteFlashcard(id: UUID!): UUID!
@@ -922,6 +978,36 @@ input IntFilter {
   lessThan: Int
 }
 
+type Item{
+    """
+    the id of the item
+    """
+    id:UUID!
+    """
+    The skills or the competencies the item belongs to.
+    """
+    associatedSkills:[Skill!]!
+    """
+    The Level of Blooms Taxonomy the item belongs to
+    """
+    associatedBloomLevels:[BloomLevel!]!
+}
+
+input ItemInput{
+    """
+    the id of the item
+    """
+    id:UUID
+    """
+    The skills or the competencies the item belongs to.
+    """
+    associatedSkills:[SkillInput!]!
+    """
+    The Level of Blooms Taxonomy the item belongs to
+    """
+    associatedBloomLevels:[BloomLevel!]!
+}
+""
 # A JSON scalar
 scalar JSON
 
@@ -1050,7 +1136,7 @@ type MultipleChoiceQuestion implements Question {
   numberOfCorrectAnswers: Int!
 
   # Unique identifier of the question.
-  id: UUID!
+  itemId: UUID!
 
   # Number of the question, i.e., the position of the question in the list of questions.
   # Only relevant if questionPoolingMode is ORDERED.
@@ -1199,6 +1285,8 @@ type Mutation {
 
   # Creates a new section in a chapter.
   createSection(input: CreateSectionInput!): Section!
+  
+ 
 }
 
 type NumericQuestion implements Question {
@@ -1215,7 +1303,7 @@ type NumericQuestion implements Question {
   feedback: JSON
 
   # Unique identifier of the question.
-  id: UUID!
+  itemId: UUID!
 
   # Number of the question, i.e., the position of the question in the list of questions.
   # Only relevant if questionPoolingMode is ORDERED.
@@ -1417,7 +1505,7 @@ type Query {
 # Generic question interface.
 interface Question {
   # Unique identifier of the question.
-  id: UUID!
+  itemId: UUID!
 
   # Number of the question, i.e., the position of the question in the list of questions.
   # Only relevant if questionPoolingMode is ORDERED.
@@ -1497,6 +1585,8 @@ type Quiz {
   content: Content
 }
 
+
+
 # A quiz, quiz related fields are stored in the quiz service.
 type QuizAssessment implements Assessment & Content {
   # Assessment metadata
@@ -1517,6 +1607,11 @@ type QuizAssessment implements Assessment & Content {
   # The quiz of the assessment.
   # If this is null the system is in an inconsistent state and the assessment should be deleted.
   quiz: Quiz
+
+    """
+    the items that belong to the Quiz
+    """
+    items:[Item!]!
 }
 
 input QuizCompletedInput {
@@ -1543,41 +1638,59 @@ type QuizMutation {
   # Id of the quiz to modify.
   assessmentId: UUID!
 
-  # Add a multiple choice question to the quiz questions, at the end of the list.
-  addMultipleChoiceQuestion(input: CreateMultipleChoiceQuestionInput!): Quiz!
+  """
+  Add a multiple choice question to the quiz questions, at the end of the list.
+  """
+  addMultipleChoiceQuestion(questionInput: CreateMultipleChoiceQuestionInput!, assessmentId:UUID!, item:ItemInput!):QuizOutput! 
 
-  # Update a multiple choice question in the quiz questions.
-  updateMultipleChoiceQuestion(input: UpdateMultipleChoiceQuestionInput!): Quiz!
+  """
+  Update a multiple choice question in the quiz questions.
+  """
+  updateMultipleChoiceQuestion(questionInput: UpdateMultipleChoiceQuestionInput!, assessmentId:UUID!, item:ItemInput!):Quiz! 
 
-  # Add a cloze question to the quiz questions, at the end of the list.
-  addClozeQuestion(input: CreateClozeQuestionInput!): Quiz!
+  """
+  Add a cloze question to the quiz questions, at the end of the list.
+  """
+  addClozeQuestion(questionInput: CreateClozeQuestionInput!, assessmentId:UUID!, item:ItemInput!):QuizOutput! 
+  """
+  Update a cloze question in the quiz questions.
+  """
+  updateClozeQuestion(questionInput: UpdateClozeQuestionInput!, assessmentId:UUID!, item:ItemInput!):Quiz! 
 
-  # Update a cloze question in the quiz questions.
-  updateClozeQuestion(input: UpdateClozeQuestionInput!): Quiz!
+  """
+  Add an association question to the quiz questions, at the end of the list.
+  """
+  addAssociationQuestion(questionInput: CreateAssociationQuestionInput!, assessmentId:UUID!, item:ItemInput!):QuizOutput! 
+  """
+  Update an association question in the quiz questions.
+  """
+  updateAssociationQuestion(questionInput: UpdateAssociationQuestionInput!, assessmentId:UUID!, item:ItemInput!):Quiz! 
 
-  # Add an association question to the quiz questions, at the end of the list.
-  addAssociationQuestion(input: CreateAssociationQuestionInput!): Quiz!
+  """
+  Add an free text question with exact answer to the quiz questions, at the end of the list.
+  """
+  addExactAnswerQuestion(questionInput: CreateExactAnswerQuestionInput!, assessmentId:UUID!, item:ItemInput!):Quizoutput! 
+  """
+  Update an free text question with exact answer in the quiz questions.
+  """
+  updateExactAnswerQuestion(questionInput:  UpdateExactAnswerQuestionInput!, assessmentId:UUID!, item:ItemInput!):Quiz! 
+  """
+  Add a numeric question to the quiz questions, at the end of the list.
+  """
+  addNumericQuestion(questionInput: CreateNumericQuestionInput!, assessmentId:UUID!, item:ItemInput!):QuizOutput! 
+  """
+  Update a numeric question in the quiz questions.
+  """
+  updateNumericQuestion(questionInput: UpdateNumericQuestionInput!, assessmentId:UUID!, item:ItemInput!):Quiz! 
 
-  # Update an association question in the quiz questions.
-  updateAssociationQuestion(input: UpdateAssociationQuestionInput!): Quiz!
-
-  # Add an free text question with exact answer to the quiz questions, at the end of the list.
-  addExactAnswerQuestion(input: CreateExactAnswerQuestionInput!): Quiz!
-
-  # Update an free text question with exact answer in the quiz questions.
-  updateExactAnswerQuestion(input: UpdateExactAnswerQuestionInput!): Quiz!
-
-  # Add a numeric question to the quiz questions, at the end of the list.
-  addNumericQuestion(input: CreateNumericQuestionInput!): Quiz!
-
-  # Update a numeric question in the quiz questions.
-  updateNumericQuestion(input: UpdateNumericQuestionInput!): Quiz!
-
-  # Add a self assessment question to the quiz questions, at the end of the list.
-  addSelfAssessmentQuestion(input: CreateSelfAssessmentQuestionInput!): Quiz!
-
-  # Update a self assessment question in the quiz questions.
-  updateSelfAssessmentQuestion(input: UpdateSelfAssessmentQuestionInput!): Quiz!
+  """
+  Add a self assessment question to the quiz questions, at the end of the list.
+  """
+  addSelfAssessmentQuestion(questionInput: CreateSelfAssessmentQuestionInput!, assessmentId:UUID!, item:ItemInput!):QuizOutput! 
+  """
+  Update a self assessment question in the quiz questions.
+  """
+  updateSelfAssessmentQuestion(questionInput: UpdateSelfAssessmentQuestionInput!, assessmentId:UUID!, item:ItemInput!):Quiz! 
 
   # Removes the question with the given number from the quiz.
   # This will also update the numbers of the following questions.
@@ -1596,7 +1709,13 @@ type QuizMutation {
   # Will only be considered if questionPoolingMode is RANDOM.
   setNumberOfRandomlySelectedQuestions(numberOfRandomlySelectedQuestions: Int!): Quiz!
 }
+type QuizOutput{
+  assessmentId:UUID!
+  
+  questionPool: [Question!]!
 
+  item:Item!
+}
 scalar ResolveToSourceArgs
 
 # The reason why the reward score has changed.
@@ -1741,7 +1860,7 @@ type SelfAssessmentQuestion implements Question {
   solutionSuggestion: JSON!
 
   # Unique identifier of the question.
-  id: UUID!
+  itemId: UUID!
 
   # Number of the question, i.e., the position of the question in the list of questions.
   # Only relevant if questionPoolingMode is ORDERED.
@@ -1765,6 +1884,29 @@ type SingleAssociation {
   feedback: JSON
 }
 
+#Skill or Competency
+type Skill{
+  #id of the skill
+  id:UUID
+  #Skill name
+  skillName: String!
+
+  #the skill levels of a user
+  skillLevels: SkillLevels
+
+}
+input SkillInput{
+    """
+    the id of a skill. Field is optional, because not all required skills may exist, if a new item is created. If the id is empty a new skill,
+    will be created
+    """
+    id:UUID
+    """
+    the name of the skill
+    """
+    skillName:String!
+
+}
 # The skill level of a user.
 type SkillLevel {
   # The value of the skill level.
@@ -1788,10 +1930,19 @@ type SkillLevelLogItem {
 
   # The new skill level.
   newValue: Float!
+  """
+  The ids of the contents that are associated with the change.
+  """
+  associatedItemId: UUID!
 
-  # The ids of the contents that are associated with the change.
-  associatedContentIds: [UUID!]!
-  associatedContents: [Content]!
+  """
+  the response of the user to the item
+  """
+  userResponse:Float!
+  """
+  the probability of a correct response, that M-Elo predicts
+  """
+  predictedCorrectness:Float!
 }
 
 # The four skill level of a user.
@@ -1807,6 +1958,14 @@ type SkillLevels {
 
   # apply is how much user can evaluate information and draw conclusions
   analyze: SkillLevel!
+   """
+  evaluate represent how well a user can use the learned content to evaluate
+  """
+  evaluate:SkillLevel!
+  """
+  create represents how well a user can create new things based on the learned content
+  """
+  create:SkillLevel!
 }
 
 # Type of the assessment
@@ -1814,7 +1973,9 @@ enum SkillType {
   REMEMBER
   UNDERSTAND
   APPLY
-  ANALYSE
+  ANALYZE
+  EVALUATE
+  CREATE
 }
 
 # Specifies the sort direction, either ascending or descending.
@@ -1880,11 +2041,15 @@ input UpdateAssessmentInput {
 
   # Assessment metadata
   assessmentMetadata: AssessmentMetadataInput!
+      """
+    items of the new assessments
+    """
+    items: [UpdateItemInput!]
 }
 
 input UpdateAssociationQuestionInput {
   # UUID of the question to update.
-  id: UUID!
+  itemId: UUID!
 
   # Text of the question, in SlateJS JSON format.
   text: JSON!
@@ -1929,8 +2094,7 @@ input UpdateChapterInput {
 }
 
 input UpdateClozeQuestionInput {
-  # UUID of the question to update.
-  id: UUID!
+
 
   # List of cloze elements.
   clozeElements: [ClozeElementInput!]!
@@ -1943,6 +2107,8 @@ input UpdateClozeQuestionInput {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+
+  itemId:UUID!
 }
 
 input UpdateContentMetadataInput {
@@ -2009,16 +2175,32 @@ input UpdateExactAnswerQuestionInput {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+  
+  itemId:UUID!
 }
 
 input UpdateFlashcardInput {
   # Id of the flashcard to update.
-  id: UUID!
+  itemId: UUID!
 
   # List of sides of this flashcard. Must be at least two sides.
   sides: [FlashcardSideInput!]!
 }
+input UpdateItemInput{
+    """
+    the id of the item
+    """
+    id:UUID
+    """
+    The skills or the competencies the item belongs to.
+    """
+    associatedSkills:[SkillInput!]!
+    """
+    The Level of Blooms Taxonomy the item belongs to
+    """
+    associatedBloomLevels:[BloomLevel!]!
 
+}
 input UpdateMediaContentInput {
   # Metadata for the new Content
   metadata: UpdateContentMetadataInput!
@@ -2039,8 +2221,7 @@ input UpdateMediaRecordInput {
 }
 
 input UpdateMultipleChoiceQuestionInput {
-  # UUID of the question to update.
-  id: UUID!
+
 
   # Text of the question, in SlateJS JSON format.
   text: JSON!
@@ -2050,6 +2231,8 @@ input UpdateMultipleChoiceQuestionInput {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+
+  itemId:UUID!
 }
 
 input UpdateNumericQuestionInput {
@@ -2070,6 +2253,8 @@ input UpdateNumericQuestionInput {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+
+  itemId:UUID!
 }
 
 input UpdateSelfAssessmentQuestionInput {
@@ -2084,6 +2269,8 @@ input UpdateSelfAssessmentQuestionInput {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+
+  itemId:UUID!
 }
 
 input UpdateStageInput {

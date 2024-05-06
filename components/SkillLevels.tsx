@@ -1,8 +1,5 @@
 import { SkillLevelsFragment$key } from "@/__generated__/SkillLevelsFragment.graphql";
-import {
-  SkillLevelsSuggestionsQuery,
-  SkillType,
-} from "@/__generated__/SkillLevelsSuggestionsQuery.graphql";
+import { BloomLevel } from "@/__generated__/LecturerEditFlashcardMutation.graphql";
 import { Box, CircularProgress, Tooltip } from "@mui/material";
 import { ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
@@ -11,22 +8,20 @@ import { Suggestion } from "./Suggestion";
 
 export function SkillLevels({
   className = "",
-  _chapter,
+  _skill,
   courseId,
 }: {
   className?: string;
-  _chapter: SkillLevelsFragment$key;
+  _skill: SkillLevelsFragment$key;
   courseId: string;
 }) {
   const {
     skillLevels,
-    id: chapterId,
-    achievableSkillTypes,
+
   } = useFragment(
     graphql`
-      fragment SkillLevelsFragment on Chapter {
-        id
-        achievableSkillTypes
+      fragment SkillLevelsFragment on Skill {
+        skillName
         skillLevels {
           remember {
             value
@@ -40,57 +35,83 @@ export function SkillLevels({
           analyze {
             value
           }
+          evaluate{
+            value
+          }
+          create{
+            value
+          }
         }
       }
     `,
-    _chapter
+    _skill
   );
+  if(skillLevels){
   return (
     <div
-      className={`grid grid-flow-col auto-cols-fr gap-4 h-full ${className}`}
+      className={`grid grid-flow-col auto-cols-fr gap-6 h-full ${className}`}
     >
-      {achievableSkillTypes.includes("REMEMBER") && (
+      {skillLevels.remember.value>0 && (
         <SkillLevelLabel label="Remember" color={colors.purple[500]}>
           <SkillLevel
             courseId={courseId}
             value={skillLevels.remember.value}
-            chapterId={chapterId}
-            skillType="REMEMBER"
+            bloomLevel="REMEMBER"
           />
         </SkillLevelLabel>
       )}
-      {achievableSkillTypes.includes("UNDERSTAND") && (
-        <SkillLevelLabel label="Understand" color={colors.cyan[500]}>
+      {skillLevels.understand.value>0 && (
+        <SkillLevelLabel label="Understand" color={colors.blue[500]}>
           <SkillLevel
             courseId={courseId}
             value={skillLevels.understand.value}
-            chapterId={chapterId}
-            skillType="UNDERSTAND"
+            bloomLevel="UNDERSTAND"
           />
         </SkillLevelLabel>
       )}
-      {achievableSkillTypes.includes("APPLY") && (
-        <SkillLevelLabel label="Apply" color={colors.green[500]}>
+      {skillLevels.apply.value>0 && (
+        <SkillLevelLabel label="Apply" color={colors.cyan[500]}>
           <SkillLevel
             courseId={courseId}
             value={skillLevels.apply.value}
-            chapterId={chapterId}
-            skillType="APPLY"
+            bloomLevel="APPLY"
           />
         </SkillLevelLabel>
       )}
-      {achievableSkillTypes.includes("ANALYSE") && (
-        <SkillLevelLabel label="Analyse" color={colors.yellow[500]}>
+      {skillLevels.analyze.value>0 && (
+        <SkillLevelLabel label="Analyze" color={colors.green[500]}>
           <SkillLevel
             courseId={courseId}
             value={skillLevels.analyze.value}
-            chapterId={chapterId}
-            skillType="ANALYSE"
+            bloomLevel="ANALYZE"
+          />
+        </SkillLevelLabel>
+      )}
+       {skillLevels.evaluate.value>0&& (
+        <SkillLevelLabel label="Evaluate" color={colors.yellow[500]}>
+          <SkillLevel
+            courseId={courseId}
+            value={skillLevels.evaluate.value}
+            bloomLevel="EVALUATE"
+          />
+        </SkillLevelLabel>
+      )}
+      {skillLevels.create.value>0&& (
+        <SkillLevelLabel label="Create" color={colors.orange[500]}>
+          <SkillLevel
+            courseId={courseId}
+            value={skillLevels.create.value}
+
+            bloomLevel="CREATE"
           />
         </SkillLevelLabel>
       )}
     </div>
   );
+}
+else{
+  return <div></div>
+}
 }
 
 function SkillLevelLabel({
@@ -116,20 +137,18 @@ function SkillLevelLabel({
 }
 
 export function SkillLevel({
-  chapterId,
-  skillType,
+  bloomLevel,
   value,
   courseId,
 }: {
-  chapterId: string;
-  skillType: SkillType;
+  bloomLevel: BloomLevel;
   value: number;
   courseId: string;
 }) {
-  const level = Math.floor(value); // integer part is level
-  const progress = (value % 1) * 100; // decimal part is progress
+  const level = Math.floor(value*100); // integer part is level
+  const progress = value*100; // decimal part is progress
 
-  if (level < 2) {
+  if (level < 50) {
     return (
       <SkillLevelBase
         courseId={courseId}
@@ -145,41 +164,37 @@ export function SkillLevel({
         }
         level="Basic"
         color={colors.gray[400]}
-        chapterId={chapterId}
-        skillType={skillType}
+        bloomLevel={bloomLevel}
       />
     );
-  } else if (level < 4) {
+  } else if (level < 65) {
     return (
       <SkillLevelBase
         courseId={courseId}
         badge={<SkillBadge color="#c0c0c0" level={level} progress={progress} />}
         level="Iron"
         color="#c0c0c0"
-        chapterId={chapterId}
-        skillType={skillType}
+        bloomLevel={bloomLevel}
       />
     );
-  } else if (level < 6) {
+  } else if (level < 75) {
     return (
       <SkillLevelBase
         courseId={courseId}
         badge={<SkillBadge color="#bf8970" level={level} progress={progress} />}
         level="Bronze"
         color="#bf8970"
-        chapterId={chapterId}
-        skillType={skillType}
+        bloomLevel={bloomLevel}
       />
     );
-  } else if (level < 8) {
+  } else if (level < 85) {
     return (
       <SkillLevelBase
         courseId={courseId}
         badge={<SkillBadge color="#d4af37" level={level} progress={progress} />}
         level="Gold"
         color="#d4af37"
-        chapterId={chapterId}
-        skillType={skillType}
+        bloomLevel={bloomLevel}
       />
     );
   } else {
@@ -189,13 +204,12 @@ export function SkillLevel({
           <SkillBadge
             color={colors.emerald[600]}
             level={level}
-            progress={level >= 10 ? 100 : progress}
+            progress={level >= 95 ? 100 : progress}
           />
         }
         level="Emerald"
         color={colors.emerald[600]}
-        chapterId={chapterId}
-        skillType={skillType}
+        bloomLevel={bloomLevel}
         courseId={courseId}
       />
     );
@@ -206,127 +220,125 @@ export function SkillLevelBase({
   badge,
   level,
   color,
-  chapterId,
-  skillType,
+  bloomLevel,
   courseId,
 }: {
   badge: ReactNode;
   level: string;
   color: string;
-  chapterId: string;
-  skillType: SkillType;
+  bloomLevel: BloomLevel;
   courseId: string;
 }) {
-  const popperRef = useRef<any>();
+  // const popperRef = useRef<any>();
 
-  const suggestions = (
-    <Suspense fallback={<CircularProgress className="m-2" size="1rem" />}>
-      <SkillLevelSuggestions
-        courseId={courseId}
-        chapterId={chapterId}
-        skillType={skillType}
-        color={color}
-        level={level}
-        onLoad={(num) => {
-          if (popperRef.current) popperRef.current.update();
-        }}
-      />
-    </Suspense>
-  );
+  // const suggestions = (
+  //   <Suspense fallback={<CircularProgress className="m-2" size="1rem" />}>
+  //     <SkillLevelSuggestions
+  //       courseId={courseId}
+  //       chapterId={chapterId}
+  //       bloomLevel={bloomLevel}
+  //       color={color}
+  //       level={level}
+  //       onLoad={(num) => {
+  //         if (popperRef.current) popperRef.current.update();
+  //       }}
+  //     />
+  //   </Suspense>
+  // );
 
   return (
-    <Tooltip
-      title={suggestions}
-      placement="bottom"
-      slotProps={{
-        popper: {
-          modifiers: [
-            { name: "offset", options: { offset: [0, -5] } },
-            { name: "flip", enabled: false },
-          ],
-        },
-      }}
-      PopperProps={{ popperRef }}
-      classes={{
-        tooltip: "!bg-white border !text-gray-800 border-gray-200",
-      }}
-      arrow
-    >
+    // <Tooltip
+    //   title={suggestions}
+    //   placement="bottom"
+    //   slotProps={{
+    //     popper: {
+    //       modifiers: [
+    //         { name: "offset", options: { offset: [0, -5] } },
+    //         { name: "flip", enabled: false },
+    //       ],
+    //     },
+    //   }}
+    //   PopperProps={{ popperRef }}
+    //   classes={{
+    //     tooltip: "!bg-white border !text-gray-800 border-gray-200",
+    //   }}
+    //   arrow
+    // >
       <Box>{badge}</Box>
-    </Tooltip>
+    // </Tooltip>
   );
 }
 
-function SkillLevelSuggestions({
-  chapterId,
-  skillType,
-  onLoad,
-  courseId,
-  color,
-  level,
-}: {
-  chapterId: string;
-  skillType: SkillType;
-  onLoad: (num: number) => void;
-  courseId: string;
-  color: string;
-  level: string;
-}) {
-  const { suggestionsByChapterIds } =
-    useLazyLoadQuery<SkillLevelsSuggestionsQuery>(
-      graphql`
-        query SkillLevelsSuggestionsQuery(
-          $chapterId: UUID!
-          $skillType: SkillType!
-        ) {
-          suggestionsByChapterIds(
-            chapterIds: [$chapterId]
-            amount: 3
-            skillTypes: [$skillType]
-          ) {
-            content {
-              id
-            }
-            ...SuggestionFragment
-          }
-        }
-      `,
-      { chapterId, skillType }
-    );
+// function SkillLevelSuggestions({
+//   chapterId,
+//   bloomLevel,
+//   onLoad,
+//   courseId,
+//   color,
+//   level,
+// }: {
+//   chapterId: string;
+//   bloomLevel: bloomLevel;
+//   onLoad: (num: number) => void;
+//   courseId: string;
+//   color: string;
+//   level: string;
+// }) {
+//   const { suggestionsByChapterIds } =
+//     useLazyLoadQuery<SkillLevelsSuggestionsQuery>(
+//       graphql`
+//         query SkillLevelsSuggestionsQuery(
+//           $chapterId: UUID!
+//           $bloomLevel: bloomLevel!
+//         ) {
+//           suggestionsByChapterIds(
+//             chapterIds: [$chapterId]
+//             amount: 3
+//             bloomLevels: [$bloomLevel]
+//           ) {
+//             content {
+//               id
+//             }
+//             ...SuggestionFragment
+//           }
+//         }
+//       `,
+//       { chapterId, bloomLevel }
+//     );
 
-  useEffect(
-    () => onLoad(suggestionsByChapterIds.length),
-    [onLoad, suggestionsByChapterIds]
-  );
+//   useEffect(
+//     () => onLoad(suggestionsByChapterIds.length),
+//     [onLoad, suggestionsByChapterIds]
+//   );
 
-  return (
-    <div className="font-normal px-1 py-2">
-      <div className="text-xs text-gray-800 text-center">
-        Level: <span style={{ color }}>{level}</span>
-      </div>
-      <div className="my-2 border-t border-gray-200"></div>
-      {suggestionsByChapterIds.length > 0 ? (
-        <>
-          <div className="text-center font-medium w-full mb-2">
-            Suggestions for improving your score
-          </div>
-          <div className="flex flex-col gap-2 items-start">
-            {suggestionsByChapterIds.map((suggestion) => (
-              <Suggestion
-                courseId={courseId}
-                key={suggestion.content.id}
-                _suggestion={suggestion}
-                small
-              />
-            ))}
-          </div>
-        </>
-      ) : (
-        <div className="text-center">You are all set.</div>
-      )}
-    </div>
-  );
-}
+//   return (
+//     <div className="font-normal px-1 py-2">
+//       <div className="text-xs text-gray-800 text-center">
+//         Level: <span style={{ color }}>{level}</span>
+//       </div>
+//       <div className="my-2 border-t border-gray-200"></div>
+//       {suggestionsByChapterIds.length > 0 ? (
+//         <>
+//           <div className="text-center font-medium w-full mb-2">
+//             Suggestions for improving your score
+//           </div>
+//           <div className="flex flex-col gap-2 items-start">
+//             {suggestionsByChapterIds.map((suggestion) => (
+//               <Suggestion
+//                 courseId={courseId}
+//                 key={suggestion.content.id}
+//                 _suggestion={suggestion}
+//                 small
+//               />
+//             ))}
+//           </div>
+//         </>
+//       ) : (
+//         <div className="text-center">You are all set.</div>
+//       )}
+//     </div>
+//   );
+// }
 
 function SkillBadge({
   level,

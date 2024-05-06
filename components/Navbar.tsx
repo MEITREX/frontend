@@ -35,7 +35,7 @@ function useIsTutor(_frag: NavbarIsTutor$key) {
     `,
     _frag
   );
-
+console.log(realmRoles);
   return (
     realmRoles.includes("SUPER_USER") ||
     realmRoles.includes("COURSE_CREATOR") ||

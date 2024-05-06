@@ -22,7 +22,9 @@ export type AssessmentMetadataPayload = {
 };
 
 const skillTypeLabel: Record<SkillType, string> = {
-  ANALYSE: "Analyse",
+  CREATE:"Create",
+  EVALUATE: "Evaluate",
+  ANALYZE: "Analyze",
   APPLY: "Apply",
   REMEMBER: "Remember",
   UNDERSTAND: "Understand",
@@ -85,7 +87,7 @@ export function AssessmentMetadataFormSection({
           required
           multiple
         >
-          {(["REMEMBER", "UNDERSTAND", "APPLY", "ANALYSE"] as const).map(
+          {(["REMEMBER", "UNDERSTAND", "APPLY", "ANALYZE","EVALUATE","CREATE"] as const).map(
             (val, i) => (
               <MenuItem value={val} key={i}>
                 <Checkbox checked={(skillTypes ?? []).indexOf(val) > -1} />

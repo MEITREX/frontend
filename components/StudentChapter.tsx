@@ -44,6 +44,7 @@ export function StudentChapter({
         _chapter={chapter}
         expanded={expanded}
         onExpandClick={() => setExpanded((curr) => !curr)}
+        student={true}
       />
       <Collapse in={expanded}>
         <ChapterContent>

@@ -95,6 +95,29 @@ export default function StudentCoursePage() {
               }
             }
           }
+          skills{
+            skillName
+            skillLevels {
+              remember {
+                value
+              }
+              understand {
+                value
+              }
+              apply {
+                value
+              }
+              analyze {
+              value
+              }
+              evaluate{
+                value
+              }
+              create{
+                value
+              }
+            }
+          }
         }
       }
     `,
@@ -224,6 +247,11 @@ export default function StudentCoursePage() {
           <Link href={{ pathname: `${id}/scoreboard` }}>
             <Button variant="text" endIcon={<NavigateNextIcon />}>
               Full Scoreboard
+            </Button>
+          </Link>
+          <Link href={{ pathname: `${id}/skills` }}>
+            <Button variant="text" endIcon={<NavigateNextIcon />}>
+              Knowledge Status
             </Button>
           </Link>
         </div>

@@ -15,6 +15,7 @@ import { FormErrors } from "../FormErrors";
 import { RichTextEditor, serializeToText } from "../RichTextEditor";
 import { EditRichTextButton } from "./EditRichTextButton";
 import { HintFormSection } from "./HintFormSection";
+import { ItemFormSection, ItemData} from "../ItemFormSection";
 
 export type AssociationQuestionData = {
   hint: string | null;
@@ -32,6 +33,8 @@ export function AssociationQuestionModal({
   _allRecords,
   open,
   title,
+  item,
+  courseId,
   error,
   initialValue,
   isLoading,
@@ -43,13 +46,16 @@ export function AssociationQuestionModal({
   open: boolean;
   title: string;
   error: any;
+  item:ItemData;
+  courseId:string,
   initialValue: AssociationQuestionData;
   isLoading: boolean;
-  onSave: (data: AssociationQuestionData) => void;
+  onSave: (data: AssociationQuestionData,item:ItemData,newSkillAdded?:boolean) => void;
   onClose: () => void;
   clearError: () => void;
 }) {
   const [data, setData] = useState(initialValue);
+  const[itemForQuestion,setItem]=useState(item);
   const updateElement = (index: number, value: SingleAssociationData) => {
     setData((oldValue) => ({
       ...oldValue,
@@ -91,20 +97,32 @@ export function AssociationQuestionModal({
     [data.correctAssociations]
   );
 
-  const valid = hasTitle && atLeastTwoItems && allItemsFilled;
+  const valid = hasTitle && atLeastTwoItems && allItemsFilled &&itemForQuestion.associatedBloomLevels.length > 0 && itemForQuestion.associatedSkills.length > 0;
 
   useEffect(() => {
     if (!open) {
       setData(initialValue);
+      setItem(item);
     }
-  }, [open, initialValue]);
+  }, [open, initialValue,item]);
 
+
+  function handleItem(itemInput:ItemData|null){
+    if(itemInput){
+      setItem(itemInput);
+    }
+    else{
+      setItem({associatedBloomLevels:[],associatedSkills:[]});
+    }
+    console.log("finished");
+  }
   return (
     <Dialog open={open} maxWidth="lg" onClose={onClose}>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <FormErrors error={error} onClose={clearError} />
         <Form>
+          <ItemFormSection courseId={courseId} item={itemForQuestion} onChange={handleItem} useEffectNecessary={false}></ItemFormSection>
           <FormSection title="Question">
             <RichTextEditor
               className="w-[700px]"
@@ -203,6 +221,8 @@ export function AssociationQuestionModal({
             <div>All items need a text</div>
           )}
           {!hasTitle && <div>A title is required</div>}
+          {(itemForQuestion.associatedBloomLevels.length<1) && <div>Level of Blooms Taxonomy are required</div>}
+          {(itemForQuestion.associatedSkills.length<1) && <div>At least one skill is required</div>}
         </div>
         <Button disabled={isLoading} onClick={onClose}>
           Cancel
@@ -210,7 +230,7 @@ export function AssociationQuestionModal({
         <LoadingButton
           disabled={!valid}
           loading={isLoading}
-          onClick={() => onSave(data)}
+          onClick={() => onSave(data,itemForQuestion)}
         >
           Save
         </LoadingButton>

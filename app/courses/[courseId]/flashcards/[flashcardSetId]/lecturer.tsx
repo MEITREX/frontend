@@ -7,6 +7,7 @@ import { AssessmentMetadataPayload } from "@/components/AssessmentMetadataFormSe
 import { ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
 import { ContentTags } from "@/components/ContentTags";
 import { EditFlashcardSetModal } from "@/components/EditFlashcardSetModal";
+import { ItemData } from "@/components/ItemFormSection";
 import { Heading } from "@/components/Heading";
 import { PageError } from "@/components/PageError";
 import { FlashcardSideData } from "@/components/flashcard/FlashcardSide";
@@ -46,11 +47,19 @@ export default function LecturerFlashcards() {
             flashcardSet {
               __id
               flashcards {
-                id
+                itemId
                 ...LecturerEditFlashcardFragment
               }
             }
-          }
+            items{
+              id
+              associatedSkills {
+                id
+                skillName
+              }
+              associatedBloomLevels
+            }
+            }
           ...EditFlashcardSetModalFragment
         }
       }
@@ -62,20 +71,35 @@ export default function LecturerFlashcards() {
   const [isEditSetOpen, setEditSetOpen] = useState(false);
 
   const [error, setError] = useState<any>(null);
+
+
   const [addFlashcard, isAddingFlashcard] =
     useMutation<lecturerAddFlashcardMutation>(graphql`
       mutation lecturerAddFlashcardMutation(
         $flashcard: CreateFlashcardInput!
         $assessmentId: UUID!
+        $item:ItemInput!
+
       ) {
         mutateFlashcardSet(assessmentId: $assessmentId) {
-          createFlashcard(input: $flashcard) {
-            __id
-            id
-            ...LecturerEditFlashcardFragment
+          assessmentId
+          createFlashcard(flashcardInput: $flashcard,assessmentId: $assessmentId,item:$item) {
+            flashcard{
+              __id
+                itemId
+              ...LecturerEditFlashcardFragment
+              }
+            item{
+              id
+              associatedSkills {
+                id
+                skillName
+              }
+              associatedBloomLevels
+            }  
+            }
           }
         }
-      }
     `);
   const [updateFlashcardSet, isUpdatingFlashcardSet] =
     useMutation<lecturerEditFlashcardSetMutation>(graphql`
@@ -100,7 +124,7 @@ export default function LecturerFlashcards() {
             }
           }
         }
-      }
+        }
     `);
 
   const [deleteFlashcard, isDeleting] =
@@ -122,7 +146,16 @@ export default function LecturerFlashcards() {
 
   const content = contentsByIds[0];
   const flashcardSet = content.flashcardSet;
-
+  const transformedItems: ItemData[] = content.items?.map(item => ({
+    associatedBloomLevels: Array.from(item.associatedBloomLevels),
+    associatedSkills: Array.from(item.associatedSkills).map(skill => ({
+        id: skill.id || undefined,
+        skillName: skill.skillName,
+    })),
+    id: item.id,
+})) || [];
+const items=transformedItems;
+  
   if (flashcardSet == null) {
     return (
       <PageError
@@ -132,31 +165,53 @@ export default function LecturerFlashcards() {
     );
   }
 
-  function handleAddFlashcard(sides: FlashcardSideData[]) {
+  function handleAddFlashcard(sides: FlashcardSideData[], item:ItemData,newSkillAdded?:boolean) {
     const newFlashcard = {
       sides,
+      itemId:null,
     };
 
     setAddFlashcardOpen(false);
     addFlashcard({
-      variables: { assessmentId: flashcardSetId, flashcard: newFlashcard },
+      variables: {  flashcard: newFlashcard,assessmentId: flashcardSetId,item:item },
       onError: setError,
       updater(store, response) {
         // Get record of flashcard set and of the new flashcard
         const flashcardSetRecord = store.get(flashcardSet!.__id);
         const newRecord = store.get(
-          response.mutateFlashcardSet.createFlashcard!.__id
+          response.mutateFlashcardSet.createFlashcard.flashcard!.__id
         );
         if (!flashcardSetRecord || !newRecord) return;
 
         // Update the linked records of the flashcard set
         const flashcardRecords =
           flashcardSetRecord.getLinkedRecords("flashcards") ?? [];
+          console.log(flashcardRecords);
         flashcardSetRecord.setLinkedRecords(
           [...flashcardRecords, newRecord],
           "flashcards"
         );
+        const items = store
+        .getRoot()
+        .getLinkedRecord("items")
+        ?.getLinkedRecords("elements");
+        const newItem = store.get(response.mutateFlashcardSet.createFlashcard.item!.id);
+        if (!items || !newItem) return;
+
+        store
+          .getRoot()
+          .getLinkedRecord("items")
+          ?.setLinkedRecords([...items, newItem], "elements");
+
+        console.log(flashcardSetRecord.getLinkedRecords("flashcards"));
       },
+      onCompleted(){
+        //reload page, when a new skill is added
+        if(newSkillAdded){
+          console.log("reload");
+          window.location.reload();
+        }
+      }
     });
   }
 
@@ -262,17 +317,19 @@ export default function LecturerFlashcards() {
         {flashcardSet.flashcards.map((flashcard, i) => (
           <div key={i}>
             <Flashcard
-              key={flashcard.id}
+              key={flashcard.itemId}
               title={`Card ${i + 1}/${flashcardSet.flashcards.length}`}
               onError={setError}
               _flashcard={flashcard}
               _assessmentId={flashcardSetId}
+              courseId={courseId}
+              items={items}
             />
             <Button
               sx={{ float: "left", color: "red" }}
               startIcon={<Delete />}
               onClick={() => {
-                handleDeleteFlashcard(flashcard.id);
+                handleDeleteFlashcard(flashcard.itemId);
               }}
             >
               Delete Flashcard
@@ -281,6 +338,7 @@ export default function LecturerFlashcards() {
         ))}
         {isAddFlashcardOpen && (
           <LocalFlashcard
+          courseId={courseId}
             onClose={() => setAddFlashcardOpen(false)}
             onSubmit={handleAddFlashcard}
           />
@@ -304,6 +362,7 @@ export default function LecturerFlashcards() {
           onClose={() => setEditSetOpen(false)}
           onSubmit={handleUpdateFlashcardSet}
           _content={content}
+
         />
       )}
     </main>
