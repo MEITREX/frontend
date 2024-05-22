@@ -633,7 +633,7 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": ["http://localhost:3005"],
-      "webOrigins": ["http://localhost:3005"],
+      "webOrigins": ["http://:3005"],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,

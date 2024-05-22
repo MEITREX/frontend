@@ -67,39 +67,52 @@ export function ItemFormSection({
       return false;
     }
     function handleSkillChange(e: React.ChangeEvent<HTMLInputElement>, skill:Skill) {
-      console.log(skills.includes(skill));
         if (e.target.checked) {
-          console.log(skill);
           setSkills([...skills,skill]);
         } else {
-          let newSkillSet=skills.filter(s => s !== skill);
+          let newSkillSet=skills.filter(s => s.id !== skill.id);
           setSkills(newSkillSet);
+
         }
       }
-    if(useEffectNecessary===true){
-        useEffect(() => {
+    // if(useEffectNecessary===true){
+    //     useEffect(() => {
+    //       onChange(
+    //         valid
+    //           ? { id:itemId,
+    //               associatedBloomLevels:bloomLevels,
+    //               associatedSkills:skills,
+    //           }
+    //           : null, newSkillAdded
+    //       );
+    //     }, [bloomLevels, skills, valid, onChange]);
+    // }
+    // else{
+    // useEffect(() => {
+    //     onChange(
+    //       valid
+    //         ? { id:itemId,
+    //             associatedBloomLevels:bloomLevels,
+    //             associatedSkills:skills,
+    //         }
+    //         : null, newSkillAdded
+    //     );
+    //   }, [bloomLevels, skills, valid]);
+    // }
+
+
+      useEffect(() => {
           onChange(
             valid
-              ? { id:itemId,
-                  associatedBloomLevels:bloomLevels,
-                  associatedSkills:skills,
-              }
-              : null, newSkillAdded
+              ? {
+                  id: itemId,
+                  associatedBloomLevels: bloomLevels,
+                  associatedSkills: skills,
+                }
+              : null,
+            newSkillAdded
           );
-        }, [bloomLevels, skills, valid, onChange]);
-    }
-    else{
-    useEffect(() => {
-        onChange(
-          valid
-            ? { id:itemId,
-                associatedBloomLevels:bloomLevels,
-                associatedSkills:skills,
-            }
-            : null, newSkillAdded
-        );
-      }, [bloomLevels, skills, valid]);
-    }
+      }, [bloomLevels, skills, valid, newSkillAdded]);
     return(
           <FormSection title="Item Information">
             <FormControl variant="outlined">
@@ -138,7 +151,7 @@ export function ItemFormSection({
             <FormGroup >
             <InputLabel htmlFor="">Associated Skills:</InputLabel>
                 {availableSkills.map((availableSkill:SkillInput) => (
-                <div >
+                <div  key={availableSkill.id}>
                     <FormControlLabel
                     sx={{ cursor: "default" }}
                     control={

@@ -57,7 +57,7 @@ export default function StudentSkills() {
           After the completion of a quiz only the values for the involved skills and the corresponding levels are recalulated. Due to this, this overview only shows the skills and 
           the level of Blooms Taxonomy you have already worked on.
         </Typography>
-        <Grid container direction="column" alignItems="center" justify="center">
+        <Grid container direction="column" alignItems="center" justifyContent="center">
         {skills.map((skill, index) => (
           skill.skillLevels && <div key={index}>
             <Grid item>
