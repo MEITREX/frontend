@@ -123,6 +123,7 @@ export function Flashcard({
           console.log("reload");
           window.location.reload();
         }
+	console.log("logger");
       }
     });
   }

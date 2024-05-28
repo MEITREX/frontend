@@ -191,7 +191,24 @@ const items=transformedItems;
           [...flashcardRecords, newRecord],
           "flashcards"
         );
-        const items = store
+ const root= store.get(flashcardSetId);
+
+          if (!root) return;
+
+          const items = root?.getLinkedRecords("items") ?? [];
+
+          const newItem=store.get(response.mutateFlashcardSet.createFlashcard.item!.id);
+
+          if (newItem) {
+
+            root.setLinkedRecords([...items, newItem], "items");
+
+        } else {
+
+           return;
+
+        }
+       /* const items = store
         .getRoot()
         .getLinkedRecord("items")
         ?.getLinkedRecords("elements");
@@ -201,7 +218,7 @@ const items=transformedItems;
         store
           .getRoot()
           .getLinkedRecord("items")
-          ?.setLinkedRecords([...items, newItem], "elements");
+          ?.setLinkedRecords([...items, newItem], "elements");*/
 
         console.log(flashcardSetRecord.getLinkedRecords("flashcards"));
       },

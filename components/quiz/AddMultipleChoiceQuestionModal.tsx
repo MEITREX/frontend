@@ -93,6 +93,7 @@ export function AddMultipleChoiceQuestionModal({
         }
 
         quiz.setLinkedRecords(allQuestions, "questionPool");
+	console.log("updatedQuestion");
         const items = store
         .getRoot()
         .getLinkedRecord("items")

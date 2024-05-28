@@ -58,15 +58,27 @@ export default function StudentSkills() {
           the level of Blooms Taxonomy you have already worked on.
         </Typography>
         <Grid container direction="column" alignItems="center" justifyContent="center">
-        {skills.map((skill, index) => (
-          skill.skillLevels && <div key={index}>
+    
+{skills.map((skill, index) => (
+
+          skill.skillLevels && (skill.skillLevels.remember.value>0 ||skill.skillLevels.understand.value>0
+||skill.skillLevels.analyze.value>0||skill.skillLevels.apply.value>0||skill.skillLevels.evaluate.value>0||skill.skillLevels.create.value>0)&&
+ <div key={index}>
+
             <Grid item>
+
               <Typography variant="body1" align="center"><b>{skill.skillName}</b></Typography>
+
             </Grid>
+
             <Grid item>
+
               <SkillLevels _skill={skill} courseId={course.id}/>
+
             </Grid>
+
             <br/>
+
             </div>
 
           ))}

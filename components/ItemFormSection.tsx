@@ -51,12 +51,20 @@ export function ItemFormSection({
     const [newSkill, setNewSkill] = useState(""); // new state variable for the new skill
     function handleAddSkill() {
       if (newSkill) {
-          setAvailableSkills([...availableSkills, { skillName: newSkill,id:null}]);
+	const isAlreadyAvailable=availableSkills.some(skill=>skill.skillName===newSkill)
+	if(!isAlreadyAvailable){
+	setAvailableSkills([...availableSkills, { skillName: newSkill,id:null}]);
           setNewSkill("");
           setNewSkillAdded(true);
+	}
+         else{
+		alert("The skill is already available!");
+	}
       }
+	
     }
     function checkIfAvailableSkillIsPartOfSkills(skillToTest:SkillInput){
+console.log(skills);
       if(skills.length>0){
         for(let i=0;i< skills.length;i++){
           if(skills[i].skillName==skillToTest.skillName){
@@ -75,30 +83,7 @@ export function ItemFormSection({
 
         }
       }
-    // if(useEffectNecessary===true){
-    //     useEffect(() => {
-    //       onChange(
-    //         valid
-    //           ? { id:itemId,
-    //               associatedBloomLevels:bloomLevels,
-    //               associatedSkills:skills,
-    //           }
-    //           : null, newSkillAdded
-    //       );
-    //     }, [bloomLevels, skills, valid, onChange]);
-    // }
-    // else{
-    // useEffect(() => {
-    //     onChange(
-    //       valid
-    //         ? { id:itemId,
-    //             associatedBloomLevels:bloomLevels,
-    //             associatedSkills:skills,
-    //         }
-    //         : null, newSkillAdded
-    //     );
-    //   }, [bloomLevels, skills, valid]);
-    // }
+ 
 
 
       useEffect(() => {
@@ -112,7 +97,7 @@ export function ItemFormSection({
               : null,
             newSkillAdded
           );
-      }, [bloomLevels, skills, valid, newSkillAdded]);
+      }, [bloomLevels, skills]);
     return(
           <FormSection title="Item Information">
             <FormControl variant="outlined">
