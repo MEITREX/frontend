@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { ReactNode } from "react";
 import { graphql, useFragment } from "react-relay";
 import { SkillLevels } from "./SkillLevels";
+import {Skill} from "./Skill";
 
 export function ChapterHeader({
   _chapter,
@@ -13,12 +14,14 @@ export function ChapterHeader({
   action,
   onExpandClick,
   courseId,
+  student
 }: {
   _chapter: ChapterHeaderFragment$key;
   expanded?: boolean;
   action?: ReactNode;
   onExpandClick?: () => void;
   courseId: string;
+  student:boolean;
 }) {
   const chapter = useFragment(
     graphql`
@@ -33,7 +36,10 @@ export function ChapterHeader({
           progress
         }
         description
-        ...SkillLevelsFragment
+        skills{
+          ...SkillFragment
+          ...SkillLevelsFragment
+        }
       }
     `,
     _chapter
@@ -73,9 +79,17 @@ export function ChapterHeader({
             {chapter.description}
           </Typography>
         </div>
-        <div className="self-stretch" onClick={(e) => e.stopPropagation()}>
-          <SkillLevels courseId={courseId} _chapter={chapter} />
-        </div>
+        {
+          student && (<span>
+          {chapter.skills.map((c,index) => (
+          <Skill
+            key={index}
+            _skill={c}
+          />
+          ))}
+          </span>
+        )
+      }
       </div>
     </div>
   );

@@ -9,23 +9,27 @@ import {
   MultipleChoiceQuestionData,
   MultipleChoiceQuestionModal,
 } from "./MutlipleChoiceQuestionModal";
+import { ItemData } from "../ItemFormSection";
 
 export function EditMultipleChoiceQuestionButton({
   _allRecords,
   _question,
   assessmentId,
+  courseId,
+  item,
 }: {
   _allRecords: MediaRecordSelector$key;
   _question: EditMultipleChoiceQuestionButtonFragment$key;
   assessmentId: string;
+  courseId:string;
+  item:ItemData;
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<any>(null);
-
   const question = useFragment(
     graphql`
       fragment EditMultipleChoiceQuestionButtonFragment on MultipleChoiceQuestion {
-        id
+        itemId
         text
         hint
         answers {
@@ -42,25 +46,35 @@ export function EditMultipleChoiceQuestionButton({
     useMutation<EditMultipleChoiceQuestionButtonMutation>(graphql`
       mutation EditMultipleChoiceQuestionButtonMutation(
         $assessmentId: UUID!
-        $input: UpdateMultipleChoiceQuestionInput!
+        $questionInput: UpdateMultipleChoiceQuestionInput!
+        $item:ItemInput!
       ) {
         mutateQuiz(assessmentId: $assessmentId) {
-          updateMultipleChoiceQuestion(input: $input) {
+          assessmentId
+          updateMultipleChoiceQuestion( questionInput:$questionInput , assessmentId:$assessmentId, item:$item)  {
             assessmentId
             questionPool {
               ...EditMultipleChoiceQuestionButtonFragment
+            }
+            item{
+              id
+              associatedSkills {
+                id
+                skillName
+              }
+              associatedBloomLevels
             }
           }
         }
       }
     `);
 
-  const handleSubmit = (data: MultipleChoiceQuestionData) => {
+  const handleSubmit = (data: MultipleChoiceQuestionData,item:ItemData,newSkillAdded?:boolean) => {
     updateQuestion({
       variables: {
         assessmentId,
-        input: {
-          id: question.id,
+        questionInput: {
+          itemId: question.itemId,
           text: data.text,
           hint: data.hint,
           answers: data.answers.map((answer) => ({
@@ -69,6 +83,7 @@ export function EditMultipleChoiceQuestionButton({
             feedback: answer.feedback,
           })),
         },
+        item:item,
       },
       onCompleted: () => setOpen(false),
       onError: setError,
@@ -101,6 +116,8 @@ export function EditMultipleChoiceQuestionButton({
         error={error}
         initialValue={initialValue}
         isLoading={isUpdating}
+        courseId={courseId}
+        item={item}
         onSave={handleSubmit}
         onClose={() => setOpen(false)}
         clearError={() => setError(null)}

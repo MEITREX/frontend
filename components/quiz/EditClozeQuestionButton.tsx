@@ -10,15 +10,20 @@ import {
   ClozeQuestionData,
   ClozeQuestionModal,
 } from "./ClozeQuestionModal";
+import { ItemData } from "../ItemFormSection";
 
 export function EditClozeQuestionButton({
   _allRecords,
   _question,
   assessmentId,
+  courseId,
+  item
 }: {
   _allRecords: MediaRecordSelector$key;
   _question: EditClozeQuestionButtonFragment$key;
   assessmentId: string;
+  courseId:string,
+  item:ItemData,
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<any>(null);
@@ -26,7 +31,7 @@ export function EditClozeQuestionButton({
   const question = useFragment(
     graphql`
       fragment EditClozeQuestionButtonFragment on ClozeQuestion {
-        id
+        itemId
         showBlanksList
         additionalWrongAnswers
         hint
@@ -49,27 +54,37 @@ export function EditClozeQuestionButton({
     useMutation<EditClozeQuestionButtonMutation>(graphql`
       mutation EditClozeQuestionButtonMutation(
         $assessmentId: UUID!
-        $input: UpdateClozeQuestionInput!
+        $questionInput: UpdateClozeQuestionInput!
+        $item:ItemInput!
       ) {
         mutateQuiz(assessmentId: $assessmentId) {
-          updateClozeQuestion(input: $input) {
+          assessmentId
+          updateClozeQuestion(questionInput: $questionInput, assessmentId:$assessmentId, item:$item) {
             assessmentId
             questionPool {
-              id
+              itemId
               ...EditClozeQuestionButtonFragment
               ...ClozeQuestionPreviewFragment
+            }
+            item{
+              id
+              associatedSkills {
+                id
+                skillName
+              }
+              associatedBloomLevels
             }
           }
         }
       }
     `);
 
-  const handleSubmit = (data: ClozeQuestionData) => {
+  const handleSubmit = (data: ClozeQuestionData,item:ItemData,newSkillAdded?:boolean) => {
     updateQuestion({
       variables: {
         assessmentId,
-        input: {
-          id: question.id,
+        questionInput: {
+          itemId: question.itemId,
           hint: data.hint,
           showBlanksList: data.showBlanksList,
           additionalWrongAnswers: data.additionalWrongAnswers,
@@ -83,6 +98,7 @@ export function EditClozeQuestionButton({
                 }
           ),
         },
+        item:item,
       },
       updater: (store) => store.invalidateStore(),
       onCompleted: () => setOpen(false),
@@ -123,6 +139,8 @@ export function EditClozeQuestionButton({
         title="Edit cloze question"
         error={error}
         initialValue={initialValue}
+        courseId={courseId}
+        item={item}
         isLoading={isUpdating}
         onSave={handleSubmit}
         onClose={() => setOpen(false)}

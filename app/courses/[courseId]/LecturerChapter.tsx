@@ -52,6 +52,7 @@ export function LecturerChapter({
         action={
           <EditChapterButton _chapter={chapter} courseId={chapter.course.id} />
         }
+        student={false}
       />
 
       <ChapterContent>

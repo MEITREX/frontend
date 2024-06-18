@@ -20,7 +20,7 @@ export default function StudentDueFlashcards() {
       graphql`
         query studentDueFlashcardsQuery($courseId: UUID!) {
           dueFlashcardsByCourseId(courseId: $courseId) {
-            id
+            itemId
             ...StudentFlashcard
           }
         }
@@ -35,7 +35,7 @@ export default function StudentDueFlashcards() {
 
       <StudentFlashcardSet
         flashcards={dueFlashcardsByCourseId.map((x) => ({
-          id: x.id,
+          id: x.itemId,
           _flashcard: x,
         }))}
         emptyMessage="No flashcards to repeat."

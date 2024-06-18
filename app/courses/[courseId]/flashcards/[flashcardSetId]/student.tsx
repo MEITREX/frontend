@@ -29,7 +29,7 @@ export default function StudentFlashcards() {
           ... on FlashcardSetAssessment {
             flashcardSet {
               flashcards {
-                id
+                itemId
                 ...StudentFlashcard
               }
             }
@@ -61,11 +61,11 @@ export default function StudentFlashcards() {
 
       <StudentFlashcardSet
         flashcards={flashcards.flashcardSet.flashcards.map((x) => ({
-          id: x.id,
+          id: x.itemId,
           _flashcard: x,
         }))}
         emptyMessage="Empty flashcard set."
-        onComplete={() => router.push(`/courses/${courseId}`)}
+        onComplete={() =>window.location.replace(`/courses/${courseId}`)}
         onError={setError}
       />
     </main>

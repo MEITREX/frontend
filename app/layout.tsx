@@ -84,7 +84,6 @@ function SigninContent({ children }: { children: React.ReactNode }) {
     () => initRelayEnvironment(auth.user?.access_token),
     [auth.user?.access_token]
   );
-
   // automatically sign-in
   useEffect(() => {
     if (

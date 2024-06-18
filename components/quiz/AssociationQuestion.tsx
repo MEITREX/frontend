@@ -20,7 +20,7 @@ export function AssociationQuestion({
   const question = useFragment(
     graphql`
       fragment AssociationQuestionFragment on AssociationQuestion {
-        id
+        itemId
         text
         leftSide
         rightSide
@@ -114,7 +114,7 @@ export function AssociationQuestion({
             }
             return (
               <FeedbackTooltip
-                key={`${question.id}-${i}`}
+                key={`${question.itemId}-${i}`}
                 correctAnswer={
                   <RenderRichText value={correctAssociation.right} />
                 }
@@ -135,7 +135,7 @@ export function AssociationQuestion({
           {feedbackMode &&
             remainingAssociations.map((a, i) => (
               <FeedbackTooltip
-                key={`${question.id}-remaining-${i}`}
+                key={`${question.itemId}-remaining-${i}`}
                 correctAnswer={<RenderRichText value={a.right} />}
                 feedback={a.feedback}
                 disabled={false}
@@ -157,7 +157,7 @@ export function AssociationQuestion({
           <div className="flex flex-col items-end gap-4 grow my-2">
             {unusedLeft.map((value, i) => (
               <OptionBox
-                key={`${question.id}-${i}`}
+                key={`${question.itemId}-${i}`}
                 value={value}
                 selected={selectedLeft === value}
                 feedbackMode={feedbackMode}
@@ -174,7 +174,7 @@ export function AssociationQuestion({
           <div className="flex flex-col items-start gap-4 grow my-2">
             {unusedRight.map((value, i) => (
               <OptionBox
-                key={`${question.id}-${i}`}
+                key={`${question.itemId}-${i}`}
                 value={value}
                 selected={selectedRight === value}
                 feedbackMode={feedbackMode}

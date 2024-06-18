@@ -3,15 +3,18 @@ import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.gra
 import { useState } from "react";
 import { graphql, useMutation } from "react-relay";
 import { ClozeQuestionData, ClozeQuestionModal } from "./ClozeQuestionModal";
+import { ItemData } from "../ItemFormSection";
 
 export function AddClozeQuestionModal({
   _allRecords,
   assessmentId,
+  courseId,
   open,
   onClose,
 }: {
   _allRecords: MediaRecordSelector$key;
   assessmentId: string;
+  courseId:string;
   open: boolean;
   onClose: () => void;
 }) {
@@ -21,28 +24,38 @@ export function AddClozeQuestionModal({
     useMutation<AddClozeQuestionModalMutation>(graphql`
       mutation AddClozeQuestionModalMutation(
         $assessmentId: UUID!
-        $input: CreateClozeQuestionInput!
+        $questionInput: CreateClozeQuestionInput!
+        $item:ItemInput!
       ) {
         mutateQuiz(assessmentId: $assessmentId) {
-          addClozeQuestion(input: $input) {
+          assessmentId
+          addClozeQuestion(assessmentId: $assessmentId,questionInput:$questionInput,item:$item) {
             assessmentId
             questionPool {
-              id
+              itemId
               type # without type and number, the question will not appear properly and be deletable until a page reload
               number
               ...EditClozeQuestionButtonFragment
               ...ClozeQuestionPreviewFragment
             }
+            item{
+              id
+              associatedSkills {
+                id
+                skillName
+              }
+              associatedBloomLevels
+            }  
           }
         }
       }
     `);
 
-  const handleSubmit = (data: ClozeQuestionData) => {
+  const handleSubmit = (data: ClozeQuestionData,item:ItemData,newSkillAdded?:boolean) => {
     addQuestion({
       variables: {
         assessmentId,
-        input: {
+        questionInput: {
           hint: data.hint,
           showBlanksList: data.showBlanksList,
           additionalWrongAnswers: data.additionalWrongAnswers,
@@ -56,13 +69,14 @@ export function AddClozeQuestionModal({
                 }
           ),
         },
+        item:item
       },
       onCompleted: () => onClose(),
       updater(
         store,
         {
           mutateQuiz: {
-            addClozeQuestion: { questionPool },
+            addClozeQuestion: { questionPool,item },
           },
         }
       ) {
@@ -71,7 +85,7 @@ export function AddClozeQuestionModal({
         const content = store.get(assessmentId);
         const quiz = content?.getLinkedRecord("quiz");
         const allQuestions = questionPool.flatMap((x) => {
-          const record = store.get(x.id);
+          const record = store.get(x.itemId);
           return record ? [record] : [];
         });
 
@@ -81,6 +95,17 @@ export function AddClozeQuestionModal({
         }
 
         quiz.setLinkedRecords(allQuestions, "questionPool");
+        const items = store
+        .getRoot()
+        .getLinkedRecord("items")
+        ?.getLinkedRecords("elements");
+        const newItem = store.get(item!.id);
+        if (!items || !newItem) return;
+
+        store
+          .getRoot()
+          .getLinkedRecord("items")
+          ?.setLinkedRecords([...items, newItem], "elements");
       },
       onError: setError,
     });
@@ -92,7 +117,10 @@ export function AddClozeQuestionModal({
     additionalWrongAnswers: [],
     clozeElements: [],
   };
-
+  const initialItem: ItemData={
+    associatedSkills:[],
+    associatedBloomLevels:[],
+  }
   return (
     <ClozeQuestionModal
       _allRecords={_allRecords}
@@ -100,7 +128,9 @@ export function AddClozeQuestionModal({
       title="Add cloze question"
       error={error}
       initialValue={initialValue}
+      item={initialItem}
       isLoading={isUpdating}
+      courseId={courseId}
       onSave={handleSubmit}
       onClose={onClose}
       clearError={() => setError(null)}

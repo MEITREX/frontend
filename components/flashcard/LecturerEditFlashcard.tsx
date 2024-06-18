@@ -13,22 +13,27 @@ import { useState } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
 import { EditSideModal } from "./EditSideModal";
 import { FlashcardSide, FlashcardSideData } from "./FlashcardSide";
-
+import { ItemFormSection, ItemData, Skill } from "../ItemFormSection";
+import { ItemInput } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
 export function Flashcard({
   title,
   onError,
   _flashcard,
   _assessmentId,
+  courseId,
+  items
 }: {
   title: string;
   onError: (error: any) => void;
   _flashcard: LecturerEditFlashcardFragment$key;
   _assessmentId: string;
+  courseId:string;
+  items:ItemData[];
 }) {
   const flashcard = useFragment(
     graphql`
       fragment LecturerEditFlashcardFragment on Flashcard {
-        id
+        itemId
         sides {
           label
           text
@@ -39,17 +44,46 @@ export function Flashcard({
     `,
     _flashcard
   );
-
+ 
+  const findAvailableItem = (items: ItemData[], itemId: string): ItemData => {
+    for(let itemFromList of items){
+      if(itemFromList.id === itemId){
+        return itemFromList;
+      }
+    }
+    return   {
+      associatedBloomLevels: [],
+      associatedSkills: [],
+      id: undefined,
+    };
+  }
+  
   const [addSideOpen, setAddSideOpen] = useState(false);
+  const [item, setItem] = useState<ItemData >(() => findAvailableItem(items, flashcard.itemId));
   const [updateFlashcard, isUpdating] =
     useMutation<LecturerEditFlashcardMutation>(graphql`
       mutation LecturerEditFlashcardMutation(
         $flashcard: UpdateFlashcardInput!
         $assessmentId: UUID!
+        $item:ItemInput!
+
       ) {
         mutateFlashcardSet(assessmentId: $assessmentId) {
-          updateFlashcard(input: $flashcard) {
-            ...LecturerEditFlashcardFragment
+          assessmentId
+          updateFlashcard(flashcardInput: $flashcard,assessmentId: $assessmentId,item:$item) {
+            flashcard{
+              __id
+              itemId
+              ...LecturerEditFlashcardFragment
+            }
+            item{
+              id
+              associatedSkills {
+                id
+                skillName
+              }
+              associatedBloomLevels
+            } 
           }
         }
       }
@@ -57,7 +91,7 @@ export function Flashcard({
 
   function handleEditFlashcardSide(idx: number, editedSide: FlashcardSideData) {
     const newFlashcard = {
-      id: flashcard.id,
+      itemId: flashcard.itemId,
       sides: flashcard.sides.map((side, i) => {
         const { label, text, isQuestion, isAnswer } =
           i == idx ? editedSide : side;
@@ -65,27 +99,51 @@ export function Flashcard({
       }),
     };
 
+
     updateFlashcard({
-      variables: { assessmentId: _assessmentId, flashcard: newFlashcard },
+      variables: { assessmentId: _assessmentId, flashcard: newFlashcard,item:item },
       onError,
     });
   }
 
+  function handleItem(item: ItemData|null,newSkillAdded?:boolean){
+    if(item){
+    setItem(item);
+    const newFlashcard = {
+      itemId: flashcard.itemId,
+      sides: flashcard.sides,
+    };
+
+    updateFlashcard({
+      variables: { assessmentId: _assessmentId, flashcard: newFlashcard,item:item },
+      onError,
+      onCompleted(){
+        //reload page, when a new skill is added
+        if(newSkillAdded){
+          console.log("reload");
+          window.location.reload();
+        }
+	console.log("logger");
+      }
+    });
+  }
+  }
+
   function handleDeleteFlashcardSide(idx: number) {
     const newFlashcard = {
-      id: flashcard.id,
+      itemId: flashcard.itemId,
       sides: flashcard.sides.filter((_, i) => i != idx),
     };
 
     updateFlashcard({
-      variables: { assessmentId: _assessmentId, flashcard: newFlashcard },
+      variables: { assessmentId: _assessmentId, flashcard: newFlashcard,item:item },
       onError,
     });
   }
 
   function handleAddSideSubmit(newSide: FlashcardSideData) {
     const newFlashcard = {
-      id: flashcard.id,
+      itemId: flashcard.itemId,
       sides: [
         ...flashcard.sides.map(({ label, text, isQuestion, isAnswer }) => ({
           label,
@@ -98,7 +156,7 @@ export function Flashcard({
     };
 
     updateFlashcard({
-      variables: { assessmentId: _assessmentId, flashcard: newFlashcard },
+      variables: { assessmentId: _assessmentId, flashcard: newFlashcard,item:item },
       onError,
       onCompleted() {
         setAddSideOpen(false);
@@ -112,11 +170,12 @@ export function Flashcard({
         <Typography variant="overline" color="textSecondary">
           {title}
         </Typography>
+        <ItemFormSection onChange={handleItem} item={item} courseId={courseId} useEffectNecessary={false}></ItemFormSection>
         <div className="flex flex-wrap gap-2">
           {flashcard.sides.map((side, i) => (
             <div key={i} className="flex items-center">
               <FlashcardSide
-                key={`${flashcard.id}-${i}`}
+                key={`${flashcard.itemId}-${i}`}
                 side={side}
                 onChange={(data) => handleEditFlashcardSide(i, data)}
               />

@@ -9,15 +9,20 @@ import {
   AssociationQuestionData,
   AssociationQuestionModal,
 } from "./AssociationQuestionModal";
+import { ItemData } from "../ItemFormSection";
 
 export function EditAssociationQuestionButton({
   _allRecords,
   _question,
   assessmentId,
+  item,
+  courseId
 }: {
   _allRecords: MediaRecordSelector$key;
   _question: EditAssociationQuestionButtonFragment$key;
   assessmentId: string;
+  item:ItemData;
+  courseId:string;
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<any>(null);
@@ -25,7 +30,7 @@ export function EditAssociationQuestionButton({
   const question = useFragment(
     graphql`
       fragment EditAssociationQuestionButtonFragment on AssociationQuestion {
-        id
+        itemId
         text
         hint
         correctAssociations {
@@ -42,29 +47,40 @@ export function EditAssociationQuestionButton({
     useMutation<EditAssociationQuestionButtonMutation>(graphql`
       mutation EditAssociationQuestionButtonMutation(
         $assessmentId: UUID!
-        $input: UpdateAssociationQuestionInput!
+        $questionInput: UpdateAssociationQuestionInput!
+        $itemInput:ItemInput!
       ) {
         mutateQuiz(assessmentId: $assessmentId) {
-          updateAssociationQuestion(input: $input) {
+          assessmentId
+          updateAssociationQuestion(questionInput: $questionInput,assessmentId: $assessmentId,item:$itemInput) {
             assessmentId
             questionPool {
               ...EditAssociationQuestionButtonFragment
+            }
+            item{
+              id
+              associatedSkills {
+                id
+                skillName
+              }
+              associatedBloomLevels
             }
           }
         }
       }
     `);
 
-  const handleSubmit = (data: AssociationQuestionData) => {
+  const handleSubmit = (data: AssociationQuestionData, item: ItemData,newSkillAdded?:boolean) => {
     updateQuestion({
       variables: {
         assessmentId,
-        input: {
-          id: question.id,
+        questionInput: {
+          itemId: question.itemId,
           text: data.text,
           hint: data.hint,
           correctAssociations: data.correctAssociations,
         },
+        itemInput:item
       },
       updater: (store) => store.invalidateStore(),
       onCompleted: () => setOpen(false),
@@ -95,6 +111,8 @@ export function EditAssociationQuestionButton({
         open={open}
         title="Edit association question"
         error={error}
+        item={item}
+        courseId={courseId}
         initialValue={initialValue}
         isLoading={isUpdating}
         onSave={handleSubmit}

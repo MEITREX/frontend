@@ -21,10 +21,10 @@ ARG NEXT_PUBLIC_OAUTH_REDIRECT_URL="https://orange.informatik.uni-stuttgart.de"
 ARG NEXT_PUBLIC_OAUTH_CLIENT_ID="frontend"
 ARG NEXT_PUBLIC_OAUTH_AUTHORITY="https://orange.informatik.uni-stuttgart.de/keycloak/realms/GITS"
 
-RUN yarn global add pnpm \
+RUN yarn global add pnpm@latest-8  \
     && mkdir -p ./__generated__ \
     && rm -rf ./mockserver \
-    && pnpm run build
+    && pnpm  run build
 
 
 # Production image, copy all the files and run next

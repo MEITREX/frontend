@@ -22,7 +22,7 @@ export function ClozeQuestion({
   const question = useFragment(
     graphql`
       fragment ClozeQuestionFragment on ClozeQuestion {
-        id
+        itemId
 
         clozeElements {
           __typename
@@ -125,7 +125,7 @@ export function ClozeQuestion({
           <div className="max-w-sm flex justify-center gap-4 flex-wrap">
             {question.allBlanks.map((value, i) => (
               <ClozeElementValue
-                key={`${question.id}-${i}`}
+                key={`${question.itemId}-${i}`}
                 value={value}
                 used={Object.values(selectedAnswers).includes(value)}
                 feedbackMode={feedbackMode}

@@ -88,7 +88,7 @@ export default function StudentQuiz() {
             quiz {
               assessmentId
               selectedQuestions {
-                id
+                itemId
                 ...studentQuestionFragment
               }
             }
@@ -128,7 +128,7 @@ export default function StudentQuiz() {
     }
 
     const currentAnswer = {
-      questionId: currentQuestion.id,
+      questionId: currentQuestion.itemId,
       usedHint,
       correct,
     };
@@ -325,7 +325,7 @@ function Feedback({
       <DialogActions>
         <Button
           variant="text"
-          onClick={() => router.push(`/courses/${courseId}`)}
+          onClick={() => window.location.replace(`/courses/${courseId}`) /*router.push(`/courses/${courseId}`)*/}
         >
           Back to Course
         </Button>
