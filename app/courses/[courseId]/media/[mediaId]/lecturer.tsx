@@ -12,7 +12,8 @@ import { Alert, Button, CircularProgress, Typography } from "@mui/material";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
-import { ContentMediaDisplay, DownloadButton } from "./student";
+import { ContentMediaDisplay } from "./ContentMediaDisplay";
+import { DownloadButton } from "./student";
 
 export default function LecturerMediaPage() {
   const { mediaId, courseId } = useParams();
@@ -33,7 +34,7 @@ export default function LecturerMediaPage() {
             mediaRecords {
               id
               name
-              ...studentContentMediaDisplayFragment
+              ...ContentMediaDisplayFragment
               ...studentContentDownloadButtonFragment
             }
           }

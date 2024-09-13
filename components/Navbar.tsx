@@ -1,13 +1,22 @@
 "use client";
 import { NavbarIsTutor$key } from "@/__generated__/NavbarIsTutor.graphql";
+import { NavbarSemanticSearchQuery } from "@/__generated__/NavbarSemanticSearchQuery.graphql";
 import { NavbarStudentQuery } from "@/__generated__/NavbarStudentQuery.graphql";
 import logo from "@/assets/logo.svg";
 import { PageView, usePageView } from "@/src/currentView";
-import { CollectionsBookmark, Dashboard, Logout } from "@mui/icons-material";
 import {
+  CollectionsBookmark,
+  Dashboard,
+  Logout,
+  Search,
+} from "@mui/icons-material";
+import {
+  Autocomplete,
   Avatar,
+  CircularProgress,
   Divider,
   IconButton,
+  InputAdornment,
   List,
   ListItem,
   ListItemAvatar,
@@ -15,11 +24,13 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
+  TextField,
   Tooltip,
 } from "@mui/material";
 import dayjs from "dayjs";
+import { chain, debounce } from "lodash";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactElement } from "react";
+import { ReactElement, useCallback, useState, useTransition } from "react";
 import { useAuth } from "react-oidc-context";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
 
@@ -51,13 +62,137 @@ function NavbarBase({
   children: React.ReactElement;
   _isTutor: NavbarIsTutor$key;
 }) {
+  const [term, setTerm] = useState("");
+  const router = useRouter();
+
+  const searchResults = useLazyLoadQuery<NavbarSemanticSearchQuery>(
+    graphql`
+      query NavbarSemanticSearchQuery($term: String!, $skip: Boolean!) {
+        semanticSearch(queryText: $term, count: 10) @skip(if: $skip) {
+          score
+          mediaRecordSegment {
+            __typename
+            ... on VideoRecordSegment {
+              startTime
+              mediaRecord {
+                id
+                name
+
+                contents {
+                  id
+                  metadata {
+                    name
+                    course {
+                      id
+                      title
+                    }
+                  }
+                }
+              }
+            }
+            ... on DocumentRecordSegment {
+              page
+              mediaRecord {
+                id
+                name
+                contents {
+                  id
+                  metadata {
+                    name
+                    course {
+                      id
+                      title
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `,
+    { term: term, skip: term.length < 3 }
+  );
+
+  const [isPending, startTransition] = useTransition();
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedSetter = useCallback(
+    debounce((value: string) => startTransition(() => setTerm(value)), 150),
+    [setTerm, startTransition]
+  );
+
+  const results = chain(searchResults.semanticSearch)
+    .orderBy((x) => x?.score)
+    .slice(0, 15)
+    .flatMap((x) => {
+      const seg = x.mediaRecordSegment;
+
+      return seg.__typename !== "%other"
+        ? seg?.mediaRecord?.contents.map((content) => ({
+            content,
+            ...x,
+            mediaRecordSegment: seg,
+          }))
+        : [];
+    })
+    .value();
+
   return (
     <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
       <div className="text-center my-16 text-3xl font-medium tracking-wider sticky">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logo.src} alt="GITS logo" className="w-24 m-auto" />
       </div>
+
       <NavbarSection>
+        <Autocomplete
+          freeSolo
+          size="small"
+          className="mx-2 mb-2"
+          clearOnBlur
+          blurOnSelect
+          autoHighlight
+          value={null}
+          onChange={(x, newVal) => {
+            if (typeof newVal == "string") return;
+            router.push(
+              `/courses/${newVal?.content?.metadata.course.id}/media/${newVal?.content?.id}?recordId=${newVal?.mediaRecordSegment.mediaRecord?.id}`
+            );
+          }}
+          filterOptions={(x) => x}
+          groupBy={(x) =>
+            `${x?.content?.metadata.course.title} › ${x?.content?.metadata.name}`
+          }
+          renderOption={(props, option) => (
+            <li {...props} key={option?.content!.id}>
+              <div>
+                {option?.mediaRecordSegment.mediaRecord?.name}
+                <div className="text-xs text-slate-500">
+                  {option.mediaRecordSegment.__typename ===
+                  "DocumentRecordSegment"
+                    ? `Page ${option.mediaRecordSegment.page}`
+                    : `Page ${option.mediaRecordSegment.startTime}`}
+                </div>
+              </div>
+            </li>
+          )}
+          options={term.length >= 3 ? results ?? [] : []}
+          onInputChange={(_, value) => value && debouncedSetter(value)}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              InputProps={{
+                ...params.InputProps,
+                startAdornment: (
+                  <InputAdornment position="start" className="ml-0.5">
+                    {isPending ? <CircularProgress size={24} /> : <Search />}
+                  </InputAdornment>
+                ),
+              }}
+            />
+          )}
+        />
         <NavbarLink title="Dashboard" icon={<Dashboard />} href="/" exact />
         <NavbarLink
           title="Course Catalog"

@@ -1,16 +1,18 @@
 "use client";
 
-import { Document, Page, pdfjs } from "react-pdf";
+import { Document, Page, pdfjs, Thumbnail } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
+import { useDebounceValue, useResizeObserver } from "usehooks-ts";
+
+import { CircularProgress } from "@mui/material";
+import { times } from "lodash";
+import { useEffect, useRef, useState } from "react";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.js",
   import.meta.url
 ).toString();
-
-import { CircularProgress, Pagination } from "@mui/material";
-import { useEffect, useState } from "react";
 
 export function PdfViewer({
   url,
@@ -19,6 +21,14 @@ export function PdfViewer({
   url: string;
   onProgressChange: (fraction: number) => void;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { width = 0 } = useResizeObserver({
+    ref,
+    box: "border-box",
+  });
+
+  const [debouncedWidth] = useDebounceValue(width, 200);
+
   const [numPages, setNumPages] = useState<number>();
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [_, setViewedPages] = useState([] as number[]);
@@ -45,26 +55,37 @@ export function PdfViewer({
   }
 
   return (
-    <div>
+    <div className="w-full" ref={ref}>
       <Document
-        className="flex justify-center"
+        className="flex flex-col justify-center w-full"
         file={url}
         onLoadSuccess={onDocumentLoadSuccess}
         loading={<CircularProgress />}
       >
-        <Page
-          loading={<CircularProgress />}
-          pageNumber={pageNumber}
-          height={600}
-        />
+        <div>
+          <Page
+            width={debouncedWidth}
+            loading={<CircularProgress />}
+            pageNumber={pageNumber}
+          />
+        </div>
+        <div className="flex w-full overflow-x-auto mt-6 gap-3 p-2">
+          {numPages != null &&
+            times(numPages, () => null).map((_, idx) => (
+              <Thumbnail
+                width={debouncedWidth / 5 - 20}
+                className={
+                  idx + 1 === pageNumber
+                    ? "ring-offset-2 rounded-sm ring-slate-600 ring-2"
+                    : "opacity-75"
+                }
+                onClick={() => setPageNumber(idx + 1)}
+                pageNumber={idx + 1}
+                key={idx}
+              ></Thumbnail>
+            ))}
+        </div>
       </Document>
-      <div className="flex justify-center items-center gap-2 mt-6">
-        <Pagination
-          count={numPages}
-          onChange={(_, val) => setPageNumber(val)}
-          color="primary"
-        />
-      </div>
     </div>
   );
 }

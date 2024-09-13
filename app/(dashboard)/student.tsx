@@ -13,7 +13,7 @@ import {
 import dayjs from "dayjs";
 import { chain } from "lodash";
 import Link from "next/link";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 
@@ -103,7 +103,7 @@ export default function StudentPage() {
     )
     .map(([key, courses]) => {
       return (
-        <>
+        <Fragment key={key}>
           <Typography variant="h6" gutterBottom>
             {key}
           </Typography>
@@ -118,7 +118,7 @@ export default function StudentPage() {
               />
             ))}
           </div>
-        </>
+        </Fragment>
       );
     })
 
