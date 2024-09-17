@@ -8,12 +8,16 @@ import {
   CollectionsBookmark,
   Dashboard,
   Logout,
+  ManageSearch,
   Search,
 } from "@mui/icons-material";
 import {
   Autocomplete,
   Avatar,
+  Box,
+  Button,
   CircularProgress,
+  ClickAwayListener,
   Divider,
   IconButton,
   InputAdornment,
@@ -24,11 +28,13 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
+  Paper,
   TextField,
   Tooltip,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { chain, debounce } from "lodash";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactElement, useCallback, useState, useTransition } from "react";
 import { useAuth } from "react-oidc-context";
@@ -68,7 +74,7 @@ function NavbarBase({
   const searchResults = useLazyLoadQuery<NavbarSemanticSearchQuery>(
     graphql`
       query NavbarSemanticSearchQuery($term: String!, $skip: Boolean!) {
-        semanticSearch(queryText: $term, count: 10) @skip(if: $skip) {
+        semanticSearch(queryText: $term, count: 5) @skip(if: $skip) {
           score
           mediaRecordSegment {
             __typename
@@ -138,6 +144,21 @@ function NavbarBase({
     })
     .value();
 
+  const [isSearchPopupOpen, setSearchPopupOpen] = useState(false);
+
+  function SearchPopupPaper({children}: {children?: any}) {
+    return <ClickAwayListener onClickAway={() => setSearchPopupOpen(false)}><Paper>
+        {children}
+        <Button startIcon={<ManageSearch />} onClick={() => {
+            router.push(`/search/${term}`);
+            setSearchPopupOpen(false);
+          }}>
+        Detailed results
+        </Button>
+      </Paper>
+    </ClickAwayListener>
+  }
+
   return (
     <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
       <div className="text-center my-16 text-3xl font-medium tracking-wider sticky">
@@ -153,6 +174,7 @@ function NavbarBase({
           clearOnBlur
           blurOnSelect
           autoHighlight
+          open={isSearchPopupOpen}
           value={null}
           onChange={(x, newVal) => {
             if (typeof newVal == "string") return;
@@ -182,6 +204,7 @@ function NavbarBase({
           renderInput={(params) => (
             <TextField
               {...params}
+              onClick={() => setSearchPopupOpen(true)}
               InputProps={{
                 ...params.InputProps,
                 startAdornment: (
@@ -192,6 +215,7 @@ function NavbarBase({
               }}
             />
           )}
+          PaperComponent={SearchPopupPaper}
         />
         <NavbarLink title="Dashboard" icon={<Dashboard />} href="/" exact />
         <NavbarLink
