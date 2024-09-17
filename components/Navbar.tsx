@@ -150,7 +150,7 @@ function NavbarBase({
     return <ClickAwayListener onClickAway={() => setSearchPopupOpen(false)}><Paper>
         {children}
         <Button startIcon={<ManageSearch />} onClick={() => {
-            router.push(`/search/${term}`);
+            router.push(`/search?query=${term}`);
             setSearchPopupOpen(false);
           }}>
         Detailed results
