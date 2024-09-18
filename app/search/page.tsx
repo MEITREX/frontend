@@ -7,6 +7,7 @@ import { graphql, useLazyLoadQuery } from "react-relay";
 import SearchResultGroup from "./SearchResultGroup";
 import {ManageSearch, ExpandMore, ExpandLess, Search} from '@mui/icons-material';
 import { useState } from "react";
+import lodash from "lodash";
 
 export default function SearchPage() {
     const router = useRouter();
@@ -88,23 +89,12 @@ export default function SearchPage() {
         }
     );
 
-    // Sort the results into groups based on the media record they belong to. semanticSearch might be null if no query text was
-    // provided, use an empty array in that case.
-    const semanticSearchResultGroups = Object.values(
-        Object.groupBy(semanticSearch ?? [], (result) => result.mediaRecordSegment.mediaRecord?.id ?? "unknown"));
-    
-    // sort the elements in each group by score from lowest to highest
-    semanticSearchResultGroups.forEach((group) => {
-        if (group !== undefined)
-            group.sort((a, b) => a.score - b.score);
-    });
-
-    // sort the groups themselves by the score of the first element in each group
-    semanticSearchResultGroups.sort((a, b) => {
-        let aScore = a?.[0].score ?? 99999;
-        let bScore = b?.[0].score ?? 99999;
-        return aScore - bScore;
-    });
+    // Group the search results
+    const semanticSearchResultGroups = lodash.chain(semanticSearch ?? [])
+        .groupBy((result) => result.mediaRecordSegment.mediaRecord?.id ?? "unknown")
+        .forEach((group) => group.sort((a, b) => a.score - b.score))
+        .sortBy((group) => group[0].score)
+        .value();
 
     // open advanced search by default if an advanced search parameter was provided
     const [isAdvancedSearchOpen, setIsAdvancedSearchOpen] = useState(searchParams.get("courses") !== null || searchParams.get("count") !== null);
