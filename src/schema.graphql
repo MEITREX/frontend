@@ -1522,9 +1522,6 @@ type MultipleChoiceQuestion implements Question {
   hint: JSON
 }
 
-# 
-# Mutations for the flashcard service. Provides mutations for creating, updating, and deleting flashcard as well as
-# creating and deleting flashcard sets. To update a flashcard set, update, delete, and create flashcards individually.
 type Mutation {
   # 
   #     ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
@@ -1584,16 +1581,6 @@ type Mutation {
   setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
 
   # 
-  # Modify Content
-  # 🔒 The user must have admin access to the course containing the section to perform this action.
-  mutateContent(contentId: UUID!): ContentMutation!
-
-  # 
-  # Modify the section with the given id.
-  # 🔒 The user must have admin access to the course containing the section to perform this action.
-  mutateSection(sectionId: UUID!): SectionMutation!
-
-  # 
   # Modify a quiz.
   # 🔒 The user must be an admin the course the quiz is in to perform this action.
   mutateQuiz(assessmentId: UUID!): QuizMutation!
@@ -1606,6 +1593,21 @@ type Mutation {
   # Log that a multiple choice quiz is completed.
   # 🔒 The user must be enrolled in the course the quiz is in to perform this action.
   logQuizCompleted(input: QuizCompletedInput!): QuizCompletionFeedback!
+
+  # 
+  # Deletes a flashcard set. Throws an error if the flashcard set does not exist.
+  # The contained flashcards are deleted as well.
+  deleteFlashcardSet(input: UUID!): UUID! @deprecated(reason: "Only for development, will be removed in production. Use deleteAssessment in contents service instead.")
+
+  # 
+  # Modify a flashcard set.
+  # 🔒 The user must be an admin the course the flashcard set is in to perform this action.
+  mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
+
+  # 
+  # Logs that a user has learned a flashcard.
+  # 🔒 The user must be enrolled in the course the flashcard set is in to perform this action.
+  logFlashcardLearned(input: LogFlashcardLearnedInput!): FlashcardLearnedFeedback!
 
   # 
   # Creates a new course with the given input and returns the created course.
@@ -1663,19 +1665,14 @@ type Mutation {
   deleteMembership(input: CourseMembershipInput!): CourseMembership!
 
   # 
-  # Deletes a flashcard set. Throws an error if the flashcard set does not exist.
-  # The contained flashcards are deleted as well.
-  deleteFlashcardSet(input: UUID!): UUID! @deprecated(reason: "Only for development, will be removed in production. Use deleteAssessment in contents service instead.")
+  # Modify Content
+  # 🔒 The user must have admin access to the course containing the section to perform this action.
+  mutateContent(contentId: UUID!): ContentMutation!
 
   # 
-  # Modify a flashcard set.
-  # 🔒 The user must be an admin the course the flashcard set is in to perform this action.
-  mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
-
-  # 
-  # Logs that a user has learned a flashcard.
-  # 🔒 The user must be enrolled in the course the flashcard set is in to perform this action.
-  logFlashcardLearned(input: LogFlashcardLearnedInput!): FlashcardLearnedFeedback!
+  # Modify the section with the given id.
+  # 🔒 The user must have admin access to the course containing the section to perform this action.
+  mutateSection(sectionId: UUID!): SectionMutation!
 
   # Creates a new media content and links the given media records to it.
   createMediaContentAndLinkRecords(contentInput: CreateMediaContentInput!, mediaRecordIds: [UUID!]!): MediaContent!
@@ -1874,6 +1871,52 @@ type Query {
   mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
 
   # 
+  # Get quiz by assessment ID.
+  # If any of the assessment IDs are not found, the corresponding quiz will be null.
+  # 🔒 The user must be enrolled in the course the quizzes belong to to access them. Otherwise null is returned for
+  # an quiz if the user has no access to it.
+  findQuizzesByAssessmentIds(assessmentIds: [UUID!]!): [Quiz]!
+
+  # 
+  # Get flashcards by their ids.
+  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
+  flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
+
+  # 
+  # Get flashcard sets by their assessment ids.
+  # Returns a list of flashcard sets in the same order as the provided ids.
+  # Each element is null if the corresponding id is not found.
+  # 🔒 The user must be enrolled in the course the flashcard sets belong to. Otherwise for that element null is returned.
+  findFlashcardSetsByAssessmentIds(assessmentIds: [UUID!]!): [FlashcardSet]!
+
+  # 
+  # Get flashcards of a course that are due to be reviewed.
+  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
+  dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
+
+  # 
+  # Get a list of courses. Can be filtered, sorted and paginated.
+  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
+  courses(
+    filter: CourseFilter
+
+    # 
+    # The fields to sort by.
+    # Throws an error if no field with the given name exists.
+    sortBy: [String!]
+
+    # 
+    # The sort direction for each field. If not specified, defaults to ASC.
+    sortDirection: [SortDirection!]! = [ASC]
+    pagination: Pagination
+  ): CoursePayload!
+
+  # 
+  # Returns the courses with the given ids.
+  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
+  coursesByIds(ids: [UUID!]!): [Course!]!
+
+  # 
   # Retrieves all existing contents for a given course.
   # 🔒 The user must have access to the courses with the given ids to access their contents, otherwise an error is thrown.
   contentsByCourseIds(courseIds: [UUID!]!): [[Content!]!]
@@ -1918,52 +1961,6 @@ type Query {
     # also containing suggestions for media content (which do not have a skill type).
     skillTypes: [SkillType!]! = []
   ): [Suggestion!]!
-
-  # 
-  # Get quiz by assessment ID.
-  # If any of the assessment IDs are not found, the corresponding quiz will be null.
-  # 🔒 The user must be enrolled in the course the quizzes belong to to access them. Otherwise null is returned for
-  # an quiz if the user has no access to it.
-  findQuizzesByAssessmentIds(assessmentIds: [UUID!]!): [Quiz]!
-
-  # 
-  # Get a list of courses. Can be filtered, sorted and paginated.
-  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
-  courses(
-    filter: CourseFilter
-
-    # 
-    # The fields to sort by.
-    # Throws an error if no field with the given name exists.
-    sortBy: [String!]
-
-    # 
-    # The sort direction for each field. If not specified, defaults to ASC.
-    sortDirection: [SortDirection!]! = [ASC]
-    pagination: Pagination
-  ): CoursePayload!
-
-  # 
-  # Returns the courses with the given ids.
-  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
-  coursesByIds(ids: [UUID!]!): [Course!]!
-
-  # 
-  # Get flashcards by their ids.
-  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
-  flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
-
-  # 
-  # Get flashcard sets by their assessment ids.
-  # Returns a list of flashcard sets in the same order as the provided ids.
-  # Each element is null if the corresponding id is not found.
-  # 🔒 The user must be enrolled in the course the flashcard sets belong to. Otherwise for that element null is returned.
-  findFlashcardSetsByAssessmentIds(assessmentIds: [UUID!]!): [FlashcardSet]!
-
-  # 
-  # Get flashcards of a course that are due to be reviewed.
-  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
-  dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
 
   # Performs a semantic search with the specified search term. Returns at most `count` results. If a courseWhitelist is 
   # provided, only results from the specified courses will be returned.
@@ -2600,6 +2597,8 @@ type SkillLevels {
 # 
 # Type of the assessment
 enum SkillType {
+  CREATE
+  EVALUATE
   REMEMBER
   UNDERSTAND
   APPLY
