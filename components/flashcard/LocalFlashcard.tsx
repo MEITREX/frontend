@@ -68,7 +68,7 @@ export function LocalFlashcard({
       <Typography variant="overline" color="textSecondary">
         New flashcard (not saved)
       </Typography>
-      <ItemFormSection courseId={courseId} item={item} onChange={handleItem} useEffectNecessary={true} />
+      <ItemFormSection courseId={courseId} item={item} onChange={handleItem} />
       <div className="flex flex-wrap gap-2">
         {sides.map((side, i) => (
           <FlashcardSide

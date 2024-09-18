@@ -170,7 +170,7 @@ export function Flashcard({
         <Typography variant="overline" color="textSecondary">
           {title}
         </Typography>
-        <ItemFormSection onChange={handleItem} item={item} courseId={courseId} useEffectNecessary={false}></ItemFormSection>
+        <ItemFormSection onChange={handleItem} item={item} courseId={courseId}></ItemFormSection>
         <div className="flex flex-wrap gap-2">
           {flashcard.sides.map((side, i) => (
             <div key={i} className="flex items-center">

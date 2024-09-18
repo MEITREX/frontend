@@ -133,7 +133,7 @@ export function ClozeQuestionModal({
       <DialogContent>
         <FormErrors error={error} onClose={clearError} />
         <Form>
-          <ItemFormSection onChange={handleItem} courseId={courseId} item={item} useEffectNecessary={false}></ItemFormSection>
+          <ItemFormSection onChange={handleItem} courseId={courseId} item={item}></ItemFormSection>
           <FormSection title="Cloze text">
             {data.clozeElements.map((elem, i) =>
               elem.type === "text" ? (
