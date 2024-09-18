@@ -5,18 +5,20 @@ import SearchResult from "./SearchResult";
 import { ExpandMore, ExpandLess } from "@mui/icons-material";
 import { useState } from "react";
 import { MediaRecordIcon } from "@/components/MediaRecordIcon";
+import { pageSemanticSearchQuery$data } from "@/__generated__/pageSemanticSearchQuery.graphql";
 
-function renderDividerIfNotFirst(index: number) {
-    if (index === 0) {
-        return null;
-    }
-    return <Divider variant="middle" />;
-}
-
-export default function SearchResultGroup({ searchResults, collapsedResultCount }: { searchResults: any, collapsedResultCount: number }) {
+export default function SearchResultGroup({ searchResults, collapsedResultCount }: 
+    { searchResults: NonNullable<pageSemanticSearchQuery$data['semanticSearch']>[number][], collapsedResultCount: number }) {
     // media record is the same for all results in the group, just get the first segment's media record
     const mediaRecord = searchResults[0].mediaRecordSegment.mediaRecord;
-    const userAccessibleContent = mediaRecord.contents.find((x: any) => x !== undefined && x !== null);
+    if(mediaRecord === null || mediaRecord === undefined) {
+        return null;
+    }
+
+    const userAccessibleContent = mediaRecord.contents.find((x) => x !== undefined && x !== null);
+    if(userAccessibleContent === null || userAccessibleContent === undefined) {
+        return null;
+    }
 
     const [isExpanded, setIsExpanded] = useState(true);
     function toggleExpanded() {
@@ -31,11 +33,11 @@ export default function SearchResultGroup({ searchResults, collapsedResultCount 
     function renderResultsIfExpanded() {
         if(isExpanded) {
             return <div>
-                {searchResults.slice(0, collapsedResultCount).map((result: any, index: number) => {
-                return (<div>
-                    {renderDividerIfNotFirst(index)}
+                {searchResults.slice(0, collapsedResultCount).map((result, index: number) => {
+                return (<Box key={result.mediaRecordSegment.id}>
+                    {index > 0 && <Divider variant="middle" />}
                     <SearchResult searchResult={result} />
-                </div>)
+                </Box>)
                 })}
 
                 <Button 
@@ -49,11 +51,11 @@ export default function SearchResultGroup({ searchResults, collapsedResultCount 
 
                 {/* Show the rest of the results if user has expanded the result group */}
                 {doShowMoreResults 
-                && searchResults.slice(collapsedResultCount, searchResults.length).map((result: any, index: number) => {
-                return (<div>
-                    {renderDividerIfNotFirst(index)}
+                && searchResults.slice(collapsedResultCount, searchResults.length).map((result, index: number) => {
+                return (<Box key={result.mediaRecordSegment.id}>
+                    {index > 0 && <Divider variant="middle" />}
                     <SearchResult searchResult={result} />
-                </div>)
+                </Box>)
                 })}
 
                 

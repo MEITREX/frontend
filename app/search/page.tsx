@@ -188,12 +188,13 @@ export default function SearchPage() {
 
             {((query !== null) &&
                 Object.values(semanticSearchResultGroups).map((resultGroup) => {
-                    return (
-                        <SearchResultGroup 
-                        searchResults={resultGroup} 
-                        collapsedResultCount={3} 
-                        key={resultGroup?.[0].mediaRecordSegment.mediaRecordId ?? "undefined"} />
-                    );
+                    if(resultGroup !== undefined)
+                        return (
+                            <SearchResultGroup 
+                            searchResults={resultGroup} 
+                            collapsedResultCount={3} 
+                            key={resultGroup?.[0].mediaRecordSegment.mediaRecordId ?? "undefined"} />
+                        );
                 })
             )}
         </main>

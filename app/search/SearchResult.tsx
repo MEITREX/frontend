@@ -3,25 +3,25 @@
 import ExpandableText from '@/components/ExpandableText';
 import { Box, styled, Typography } from '@mui/material';
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
-import Paper from '@mui/material/Paper';
+import { pageSemanticSearchQuery$data } from '@/__generated__/pageSemanticSearchQuery.graphql';
 
-function getSegmentContents(mediaRecordSegment: any) {
+function getSegmentContents(mediaRecordSegment: NonNullable<pageSemanticSearchQuery$data['semanticSearch']>[number]["mediaRecordSegment"]): string {
     switch (mediaRecordSegment.__typename) {
         case "VideoRecordSegment":
-            return mediaRecordSegment.transcript;
+            return mediaRecordSegment.transcript ?? "";
         case "DocumentRecordSegment":
-            return mediaRecordSegment.text;
+            return mediaRecordSegment.text ?? "";
         default:
             return "Unknown media type";
     }
 }
 
-function getSegmentTitle(mediaRecordSegment: any) {
+function getSegmentTitle(mediaRecordSegment: NonNullable<pageSemanticSearchQuery$data['semanticSearch']>[number]["mediaRecordSegment"]) {
     switch (mediaRecordSegment.__typename) {
         case "VideoRecordSegment":
             return <Typography variant="h6">Time {mediaRecordSegment.screenText}</Typography>;
         case "DocumentRecordSegment":
-            return <Typography variant="h6">Page {mediaRecordSegment.page + 1}</Typography>;
+            return <Typography variant="h6">Page {mediaRecordSegment.page! + 1}</Typography>;
         default:
             return <Typography variant="h6">Unknown media type</Typography>;
     }
@@ -35,7 +35,7 @@ const NoMaxWidthTooltip = styled(({ className, ...props }: TooltipProps) => (
     },
   });
 
-export default function SearchResult({ searchResult }: { searchResult: any }) {
+export default function SearchResult({ searchResult }: { searchResult: NonNullable<pageSemanticSearchQuery$data['semanticSearch']>[number] }) {
     return <Box sx={{display: "flex", padding: "15px"}}>
         <NoMaxWidthTooltip placement="right" title={
             <img src={searchResult.mediaRecordSegment.thumbnail} style={
