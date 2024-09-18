@@ -72,16 +72,17 @@ export default function SearchResultGroup({ searchResults, collapsedResultCount 
                         {isExpanded ? <ExpandLess /> : <ExpandMore />}
                     </IconButton>
                 </Tooltip>
-                <Link color="inherit">
+                <Link color="inherit" href={`/courses/${userAccessibleContent.metadata.course.id}`}>
                     {userAccessibleContent.metadata.course.title}
                 </Link>
                 <Link color="inherit">
                     {userAccessibleContent.metadata.chapter.title}
                 </Link>
-                <Link color="inherit">
+                <Link color="inherit" href={`/course/${userAccessibleContent.metadata.course.id}/media/${userAccessibleContent.id}`}>
                     {userAccessibleContent.metadata.name}
                 </Link>
-                <Link color="inherit">
+                <Link color="inherit" 
+                    href={`/course/${userAccessibleContent.metadata.course.id}/media/${userAccessibleContent.id}?recordId=${mediaRecord.id}`}>
                     {mediaRecord.name}
                 </Link>
             </Breadcrumbs>
