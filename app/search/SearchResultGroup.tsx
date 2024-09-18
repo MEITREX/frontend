@@ -9,16 +9,6 @@ import { pageSemanticSearchQuery$data } from "@/__generated__/pageSemanticSearch
 
 export default function SearchResultGroup({ searchResults, collapsedResultCount }: 
     { searchResults: NonNullable<pageSemanticSearchQuery$data['semanticSearch']>[number][], collapsedResultCount: number }) {
-    // media record is the same for all results in the group, just get the first segment's media record
-    const mediaRecord = searchResults[0].mediaRecordSegment.mediaRecord;
-    if(mediaRecord === null || mediaRecord === undefined) {
-        return null;
-    }
-
-    const userAccessibleContent = mediaRecord.contents.find((x) => x !== undefined && x !== null);
-    if(userAccessibleContent === null || userAccessibleContent === undefined) {
-        return null;
-    }
 
     const [isExpanded, setIsExpanded] = useState(true);
     function toggleExpanded() {
@@ -29,6 +19,17 @@ export default function SearchResultGroup({ searchResults, collapsedResultCount 
     function toggleShowMoreResults() {
         setDoShowMoreResults(!doShowMoreResults);
     };
+
+    // media record is the same for all results in the group, just get the first segment's media record
+    const mediaRecord = searchResults[0].mediaRecordSegment.mediaRecord;
+    if(mediaRecord === null || mediaRecord === undefined) {
+        return null;
+    }
+
+    const userAccessibleContent = mediaRecord.contents.find((x) => x !== undefined && x !== null);
+    if(userAccessibleContent === null || userAccessibleContent === undefined) {
+        return null;
+    }
 
     function renderResultsIfExpanded() {
         if(isExpanded) {
