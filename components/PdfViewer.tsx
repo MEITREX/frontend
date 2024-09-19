@@ -8,6 +8,7 @@ import { useDebounceValue, useResizeObserver } from "usehooks-ts";
 import { CircularProgress } from "@mui/material";
 import { times } from "lodash";
 import { useEffect, useRef, useState } from "react";
+import useBus from "use-bus";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.js",
@@ -32,6 +33,13 @@ export function PdfViewer({
   const [numPages, setNumPages] = useState<number>();
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [_, setViewedPages] = useState([] as number[]);
+
+  useBus("openPage", (e) => {
+    console.log(e);
+    if ("page" in e) {
+      setPageNumber(e.page + 1);
+    }
+  });
 
   useEffect(() => {
     const timeout = setTimeout(() => {
