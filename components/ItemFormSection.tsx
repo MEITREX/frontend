@@ -73,7 +73,7 @@ export function ItemFormSection({
       if (!isAlreadyAvailable) {
         setAvailableSkills([
           ...availableSkills,
-          { skillName: newSkill, id: null },
+          { skillName: newSkill, id: "" },
         ]);
         setNewSkill("");
         setNewSkillAdded(true);

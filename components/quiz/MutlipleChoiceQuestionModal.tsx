@@ -105,7 +105,7 @@ export function MultipleChoiceQuestionModal({
       <DialogContent>
         <FormErrors error={error} onClose={clearError} />
         <Form>
-          <ItemFormSection courseId={courseId} item={itemForQuestion} onChange={handleItem} useEffectNecessary={false}></ItemFormSection>
+          <ItemFormSection courseId={courseId} item={itemForQuestion} onChange={handleItem}></ItemFormSection>
           <FormSection title="Question">
             <RichTextEditor
               _allRecords={_allRecords}

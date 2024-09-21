@@ -81,7 +81,7 @@ export function ChapterHeader({
         </div>
         {
           student && (<span>
-          {chapter.skills.map((c,index) => (
+          {chapter.skills.map((c,index) => c !== null && (
           <Skill
             key={index}
             _skill={c}
