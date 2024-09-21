@@ -19,7 +19,8 @@ function getSegmentContents(mediaRecordSegment: NonNullable<pageSemanticSearchQu
 function getSegmentTitle(mediaRecordSegment: NonNullable<pageSemanticSearchQuery$data['semanticSearch']>[number]["mediaRecordSegment"]) {
     switch (mediaRecordSegment.__typename) {
         case "VideoRecordSegment":
-            return <Typography variant="h6">Time {mediaRecordSegment.screenText}</Typography>;
+            const date = new Date(mediaRecordSegment.startTime! * 1000);
+            return <Typography variant="h6">Time {date.toISOString().slice(11, 19)}</Typography>;
         case "DocumentRecordSegment":
             return <Typography variant="h6">Page {mediaRecordSegment.page! + 1}</Typography>;
         default:
