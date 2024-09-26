@@ -4,10 +4,9 @@ import { pageSemanticSearchQuery, pageSemanticSearchQuery$data } from "@/__gener
 import { Autocomplete, Box, Button, Collapse, IconButton, InputAdornment, Paper, TextField, Typography } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
 import { graphql, useLazyLoadQuery } from "react-relay";
-import SearchResultGroup from "./SearchResultGroup";
 import {ManageSearch, ExpandMore, ExpandLess, Search} from '@mui/icons-material';
 import { useState } from "react";
-import lodash from "lodash";
+import SearchResultsBox from "@/components/search/SearchResultsBox";
 
 export default function SearchPage() {
     const router = useRouter();
@@ -89,13 +88,6 @@ export default function SearchPage() {
         }
     );
 
-    // Group the search results
-    const semanticSearchResultGroups = lodash.chain(semanticSearch ?? [])
-        .groupBy((result) => result.mediaRecordSegment.mediaRecord?.id ?? "unknown")
-        .forEach((group) => group.sort((a, b) => a.score - b.score))
-        .sortBy((group) => group[0].score)
-        .value();
-
     // open advanced search by default if an advanced search parameter was provided
     const [isAdvancedSearchOpen, setIsAdvancedSearchOpen] = useState(searchParams.get("courses") !== null || searchParams.get("count") !== null);
     function toggleAdvancedSearch() {
@@ -176,17 +168,7 @@ export default function SearchPage() {
                     onClick={toggleAdvancedSearch}>{isAdvancedSearchOpen ? "Close Advanced Search" : "Advanced Search"}</Button>
             </Box>
 
-            {((query !== null) &&
-                Object.values(semanticSearchResultGroups).map((resultGroup) => {
-                    if(resultGroup !== undefined)
-                        return (
-                            <SearchResultGroup 
-                            searchResults={resultGroup} 
-                            collapsedResultCount={3} 
-                            key={resultGroup?.[0].mediaRecordSegment.mediaRecordId ?? "undefined"} />
-                        );
-                })
-            )}
+            {(query !== null && <SearchResultsBox searchResults={semanticSearch} />)}
         </main>
     );
 }

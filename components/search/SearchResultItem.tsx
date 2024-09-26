@@ -36,7 +36,7 @@ const NoMaxWidthTooltip = styled(({ className, ...props }: TooltipProps) => (
     },
   });
 
-export default function SearchResult({ searchResult }: { searchResult: NonNullable<pageSemanticSearchQuery$data['semanticSearch']>[number] }) {
+export default function SearchResultItem({ searchResult }: { searchResult: NonNullable<pageSemanticSearchQuery$data['semanticSearch']>[number] }) {
     return <Box sx={{display: "flex", padding: "15px"}}>
         <NoMaxWidthTooltip placement="right" title={
             <img src={searchResult.mediaRecordSegment.thumbnail} style={

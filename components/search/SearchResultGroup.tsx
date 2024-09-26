@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Breadcrumbs, Button, Card, Divider, IconButton, Link, Paper, Tooltip } from "@mui/material";
-import SearchResult from "./SearchResult";
+import SearchResultItem from "./SearchResultItem";
 import { ExpandMore, ExpandLess } from "@mui/icons-material";
 import { useState } from "react";
 import { MediaRecordIcon } from "@/components/MediaRecordIcon";
@@ -37,7 +37,7 @@ export default function SearchResultGroup({ searchResults, collapsedResultCount 
                 {searchResults.slice(0, collapsedResultCount).map((result, index: number) => {
                 return (<Box key={result.mediaRecordSegment.id}>
                     {index > 0 && <Divider variant="middle" />}
-                    <SearchResult searchResult={result} />
+                    <SearchResultItem searchResult={result} />
                 </Box>)
                 })}
 
@@ -55,7 +55,7 @@ export default function SearchResultGroup({ searchResults, collapsedResultCount 
                 && searchResults.slice(collapsedResultCount, searchResults.length).map((result, index: number) => {
                 return (<Box key={result.mediaRecordSegment.id}>
                     {index > 0 && <Divider variant="middle" />}
-                    <SearchResult searchResult={result} />
+                    <SearchResultItem searchResult={result} />
                 </Box>)
                 })}
 
