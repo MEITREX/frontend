@@ -20,6 +20,7 @@ import { useParams } from "next/navigation";
 
 import { useRef, useState } from "react";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
+import { SimilarSegments } from "./SimilarSegments";
 import { VideoSide } from "./VideoSide";
 
 export default function StudentMediaPage() {
@@ -81,6 +82,8 @@ export default function StudentMediaPage() {
 
   return (
     <main className="flex flex-col h-full">
+      <SimilarSegments />
+
       <Heading
         title={content.metadata.name}
         overline={content.metadata.name}
@@ -135,7 +138,7 @@ export default function StudentMediaPage() {
                   100 - splitPercentage
                 }% - 10px)`,
               }
-            : {}
+            : { gridTemplateColumns: `100%` }
         }
       >
         {hasVideos && <VideoSide setError={setError} _content={content} />}

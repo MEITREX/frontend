@@ -9,7 +9,7 @@ import {
 useAuth;
 
 const HTTP_ENDPOINT =
-  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8080/graphql";
+  process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://vault.lutr.me:8081/graphql";
 
 function createFetchFn(token: string | undefined): FetchFunction {
   return async (request, variables) => {

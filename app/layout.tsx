@@ -34,7 +34,7 @@ const oidcConfig: AuthProviderProps = {
   client_id: process.env.NEXT_PUBLIC_OAUTH_CLIENT_ID ?? "frontend",
   authority:
     process.env.NEXT_PUBLIC_OAUTH_AUTHORITY ??
-    "http://localhost:9009/realms/GITS",
+    "https://vault.lutr.me:9009/realms/GITS",
 
   onSigninCallback() {
     window.history.replaceState({}, document.title, window.location.pathname);
