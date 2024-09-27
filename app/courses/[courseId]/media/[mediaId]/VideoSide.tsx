@@ -3,7 +3,7 @@ import {
   VideoSideFragment$key,
 } from "@/__generated__/VideoSideFragment.graphql";
 import { VideoSideLogProgressMutation } from "@/__generated__/VideoSideLogProgressMutation.graphql";
-import { DescriptionOutlined, Search } from "@mui/icons-material";
+import { Check, DescriptionOutlined, Search } from "@mui/icons-material";
 import { Button, Divider, MenuItem, Select } from "@mui/material";
 import {
   MediaPlayer,
