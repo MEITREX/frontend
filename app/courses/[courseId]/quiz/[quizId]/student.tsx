@@ -325,7 +325,12 @@ function Feedback({
       <DialogActions>
         <Button
           variant="text"
-          onClick={() => window.location.replace(`/courses/${courseId}`) /*router.push(`/courses/${courseId}`)*/}
+          onClick={
+            () =>
+              window.location.replace(
+                `/courses/${courseId}`
+              ) /*router.push(`/courses/${courseId}`)*/
+          }
         >
           Back to Course
         </Button>

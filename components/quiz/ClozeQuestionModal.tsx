@@ -56,17 +56,20 @@ export function ClozeQuestionModal({
   open: boolean;
   title: string;
   error: any;
-  courseId:string;
-  item:ItemData;
+  courseId: string;
+  item: ItemData;
   initialValue: ClozeQuestionData;
   isLoading: boolean;
-  onSave: (data: ClozeQuestionData,item:ItemData,newSkillAdded?:boolean) => void;
+  onSave: (
+    data: ClozeQuestionData,
+    item: ItemData,
+    newSkillAdded?: boolean
+  ) => void;
   onClose: () => void;
   clearError: () => void;
 }) {
-  
   const [data, setData] = useState(initialValue);
-  const [itemForQuestion,setItem]=useState(item);
+  const [itemForQuestion, setItem] = useState(item);
   const updateElement = (index: number, value: ClozeElementData) => {
     setData((oldValue) => ({
       ...oldValue,
@@ -92,12 +95,11 @@ export function ClozeQuestionModal({
       ],
     }));
   };
-  function handleItem(item:ItemData|null){
-    if(item){
+  function handleItem(item: ItemData | null) {
+    if (item) {
       setItem(item);
-    }
-    else{
-      setItem({associatedBloomLevels:[],associatedSkills:[]});
+    } else {
+      setItem({ associatedBloomLevels: [], associatedSkills: [] });
     }
   }
   const atLeastOneTextElement = useMemo(
@@ -117,15 +119,18 @@ export function ClozeQuestionModal({
     [data.clozeElements]
   );
   const valid =
-    atLeastOneTextElement && atLeastOneBlankElement && allElementsFilled && itemForQuestion.associatedBloomLevels.length > 0 && itemForQuestion.associatedSkills.length > 0;
- 
+    atLeastOneTextElement &&
+    atLeastOneBlankElement &&
+    allElementsFilled &&
+    itemForQuestion.associatedBloomLevels.length > 0 &&
+    itemForQuestion.associatedSkills.length > 0;
 
   useEffect(() => {
     if (!open) {
       setData(initialValue);
       setItem(item);
     }
-  }, [open, initialValue,item]);
+  }, [open, initialValue, item]);
 
   return (
     <Dialog open={open} maxWidth="lg" onClose={onClose}>
@@ -133,7 +138,11 @@ export function ClozeQuestionModal({
       <DialogContent>
         <FormErrors error={error} onClose={clearError} />
         <Form>
-          <ItemFormSection onChange={handleItem} courseId={courseId} item={item}></ItemFormSection>
+          <ItemFormSection
+            onChange={handleItem}
+            courseId={courseId}
+            item={item}
+          ></ItemFormSection>
           <FormSection title="Cloze text">
             {data.clozeElements.map((elem, i) =>
               elem.type === "text" ? (
@@ -282,7 +291,7 @@ export function ClozeQuestionModal({
         <LoadingButton
           disabled={!valid}
           loading={isLoading}
-          onClick={() => onSave(data,itemForQuestion)}
+          onClick={() => onSave(data, itemForQuestion)}
         >
           Save
         </LoadingButton>

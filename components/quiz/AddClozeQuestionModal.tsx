@@ -14,7 +14,7 @@ export function AddClozeQuestionModal({
 }: {
   _allRecords: MediaRecordSelector$key;
   assessmentId: string;
-  courseId:string;
+  courseId: string;
   open: boolean;
   onClose: () => void;
 }) {
@@ -25,11 +25,15 @@ export function AddClozeQuestionModal({
       mutation AddClozeQuestionModalMutation(
         $assessmentId: UUID!
         $questionInput: CreateClozeQuestionInput!
-        $item:ItemInput!
+        $item: ItemInput!
       ) {
         mutateQuiz(assessmentId: $assessmentId) {
           assessmentId
-          addClozeQuestion(assessmentId: $assessmentId,questionInput:$questionInput,item:$item) {
+          addClozeQuestion(
+            assessmentId: $assessmentId
+            questionInput: $questionInput
+            item: $item
+          ) {
             assessmentId
             questionPool {
               itemId
@@ -38,20 +42,24 @@ export function AddClozeQuestionModal({
               ...EditClozeQuestionButtonFragment
               ...ClozeQuestionPreviewFragment
             }
-            item{
+            item {
               id
               associatedSkills {
                 id
                 skillName
               }
               associatedBloomLevels
-            }  
+            }
           }
         }
       }
     `);
 
-  const handleSubmit = (data: ClozeQuestionData,item:ItemData,newSkillAdded?:boolean) => {
+  const handleSubmit = (
+    data: ClozeQuestionData,
+    item: ItemData,
+    newSkillAdded?: boolean
+  ) => {
     addQuestion({
       variables: {
         assessmentId,
@@ -69,14 +77,14 @@ export function AddClozeQuestionModal({
                 }
           ),
         },
-        item:item
+        item: item,
       },
       onCompleted: () => onClose(),
       updater(
         store,
         {
           mutateQuiz: {
-            addClozeQuestion: { questionPool,item },
+            addClozeQuestion: { questionPool, item },
           },
         }
       ) {
@@ -96,9 +104,9 @@ export function AddClozeQuestionModal({
 
         quiz.setLinkedRecords(allQuestions, "questionPool");
         const items = store
-        .getRoot()
-        .getLinkedRecord("items")
-        ?.getLinkedRecords("elements");
+          .getRoot()
+          .getLinkedRecord("items")
+          ?.getLinkedRecords("elements");
         const newItem = store.get(item!.id);
         if (!items || !newItem) return;
 
@@ -117,10 +125,10 @@ export function AddClozeQuestionModal({
     additionalWrongAnswers: [],
     clozeElements: [],
   };
-  const initialItem: ItemData={
-    associatedSkills:[],
-    associatedBloomLevels:[],
-  }
+  const initialItem: ItemData = {
+    associatedSkills: [],
+    associatedBloomLevels: [],
+  };
   return (
     <ClozeQuestionModal
       _allRecords={_allRecords}

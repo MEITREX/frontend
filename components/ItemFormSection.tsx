@@ -83,7 +83,6 @@ export function ItemFormSection({
     }
   }
   function checkIfAvailableSkillIsPartOfSkills(skillToTest: SkillInput) {
-    console.log(skills);
     if (skills.length > 0) {
       for (let i = 0; i < skills.length; i++) {
         if (skills[i].skillName == skillToTest.skillName) {

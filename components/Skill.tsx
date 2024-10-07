@@ -13,7 +13,7 @@ function stringToColor(string: String) {
     hash = string.charCodeAt(i) + ((hash << 5) - hash);
   }
 
-  let color = '#';
+  let color = "#";
 
   for (i = 0; i < 3; i += 1) {
     const value = (hash >> (i * 8)) & 0xff;
@@ -23,11 +23,7 @@ function stringToColor(string: String) {
 
   return color;
 }
-export function Skill({
-  _skill
-}: {
-  _skill: SkillFragment$key;
-}) {
+export function Skill({ _skill }: { _skill: SkillFragment$key }) {
   const { skillName, skillLevels } = useFragment(
     graphql`
       fragment SkillFragment on Skill {
@@ -45,10 +41,10 @@ export function Skill({
           analyze {
             value
           }
-          evaluate{
+          evaluate {
             value
           }
-          create{
+          create {
             value
           }
         }
@@ -62,9 +58,13 @@ export function Skill({
         {skillLevels.remember !== null && skillLevels.remember.value > 0 && (
           <SkillLevel label="Remember" value={skillLevels.remember.value} />
         )}
-        {skillLevels.understand !== null && skillLevels.understand.value > 0 && (
-          <SkillLevel label="Understand" value={skillLevels.understand.value} />
-        )}
+        {skillLevels.understand !== null &&
+          skillLevels.understand.value > 0 && (
+            <SkillLevel
+              label="Understand"
+              value={skillLevels.understand.value}
+            />
+          )}
         {skillLevels.apply !== null && skillLevels.apply.value > 0 && (
           <SkillLevel label="Apply" value={skillLevels.apply.value} />
         )}
@@ -76,42 +76,44 @@ export function Skill({
         )}
         {skillLevels.create !== null && skillLevels.create.value > 0 && (
           <SkillLevel label="Create" value={skillLevels.create.value} />
-        )}  </Suspense>);
+        )}{" "}
+      </Suspense>
+    );
     interface HexagonProps {
       color: string;
       name: string;
     }
     const Hexagon: React.FC<HexagonProps> = ({ color, name }) => {
       return (
-        <svg viewBox="0 0 100 100" width="100" height="100" style={{ margin: '10' }} xmlns="http://www.w3.org/2000/svg">
+        <svg
+          viewBox="0 0 100 100"
+          width="100"
+          height="100"
+          style={{ margin: "10" }}
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <polygon points="50 1 95 25 95 75 50 99 5 75 5 25" fill={color} />
-          <text x="50" y="50" textAnchor="middle" dy=".3em" fill="white">{name}</text>
+          <text x="50" y="50" textAnchor="middle" dy=".3em" fill="white">
+            {name}
+          </text>
         </svg>
-      )
+      );
     };
     return (
       <Tooltip title={levels} placement="bottom">
         <span>
           <Hexagon color={stringToColor(skillName)} name={skillName} />
         </span>
-
       </Tooltip>
-
     );
   } else {
     return null; // or some default JSX
   }
 }
-function SkillLevel({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}
-) {
+function SkillLevel({ label, value }: { label: string; value: number }) {
   return (
-    <div>{label}:{value}</div>
+    <div>
+      {label}:{value}
+    </div>
   );
-
 }

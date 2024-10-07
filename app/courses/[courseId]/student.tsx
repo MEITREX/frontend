@@ -95,7 +95,7 @@ export default function StudentCoursePage() {
               }
             }
           }
-          skills{
+          skills {
             skillName
             skillLevels {
               remember {
@@ -108,12 +108,12 @@ export default function StudentCoursePage() {
                 value
               }
               analyze {
-              value
-              }
-              evaluate{
                 value
               }
-              create{
+              evaluate {
+                value
+              }
+              create {
                 value
               }
             }

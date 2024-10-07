@@ -3,27 +3,35 @@ import { EditSideModal } from "./EditSideModal";
 import { useState } from "react";
 import { FlashcardSide, FlashcardSideData } from "./FlashcardSide";
 import { Add } from "@mui/icons-material";
-import { ItemData,ItemFormSection } from "../ItemFormSection";
+import { ItemData, ItemFormSection } from "../ItemFormSection";
 export function LocalFlashcard({
   onClose,
   onSubmit,
   courseId,
 }: {
   onClose: () => void;
-  onSubmit: (sides: FlashcardSideData[],item:ItemData,newItemAdded:boolean) => void;
-  courseId:string
+  onSubmit: (
+    sides: FlashcardSideData[],
+    item: ItemData,
+    newItemAdded: boolean
+  ) => void;
+  courseId: string;
 }) {
   const [sides, setSides] = useState<FlashcardSideData[]>([]);
   const [addSideOpen, setAddSideOpen] = useState(false);
-  const [newSkillAdded,setNewSkillAdded]=useState(false);
-  const [item,setItem]=useState<ItemData>({
+  const [newSkillAdded, setNewSkillAdded] = useState(false);
+  const [item, setItem] = useState<ItemData>({
     associatedBloomLevels: [],
     associatedSkills: [],
     id: undefined,
   });
   const numQuestions = sides.filter((s) => s.isQuestion).length;
   const numAnswers = sides.filter((s) => s.isAnswer).length;
-  const valid = numQuestions >= 1 && numAnswers >= 1 && item.associatedBloomLevels.length > 0 && item.associatedSkills.length > 0;
+  const valid =
+    numQuestions >= 1 &&
+    numAnswers >= 1 &&
+    item.associatedBloomLevels.length > 0 &&
+    item.associatedSkills.length > 0;
 
   function handleEditFlashcardSide(idx: number, data: FlashcardSideData) {
     setSides((sides) => sides.map((side, i) => (i == idx ? data : side)));
@@ -34,19 +42,17 @@ export function LocalFlashcard({
     setAddSideOpen(false);
   }
 
-  function handleItem(item: ItemData|null,newSkillAdded?:boolean){
-    if(item){
+  function handleItem(item: ItemData | null, newSkillAdded?: boolean) {
+    if (item) {
       setItem(item);
-      if(newSkillAdded){
+      if (newSkillAdded) {
         setNewSkillAdded(newSkillAdded);
       }
-    }
-    else{
+    } else {
       setItem({
         associatedBloomLevels: [],
         associatedSkills: [],
         id: undefined,
-      
       });
     }
   }
@@ -56,7 +62,7 @@ export function LocalFlashcard({
       <Button
         variant="contained"
         disabled={!valid}
-        onClick={() => onSubmit(sides,item,newSkillAdded)}
+        onClick={() => onSubmit(sides, item, newSkillAdded)}
       >
         Save
       </Button>

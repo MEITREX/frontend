@@ -146,17 +146,23 @@ function NavbarBase({
 
   const [isSearchPopupOpen, setSearchPopupOpen] = useState(false);
 
-  function SearchPopupPaper({children}: {children?: any}) {
-    return <ClickAwayListener onClickAway={() => setSearchPopupOpen(false)}><Paper>
-        {children}
-        <Button startIcon={<ManageSearch />} onClick={() => {
-            router.push(`/search?query=${term}`);
-            setSearchPopupOpen(false);
-          }}>
-        Detailed results
-        </Button>
-      </Paper>
-    </ClickAwayListener>
+  function SearchPopupPaper({ children }: { children?: any }) {
+    return (
+      <ClickAwayListener onClickAway={() => setSearchPopupOpen(false)}>
+        <Paper>
+          {children}
+          <Button
+            startIcon={<ManageSearch />}
+            onClick={() => {
+              router.push(`/search?query=${term}`);
+              setSearchPopupOpen(false);
+            }}
+          >
+            Detailed results
+          </Button>
+        </Paper>
+      </ClickAwayListener>
+    );
   }
 
   return (

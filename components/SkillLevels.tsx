@@ -15,10 +15,7 @@ export function SkillLevels({
   _skill: SkillLevelsFragment$key;
   courseId: string;
 }) {
-  const {
-    skillLevels,
-
-  } = useFragment(
+  const { skillLevels } = useFragment(
     graphql`
       fragment SkillLevelsFragment on Skill {
         skillName
@@ -35,10 +32,10 @@ export function SkillLevels({
           analyze {
             value
           }
-          evaluate{
+          evaluate {
             value
           }
-          create{
+          create {
             value
           }
         }
@@ -60,15 +57,16 @@ export function SkillLevels({
             />
           </SkillLevelLabel>
         )}
-        {skillLevels.understand !== null && skillLevels.understand.value > 0 && (
-          <SkillLevelLabel label="Understand" color={colors.blue[500]}>
-            <SkillLevel
-              courseId={courseId}
-              value={skillLevels.understand.value}
-              bloomLevel="UNDERSTAND"
-            />
-          </SkillLevelLabel>
-        )}
+        {skillLevels.understand !== null &&
+          skillLevels.understand.value > 0 && (
+            <SkillLevelLabel label="Understand" color={colors.blue[500]}>
+              <SkillLevel
+                courseId={courseId}
+                value={skillLevels.understand.value}
+                bloomLevel="UNDERSTAND"
+              />
+            </SkillLevelLabel>
+          )}
         {skillLevels.apply !== null && skillLevels.apply.value > 0 && (
           <SkillLevelLabel label="Apply" color={colors.cyan[500]}>
             <SkillLevel
@@ -101,16 +99,14 @@ export function SkillLevels({
             <SkillLevel
               courseId={courseId}
               value={skillLevels.create.value}
-
               bloomLevel="CREATE"
             />
           </SkillLevelLabel>
         )}
       </div>
     );
-  }
-  else {
-    return <div></div>
+  } else {
+    return <div></div>;
   }
 }
 

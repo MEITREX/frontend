@@ -21,8 +21,8 @@ export function EditMultipleChoiceQuestionButton({
   _allRecords: MediaRecordSelector$key;
   _question: EditMultipleChoiceQuestionButtonFragment$key;
   assessmentId: string;
-  courseId:string;
-  item:ItemData;
+  courseId: string;
+  item: ItemData;
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<any>(null);
@@ -47,16 +47,20 @@ export function EditMultipleChoiceQuestionButton({
       mutation EditMultipleChoiceQuestionButtonMutation(
         $assessmentId: UUID!
         $questionInput: UpdateMultipleChoiceQuestionInput!
-        $item:ItemInput!
+        $item: ItemInput!
       ) {
         mutateQuiz(assessmentId: $assessmentId) {
           assessmentId
-          updateMultipleChoiceQuestion( questionInput:$questionInput , assessmentId:$assessmentId, item:$item)  {
+          updateMultipleChoiceQuestion(
+            questionInput: $questionInput
+            assessmentId: $assessmentId
+            item: $item
+          ) {
             assessmentId
             questionPool {
               ...EditMultipleChoiceQuestionButtonFragment
             }
-            item{
+            item {
               id
               associatedSkills {
                 id
@@ -69,7 +73,11 @@ export function EditMultipleChoiceQuestionButton({
       }
     `);
 
-  const handleSubmit = (data: MultipleChoiceQuestionData,item:ItemData,newSkillAdded?:boolean) => {
+  const handleSubmit = (
+    data: MultipleChoiceQuestionData,
+    item: ItemData,
+    newSkillAdded?: boolean
+  ) => {
     updateQuestion({
       variables: {
         assessmentId,
@@ -83,7 +91,7 @@ export function EditMultipleChoiceQuestionButton({
             feedback: answer.feedback,
           })),
         },
-        item:item,
+        item: item,
       },
       onCompleted: () => setOpen(false),
       onError: setError,
