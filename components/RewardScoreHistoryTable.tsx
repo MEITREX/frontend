@@ -169,7 +169,13 @@ export function RewardScoreHistoryTable({
                         {content ? (
                           <ContentLink courseId={courseId} _content={content} />
                         ) : (
-                          <DeletedContentLink />
+                          <DeletedContentLink
+                            props={{
+                              chips: [],
+                              disabled: false,
+                              size: "normal",
+                            }}
+                          />
                         )}
                       </div>
                     ))}

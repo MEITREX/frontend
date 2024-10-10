@@ -101,6 +101,19 @@ directive @resolveTo(
   resultType: String
 ) on FIELD_DEFINITION
 
+type AiEntityProcessingProgress {
+  entityId: UUID!
+  state: AiEntityProcessingState!
+  queuePosition: Int
+}
+
+enum AiEntityProcessingState {
+  UNKNOWN
+  ENQUEUED
+  PROCESSING
+  DONE
+}
+
 interface Assessment {
   # Assessment metadata
   assessmentMetadata: AssessmentMetadata!
@@ -1069,7 +1082,6 @@ input FlashcardSideInput {
 
 input GenerateMediaRecordLinksInput {
   contentId: UUID!
-  mediaRecordIds: [UUID!]!
 }
 
 enum GlobalUserRole {
@@ -1170,6 +1182,7 @@ type MediaContent implements Content {
   # The media records linked to this media content.
   mediaRecords: [MediaRecord!]!
   segmentLinks: [MediaRecordSegmentLink!]!
+  aiProcessingProgress: AiEntityProcessingProgress!
 }
 
 #  schema file of the microservice
@@ -1224,6 +1237,12 @@ type MediaRecord {
   # Returns a closed captions string formatted in WebVTT format for the media record if it is of type video,
   # returns null otherwise.
   closedCaptions: String
+
+  # The progress of the AI processing of this media record's content.
+  aiProcessingProgress: AiEntityProcessingProgress!
+
+  # Tags suggested for this media record by the AI system.
+  suggestedTags: [String!]!
 }
 
 type MediaRecordProgressData {
@@ -1311,16 +1330,45 @@ type MultipleChoiceQuestion implements Question {
   hint: JSON
 }
 
+# Mutations for the flashcard service. Provides mutations for creating, updating, and deleting flashcard as well as
+# creating and deleting flashcard sets. To update a flashcard set, update, delete, and create flashcards individually.
 type Mutation {
-  # ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
+  # Creates a new media record
+  # 🔒 The user must have the "course-creator" role to perform this action.
+  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of all courses or a super-user.
+  createMediaRecord(input: CreateMediaRecordInput!): MediaRecord!
+
+  # Updates an existing media record with the given UUID
+  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
+  updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
+
+  # Deletes the media record with the given UUID
+  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
+  deleteMediaRecord(id: UUID!): UUID!
+
+  # For a given MediaContent, sets the linked media records of it to the ones with the given UUIDs.
+  # This means that for the content, all already linked media records are removed and replaced by the given ones.
+  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
+  setLinkedMediaRecordsForContent(
+    contentId: UUID!
+    mediaRecordIds: [UUID!]!
+  ): [MediaRecord!]!
+
+  # Logs that a media has been worked on by the current user.
+  # See https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/userProgress.html
   #
-  # Triggers the recalculation of the reward score of the user.
-  # This is done automatically at some time in the night.
-  #
-  # The purpose of this mutation is to allow testing of the reward score and demonstrate the functionality.
-  # 🔒 The user be an admin in the course with the given courseId to perform this action.
-  recalculateScores(courseId: UUID!, userId: UUID!): RewardScores!
-    @deprecated(reason: "Only for testing purposes. Will be removed.")
+  # Possible side effects:
+  # When all media records of a content have been worked on by a user,
+  # a user-progress event is emitted for the content.
+  # 🔒 If the mediaRecord is associated with courses the user must be a member of at least one of the courses.
+  logMediaRecordWorkedOn(mediaRecordId: UUID!): MediaRecord!
+
+  # Add the MediaRecords with the given UUIDS to the Course with the given UUID.
+  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
+  setMediaRecordsForCourse(
+    courseId: UUID!
+    mediaRecordIds: [UUID!]!
+  ): [MediaRecord!]!
 
   # Creates a new course with the given input and returns the created course.
   createCourse(input: CreateCourseInput!): Course!
@@ -1366,23 +1414,6 @@ type Mutation {
   # 🔒 The calling user must be an admin in this course to perform this action.
   deleteMembership(input: CourseMembershipInput!): CourseMembership!
 
-  # Deletes a flashcard set. Throws an error if the flashcard set does not exist.
-  # The contained flashcards are deleted as well.
-  deleteFlashcardSet(input: UUID!): UUID!
-    @deprecated(
-      reason: "Only for development, will be removed in production. Use deleteAssessment in contents service instead."
-    )
-
-  # Modify a flashcard set.
-  # 🔒 The user must be an admin the course the flashcard set is in to perform this action.
-  mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
-
-  # Logs that a user has learned a flashcard.
-  # 🔒 The user must be enrolled in the course the flashcard set is in to perform this action.
-  logFlashcardLearned(
-    input: LogFlashcardLearnedInput!
-  ): FlashcardLearnedFeedback!
-
   # ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
   #
   # Triggers the recalculation of the skill level of the user.
@@ -1393,42 +1424,15 @@ type Mutation {
   recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels!
     @deprecated(reason: "Only for testing purposes. Will be removed.")
 
-  # Creates a new media record
-  # 🔒 The user must have the "course-creator" role to perform this action.
-  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of all courses or a super-user.
-  createMediaRecord(input: CreateMediaRecordInput!): MediaRecord!
-
-  # Updates an existing media record with the given UUID
-  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
-  updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
-
-  # Deletes the media record with the given UUID
-  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
-  deleteMediaRecord(id: UUID!): UUID!
-
-  # For a given MediaContent, sets the linked media records of it to the ones with the given UUIDs.
-  # This means that for the content, all already linked media records are removed and replaced by the given ones.
-  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
-  setLinkedMediaRecordsForContent(
-    contentId: UUID!
-    mediaRecordIds: [UUID!]!
-  ): [MediaRecord!]!
-
-  # Logs that a media has been worked on by the current user.
-  # See https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/userProgress.html
+  # ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
   #
-  # Possible side effects:
-  # When all media records of a content have been worked on by a user,
-  # a user-progress event is emitted for the content.
-  # 🔒 If the mediaRecord is associated with courses the user must be a member of at least one of the courses.
-  logMediaRecordWorkedOn(mediaRecordId: UUID!): MediaRecord!
-
-  # Add the MediaRecords with the given UUIDS to the Course with the given UUID.
-  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
-  setMediaRecordsForCourse(
-    courseId: UUID!
-    mediaRecordIds: [UUID!]!
-  ): [MediaRecord!]!
+  # Triggers the recalculation of the reward score of the user.
+  # This is done automatically at some time in the night.
+  #
+  # The purpose of this mutation is to allow testing of the reward score and demonstrate the functionality.
+  # 🔒 The user be an admin in the course with the given courseId to perform this action.
+  recalculateScores(courseId: UUID!, userId: UUID!): RewardScores!
+    @deprecated(reason: "Only for testing purposes. Will be removed.")
 
   # Modify a quiz.
   # 🔒 The user must be an admin the course the quiz is in to perform this action.
@@ -1451,6 +1455,23 @@ type Mutation {
   # Modify the section with the given id.
   # 🔒 The user must have admin access to the course containing the section to perform this action.
   mutateSection(sectionId: UUID!): SectionMutation!
+
+  # Deletes a flashcard set. Throws an error if the flashcard set does not exist.
+  # The contained flashcards are deleted as well.
+  deleteFlashcardSet(input: UUID!): UUID!
+    @deprecated(
+      reason: "Only for development, will be removed in production. Use deleteAssessment in contents service instead."
+    )
+
+  # Modify a flashcard set.
+  # 🔒 The user must be an admin the course the flashcard set is in to perform this action.
+  mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
+
+  # Logs that a user has learned a flashcard.
+  # 🔒 The user must be enrolled in the course the flashcard set is in to perform this action.
+  logFlashcardLearned(
+    input: LogFlashcardLearnedInput!
+  ): FlashcardLearnedFeedback!
 
   # Creates a new media content and links the given media records to it.
   createMediaContentAndLinkRecords(
@@ -1561,62 +1582,6 @@ type PublicUserInfo {
 }
 
 type Query {
-  # Gets the publicly available information for a list of users with the specified IDs.
-  # If a user does not exist, null is returned for that user.
-  findPublicUserInfos(ids: [UUID!]!): [PublicUserInfo]!
-
-  # Gets the user information of the currently authorized user.
-  currentUserInfo: UserInfo!
-
-  # Gets all of the users' information for a list of users with the specified IDs.
-  # Only available to privileged users.
-  # If a user does not exist, null is returned for that user.
-  findUserInfos(ids: [UUID!]!): [UserInfo]!
-
-  # Get the reward score of the current user for the specified course.
-  # 🔒 The user must have access to the course with the given id to access their scores, otherwise an error is thrown.
-  userCourseRewardScores(courseId: UUID!): RewardScores!
-
-  # Get the reward score of the specified user for the specified course.
-  # 🔒 The user be an admin in the course with the given courseId to perform this action.
-  courseRewardScoresForUser(courseId: UUID!, userId: UUID!): RewardScores!
-
-  # Gets the power scores for each user in the course, ordered by power score descending.
-  # 🔒 The user must have access to the course with the given id to access the scoreboard, otherwise an error is thrown.
-  scoreboard(courseId: UUID!): [ScoreboardItem!]!
-
-  # Get a list of courses. Can be filtered, sorted and paginated.
-  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
-  courses(
-    filter: CourseFilter
-
-    # The fields to sort by.
-    # Throws an error if no field with the given name exists.
-    sortBy: [String!]
-
-    # The sort direction for each field. If not specified, defaults to ASC.
-    sortDirection: [SortDirection!]! = [ASC]
-    pagination: Pagination
-  ): CoursePayload!
-
-  # Returns the courses with the given ids.
-  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
-  coursesByIds(ids: [UUID!]!): [Course!]!
-
-  # Get flashcards by their ids.
-  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
-  flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
-
-  # Get flashcard sets by their assessment ids.
-  # Returns a list of flashcard sets in the same order as the provided ids.
-  # Each element is null if the corresponding id is not found.
-  # 🔒 The user must be enrolled in the course the flashcard sets belong to. Otherwise for that element null is returned.
-  findFlashcardSetsByAssessmentIds(assessmentIds: [UUID!]!): [FlashcardSet]!
-
-  # Get flashcards of a course that are due to be reviewed.
-  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
-  dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
-
   # Returns the media records with the given IDs. Throws an error if a MediaRecord corresponding to a given ID
   # cannot be found.
   #
@@ -1655,6 +1620,48 @@ type Query {
 
   # Returns all media records which were created by the users.
   mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
+
+  # Gets the publicly available information for a list of users with the specified IDs.
+  # If a user does not exist, null is returned for that user.
+  findPublicUserInfos(ids: [UUID!]!): [PublicUserInfo]!
+
+  # Gets the user information of the currently authorized user.
+  currentUserInfo: UserInfo!
+
+  # Gets all of the users' information for a list of users with the specified IDs.
+  # Only available to privileged users.
+  # If a user does not exist, null is returned for that user.
+  findUserInfos(ids: [UUID!]!): [UserInfo]!
+
+  # Get a list of courses. Can be filtered, sorted and paginated.
+  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
+  courses(
+    filter: CourseFilter
+
+    # The fields to sort by.
+    # Throws an error if no field with the given name exists.
+    sortBy: [String!]
+
+    # The sort direction for each field. If not specified, defaults to ASC.
+    sortDirection: [SortDirection!]! = [ASC]
+    pagination: Pagination
+  ): CoursePayload!
+
+  # Returns the courses with the given ids.
+  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
+  coursesByIds(ids: [UUID!]!): [Course!]!
+
+  # Get the reward score of the current user for the specified course.
+  # 🔒 The user must have access to the course with the given id to access their scores, otherwise an error is thrown.
+  userCourseRewardScores(courseId: UUID!): RewardScores!
+
+  # Get the reward score of the specified user for the specified course.
+  # 🔒 The user be an admin in the course with the given courseId to perform this action.
+  courseRewardScoresForUser(courseId: UUID!, userId: UUID!): RewardScores!
+
+  # Gets the power scores for each user in the course, ordered by power score descending.
+  # 🔒 The user must have access to the course with the given id to access the scoreboard, otherwise an error is thrown.
+  scoreboard(courseId: UUID!): [ScoreboardItem!]!
 
   # Get quiz by assessment ID.
   # If any of the assessment IDs are not found, the corresponding quiz will be null.
@@ -1699,6 +1706,20 @@ type Query {
     # also containing suggestions for media content (which do not have a skill type).
     skillTypes: [SkillType!]! = []
   ): [Suggestion!]!
+
+  # Get flashcards by their ids.
+  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
+  flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
+
+  # Get flashcard sets by their assessment ids.
+  # Returns a list of flashcard sets in the same order as the provided ids.
+  # Each element is null if the corresponding id is not found.
+  # 🔒 The user must be enrolled in the course the flashcard sets belong to. Otherwise for that element null is returned.
+  findFlashcardSetsByAssessmentIds(assessmentIds: [UUID!]!): [FlashcardSet]!
+
+  # Get flashcards of a course that are due to be reviewed.
+  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
+  dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
 
   # Performs a semantic search with the specified search term. Returns at most `count` results. If a courseWhitelist is
   # provided, only results from the specified courses will be returned.

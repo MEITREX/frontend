@@ -2,11 +2,11 @@
 
 import { lecturerDeleteMediaContentMutation } from "@/__generated__/lecturerDeleteMediaContentMutation.graphql";
 import { lecturerMediaQuery } from "@/__generated__/lecturerMediaQuery.graphql";
+import { ContentLink } from "@/components/content-link/ContentLink";
 import { ContentTags } from "@/components/ContentTags";
 import { Heading } from "@/components/Heading";
 import { MediaContentModal } from "@/components/MediaContentModal";
 import { PageError } from "@/components/PageError";
-import { MediaContentLink } from "@/components/content-link/MediaContentLink";
 import { Delete, Edit } from "@mui/icons-material";
 import { Alert, Button, CircularProgress, Typography } from "@mui/material";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -39,8 +39,8 @@ export default function LecturerMediaPage() {
             }
           }
 
-          ...MediaContentLinkFragment
           ...MediaContentModal
+          ...ContentLinkFragment
         }
         ...MediaRecordSelector
       }
@@ -163,11 +163,10 @@ export default function LecturerMediaPage() {
           <Typography variant="h2">Related media</Typography>
           <div className="mt-4 flex flex-col gap-2">
             {relatedRecords.map((record) => (
-              <MediaContentLink
+              <ContentLink
                 courseId={courseId}
                 key={record.id}
-                _media={content}
-                recordId={record.id}
+                _content={content}
               />
             ))}
           </div>
