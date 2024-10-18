@@ -185,6 +185,7 @@ export function DocumentSide({
                 Referenced at:
                 {linkedRecords.map((linkedRecord) => (
                   <div
+                    key={linkedRecord.id}
                     onClick={() =>
                       dispatch({ type: "jumpTo", time: linkedRecord.startTime })
                     }
