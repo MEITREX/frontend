@@ -136,8 +136,8 @@ export function ContentLink({
             : ""
         }
       >
-        {content.mediaRecords?.slice(0, 4).map((x) => (
-          <MediaRecordIcon type={x.type} />
+        {content.mediaRecords?.slice(0, 4).map((x, idx) => (
+          <MediaRecordIcon type={x.type} key={idx} />
         ))}
       </div>
     ) : content.__typename === "FlashcardSetAssessment" ? (
