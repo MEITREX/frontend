@@ -15,50 +15,52 @@ export default function SearchResultsBox({
     graphql`
       fragment SearchResultsBox on SemanticSearchResult @relay(plural: true) {
         score
-        mediaRecordSegment {
-          __typename
-          id
-          thumbnail
-          mediaRecordId
-          ... on VideoRecordSegment {
-            startTime
-            screenText
-            transcript
-            mediaRecord {
-              id
-              name
-              type
-              contents {
-                metadata {
-                  name
-                  chapter {
-                    title
-                  }
-                  course {
-                    title
+        ... on MediaRecordSegmentSemanticSearchResult {
+          mediaRecordSegment {
+            __typename
+            id
+            thumbnail
+            mediaRecordId
+            ... on VideoRecordSegment {
+              startTime
+              screenText
+              transcript
+              mediaRecord {
+                id
+                name
+                type
+                contents {
+                  metadata {
+                    name
+                    chapter {
+                      title
+                    }
+                    course {
+                      title
+                    }
                   }
                 }
               }
             }
-          }
-          ... on DocumentRecordSegment {
-            page
-            text
-            mediaRecord {
-              id
-              name
-              type
-              contents {
+            ... on DocumentRecordSegment {
+              page
+              text
+              mediaRecord {
                 id
-                metadata {
-                  name
-                  chapter {
-                    id
-                    title
-                  }
-                  course {
-                    id
-                    title
+                name
+                type
+                contents {
+                  id
+                  metadata {
+                    name
+                    chapter {
+                      id
+                      title
+                    }
+                    course {
+                      id
+                      title
+                    }
                   }
                 }
               }

@@ -14,7 +14,7 @@ import { PageError } from "@/components/PageError";
 import { AssociationQuestion } from "@/components/quiz/AssociationQuestion";
 import { ClozeQuestion } from "@/components/quiz/ClozeQuestion";
 import { MultipleChoiceQuestion } from "@/components/quiz/MultipleChoiceQuestion";
-import { Check, Close } from "@mui/icons-material";
+import { Check, Close, Search } from "@mui/icons-material";
 import {
   Button,
   CircularProgress,
@@ -25,7 +25,7 @@ import {
   Typography,
 } from "@mui/material";
 import useResizeObserver from "@react-hook/resize-observer";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import {
@@ -34,6 +34,8 @@ import {
   useLazyLoadQuery,
   useMutation,
 } from "react-relay";
+import { dispatch } from "use-bus";
+import { SimilarSegments } from "../../media/[mediaId]/SimilarSegments";
 
 export default function StudentQuiz() {
   // Get course id from url
@@ -156,6 +158,8 @@ export default function StudentQuiz() {
 
   return (
     <main>
+      <SimilarSegments />
+
       <FormErrors error={error} onClose={() => setError(null)} />
       <Heading title={contentsByIds[0].metadata.name} backButton />
       <ContentTags metadata={contentsByIds[0].metadata} />
@@ -178,27 +182,48 @@ export default function StudentQuiz() {
 
       <div className="mt-6 w-full flex flex-col items-center">
         {checkAnswers && (
-          <div className="mb-4">
-            {correct ? (
-              <span className="text-green-600">Correct answer</span>
-            ) : (
-              <span className="text-red-600">Oops, wrong answer</span>
-            )}
-          </div>
+          <>
+            <div className="mb-4">
+              {correct ? (
+                <span className="text-green-600">Correct answer</span>
+              ) : (
+                <span className="text-red-600">Oops, wrong answer</span>
+              )}
+            </div>
+          </>
         )}
-        <Button
-          size="small"
-          variant="text"
-          color="inherit"
-          onClick={nextQuestion}
-          className="mb-6"
-        >
-          {!checkAnswers
-            ? "Check"
-            : currentIndex + 1 < (quiz?.selectedQuestions.length ?? 0)
-            ? "Next"
-            : "Finish"}
-        </Button>
+        <div className="flex gap-4">
+          {checkAnswers && (
+            <Button
+              size="small"
+              variant="text"
+              color="inherit"
+              onClick={(e) => {
+                dispatch({
+                  type: "searchSimilarEntity",
+                  entityId: currentQuestion.itemId,
+                });
+              }}
+              className="mb-6"
+              startIcon={<Search />}
+            >
+              Study Material
+            </Button>
+          )}
+          <Button
+            size="small"
+            variant="text"
+            color="inherit"
+            onClick={nextQuestion}
+            className="mb-6"
+          >
+            {!checkAnswers
+              ? "Check"
+              : currentIndex + 1 < (quiz?.selectedQuestions.length ?? 0)
+              ? "Next"
+              : "Finish"}
+          </Button>
+        </div>
       </div>
       {feedback && <Feedback courseId={courseId} feedback={feedback} />}
     </main>
@@ -268,7 +293,6 @@ function Feedback({
   feedback: studentQuizTrackCompletedMutation$data["logQuizCompleted"];
   courseId: string;
 }) {
-  const router = useRouter();
   const [[width, height], setDimensions] = useState([0, 0]);
   const [divRef, setDivRef] = useState<HTMLDivElement | null>(null);
   const color = success ? "green" : "red";

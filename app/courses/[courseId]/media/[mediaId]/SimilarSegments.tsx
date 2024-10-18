@@ -6,33 +6,31 @@ import { graphql, useLazyLoadQuery } from "react-relay";
 import useBus from "use-bus";
 
 export function SimilarSegments() {
-  const [segmentId, setsegmentId] = useState<string | null>(null);
+  const [entityId, setentityId] = useState<string | null>(null);
   const [isLoading, startTransition] = useTransition();
 
-  useBus("searchSimilarSegment", (e) => {
-    if ("segmentId" in e) {
-      startTransition(() => setsegmentId(e.segmentId));
+  useBus("searchSimilarEntity", (e) => {
+    if ("entityId" in e) {
+      startTransition(() => setentityId(e.entityId));
     }
   });
 
   const segments = useLazyLoadQuery<SimilarSegmentsQuery>(
     graphql`
-      query SimilarSegmentsQuery($segmentId: UUID!, $skip: Boolean!) {
-        getSemanticallySimilarMediaRecordSegments(
-          mediaRecordSegmentId: $segmentId
-          count: 10
-        ) @skip(if: $skip) {
+      query SimilarSegmentsQuery($entityId: UUID!, $skip: Boolean!) {
+        getSemanticallySimilarEntities(entityId: $entityId, count: 10)
+          @skip(if: $skip) {
           ...SearchResultsBox
         }
       }
     `,
-    { segmentId: segmentId!, skip: !segmentId }
+    { entityId: entityId!, skip: !entityId }
   );
 
   return (
     <Drawer
-      open={!!segmentId || isLoading}
-      onClose={() => setsegmentId(null)}
+      open={!!entityId || isLoading}
+      onClose={() => setentityId(null)}
       anchor="right"
     >
       <div className="w-[66vw] h-screen flex">
@@ -41,9 +39,9 @@ export function SimilarSegments() {
             <CircularProgress className="place-self-center justify-self-center" />
           </div>
         )}
-        {segments.getSemanticallySimilarMediaRecordSegments && (
+        {segments.getSemanticallySimilarEntities && (
           <SearchResultsBox
-            searchResults={segments.getSemanticallySimilarMediaRecordSegments}
+            searchResults={segments.getSemanticallySimilarEntities}
           />
         )}
       </div>

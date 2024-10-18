@@ -74,38 +74,40 @@ function NavbarBase({
       query NavbarSemanticSearchQuery($term: String!, $skip: Boolean!) {
         semanticSearch(queryText: $term, count: 5) @skip(if: $skip) {
           score
-          mediaRecordSegment {
-            __typename
-            ... on VideoRecordSegment {
-              startTime
-              mediaRecord {
-                id
-                name
-
-                contents {
+          ... on MediaRecordSegmentSemanticSearchResult {
+            mediaRecordSegment {
+              __typename
+              ... on VideoRecordSegment {
+                startTime
+                mediaRecord {
                   id
-                  metadata {
-                    name
-                    course {
-                      id
-                      title
+                  name
+
+                  contents {
+                    id
+                    metadata {
+                      name
+                      course {
+                        id
+                        title
+                      }
                     }
                   }
                 }
               }
-            }
-            ... on DocumentRecordSegment {
-              page
-              mediaRecord {
-                id
-                name
-                contents {
+              ... on DocumentRecordSegment {
+                page
+                mediaRecord {
                   id
-                  metadata {
-                    name
-                    course {
-                      id
-                      title
+                  name
+                  contents {
+                    id
+                    metadata {
+                      name
+                      course {
+                        id
+                        title
+                      }
                     }
                   }
                 }
