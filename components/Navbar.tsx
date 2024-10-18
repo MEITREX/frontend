@@ -14,7 +14,6 @@ import {
 import {
   Autocomplete,
   Avatar,
-  Box,
   Button,
   CircularProgress,
   ClickAwayListener,
@@ -34,7 +33,6 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import { chain, debounce } from "lodash";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactElement, useCallback, useState, useTransition } from "react";
 import { useAuth } from "react-oidc-context";
@@ -183,10 +181,13 @@ function NavbarBase({
           open={isSearchPopupOpen}
           value={null}
           onChange={(x, newVal) => {
-            if (typeof newVal == "string") return;
-            router.push(
-              `/courses/${newVal?.content?.metadata.course.id}/media/${newVal?.content?.id}?recordId=${newVal?.mediaRecordSegment.mediaRecord?.id}`
-            );
+            if (typeof newVal == "string") {
+              router.push(`/search?query=${newVal}`);
+            } else {
+              router.push(
+                `/courses/${newVal?.content?.metadata.course.id}/media/${newVal?.content?.id}?recordId=${newVal?.mediaRecordSegment.mediaRecord?.id}`
+              );
+            }
           }}
           filterOptions={(x) => x}
           groupBy={(x) =>
