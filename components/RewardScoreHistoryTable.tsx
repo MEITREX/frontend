@@ -20,7 +20,6 @@ import lodash from "lodash";
 import { useCallback, useState } from "react";
 import { graphql, useFragment } from "react-relay";
 import { ContentLink } from "./content-link/ContentLink";
-import { DeletedContentLink } from "./content-link/DeletedContentLink";
 import { FitnessIcon, GrowthIcon, HealthIcon, PowerIcon } from "./RewardScores";
 
 const reasons: { [k in RewardChangeReason]?: string } = {
@@ -168,15 +167,7 @@ export function RewardScoreHistoryTable({
                       <div key={`${entry.id}-content-${j}`}>
                         {content ? (
                           <ContentLink courseId={courseId} _content={content} />
-                        ) : (
-                          <DeletedContentLink
-                            props={{
-                              chips: [],
-                              disabled: false,
-                              size: "normal",
-                            }}
-                          />
-                        )}
+                        ) : null}
                       </div>
                     ))}
                   </div>

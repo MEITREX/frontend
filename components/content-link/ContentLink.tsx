@@ -18,7 +18,6 @@ import { Chip, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { graphql, useFragment } from "react-relay";
 import colors from "tailwindcss/colors";
-import { ContentChip, ContentSize } from "./ContentBase";
 import { ProgressFrame } from "./ProgressFrame";
 
 export const ContentTypeToColor: Record<string, string> = {
@@ -26,6 +25,9 @@ export const ContentTypeToColor: Record<string, string> = {
   FlashcardSetAssessment: colors.emerald[200],
   QuizAssessment: colors.rose[200],
 };
+
+export type ContentChip = { key: string; label: string; color?: string };
+export type ContentSize = "small" | "normal";
 
 export function MediaRecordIcon({ type }: { type: MediaType }) {
   const style = { color: "text.secondary", width: "100%", height: "100%" };
@@ -93,8 +95,13 @@ export function ContentLink({
     _content
   );
   const isProcessing =
-    content.aiProcessingProgress?.state !== "DONE" ||
-    content.mediaRecords?.some((x) => x.aiProcessingProgress.state !== "DONE");
+    content.aiProcessingProgress?.state === "PROCESSING" ||
+    content.aiProcessingProgress?.state === "ENQUEUED" ||
+    content.mediaRecords?.some(
+      (x) =>
+        x.aiProcessingProgress.state === "ENQUEUED" ||
+        x.aiProcessingProgress.state === "PROCESSING"
+    );
   const typeString =
     content.__typename === "MediaContent"
       ? "Media"
