@@ -34,7 +34,7 @@ export default function SearchResultGroup({
   }
 
   // media record is the same for all results in the group, just get the first segment's media record
-  const mediaRecord = searchResults[0].mediaRecordSegment.mediaRecord;
+  const mediaRecord = searchResults[0].mediaRecordSegment?.mediaRecord;
   if (mediaRecord === null || mediaRecord === undefined) {
     return null;
   }
@@ -54,7 +54,7 @@ export default function SearchResultGroup({
             .slice(0, collapsedResultCount)
             .map((result, index: number) => {
               return (
-                <Box key={result.mediaRecordSegment.id}>
+                <Box key={result.mediaRecordSegment?.id}>
                   {index > 0 && <Divider variant="middle" />}
                   <SearchResultItem searchResult={result} />
                 </Box>
@@ -84,7 +84,7 @@ export default function SearchResultGroup({
               .slice(collapsedResultCount, searchResults.length)
               .map((result, index: number) => {
                 return (
-                  <Box key={result.mediaRecordSegment.id}>
+                  <Box key={result.mediaRecordSegment?.id}>
                     {index > 0 && <Divider variant="middle" />}
                     <SearchResultItem searchResult={result} />
                   </Box>

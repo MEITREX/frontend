@@ -1,8 +1,11 @@
 import { StudentFlashcard$key } from "@/__generated__/StudentFlashcard.graphql";
 import { StudentFlashcardSetLogProgressMutation } from "@/__generated__/StudentFlashcardSetLogProgressMutation.graphql";
+import { SimilarSegments } from "@/app/courses/[courseId]/media/[mediaId]/SimilarSegments";
+import { Search } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
 import { useState } from "react";
 import { graphql, useMutation } from "react-relay";
+import { dispatch } from "use-bus";
 import { DisplayError } from "./PageError";
 import { StudentFlashcard } from "./StudentFlashcard";
 
@@ -63,6 +66,7 @@ export function StudentFlashcardSet({
 
   return (
     <div>
+      <SimilarSegments />
       <StudentFlashcard
         key={currentFlashcard.id}
         _flashcard={currentFlashcard._flashcard}
@@ -85,6 +89,21 @@ export function StudentFlashcardSet({
           ) : (
             "Finish"
           )}
+        </Button>
+        <Button
+          size="small"
+          variant="text"
+          color="inherit"
+          onClick={(e) => {
+            dispatch({
+              type: "searchSimilarEntity",
+              segmentId: currentFlashcard.id,
+            });
+          }}
+          className="mb-6"
+          startIcon={<Search />}
+        >
+          Study Material
         </Button>
       </div>
     </div>

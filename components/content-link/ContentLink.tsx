@@ -133,7 +133,7 @@ export function ContentLink({
         className={
           content.mediaRecords && content.mediaRecords.length > 1
             ? "grid grid-cols-2 max-w-[50%] max-h-[50%]"
-            : ""
+            : "max-w-[50%] max-h-[50%]"
         }
       >
         {content.mediaRecords?.slice(0, 4).map((x, idx) => (

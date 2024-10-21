@@ -75,7 +75,9 @@ export default function SearchResultsBox({
   // Group the search results
   const semanticSearchResultGroups = lodash
     .chain(searchResults ?? [])
-    .groupBy((result) => result.mediaRecordSegment.mediaRecord?.id ?? "unknown")
+    .groupBy(
+      (result) => result.mediaRecordSegment?.mediaRecord?.id ?? "unknown"
+    )
     .forEach((group) => group.sort((a, b) => a.score - b.score))
     .sortBy((group) => group[0].score)
     .value();
@@ -89,7 +91,8 @@ export default function SearchResultsBox({
               searchResults={resultGroup}
               collapsedResultCount={3}
               key={
-                resultGroup?.[0].mediaRecordSegment.mediaRecordId ?? "undefined"
+                resultGroup?.[0].mediaRecordSegment?.mediaRecordId ??
+                "undefined"
               }
             />
           );

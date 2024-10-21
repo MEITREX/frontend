@@ -8,11 +8,11 @@ import Tooltip, { tooltipClasses, TooltipProps } from "@mui/material/Tooltip";
 function getSegmentContents(
   mediaRecordSegment: SearchResultsBox$data[0]["mediaRecordSegment"]
 ): string {
-  switch (mediaRecordSegment.__typename) {
+  switch (mediaRecordSegment?.__typename) {
     case "VideoRecordSegment":
-      return mediaRecordSegment.transcript ?? "";
+      return mediaRecordSegment?.transcript ?? "";
     case "DocumentRecordSegment":
-      return mediaRecordSegment.text ?? "";
+      return mediaRecordSegment?.text ?? "";
     default:
       return "Unknown media type";
   }
@@ -21,9 +21,9 @@ function getSegmentContents(
 function getSegmentTitle(
   mediaRecordSegment: SearchResultsBox$data[0]["mediaRecordSegment"]
 ) {
-  switch (mediaRecordSegment.__typename) {
+  switch (mediaRecordSegment?.__typename) {
     case "VideoRecordSegment":
-      const date = new Date(mediaRecordSegment.startTime! * 1000);
+      const date = new Date(mediaRecordSegment?.startTime! * 1000);
       return (
         <Typography variant="h6">
           Time {date.toISOString().slice(11, 19)}
@@ -32,7 +32,7 @@ function getSegmentTitle(
     case "DocumentRecordSegment":
       return (
         <Typography variant="h6">
-          Page {mediaRecordSegment.page! + 1}
+          Page {mediaRecordSegment?.page! + 1}
         </Typography>
       );
     default:
@@ -61,7 +61,7 @@ export default function SearchResultItem({
         placement="right"
         title={
           <img
-            src={searchResult.mediaRecordSegment.thumbnail}
+            src={searchResult.mediaRecordSegment?.thumbnail}
             style={{
               height: "50vh",
               maxWidth: "50vw",
@@ -72,7 +72,7 @@ export default function SearchResultItem({
         }
       >
         <img
-          src={searchResult.mediaRecordSegment.thumbnail}
+          src={searchResult.mediaRecordSegment?.thumbnail}
           style={{
             height: 140,
             width: "auto",

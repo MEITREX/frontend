@@ -60,6 +60,9 @@ const theme = createTheme({
 export default function App({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de" className="h-full overflow-hidden">
+      <head>
+        <title>MEITREX</title>
+      </head>
       <body className="h-full">
         <AuthProvider {...oidcConfig}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>

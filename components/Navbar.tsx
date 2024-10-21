@@ -74,6 +74,10 @@ function NavbarBase({
       query NavbarSemanticSearchQuery($term: String!, $skip: Boolean!) {
         semanticSearch(queryText: $term, count: 5) @skip(if: $skip) {
           score
+          ... on AssessmentSemanticSearchResult {
+            assessmentId
+            score
+          }
           ... on MediaRecordSegmentSemanticSearchResult {
             mediaRecordSegment {
               __typename
@@ -134,7 +138,7 @@ function NavbarBase({
     .flatMap((x) => {
       const seg = x.mediaRecordSegment;
 
-      return seg.__typename !== "%other"
+      return seg?.__typename !== "%other" && seg?.mediaRecord
         ? seg?.mediaRecord?.contents.map((content) => ({
             content,
             ...x,
@@ -200,10 +204,10 @@ function NavbarBase({
               <div>
                 {option?.mediaRecordSegment.mediaRecord?.name}
                 <div className="text-xs text-slate-500">
-                  {option.mediaRecordSegment.__typename ===
+                  {option?.mediaRecordSegment.__typename ===
                   "DocumentRecordSegment"
                     ? `Page ${option.mediaRecordSegment.page}`
-                    : `Page ${option.mediaRecordSegment.startTime}`}
+                    : `Page ${option?.mediaRecordSegment.startTime}`}
                 </div>
               </div>
             </li>

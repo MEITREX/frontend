@@ -435,7 +435,7 @@ function CurrentSegment({
         <div
           className="text-xs font-medium text-emerald-900/80 hover:text-emerald-900 rounded-sm transition-all cursor-pointer text-end"
           onClick={(e) => {
-            dispatch({ type: "searchSimilarEntity", entityId: segment.id });
+            dispatch({ type: "searchSimilarEntity", segmentId: segment.id });
             e.stopPropagation();
           }}
         >

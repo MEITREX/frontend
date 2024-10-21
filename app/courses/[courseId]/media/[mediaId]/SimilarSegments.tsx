@@ -6,31 +6,31 @@ import { graphql, useLazyLoadQuery } from "react-relay";
 import useBus from "use-bus";
 
 export function SimilarSegments() {
-  const [entityId, setentityId] = useState<string | null>(null);
+  const [segmentId, setSegmentId] = useState<string | null>(null);
   const [isLoading, startTransition] = useTransition();
 
   useBus("searchSimilarEntity", (e) => {
-    if ("entityId" in e) {
-      startTransition(() => setentityId(e.entityId));
+    if ("segmentId" in e) {
+      startTransition(() => setSegmentId(e.segmentId));
     }
   });
 
   const segments = useLazyLoadQuery<SimilarSegmentsQuery>(
     graphql`
-      query SimilarSegmentsQuery($entityId: UUID!, $skip: Boolean!) {
-        getSemanticallySimilarEntities(entityId: $entityId, count: 10)
+      query SimilarSegmentsQuery($segmentId: UUID!, $skip: Boolean!) {
+        getSemanticallySimilarEntities(segmentId: $segmentId, count: 10)
           @skip(if: $skip) {
           ...SearchResultsBox
         }
       }
     `,
-    { entityId: entityId!, skip: !entityId }
+    { segmentId: segmentId!, skip: !segmentId }
   );
 
   return (
     <Drawer
-      open={!!entityId || isLoading}
-      onClose={() => setentityId(null)}
+      open={!!segmentId || isLoading}
+      onClose={() => setSegmentId(null)}
       anchor="right"
     >
       <div className="w-[66vw] h-screen flex">

@@ -201,7 +201,7 @@ export default function StudentQuiz() {
               onClick={(e) => {
                 dispatch({
                   type: "searchSimilarEntity",
-                  entityId: currentQuestion.itemId,
+                  segmentId: currentQuestion.itemId,
                 });
               }}
               className="mb-6"
