@@ -3,6 +3,10 @@ import { NavbarIsTutor$key } from "@/__generated__/NavbarIsTutor.graphql";
 import { NavbarSemanticSearchQuery } from "@/__generated__/NavbarSemanticSearchQuery.graphql";
 import { NavbarStudentQuery } from "@/__generated__/NavbarStudentQuery.graphql";
 import logo from "@/assets/logo.svg";
+import duration from "dayjs/plugin/duration";
+
+dayjs.extend(duration);
+
 import { PageView, usePageView } from "@/src/currentView";
 import {
   CollectionsBookmark,
@@ -59,6 +63,13 @@ function useIsTutor(_frag: NavbarIsTutor$key) {
   );
 }
 
+type SearchResultType = {
+  breadcrumbs: string;
+  title: string;
+  position?: string;
+  url: string;
+};
+
 function NavbarBase({
   children,
   _isTutor,
@@ -72,11 +83,34 @@ function NavbarBase({
   const searchResults = useLazyLoadQuery<NavbarSemanticSearchQuery>(
     graphql`
       query NavbarSemanticSearchQuery($term: String!, $skip: Boolean!) {
-        semanticSearch(queryText: $term, count: 5) @skip(if: $skip) {
+        semanticSearch(queryText: $term, count: 30) @skip(if: $skip) {
           score
           ... on AssessmentSemanticSearchResult {
             assessmentId
             score
+            assessment {
+              ... on FlashcardSetAssessment {
+                metadata {
+                  name
+                  courseId
+                  course {
+                    title
+                  }
+                }
+
+                __typename
+              }
+              ... on QuizAssessment {
+                metadata {
+                  name
+                  courseId
+                  course {
+                    title
+                  }
+                }
+                __typename
+              }
+            }
           }
           ... on MediaRecordSegmentSemanticSearchResult {
             mediaRecordSegment {
@@ -135,16 +169,59 @@ function NavbarBase({
   const results = chain(searchResults.semanticSearch)
     .orderBy((x) => x?.score)
     .slice(0, 15)
-    .flatMap((x) => {
-      const seg = x.mediaRecordSegment;
-
-      return seg?.__typename !== "%other" && seg?.mediaRecord
-        ? seg?.mediaRecord?.contents.map((content) => ({
-            content,
-            ...x,
-            mediaRecordSegment: seg,
-          }))
-        : [];
+    .flatMap((x): SearchResultType[] => {
+      if (
+        x.mediaRecordSegment &&
+        x.mediaRecordSegment.__typename === "DocumentRecordSegment"
+      ) {
+        const seg = x.mediaRecordSegment;
+        return seg.mediaRecord.contents
+          .filter((x) => !!x)
+          .map((content) => ({
+            breadcrumbs: `${content.metadata.course.title} › ${content.metadata.name}`,
+            title: seg.mediaRecord.name,
+            position: `Page ${seg.page + 1}`,
+            url: `/courses/${content.metadata.course.id}/media/${
+              content.id
+            }?selectedDocument=${seg.mediaRecord.id}&page=${seg.page + 1}`,
+          }));
+      } else if (
+        x.mediaRecordSegment &&
+        x.mediaRecordSegment.__typename === "VideoRecordSegment"
+      ) {
+        const seg = x.mediaRecordSegment;
+        return seg.mediaRecord.contents
+          .filter((x) => !!x)
+          .map((content) => ({
+            breadcrumbs: `${content.metadata.course.title} › ${content.metadata.name}`,
+            title: seg.mediaRecord.name,
+            position: dayjs
+              .duration(seg.startTime ?? 0, "seconds")
+              .format("HH:mm:ss"),
+            url: `/courses/${content.metadata.course.id}/media/${content.id}?selectedVideo=${seg.mediaRecord.id}&videoPosition=${seg.startTime}`,
+          }));
+      } else if (
+        x.assessment &&
+        x.assessment.__typename === "FlashcardSetAssessment"
+      ) {
+        return [
+          {
+            breadcrumbs: `${x.assessment.metadata.course.title}`,
+            title: x.assessment.metadata.name,
+            url: `/courses/${x.assessment.metadata.courseId}/flashcards/${x.assessmentId}`,
+          },
+        ];
+      } else if (x.assessment && x.assessment.__typename === "QuizAssessment") {
+        return [
+          {
+            breadcrumbs: `${x.assessment.metadata.course.title}`,
+            title: x.assessment.metadata.name,
+            url: `/courses/${x.assessment.metadata.courseId}/flashcards/${x.assessmentId}`,
+          },
+        ];
+      } else {
+        return [];
+      }
     })
     .value();
 
@@ -186,29 +263,27 @@ function NavbarBase({
           autoHighlight
           open={isSearchPopupOpen}
           value={null}
-          onChange={(x, newVal) => {
+          onChange={(_, newVal) => {
             if (typeof newVal == "string") {
               router.push(`/search?query=${newVal}`);
-            } else {
-              router.push(
-                `/courses/${newVal?.content?.metadata.course.id}/media/${newVal?.content?.id}?recordId=${newVal?.mediaRecordSegment.mediaRecord?.id}`
-              );
+            } else if (newVal) {
+              setSearchPopupOpen(false);
+              router.push(newVal.url);
             }
           }}
           filterOptions={(x) => x}
-          groupBy={(x) =>
-            `${x?.content?.metadata.course.title} › ${x?.content?.metadata.name}`
-          }
           renderOption={(props, option) => (
-            <li {...props} key={option?.content!.id}>
+            <li {...props} key={option?.breadcrumbs}>
               <div>
-                {option?.mediaRecordSegment.mediaRecord?.name}
-                <div className="text-xs text-slate-500">
-                  {option?.mediaRecordSegment.__typename ===
-                  "DocumentRecordSegment"
-                    ? `Page ${option.mediaRecordSegment.page}`
-                    : `Page ${option?.mediaRecordSegment.startTime}`}
+                <div className="text-[10px] text-slate-500">
+                  {option.breadcrumbs}
                 </div>
+                {option.title}
+                {option.position && (
+                  <div className="text-[10px] text-slate-400">
+                    {option.position}
+                  </div>
+                )}
               </div>
             </li>
           )}

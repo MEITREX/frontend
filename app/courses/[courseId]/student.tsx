@@ -15,17 +15,17 @@ import TableRow from "@mui/material/TableRow";
 
 import { studentCourseLeaveMutation } from "@/__generated__/studentCourseLeaveMutation.graphql";
 import { FormErrors } from "@/components/FormErrors";
+import { LightTooltip } from "@/components/LightTooltip";
 import { PageError } from "@/components/PageError";
 import { RewardScores } from "@/components/RewardScores";
+import { RewardScoresHelpButton } from "@/components/RewardScoresHelpButton";
+import { StudentChapter } from "@/components/StudentChapter";
 import { Suggestion } from "@/components/Suggestion";
 import { Info, Repeat } from "@mui/icons-material";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
 import { useState } from "react";
-import { StudentChapter } from "@/components/StudentChapter";
-import { LightTooltip } from "@/components/LightTooltip";
-import { RewardScoresHelpButton } from "@/components/RewardScoresHelpButton";
 
 interface Data {
   name: string;

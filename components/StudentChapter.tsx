@@ -1,19 +1,22 @@
-import dayjs from "dayjs";
-import { useParams } from "next/navigation";
-import { useState } from "react";
-import { graphql, useFragment } from "react-relay";
-import { ChapterHeader } from "./ChapterHeader";
-import { Collapse } from "@mui/material";
-import { ChapterContent } from "./ChapterContent";
-import { StudentSection } from "./StudentSection";
 import { StudentChapterFragment$key } from "@/__generated__/StudentChapterFragment.graphql";
+import { Collapse } from "@mui/material";
+import dayjs from "dayjs";
+import { useParams, useSearchParams } from "next/navigation";
+import { useCallback, useState } from "react";
+import { graphql, useFragment } from "react-relay";
+import { ChapterContent } from "./ChapterContent";
+import { ChapterHeader } from "./ChapterHeader";
 import { OtherContent } from "./OtherContent";
+import { StudentSection } from "./StudentSection";
 
 export function StudentChapter({
   _chapter,
 }: {
   _chapter: StudentChapterFragment$key;
 }) {
+  const searchParams = useSearchParams();
+  const selectedChapter = searchParams.get("chapterId");
+
   const { courseId } = useParams();
   const chapter = useFragment(
     graphql`
@@ -33,12 +36,27 @@ export function StudentChapter({
     `,
     _chapter
   );
+
+  const handleRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (node && selectedChapter === chapter.id) {
+        node.scrollIntoView({ behavior: "smooth" });
+      }
+    },
+    [chapter, selectedChapter]
+  );
+
   const [expanded, setExpanded] = useState(
-    dayjs().isBetween(chapter.suggestedStartDate, chapter.suggestedEndDate)
+    (!selectedChapter &&
+      dayjs().isBetween(
+        chapter.suggestedStartDate,
+        chapter.suggestedEndDate
+      )) ||
+      chapter.id === selectedChapter
   );
 
   return (
-    <section>
+    <section ref={handleRef}>
       <ChapterHeader
         courseId={courseId}
         _chapter={chapter}

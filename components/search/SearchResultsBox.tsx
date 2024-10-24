@@ -2,9 +2,12 @@
 
 import { SearchResultsBox$key } from "@/__generated__/SearchResultsBox.graphql";
 import { Box } from "@mui/material";
-import lodash from "lodash";
+import lodash, { orderBy } from "lodash";
 import { graphql, useFragment } from "react-relay";
-import SearchResultGroup from "./SearchResultGroup";
+import {
+  AssessmentSearchResultGroup,
+  MediaRecordSearchResultGroup,
+} from "./SearchResultGroup";
 
 export default function SearchResultsBox({
   searchResults: _searchResults,
@@ -14,58 +17,20 @@ export default function SearchResultsBox({
   const searchResults = useFragment(
     graphql`
       fragment SearchResultsBox on SemanticSearchResult @relay(plural: true) {
-        score
         ... on MediaRecordSegmentSemanticSearchResult {
+          score
+          __typename
           mediaRecordSegment {
-            __typename
-            id
-            thumbnail
             mediaRecordId
-            ... on VideoRecordSegment {
-              startTime
-              screenText
-              transcript
-              mediaRecord {
-                id
-                name
-                type
-                contents {
-                  metadata {
-                    name
-                    chapter {
-                      title
-                    }
-                    course {
-                      title
-                    }
-                  }
-                }
-              }
-            }
-            ... on DocumentRecordSegment {
-              page
-              text
-              mediaRecord {
-                id
-                name
-                type
-                contents {
-                  id
-                  metadata {
-                    name
-                    chapter {
-                      id
-                      title
-                    }
-                    course {
-                      id
-                      title
-                    }
-                  }
-                }
-              }
-            }
           }
+          ...SearchResultGroupMediaFragment
+        }
+        ... on AssessmentSemanticSearchResult {
+          score
+
+          __typename
+          assessmentId
+          ...SearchResultGroupAssessmentFragment
         }
       }
     `,
@@ -75,27 +40,42 @@ export default function SearchResultsBox({
   // Group the search results
   const semanticSearchResultGroups = lodash
     .chain(searchResults ?? [])
-    .groupBy(
-      (result) => result.mediaRecordSegment?.mediaRecord?.id ?? "unknown"
+    .groupBy((result) =>
+      "mediaRecordSegment" in result
+        ? result.mediaRecordSegment!.mediaRecordId
+        : "assessmentId" in result
+        ? result.assessmentId
+        : "unknown"
     )
-    .forEach((group) => group.sort((a, b) => a.score - b.score))
-    .sortBy((group) => group[0].score)
+    .forEach((group) =>
+      orderBy(group, (x) => ("score" in x ? x.score : 0), "asc")
+    )
+    .orderBy((x) => ("score" in x[0] ? x[0].score : 0), "asc")
     .value();
 
   return (
     <Box>
       {Object.values(semanticSearchResultGroups).map((resultGroup) => {
-        if (resultGroup !== undefined)
+        if (
+          resultGroup[0].__typename === "MediaRecordSegmentSemanticSearchResult"
+        ) {
           return (
-            <SearchResultGroup
-              searchResults={resultGroup}
+            <MediaRecordSearchResultGroup
+              _searchResults={resultGroup as any}
               collapsedResultCount={3}
-              key={
-                resultGroup?.[0].mediaRecordSegment?.mediaRecordId ??
-                "undefined"
-              }
+              key={resultGroup?.[0].mediaRecordSegment?.mediaRecordId}
             />
           );
+        } else if (
+          resultGroup[0].__typename === "AssessmentSemanticSearchResult"
+        ) {
+          return (
+            <AssessmentSearchResultGroup
+              _searchResults={resultGroup[0] as any}
+              key={resultGroup?.[0].assessmentId}
+            />
+          );
+        }
       })}
     </Box>
   );

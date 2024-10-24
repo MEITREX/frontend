@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 "use client";
 
 import {
@@ -75,6 +76,7 @@ export function ContentLink({
         userProgressData {
           ...ProgressFrameFragment
         }
+
         ... on MediaContent {
           mediaRecords {
             type

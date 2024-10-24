@@ -1,44 +1,15 @@
 "use client";
 
-import { SearchResultsBox$data } from "@/__generated__/SearchResultsBox.graphql";
+import { SearchResultItemFragmentMedia$key } from "@/__generated__/SearchResultItemFragmentMedia.graphql";
 import ExpandableText from "@/components/ExpandableText";
-import { Box, styled, Typography } from "@mui/material";
+import { Box, styled } from "@mui/material";
 import Tooltip, { tooltipClasses, TooltipProps } from "@mui/material/Tooltip";
+import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
+import Link from "next/link";
+import { graphql, useFragment } from "react-relay";
 
-function getSegmentContents(
-  mediaRecordSegment: SearchResultsBox$data[0]["mediaRecordSegment"]
-): string {
-  switch (mediaRecordSegment?.__typename) {
-    case "VideoRecordSegment":
-      return mediaRecordSegment?.transcript ?? "";
-    case "DocumentRecordSegment":
-      return mediaRecordSegment?.text ?? "";
-    default:
-      return "Unknown media type";
-  }
-}
-
-function getSegmentTitle(
-  mediaRecordSegment: SearchResultsBox$data[0]["mediaRecordSegment"]
-) {
-  switch (mediaRecordSegment?.__typename) {
-    case "VideoRecordSegment":
-      const date = new Date(mediaRecordSegment?.startTime! * 1000);
-      return (
-        <Typography variant="h6">
-          Time {date.toISOString().slice(11, 19)}
-        </Typography>
-      );
-    case "DocumentRecordSegment":
-      return (
-        <Typography variant="h6">
-          Page {mediaRecordSegment?.page! + 1}
-        </Typography>
-      );
-    default:
-      return <Typography variant="h6">Unknown media type</Typography>;
-  }
-}
+dayjs.extend(duration);
 
 export const NoMaxWidthTooltip = styled(
   ({ className, ...props }: TooltipProps) => (
@@ -50,18 +21,56 @@ export const NoMaxWidthTooltip = styled(
   },
 });
 
-export default function SearchResultItem({
-  searchResult,
+export function SearchResultMediaItem({
+  _searchResult,
+  courseId,
+  contentId,
 }: {
-  searchResult: NonNullable<SearchResultsBox$data[0]>;
+  _searchResult: SearchResultItemFragmentMedia$key;
+  courseId: string;
+  contentId: string;
 }) {
+  const { mediaRecordSegment } = useFragment(
+    graphql`
+      fragment SearchResultItemFragmentMedia on MediaRecordSegmentSemanticSearchResult {
+        mediaRecordSegment {
+          ... on VideoRecordSegment {
+            thumbnail
+            transcript
+            startTime
+            mediaRecordId
+            __typename
+          }
+          ... on DocumentRecordSegment {
+            thumbnail
+            text
+            page
+            mediaRecordId
+            __typename
+          }
+        }
+      }
+    `,
+    _searchResult
+  );
+
+  if (mediaRecordSegment.__typename === "%other") {
+    return <></>;
+  }
+
+  const href =
+    mediaRecordSegment.__typename === "VideoRecordSegment"
+      ? `/courses/${courseId}/media/${contentId}?selectedVideo=${mediaRecordSegment.mediaRecordId}`
+      : `/courses/${courseId}/media/${contentId}?selectedDocument=${mediaRecordSegment.mediaRecordId}`;
+
   return (
     <Box sx={{ display: "flex", padding: "15px" }}>
       <NoMaxWidthTooltip
         placement="right"
         title={
           <img
-            src={searchResult.mediaRecordSegment?.thumbnail}
+            alt=""
+            src={mediaRecordSegment?.thumbnail}
             style={{
               height: "50vh",
               maxWidth: "50vw",
@@ -72,7 +81,8 @@ export default function SearchResultItem({
         }
       >
         <img
-          src={searchResult.mediaRecordSegment?.thumbnail}
+          alt=""
+          src={mediaRecordSegment?.thumbnail}
           style={{
             height: 140,
             width: "auto",
@@ -82,9 +92,26 @@ export default function SearchResultItem({
       </NoMaxWidthTooltip>
       <Box>
         <Box sx={{ px: "15px" }}>
-          {getSegmentTitle(searchResult.mediaRecordSegment)}
+          <Link
+            className="underline"
+            href={
+              mediaRecordSegment.__typename === "VideoRecordSegment"
+                ? `${href}&videoPosition=${mediaRecordSegment?.startTime}`
+                : `${href}&page=${mediaRecordSegment.page + 1}`
+            }
+          >
+            {mediaRecordSegment.__typename === "VideoRecordSegment"
+              ? dayjs
+                  .duration(mediaRecordSegment.startTime, "seconds")
+                  .format("HH:mm:ss")
+              : `Page ${mediaRecordSegment.page + 1}`}
+          </Link>
           <ExpandableText
-            text={getSegmentContents(searchResult.mediaRecordSegment)}
+            text={
+              mediaRecordSegment.__typename === "VideoRecordSegment"
+                ? mediaRecordSegment.transcript
+                : mediaRecordSegment.text
+            }
             collapsedSize={90}
           />
         </Box>
