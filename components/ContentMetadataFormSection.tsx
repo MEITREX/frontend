@@ -20,9 +20,11 @@ export type ContentMetadataPayload = {
 export function ContentMetadataFormSection({
   onChange,
   metadata,
+  suggestedTags,
 }: {
   onChange: (side: ContentMetadataPayload | null) => void;
   metadata?: ContentMetadataPayload | null;
+  suggestedTags: string[];
 }) {
   const [name, setName] = useState(metadata?.name ?? "");
   const [suggestedDate, setSuggestedDate] = useState(
@@ -50,6 +52,8 @@ export function ContentMetadataFormSection({
         : null
     );
   }, [name, suggestedDate, tags, rewardPoints, valid, onChange]);
+
+  const suggestedTagsF = suggestedTags.filter((x) => !tags.includes(x));
 
   return (
     <FormSection title="Content details">
@@ -118,6 +122,21 @@ export function ContentMetadataFormSection({
         }
         renderInput={(params) => <TextField {...params} label="Tags" />}
       />
+
+      {suggestedTagsF.length > 0 && (
+        <>
+          <div className="text-[10px] -mb-1 text-gray-600">Suggested Tags</div>
+          <div className="flex gap-2">
+            {suggestedTagsF.map((tag) => (
+              <Chip
+                onClick={() => setTags([...tags, tag])}
+                key={tag}
+                label={tag}
+              ></Chip>
+            ))}
+          </div>
+        </>
+      )}
     </FormSection>
   );
 }

@@ -268,6 +268,7 @@ export function QuizModal({
           <ContentMetadataFormSection
             metadata={metadata}
             onChange={setMetadata}
+            suggestedTags={[]}
           />
 
           <AssessmentMetadataFormSection

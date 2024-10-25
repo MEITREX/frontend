@@ -5,6 +5,7 @@ import {
   ContentLinkFragment$key,
   MediaType,
 } from "@/__generated__/ContentLinkFragment.graphql";
+import { PageView, usePageView } from "@/src/currentView";
 import {
   ArrowRight,
   Description,
@@ -84,6 +85,7 @@ export function ContentLink({
               queuePosition
               state
             }
+            # suggestedTags
           }
           aiProcessingProgress {
             queuePosition
@@ -104,6 +106,10 @@ export function ContentLink({
         x.aiProcessingProgress.state === "ENQUEUED" ||
         x.aiProcessingProgress.state === "PROCESSING"
     );
+  const hasSuggestedTags = true;
+  //content.mediaRecords?.some((x) => x.suggestedTags.length > 0) ?? false;
+  const [pageView] = usePageView();
+
   const typeString =
     content.__typename === "MediaContent"
       ? "Media"
@@ -120,7 +126,17 @@ export function ContentLink({
       label: typeString,
       color: ContentTypeToColor[content.__typename],
     },
-    ...(isProcessing ? [{ key: "processing", label: "Processing..." }] : []),
+    ...(pageView === PageView.Lecturer && isProcessing
+      ? [{ key: "processing", label: "Processing..." }]
+      : []),
+    ...(pageView === PageView.Lecturer && hasSuggestedTags
+      ? [
+          {
+            key: "tags",
+            label: "New tags available",
+          },
+        ]
+      : []),
     ...extra_chips,
   ];
 

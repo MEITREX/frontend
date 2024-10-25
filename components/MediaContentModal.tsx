@@ -215,6 +215,7 @@ export function MediaContentModal({
         ))}
         <Form>
           <ContentMetadataFormSection
+            suggestedTags={["Hallo", "Schnag"]}
             metadata={metadata}
             onChange={setMetadata}
           />
