@@ -20,6 +20,7 @@ import { Chip, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { graphql, useFragment } from "react-relay";
 import colors from "tailwindcss/colors";
+import { NoMaxWidthTooltip } from "../search/SearchResultItem";
 import { ProgressFrame } from "./ProgressFrame";
 
 export const ContentTypeToColor: Record<string, string> = {
@@ -73,6 +74,7 @@ export function ContentLink({
         metadata {
           type
           name
+          tagNames
         }
         userProgressData {
           ...ProgressFrameFragment
@@ -80,12 +82,15 @@ export function ContentLink({
 
         ... on MediaContent {
           mediaRecords {
+            id
+            name
             type
             aiProcessingProgress {
               queuePosition
               state
             }
-            # suggestedTags
+            suggestedTags
+            summary
           }
           aiProcessingProgress {
             queuePosition
@@ -106,8 +111,9 @@ export function ContentLink({
         x.aiProcessingProgress.state === "ENQUEUED" ||
         x.aiProcessingProgress.state === "PROCESSING"
     );
-  const hasSuggestedTags = true;
-  //content.mediaRecords?.some((x) => x.suggestedTags.length > 0) ?? false;
+  const hasSuggestedTags =
+    content.metadata.tagNames.length === 0 &&
+    (content.mediaRecords?.some((x) => x.suggestedTags.length > 0) ?? false);
   const [pageView] = usePageView();
 
   const typeString =
@@ -185,7 +191,7 @@ export function ContentLink({
       ? `/courses/${courseId}/quiz/${content.id}`
       : "-";
 
-  return (
+  const body = (
     <button
       disabled={disabled}
       className={`group flex items-center text-left ${gap} pr-3 bg-transparent hover:disabled:bg-gray-50 ${cursor} rounded-full`}
@@ -232,4 +238,32 @@ export function ContentLink({
       <div className="flex-1"></div>
     </button>
   );
+
+  if (content.mediaRecords?.some((x) => true)) {
+    return (
+      <NoMaxWidthTooltip
+        title={
+          <div>
+            <div className="w-full border-b mb-2">Summary</div>
+            {content.mediaRecords
+              .filter((x) => true)
+              .map((rec) => (
+                <div key={rec.id}>
+                  <div className="italic">{rec.name}</div>
+                  <div className="mb-1">{rec.summary || "No summary"}</div>
+                </div>
+              ))}
+
+            <div className="!text-[8px] opacity-50 font-light">
+              Summaries are generated automatically and may contain inaccuracies
+            </div>
+          </div>
+        }
+      >
+        {body}
+      </NoMaxWidthTooltip>
+    );
+  } else {
+    return body;
+  }
 }
