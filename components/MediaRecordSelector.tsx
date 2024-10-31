@@ -85,6 +85,7 @@ export function MediaRecordSelector({
             downloadUrl
             contentIds
             type
+            suggestedTags
           }
         }
 
@@ -98,6 +99,7 @@ export function MediaRecordSelector({
             downloadUrl
             contentIds
             type
+            suggestedTags
           }
         }
       }
@@ -118,6 +120,7 @@ export function MediaRecordSelector({
           downloadUrl
           contentIds
           type
+          suggestedTags
         }
       }
     `);
@@ -288,6 +291,7 @@ export function MediaRecordSelector({
           downloadUrl
           contentIds
           type
+          suggestedTags
         }
       }
     `);

@@ -106,6 +106,7 @@ export function MediaContentModal({
             name
             downloadUrl
             type
+            suggestedTags
           }
           __typename
         }
