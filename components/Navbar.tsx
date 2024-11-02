@@ -178,11 +178,11 @@ function NavbarBase({
         return seg.mediaRecord.contents
           .filter((x) => !!x)
           .map((content) => ({
-            breadcrumbs: `${content.metadata.course.title} › ${content.metadata.name}`,
+            breadcrumbs: `${content!.metadata.course.title} › ${content!.metadata.name}`,
             title: seg.mediaRecord.name,
             position: `Page ${seg.page + 1}`,
-            url: `/courses/${content.metadata.course.id}/media/${
-              content.id
+            url: `/courses/${content!.metadata.course.id}/media/${
+              content!.id
             }?selectedDocument=${seg.mediaRecord.id}&page=${seg.page + 1}`,
           }));
       } else if (
@@ -193,12 +193,12 @@ function NavbarBase({
         return seg.mediaRecord.contents
           .filter((x) => !!x)
           .map((content) => ({
-            breadcrumbs: `${content.metadata.course.title} › ${content.metadata.name}`,
+            breadcrumbs: `${content!.metadata.course.title} › ${content!.metadata.name}`,
             title: seg.mediaRecord.name,
             position: dayjs
               .duration(seg.startTime ?? 0, "seconds")
               .format("HH:mm:ss"),
-            url: `/courses/${content.metadata.course.id}/media/${content.id}?selectedVideo=${seg.mediaRecord.id}&videoPosition=${seg.startTime}`,
+            url: `/courses/${content!.metadata.course.id}/media/${content!.id}?selectedVideo=${seg.mediaRecord.id}&videoPosition=${seg.startTime}`,
           }));
       } else if (
         x.assessment &&

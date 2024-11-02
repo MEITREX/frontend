@@ -291,6 +291,7 @@ export function MediaRecordSelector({
           downloadUrl
           contentIds
           type
+          suggestedTags
         }
       }
     `);
