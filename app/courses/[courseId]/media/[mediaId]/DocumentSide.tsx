@@ -53,7 +53,9 @@ export function DocumentSide({
           ...ContentMediaDisplayFragment
           type
           name
-          downloadUrl
+
+          standardizedDownloadUrl
+
           userProgressData {
             dateWorkedOn
           }
@@ -167,7 +169,7 @@ export function DocumentSide({
       <div className="w-full" ref={ref}>
         <Document
           className="flex flex-col justify-center w-full"
-          file={currentRecord.downloadUrl}
+          file={currentRecord.standardizedDownloadUrl}
           onLoadSuccess={onDocumentLoadSuccess}
           loading={<CircularProgress />}
         >
