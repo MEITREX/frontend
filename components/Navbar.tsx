@@ -178,7 +178,9 @@ function NavbarBase({
         return seg.mediaRecord.contents
           .filter((x) => !!x)
           .map((content) => ({
-            breadcrumbs: `${content!.metadata.course.title} › ${content!.metadata.name}`,
+            breadcrumbs: `${content!.metadata.course.title} › ${
+              content!.metadata.name
+            }`,
             title: seg.mediaRecord.name,
             position: `Page ${seg.page + 1}`,
             url: `/courses/${content!.metadata.course.id}/media/${
@@ -193,12 +195,18 @@ function NavbarBase({
         return seg.mediaRecord.contents
           .filter((x) => !!x)
           .map((content) => ({
-            breadcrumbs: `${content!.metadata.course.title} › ${content!.metadata.name}`,
+            breadcrumbs: `${content!.metadata.course.title} › ${
+              content!.metadata.name
+            }`,
             title: seg.mediaRecord.name,
             position: dayjs
               .duration(seg.startTime ?? 0, "seconds")
               .format("HH:mm:ss"),
-            url: `/courses/${content!.metadata.course.id}/media/${content!.id}?selectedVideo=${seg.mediaRecord.id}&videoPosition=${seg.startTime}`,
+            url: `/courses/${content!.metadata.course.id}/media/${
+              content!.id
+            }?selectedVideo=${seg.mediaRecord.id}&videoPosition=${
+              seg.startTime
+            }`,
           }));
       } else if (
         x.assessment &&
@@ -263,6 +271,7 @@ function NavbarBase({
           autoHighlight
           open={isSearchPopupOpen}
           value={null}
+          getOptionLabel={(x) => ""}
           onChange={(_, newVal) => {
             if (typeof newVal == "string") {
               router.push(`/search?query=${newVal}`);
