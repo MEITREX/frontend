@@ -24,6 +24,7 @@ export function ContentMediaDisplay({
       fragment ContentMediaDisplayFragment on MediaRecord {
         type
         name
+        standardizedDownloadUrl
         downloadUrl
         ...ContentMediaDisplayVideoFragment
       }
@@ -39,7 +40,7 @@ export function ContentMediaDisplay({
       return (
         <PdfViewer
           onProgressChange={onProgressChange}
-          url={mediaRecord.downloadUrl}
+          url={mediaRecord.standardizedDownloadUrl ?? mediaRecord.downloadUrl}
         />
       );
     case "IMAGE":
@@ -47,7 +48,7 @@ export function ContentMediaDisplay({
       return (
         <img
           alt={mediaRecord.name}
-          src={mediaRecord.downloadUrl}
+          src={mediaRecord.standardizedDownloadUrl ?? mediaRecord.downloadUrl}
           className="max-h-md flex justify-center mx-auto"
         ></img>
       );
@@ -66,6 +67,7 @@ export function VideoPlayer({
       fragment ContentMediaDisplayVideoFragment on MediaRecord {
         type
         name
+        standardizedDownloadUrl
         downloadUrl
         segments {
           id
@@ -82,7 +84,9 @@ export function VideoPlayer({
   );
 
   return (
-    <MediaPlayer src={mediaRecord.downloadUrl}>
+    <MediaPlayer
+      src={mediaRecord.standardizedDownloadUrl ?? mediaRecord.downloadUrl}
+    >
       <MediaProvider />
       <DefaultVideoLayout icons={defaultLayoutIcons} />
     </MediaPlayer>
