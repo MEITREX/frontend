@@ -51,7 +51,7 @@ export default function LecturerQuiz() {
               }
               ...QuizModalFragment
             }
-            items{
+            items {
               id
               associatedSkills {
                 id
@@ -81,18 +81,20 @@ export default function LecturerQuiz() {
       />
     );
   }
-  function getItem(itemId: string): ItemData  {
-    if(content && content.items){
-      for(let i = 0; i < content.items.length; i++){
-        if(content.items[i].id === itemId){
-          return { associatedBloomLevels: [...content.items[i].associatedBloomLevels],
-            associatedSkills:[...content.items[i].associatedSkills] ,id:itemId};
+  function getItem(itemId: string): ItemData {
+    if (content && content.items) {
+      for (let i = 0; i < content.items.length; i++) {
+        if (content.items[i].id === itemId) {
+          return {
+            associatedBloomLevels: [...content.items[i].associatedBloomLevels],
+            associatedSkills: [...content.items[i].associatedSkills],
+            id: itemId,
+          };
         }
       }
+    }
+    return { associatedBloomLevels: [], associatedSkills: [] };
   }
-  return { associatedBloomLevels: [],
-    associatedSkills:[] };
-}
 
   return (
     <main>
@@ -185,7 +187,11 @@ export default function LecturerQuiz() {
         </div>
       ))}
       <div className="mt-8 flex flex-col items-start">
-        <AddQuestionButton _allRecords={query} assessmentId={content.id} courseId={courseId} />
+        <AddQuestionButton
+          _allRecords={query}
+          assessmentId={content.id}
+          courseId={courseId}
+        />
       </div>
 
       <QuizModal

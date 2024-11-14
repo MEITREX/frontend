@@ -34,7 +34,7 @@ const oidcConfig: AuthProviderProps = {
   client_id: process.env.NEXT_PUBLIC_OAUTH_CLIENT_ID ?? "frontend",
   authority:
     process.env.NEXT_PUBLIC_OAUTH_AUTHORITY ??
-    "http://localhost:9009/realms/GITS",
+    "https://vault.lutr.me:9009/realms/GITS",
 
   onSigninCallback() {
     window.history.replaceState({}, document.title, window.location.pathname);
@@ -60,6 +60,9 @@ const theme = createTheme({
 export default function App({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de" className="h-full overflow-hidden">
+      <head>
+        <title>MEITREX</title>
+      </head>
       <body className="h-full">
         <AuthProvider {...oidcConfig}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>

@@ -1,40 +1,33 @@
 "use client";
-
+/* eslint-disable @next/next/no-img-element */
 import { studentContentDownloadButtonFragment$key } from "@/__generated__/studentContentDownloadButtonFragment.graphql";
-import { studentContentMediaDisplayFragment$key } from "@/__generated__/studentContentMediaDisplayFragment.graphql";
-import { studentMediaLogProgressMutation } from "@/__generated__/studentMediaLogProgressMutation.graphql";
 import { studentMediaQuery } from "@/__generated__/studentMediaQuery.graphql";
-import { MediaContentLink } from "@/components/content-link/MediaContentLink";
 import { ContentTags } from "@/components/ContentTags";
 import { Heading } from "@/components/Heading";
-import { DisplayError, PageError } from "@/components/PageError";
-import { PdfViewer } from "@/components/PdfViewer";
-import { Check, Download } from "@mui/icons-material";
-import {
-  Alert,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from "@mui/material";
-import { differenceInHours } from "date-fns";
-import { first } from "lodash";
-import { useParams, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import ReactPlayer from "react-player";
-import {
-  graphql,
-  useFragment,
-  useLazyLoadQuery,
-  useMutation,
-} from "react-relay";
+import { PageError } from "@/components/PageError";
+import { Download } from "@mui/icons-material";
+import { Alert, Button } from "@mui/material";
+import "@vidstack/react/player/styles/default/layouts/video.css";
+import "@vidstack/react/player/styles/default/theme.css";
+import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
+import { clamp } from "lodash";
+import { DocumentSide } from "./DocumentSide";
+
+dayjs.extend(duration);
+
+import { useParams } from "next/navigation";
+
+import { useRef, useState } from "react";
+import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
+import { SimilarSegments } from "./SimilarSegments";
+import { VideoSide } from "./VideoSide";
 
 export default function StudentMediaPage() {
-  const { mediaId, courseId } = useParams();
-  const searchParams = useSearchParams();
-  const media = useLazyLoadQuery<studentMediaQuery>(
+  const { mediaId } = useParams();
+  const {
+    contentsByIds: [content],
+  } = useLazyLoadQuery<studentMediaQuery>(
     graphql`
       query studentMediaQuery($mediaId: UUID!) {
         contentsByIds(ids: [$mediaId]) {
@@ -45,63 +38,29 @@ export default function StudentMediaPage() {
           }
           ... on MediaContent {
             mediaRecords {
+              type
               id
-              name
-              ...studentContentMediaDisplayFragment
-              ...studentContentDownloadButtonFragment
-              userProgressData {
-                dateWorkedOn
-              }
             }
           }
-
-          ...MediaContentLinkFragment
+          ...DocumentSideFragment
+          ...VideoSideFragment
         }
       }
     `,
     { mediaId }
   );
 
-  const recordId = searchParams.get("recordId");
-
-  const content = media.contentsByIds[0];
-
-  const mainRecord = recordId
-    ? content?.mediaRecords?.find((record) => record.id === recordId)
-    : first(content?.mediaRecords ?? []);
-
-  const [mediaRecordWorkedOn] =
-    useMutation<studentMediaLogProgressMutation>(graphql`
-      mutation studentMediaLogProgressMutation($id: UUID!) {
-        logMediaRecordWorkedOn(mediaRecordId: $id) {
-          id
-          userProgressData {
-            dateWorkedOn
-          }
-        }
-      }
-    `);
-
-  const workedOnToday =
-    Math.abs(
-      differenceInHours(
-        new Date(),
-        new Date(mainRecord?.userProgressData.dateWorkedOn ?? "")
-      )
-    ) < 24;
-
   const [nagDismissed, setNagDismissed] = useState(false);
-
-  useEffect(() => {
-    setNagDismissed(false);
-    setProgress(0);
-  }, [mainRecord?.id]);
 
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<any>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
-  if (media.contentsByIds.length == 0) {
-    return <PageError message="No content found with given id." />;
+  const [selected, setSelected] = useState({ left: 0, right: 0 });
+  const [splitPercentage, setSplitPercentage] = useState(50); // Initial split at 50%
+
+  if (!content) {
+    return <PageError message="No content found." />;
   }
 
   if (content.metadata.type !== "MEDIA") {
@@ -109,7 +68,7 @@ export default function StudentMediaPage() {
       <PageError title={content.metadata.name} message="Wrong content type." />
     );
   }
-  if (!content.mediaRecords) {
+  if (!content.mediaRecords?.length) {
     return (
       <PageError
         title={content.metadata.name}
@@ -118,27 +77,16 @@ export default function StudentMediaPage() {
     );
   }
 
-  if (recordId && mainRecord == null) {
-    return (
-      <PageError
-        title={content.metadata.name}
-        message="Content has no record with given id."
-      />
-    );
-  }
-
-  const relatedRecords = content.mediaRecords.filter(
-    (record) => record.id !== mainRecord?.id
-  );
+  const hasDocuments = content.mediaRecords.some((x) => x.type !== "VIDEO");
+  const hasVideos = content.mediaRecords.some((x) => x.type === "VIDEO");
 
   return (
     <main className="flex flex-col h-full">
+      <SimilarSegments />
+
       <Heading
-        title={mainRecord?.name ?? content.metadata.name}
-        overline={mainRecord != null ? content.metadata.name : undefined}
-        action={
-          mainRecord ? <DownloadButton _record={mainRecord} /> : undefined
-        }
+        title={content.metadata.name}
+        overline={content.metadata.name}
         backButton
       />
 
@@ -155,132 +103,81 @@ export default function StudentMediaPage() {
         </Alert>
       ))}
 
-      {mainRecord && (
-        <>
-          <Dialog open={progress > 0.8 && !workedOnToday && !nagDismissed}>
-            <DialogTitle>Do you want to mark this as understood?</DialogTitle>
-            <DialogContent>
-              You&apos;ve completed more than 80% of this content - this could
-              be a good time to mark it as completed.
-            </DialogContent>
-            <DialogActions>
-              <Button variant="text" onClick={() => setNagDismissed(true)}>
-                No thanks
-              </Button>
-              <Button
-                variant="text"
-                onClick={() =>
-                  mediaRecordWorkedOn({
-                    variables: { id: mainRecord.id },
-                    onError: setError,
-                  })
-                }
-              >
-                Ok
-              </Button>
-            </DialogActions>
-          </Dialog>
-          <div className="my-8 grow">
-            <ContentMediaDisplay
-              onProgressChange={setProgress}
-              _record={mainRecord}
-            />
-            <div className="w-full flex justify-center mt-10">
-              <Button
-                disabled={workedOnToday}
-                onClick={() =>
-                  mediaRecordWorkedOn({
-                    variables: { id: mainRecord.id },
-                    onError: setError,
-                  })
-                }
-              >
-                {workedOnToday && <Check className="mr-2" />}
-                {workedOnToday ? "Understood" : "Mark content as understood"}
-              </Button>
+      {/* TODO progress tracking */}
+      {/* <Dialog open={progress > 0.8 && !workedOnToday && !nagDismissed}>
+        <DialogTitle>Do you want to mark this as understood?</DialogTitle>
+        <DialogContent>
+          You&apos;ve completed more than 80% of this content - this could be a
+          good time to mark it as completed.
+        </DialogContent>
+        <DialogActions>
+          <Button variant="text" onClick={() => setNagDismissed(true)}>
+            No thanks
+          </Button>
+          <Button
+            variant="text"
+            onClick={() =>
+              mediaRecordWorkedOn({
+                variables: { id: mainRecord.id },
+                onError: setError,
+              })
+            }
+          >
+            Ok
+          </Button>
+        </DialogActions>
+      </Dialog> */}
+
+      <div
+        ref={ref}
+        className="grid gap-4 w-full h-full"
+        style={
+          hasVideos && hasDocuments
+            ? {
+                gridTemplateColumns: `calc(${splitPercentage}% - 10px) 20px calc(${
+                  100 - splitPercentage
+                }% - 10px)`,
+              }
+            : { gridTemplateColumns: `100%` }
+        }
+      >
+        {hasVideos && <VideoSide setError={setError} _content={content} />}
+        {hasVideos && hasDocuments && (
+          <div
+            onMouseDown={() => {
+              const l = (e: MouseEvent) => {
+                const dimensions = ref.current?.getBoundingClientRect();
+                if (!dimensions) return;
+
+                e.stopPropagation();
+
+                setSplitPercentage(
+                  clamp(
+                    (100 * (e.screenX - dimensions.x)) / dimensions.width,
+                    20,
+                    70
+                  )
+                );
+              };
+
+              window.addEventListener("mousemove", l);
+
+              window.onmouseup = () =>
+                window.removeEventListener("mousemove", l);
+            }}
+            className="group w-full flex items-center justify-center cursor-col-resize"
+          >
+            <div className="w-[4px] flex items-center justify-center group-hover:w-[6px] group-active:w-[6px] transition-all h-full bg-slate-50 rounded-full group-hover:bg-slate-300 group-active:bg-slate-200">
+              <div className="bg-slate-300 transition-all group-hover:bg-slate-500 w-[2px] h-[20px] group-hover:h-[40px]"></div>
             </div>
           </div>
-        </>
-      )}
-      {!mainRecord && <DisplayError message="Content has no media records." />}
-
-      {relatedRecords.length > 0 && (
-        <>
-          <Typography variant="h2">Related media</Typography>
-          <div className="mt-4 flex flex-col gap-2">
-            {relatedRecords.map((record) => (
-              <MediaContentLink
-                courseId={courseId}
-                key={record.id}
-                _media={content}
-                recordId={record.id}
-              />
-            ))}
-          </div>
-        </>
-      )}
+        )}
+        {hasDocuments && (
+          <DocumentSide setError={setError} _content={content} />
+        )}
+      </div>
     </main>
   );
-}
-
-export function ContentMediaDisplay({
-  _record,
-  onProgressChange,
-}: {
-  _record: studentContentMediaDisplayFragment$key;
-  onProgressChange: (fraction: number) => void;
-}) {
-  const mediaRecord = useFragment(
-    graphql`
-      fragment studentContentMediaDisplayFragment on MediaRecord {
-        type
-        name
-        downloadUrl
-      }
-    `,
-    _record
-  );
-
-  const [duration, setDuration] = useState<number>();
-
-  switch (mediaRecord.type) {
-    case "VIDEO":
-      return (
-        <ReactPlayer
-          url={mediaRecord.downloadUrl}
-          width="100%"
-          height="auto"
-          controls
-          onDuration={(duration) => {
-            setDuration(duration);
-          }}
-          onProgress={(progress) => {
-            if (duration) {
-              onProgressChange(progress.playedSeconds / duration);
-            }
-          }}
-        />
-      );
-    case "PRESENTATION":
-    case "DOCUMENT":
-      return (
-        <PdfViewer
-          onProgressChange={onProgressChange}
-          url={mediaRecord.downloadUrl}
-        />
-      );
-    case "IMAGE":
-      // eslint-disable-next-line @next/next/no-img-element
-      return (
-        <img
-          alt={mediaRecord.name}
-          src={mediaRecord.downloadUrl}
-          className="max-h-md flex justify-center mx-auto"
-        ></img>
-      );
-    default:
-      return <>Unsupported media type</>;
-  }
 }
 
 export function DownloadButton({

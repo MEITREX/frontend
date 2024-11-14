@@ -57,6 +57,7 @@ export function MediaContentModal({
         }
         mediaRecords {
           id
+          suggestedTags
           __id
           uploadUrl
           name
@@ -105,6 +106,7 @@ export function MediaContentModal({
             name
             downloadUrl
             type
+            suggestedTags
           }
           __typename
         }
@@ -215,6 +217,10 @@ export function MediaContentModal({
         ))}
         <Form>
           <ContentMetadataFormSection
+            suggestedTags={
+              existingContent?.mediaRecords.flatMap((x) => x.suggestedTags) ??
+              []
+            }
             metadata={metadata}
             onChange={setMetadata}
           />

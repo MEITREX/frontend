@@ -22,11 +22,11 @@ import { AddAssociationQuestionModal } from "./AddAssociationQuestionModal";
 export function AddQuestionButton({
   _allRecords,
   assessmentId,
-  courseId
+  courseId,
 }: {
   _allRecords: MediaRecordSelector$key;
   assessmentId: string;
-  courseId:string;
+  courseId: string;
 }) {
   const [open, setOpen] = useState(false);
   const [addMultipleChoice, setAddMultipleChoice] = useState(false);

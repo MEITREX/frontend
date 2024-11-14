@@ -138,7 +138,10 @@ export function AddFlashcardSetModal({
             </Alert>
           ))}
           <Form>
-            <ContentMetadataFormSection onChange={setMetadata} />
+            <ContentMetadataFormSection
+              suggestedTags={[]}
+              onChange={setMetadata}
+            />
             <AssessmentMetadataFormSection onChange={setAssessmentMetadata} />
           </Form>
         </DialogContent>

@@ -1,13 +1,29 @@
 "use client";
 import { NavbarIsTutor$key } from "@/__generated__/NavbarIsTutor.graphql";
+import { NavbarSemanticSearchQuery } from "@/__generated__/NavbarSemanticSearchQuery.graphql";
 import { NavbarStudentQuery } from "@/__generated__/NavbarStudentQuery.graphql";
 import logo from "@/assets/logo.svg";
+import duration from "dayjs/plugin/duration";
+
+dayjs.extend(duration);
+
 import { PageView, usePageView } from "@/src/currentView";
-import { CollectionsBookmark, Dashboard, Logout } from "@mui/icons-material";
 import {
+  CollectionsBookmark,
+  Dashboard,
+  Logout,
+  ManageSearch,
+  Search,
+} from "@mui/icons-material";
+import {
+  Autocomplete,
   Avatar,
+  Button,
+  CircularProgress,
+  ClickAwayListener,
   Divider,
   IconButton,
+  InputAdornment,
   List,
   ListItem,
   ListItemAvatar,
@@ -15,11 +31,14 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
+  Paper,
+  TextField,
   Tooltip,
 } from "@mui/material";
 import dayjs from "dayjs";
+import { chain, debounce } from "lodash";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactElement } from "react";
+import { ReactElement, useCallback, useState, useTransition } from "react";
 import { useAuth } from "react-oidc-context";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
 
@@ -44,6 +63,13 @@ function useIsTutor(_frag: NavbarIsTutor$key) {
   );
 }
 
+type SearchResultType = {
+  breadcrumbs: string;
+  title: string;
+  position?: string;
+  url: string;
+};
+
 function NavbarBase({
   children,
   _isTutor,
@@ -51,13 +77,243 @@ function NavbarBase({
   children: React.ReactElement;
   _isTutor: NavbarIsTutor$key;
 }) {
+  const [term, setTerm] = useState("");
+  const router = useRouter();
+
+  const searchResults = useLazyLoadQuery<NavbarSemanticSearchQuery>(
+    graphql`
+      query NavbarSemanticSearchQuery($term: String!, $skip: Boolean!) {
+        semanticSearch(queryText: $term, count: 30) @skip(if: $skip) {
+          score
+          ... on AssessmentSemanticSearchResult {
+            assessmentId
+            score
+            assessment {
+              ... on FlashcardSetAssessment {
+                metadata {
+                  name
+                  courseId
+                  course {
+                    title
+                  }
+                }
+
+                __typename
+              }
+              ... on QuizAssessment {
+                metadata {
+                  name
+                  courseId
+                  course {
+                    title
+                  }
+                }
+                __typename
+              }
+            }
+          }
+          ... on MediaRecordSegmentSemanticSearchResult {
+            mediaRecordSegment {
+              __typename
+              ... on VideoRecordSegment {
+                startTime
+                mediaRecord {
+                  id
+                  name
+
+                  contents {
+                    id
+                    metadata {
+                      name
+                      course {
+                        id
+                        title
+                      }
+                    }
+                  }
+                }
+              }
+              ... on DocumentRecordSegment {
+                page
+                mediaRecord {
+                  id
+                  name
+                  contents {
+                    id
+                    metadata {
+                      name
+                      course {
+                        id
+                        title
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `,
+    { term: term, skip: term.length < 3 }
+  );
+
+  const [isPending, startTransition] = useTransition();
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedSetter = useCallback(
+    debounce((value: string) => startTransition(() => setTerm(value)), 150),
+    [setTerm, startTransition]
+  );
+
+  const results = chain(searchResults.semanticSearch)
+    .orderBy((x) => x?.score)
+    .slice(0, 15)
+    .flatMap((x): SearchResultType[] => {
+      if (
+        x.mediaRecordSegment &&
+        x.mediaRecordSegment.__typename === "DocumentRecordSegment"
+      ) {
+        const seg = x.mediaRecordSegment;
+        return seg.mediaRecord.contents
+          .filter((x) => !!x)
+          .map((content) => ({
+            breadcrumbs: `${content!.metadata.course.title} › ${
+              content!.metadata.name
+            }`,
+            title: seg.mediaRecord.name,
+            position: `Page ${seg.page + 1}`,
+            url: `/courses/${content!.metadata.course.id}/media/${
+              content!.id
+            }?selectedDocument=${seg.mediaRecord.id}&page=${seg.page + 1}`,
+          }));
+      } else if (
+        x.mediaRecordSegment &&
+        x.mediaRecordSegment.__typename === "VideoRecordSegment"
+      ) {
+        const seg = x.mediaRecordSegment;
+        return seg.mediaRecord.contents
+          .filter((x) => !!x)
+          .map((content) => ({
+            breadcrumbs: `${content!.metadata.course.title} › ${
+              content!.metadata.name
+            }`,
+            title: seg.mediaRecord.name,
+            position: dayjs
+              .duration(seg.startTime ?? 0, "seconds")
+              .format("HH:mm:ss"),
+            url: `/courses/${content!.metadata.course.id}/media/${
+              content!.id
+            }?selectedVideo=${seg.mediaRecord.id}&videoPosition=${
+              seg.startTime
+            }`,
+          }));
+      } else if (
+        x.assessment &&
+        x.assessment.__typename === "FlashcardSetAssessment"
+      ) {
+        return [
+          {
+            breadcrumbs: `${x.assessment.metadata.course.title}`,
+            title: x.assessment.metadata.name,
+            url: `/courses/${x.assessment.metadata.courseId}/flashcards/${x.assessmentId}`,
+          },
+        ];
+      } else if (x.assessment && x.assessment.__typename === "QuizAssessment") {
+        return [
+          {
+            breadcrumbs: `${x.assessment.metadata.course.title}`,
+            title: x.assessment.metadata.name,
+            url: `/courses/${x.assessment.metadata.courseId}/flashcards/${x.assessmentId}`,
+          },
+        ];
+      } else {
+        return [];
+      }
+    })
+    .value();
+
+  const [isSearchPopupOpen, setSearchPopupOpen] = useState(false);
+
+  function SearchPopupPaper({ children }: { children?: any }) {
+    return (
+      <ClickAwayListener onClickAway={() => setSearchPopupOpen(false)}>
+        <Paper>
+          {children}
+          <Button
+            startIcon={<ManageSearch />}
+            onClick={() => {
+              router.push(`/search?query=${term}`);
+              setSearchPopupOpen(false);
+            }}
+          >
+            Detailed results
+          </Button>
+        </Paper>
+      </ClickAwayListener>
+    );
+  }
+
   return (
     <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
       <div className="text-center my-16 text-3xl font-medium tracking-wider sticky">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logo.src} alt="GITS logo" className="w-24 m-auto" />
       </div>
+
       <NavbarSection>
+        <Autocomplete
+          freeSolo
+          size="small"
+          className="mx-2 mb-2"
+          clearOnBlur
+          blurOnSelect
+          autoHighlight
+          open={isSearchPopupOpen}
+          value={null}
+          getOptionLabel={(x) => ""}
+          onChange={(_, newVal) => {
+            if (typeof newVal == "string") {
+              router.push(`/search?query=${newVal}`);
+            } else if (newVal) {
+              setSearchPopupOpen(false);
+              router.push(newVal.url);
+            }
+          }}
+          filterOptions={(x) => x}
+          renderOption={(props, option) => (
+            <li {...props} key={option?.breadcrumbs}>
+              <div>
+                <div className="text-[10px] text-slate-500">
+                  {option.breadcrumbs}
+                </div>
+                {option.title}
+                {option.position && (
+                  <div className="text-[10px] text-slate-400">
+                    {option.position}
+                  </div>
+                )}
+              </div>
+            </li>
+          )}
+          options={term.length >= 3 ? results ?? [] : []}
+          onInputChange={(_, value) => value && debouncedSetter(value)}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              onClick={() => setSearchPopupOpen(true)}
+              InputProps={{
+                ...params.InputProps,
+                startAdornment: (
+                  <InputAdornment position="start" className="ml-0.5">
+                    {isPending ? <CircularProgress size={24} /> : <Search />}
+                  </InputAdornment>
+                ),
+              }}
+            />
+          )}
+          PaperComponent={SearchPopupPaper}
+        />
         <NavbarLink title="Dashboard" icon={<Dashboard />} href="/" exact />
         <NavbarLink
           title="Course Catalog"

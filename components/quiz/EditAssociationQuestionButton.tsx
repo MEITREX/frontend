@@ -16,13 +16,13 @@ export function EditAssociationQuestionButton({
   _question,
   assessmentId,
   item,
-  courseId
+  courseId,
 }: {
   _allRecords: MediaRecordSelector$key;
   _question: EditAssociationQuestionButtonFragment$key;
   assessmentId: string;
-  item:ItemData;
-  courseId:string;
+  item: ItemData;
+  courseId: string;
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<any>(null);
@@ -48,16 +48,20 @@ export function EditAssociationQuestionButton({
       mutation EditAssociationQuestionButtonMutation(
         $assessmentId: UUID!
         $questionInput: UpdateAssociationQuestionInput!
-        $itemInput:ItemInput!
+        $itemInput: ItemInput!
       ) {
         mutateQuiz(assessmentId: $assessmentId) {
           assessmentId
-          updateAssociationQuestion(questionInput: $questionInput,assessmentId: $assessmentId,item:$itemInput) {
+          updateAssociationQuestion(
+            questionInput: $questionInput
+            assessmentId: $assessmentId
+            item: $itemInput
+          ) {
             assessmentId
             questionPool {
               ...EditAssociationQuestionButtonFragment
             }
-            item{
+            item {
               id
               associatedSkills {
                 id
@@ -70,7 +74,11 @@ export function EditAssociationQuestionButton({
       }
     `);
 
-  const handleSubmit = (data: AssociationQuestionData, item: ItemData,newSkillAdded?:boolean) => {
+  const handleSubmit = (
+    data: AssociationQuestionData,
+    item: ItemData,
+    newSkillAdded?: boolean
+  ) => {
     updateQuestion({
       variables: {
         assessmentId,
@@ -80,7 +88,7 @@ export function EditAssociationQuestionButton({
           hint: data.hint,
           correctAssociations: data.correctAssociations,
         },
-        itemInput:item
+        itemInput: item,
       },
       updater: (store) => store.invalidateStore(),
       onCompleted: () => setOpen(false),

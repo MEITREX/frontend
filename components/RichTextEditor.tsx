@@ -1,6 +1,6 @@
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { RichTextEditorMediaRecordQuery } from "@/__generated__/RichTextEditorMediaRecordQuery.graphql";
-import { ContentMediaDisplay } from "@/app/courses/[courseId]/media/[mediaId]/student";
+import { ContentMediaDisplay } from "@/app/courses/[courseId]/media/[mediaId]/ContentMediaDisplay";
 import {
   Code,
   Delete,
@@ -631,7 +631,7 @@ function DisplayMediaRecord({ id }: { id: string }) {
       graphql`
         query RichTextEditorMediaRecordQuery($id: UUID!) {
           mediaRecordsByIds(ids: [$id]) {
-            ...studentContentMediaDisplayFragment
+            ...ContentMediaDisplayFragment
           }
         }
       `,

@@ -45,16 +45,20 @@ export function MultipleChoiceQuestionModal({
   open: boolean;
   title: string;
   error: any;
-  courseId:string;
-  item:ItemData;
+  courseId: string;
+  item: ItemData;
   initialValue: MultipleChoiceQuestionData;
   isLoading: boolean;
-  onSave: (data: MultipleChoiceQuestionData,item:ItemData,newSkillAdded?:boolean) => void;
+  onSave: (
+    data: MultipleChoiceQuestionData,
+    item: ItemData,
+    newSkillAdded?: boolean
+  ) => void;
   onClose: () => void;
   clearError: () => void;
 }) {
   const [data, setData] = useState(initialValue);
-  const [itemForQuestion,setItem]=useState(item);
+  const [itemForQuestion, setItem] = useState(item);
   const updateAnswer = (index: number, value: MultipleChoiceAnswerData) => {
     setData((oldValue) => ({
       ...oldValue,
@@ -65,12 +69,11 @@ export function MultipleChoiceQuestionModal({
       ],
     }));
   };
-  function handleItem(item:ItemData|null){
-    if(item){
+  function handleItem(item: ItemData | null) {
+    if (item) {
       setItem(item);
-    }
-    else{
-      setItem({associatedBloomLevels:[],associatedSkills:[]});
+    } else {
+      setItem({ associatedBloomLevels: [], associatedSkills: [] });
     }
   }
   const oneAnswerCorrect = useMemo(
@@ -96,8 +99,7 @@ export function MultipleChoiceQuestionModal({
       setData(initialValue);
       setItem(item);
     }
-  }, [open, initialValue,item]);
-
+  }, [open, initialValue, item]);
 
   return (
     <Dialog open={open} maxWidth="lg" onClose={onClose}>
@@ -105,7 +107,11 @@ export function MultipleChoiceQuestionModal({
       <DialogContent>
         <FormErrors error={error} onClose={clearError} />
         <Form>
-          <ItemFormSection courseId={courseId} item={itemForQuestion} onChange={handleItem} useEffectNecessary={false}></ItemFormSection>
+          <ItemFormSection
+            courseId={courseId}
+            item={itemForQuestion}
+            onChange={handleItem}
+          ></ItemFormSection>
           <FormSection title="Question">
             <RichTextEditor
               _allRecords={_allRecords}
@@ -229,7 +235,7 @@ export function MultipleChoiceQuestionModal({
         <LoadingButton
           disabled={!valid}
           loading={isLoading}
-          onClick={() => onSave(data,itemForQuestion)}
+          onClick={() => onSave(data, itemForQuestion)}
         >
           Save
         </LoadingButton>

@@ -17,13 +17,13 @@ export function EditClozeQuestionButton({
   _question,
   assessmentId,
   courseId,
-  item
+  item,
 }: {
   _allRecords: MediaRecordSelector$key;
   _question: EditClozeQuestionButtonFragment$key;
   assessmentId: string;
-  courseId:string,
-  item:ItemData,
+  courseId: string;
+  item: ItemData;
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<any>(null);
@@ -55,18 +55,22 @@ export function EditClozeQuestionButton({
       mutation EditClozeQuestionButtonMutation(
         $assessmentId: UUID!
         $questionInput: UpdateClozeQuestionInput!
-        $item:ItemInput!
+        $item: ItemInput!
       ) {
         mutateQuiz(assessmentId: $assessmentId) {
           assessmentId
-          updateClozeQuestion(questionInput: $questionInput, assessmentId:$assessmentId, item:$item) {
+          updateClozeQuestion(
+            questionInput: $questionInput
+            assessmentId: $assessmentId
+            item: $item
+          ) {
             assessmentId
             questionPool {
               itemId
               ...EditClozeQuestionButtonFragment
               ...ClozeQuestionPreviewFragment
             }
-            item{
+            item {
               id
               associatedSkills {
                 id
@@ -79,7 +83,11 @@ export function EditClozeQuestionButton({
       }
     `);
 
-  const handleSubmit = (data: ClozeQuestionData,item:ItemData,newSkillAdded?:boolean) => {
+  const handleSubmit = (
+    data: ClozeQuestionData,
+    item: ItemData,
+    newSkillAdded?: boolean
+  ) => {
     updateQuestion({
       variables: {
         assessmentId,
@@ -98,7 +106,7 @@ export function EditClozeQuestionButton({
                 }
           ),
         },
-        item:item,
+        item: item,
       },
       updater: (store) => store.invalidateStore(),
       onCompleted: () => setOpen(false),

@@ -63,6 +63,7 @@ export function EditFlashcardSetModal({
       <DialogContent>
         <Form>
           <ContentMetadataFormSection
+            suggestedTags={[]}
             metadata={content.metadata}
             onChange={setMetadata}
           />

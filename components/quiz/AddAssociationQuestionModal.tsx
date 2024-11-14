@@ -13,13 +13,13 @@ export function AddAssociationQuestionModal({
   assessmentId,
   open,
   onClose,
-  courseId
+  courseId,
 }: {
   _allRecords: MediaRecordSelector$key;
   assessmentId: string;
   open: boolean;
   onClose: () => void;
-  courseId:string;
+  courseId: string;
 }) {
   const [error, setError] = useState<any>(null);
 
@@ -27,32 +27,40 @@ export function AddAssociationQuestionModal({
     useMutation<AddAssociationQuestionModalMutation>(graphql`
       mutation AddAssociationQuestionModalMutation(
         $input: CreateAssociationQuestionInput!
-        $assessmentId:UUID!
-        $item:ItemInput!
+        $assessmentId: UUID!
+        $item: ItemInput!
       ) {
         mutateQuiz(assessmentId: $assessmentId) {
           assessmentId
-          addAssociationQuestion(questionInput: $input,assessmentId: $assessmentId,item:$item) {
+          addAssociationQuestion(
+            questionInput: $input
+            assessmentId: $assessmentId
+            item: $item
+          ) {
             questionPool {
               itemId
               type # without type and number, the question will not appear properly and be deletable until a page reload
               number
               ...AssociationQuestionPreviewFragment
             }
-            item{
+            item {
               id
               associatedSkills {
                 id
                 skillName
               }
               associatedBloomLevels
-            }  
+            }
           }
         }
       }
     `);
 
-  const handleSubmit = (data: AssociationQuestionData, item:ItemData, newSkillAdded?:boolean) => {
+  const handleSubmit = (
+    data: AssociationQuestionData,
+    item: ItemData,
+    newSkillAdded?: boolean
+  ) => {
     addQuestion({
       variables: {
         assessmentId,
@@ -61,7 +69,7 @@ export function AddAssociationQuestionModal({
           hint: data.hint,
           correctAssociations: data.correctAssociations,
         },
-        item:item,
+        item: item,
       },
       onCompleted: () => onClose(),
       onError: setError,
@@ -69,7 +77,7 @@ export function AddAssociationQuestionModal({
         store,
         {
           mutateQuiz: {
-            addAssociationQuestion: { questionPool,item },
+            addAssociationQuestion: { questionPool, item },
           },
         }
       ) {
@@ -89,9 +97,9 @@ export function AddAssociationQuestionModal({
 
         quiz.setLinkedRecords(allQuestions, "questionPool");
         const items = store
-        .getRoot()
-        .getLinkedRecord("items")
-        ?.getLinkedRecords("elements");
+          .getRoot()
+          .getLinkedRecord("items")
+          ?.getLinkedRecords("elements");
         const newItem = store.get(item!.id);
         if (!items || !newItem) return;
 
@@ -102,9 +110,9 @@ export function AddAssociationQuestionModal({
       },
     });
   };
-  const initialItem: ItemData={
-    associatedSkills:[],
-    associatedBloomLevels:[],
+  const initialItem: ItemData = {
+    associatedSkills: [],
+    associatedBloomLevels: [],
   };
   const initialValue: AssociationQuestionData = {
     text: "",

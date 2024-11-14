@@ -15,10 +15,7 @@ export function SkillLevels({
   _skill: SkillLevelsFragment$key;
   courseId: string;
 }) {
-  const {
-    skillLevels,
-
-  } = useFragment(
+  const { skillLevels } = useFragment(
     graphql`
       fragment SkillLevelsFragment on Skill {
         skillName
@@ -35,10 +32,10 @@ export function SkillLevels({
           analyze {
             value
           }
-          evaluate{
+          evaluate {
             value
           }
-          create{
+          create {
             value
           }
         }
@@ -46,72 +43,71 @@ export function SkillLevels({
     `,
     _skill
   );
-  if(skillLevels){
-  return (
-    <div
-      className={`grid grid-flow-col auto-cols-fr gap-6 h-full ${className}`}
-    >
-      {skillLevels.remember.value>0 && (
-        <SkillLevelLabel label="Remember" color={colors.purple[500]}>
-          <SkillLevel
-            courseId={courseId}
-            value={skillLevels.remember.value}
-            bloomLevel="REMEMBER"
-          />
-        </SkillLevelLabel>
-      )}
-      {skillLevels.understand.value>0 && (
-        <SkillLevelLabel label="Understand" color={colors.blue[500]}>
-          <SkillLevel
-            courseId={courseId}
-            value={skillLevels.understand.value}
-            bloomLevel="UNDERSTAND"
-          />
-        </SkillLevelLabel>
-      )}
-      {skillLevels.apply.value>0 && (
-        <SkillLevelLabel label="Apply" color={colors.cyan[500]}>
-          <SkillLevel
-            courseId={courseId}
-            value={skillLevels.apply.value}
-            bloomLevel="APPLY"
-          />
-        </SkillLevelLabel>
-      )}
-      {skillLevels.analyze.value>0 && (
-        <SkillLevelLabel label="Analyze" color={colors.green[500]}>
-          <SkillLevel
-            courseId={courseId}
-            value={skillLevels.analyze.value}
-            bloomLevel="ANALYZE"
-          />
-        </SkillLevelLabel>
-      )}
-       {skillLevels.evaluate.value>0&& (
-        <SkillLevelLabel label="Evaluate" color={colors.yellow[500]}>
-          <SkillLevel
-            courseId={courseId}
-            value={skillLevels.evaluate.value}
-            bloomLevel="EVALUATE"
-          />
-        </SkillLevelLabel>
-      )}
-      {skillLevels.create.value>0&& (
-        <SkillLevelLabel label="Create" color={colors.orange[500]}>
-          <SkillLevel
-            courseId={courseId}
-            value={skillLevels.create.value}
-
-            bloomLevel="CREATE"
-          />
-        </SkillLevelLabel>
-      )}
-    </div>
-  );
-}
-else{
-  return <div></div>
-}
+  if (skillLevels) {
+    return (
+      <div
+        className={`grid grid-flow-col auto-cols-fr gap-6 h-full ${className}`}
+      >
+        {skillLevels.remember !== null && skillLevels.remember.value > 0 && (
+          <SkillLevelLabel label="Remember" color={colors.purple[500]}>
+            <SkillLevel
+              courseId={courseId}
+              value={skillLevels.remember.value}
+              bloomLevel="REMEMBER"
+            />
+          </SkillLevelLabel>
+        )}
+        {skillLevels.understand !== null &&
+          skillLevels.understand.value > 0 && (
+            <SkillLevelLabel label="Understand" color={colors.blue[500]}>
+              <SkillLevel
+                courseId={courseId}
+                value={skillLevels.understand.value}
+                bloomLevel="UNDERSTAND"
+              />
+            </SkillLevelLabel>
+          )}
+        {skillLevels.apply !== null && skillLevels.apply.value > 0 && (
+          <SkillLevelLabel label="Apply" color={colors.cyan[500]}>
+            <SkillLevel
+              courseId={courseId}
+              value={skillLevels.apply.value}
+              bloomLevel="APPLY"
+            />
+          </SkillLevelLabel>
+        )}
+        {skillLevels.analyze !== null && skillLevels.analyze.value > 0 && (
+          <SkillLevelLabel label="Analyze" color={colors.green[500]}>
+            <SkillLevel
+              courseId={courseId}
+              value={skillLevels.analyze.value}
+              bloomLevel="ANALYZE"
+            />
+          </SkillLevelLabel>
+        )}
+        {skillLevels.evaluate !== null && skillLevels.evaluate.value > 0 && (
+          <SkillLevelLabel label="Evaluate" color={colors.yellow[500]}>
+            <SkillLevel
+              courseId={courseId}
+              value={skillLevels.evaluate.value}
+              bloomLevel="EVALUATE"
+            />
+          </SkillLevelLabel>
+        )}
+        {skillLevels.create !== null && skillLevels.create.value > 0 && (
+          <SkillLevelLabel label="Create" color={colors.orange[500]}>
+            <SkillLevel
+              courseId={courseId}
+              value={skillLevels.create.value}
+              bloomLevel="CREATE"
+            />
+          </SkillLevelLabel>
+        )}
+      </div>
+    );
+  } else {
+    return <div></div>;
+  }
 }
 
 function SkillLevelLabel({
@@ -145,8 +141,8 @@ export function SkillLevel({
   value: number;
   courseId: string;
 }) {
-  const level = Math.floor(value*100); // integer part is level
-  const progress = value*100; // decimal part is progress
+  const level = Math.floor(value * 100); // integer part is level
+  const progress = value * 100; // decimal part is progress
 
   if (level < 50) {
     return (
@@ -264,7 +260,7 @@ export function SkillLevelBase({
     //   }}
     //   arrow
     // >
-      <Box>{badge}</Box>
+    <Box>{badge}</Box>
     // </Tooltip>
   );
 }

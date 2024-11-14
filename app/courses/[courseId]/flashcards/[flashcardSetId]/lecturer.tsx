@@ -51,7 +51,7 @@ export default function LecturerFlashcards() {
                 ...LecturerEditFlashcardFragment
               }
             }
-            items{
+            items {
               id
               associatedSkills {
                 id
@@ -59,7 +59,7 @@ export default function LecturerFlashcards() {
               }
               associatedBloomLevels
             }
-            }
+          }
           ...EditFlashcardSetModalFragment
         }
       }
@@ -72,34 +72,36 @@ export default function LecturerFlashcards() {
 
   const [error, setError] = useState<any>(null);
 
-
   const [addFlashcard, isAddingFlashcard] =
     useMutation<lecturerAddFlashcardMutation>(graphql`
       mutation lecturerAddFlashcardMutation(
         $flashcard: CreateFlashcardInput!
         $assessmentId: UUID!
-        $item:ItemInput!
-
+        $item: ItemInput!
       ) {
         mutateFlashcardSet(assessmentId: $assessmentId) {
           assessmentId
-          createFlashcard(flashcardInput: $flashcard,assessmentId: $assessmentId,item:$item) {
-            flashcard{
+          createFlashcard(
+            flashcardInput: $flashcard
+            assessmentId: $assessmentId
+            item: $item
+          ) {
+            flashcard {
               __id
-                itemId
+              itemId
               ...LecturerEditFlashcardFragment
-              }
-            item{
+            }
+            item {
               id
               associatedSkills {
                 id
                 skillName
               }
               associatedBloomLevels
-            }  
             }
           }
         }
+      }
     `);
   const [updateFlashcardSet, isUpdatingFlashcardSet] =
     useMutation<lecturerEditFlashcardSetMutation>(graphql`
@@ -124,7 +126,7 @@ export default function LecturerFlashcards() {
             }
           }
         }
-        }
+      }
     `);
 
   const [deleteFlashcard, isDeleting] =
@@ -146,16 +148,17 @@ export default function LecturerFlashcards() {
 
   const content = contentsByIds[0];
   const flashcardSet = content.flashcardSet;
-  const transformedItems: ItemData[] = content.items?.map(item => ({
-    associatedBloomLevels: Array.from(item.associatedBloomLevels),
-    associatedSkills: Array.from(item.associatedSkills).map(skill => ({
+  const transformedItems: ItemData[] =
+    content.items?.map((item) => ({
+      associatedBloomLevels: Array.from(item.associatedBloomLevels),
+      associatedSkills: Array.from(item.associatedSkills).map((skill) => ({
         id: skill.id || undefined,
         skillName: skill.skillName,
-    })),
-    id: item.id,
-})) || [];
-const items=transformedItems;
-  
+      })),
+      id: item.id,
+    })) || [];
+  const items = transformedItems;
+
   if (flashcardSet == null) {
     return (
       <PageError
@@ -165,15 +168,23 @@ const items=transformedItems;
     );
   }
 
-  function handleAddFlashcard(sides: FlashcardSideData[], item:ItemData,newSkillAdded?:boolean) {
+  function handleAddFlashcard(
+    sides: FlashcardSideData[],
+    item: ItemData,
+    newSkillAdded?: boolean
+  ) {
     const newFlashcard = {
       sides,
-      itemId:null,
+      itemId: null,
     };
 
     setAddFlashcardOpen(false);
     addFlashcard({
-      variables: {  flashcard: newFlashcard,assessmentId: flashcardSetId,item:item },
+      variables: {
+        flashcard: newFlashcard,
+        assessmentId: flashcardSetId,
+        item: item,
+      },
       onError: setError,
       updater(store, response) {
         // Get record of flashcard set and of the new flashcard
@@ -186,29 +197,27 @@ const items=transformedItems;
         // Update the linked records of the flashcard set
         const flashcardRecords =
           flashcardSetRecord.getLinkedRecords("flashcards") ?? [];
-          console.log(flashcardRecords);
+        console.log(flashcardRecords);
         flashcardSetRecord.setLinkedRecords(
           [...flashcardRecords, newRecord],
           "flashcards"
         );
- const root= store.get(flashcardSetId);
+        const root = store.get(flashcardSetId);
 
-          if (!root) return;
+        if (!root) return;
 
-          const items = root?.getLinkedRecords("items") ?? [];
+        const items = root?.getLinkedRecords("items") ?? [];
 
-          const newItem=store.get(response.mutateFlashcardSet.createFlashcard.item!.id);
+        const newItem = store.get(
+          response.mutateFlashcardSet.createFlashcard.item!.id
+        );
 
-          if (newItem) {
-
-            root.setLinkedRecords([...items, newItem], "items");
-
+        if (newItem) {
+          root.setLinkedRecords([...items, newItem], "items");
         } else {
-
-           return;
-
+          return;
         }
-       /* const items = store
+        /* const items = store
         .getRoot()
         .getLinkedRecord("items")
         ?.getLinkedRecords("elements");
@@ -222,13 +231,13 @@ const items=transformedItems;
 
         console.log(flashcardSetRecord.getLinkedRecords("flashcards"));
       },
-      onCompleted(){
+      onCompleted() {
         //reload page, when a new skill is added
-        if(newSkillAdded){
+        if (newSkillAdded) {
           console.log("reload");
           window.location.reload();
         }
-      }
+      },
     });
   }
 
@@ -355,7 +364,7 @@ const items=transformedItems;
         ))}
         {isAddFlashcardOpen && (
           <LocalFlashcard
-          courseId={courseId}
+            courseId={courseId}
             onClose={() => setAddFlashcardOpen(false)}
             onSubmit={handleAddFlashcard}
           />
@@ -379,7 +388,6 @@ const items=transformedItems;
           onClose={() => setEditSetOpen(false)}
           onSubmit={handleUpdateFlashcardSet}
           _content={content}
-
         />
       )}
     </main>

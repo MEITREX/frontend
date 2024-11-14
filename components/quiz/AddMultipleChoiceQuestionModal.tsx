@@ -16,7 +16,7 @@ export function AddMultipleChoiceQuestionModal({
 }: {
   _allRecords: MediaRecordSelector$key;
   assessmentId: string;
-  courseId:string;
+  courseId: string;
   open: boolean;
   onClose: () => void;
 }) {
@@ -27,11 +27,15 @@ export function AddMultipleChoiceQuestionModal({
       mutation AddMultipleChoiceQuestionModalMutation(
         $assessmentId: UUID!
         $input: CreateMultipleChoiceQuestionInput!
-        $item:ItemInput!
+        $item: ItemInput!
       ) {
         mutateQuiz(assessmentId: $assessmentId) {
           assessmentId
-          addMultipleChoiceQuestion( questionInput:$input , assessmentId:$assessmentId, item:$item) {
+          addMultipleChoiceQuestion(
+            questionInput: $input
+            assessmentId: $assessmentId
+            item: $item
+          ) {
             assessmentId
             questionPool {
               itemId
@@ -40,20 +44,24 @@ export function AddMultipleChoiceQuestionModal({
               ...EditMultipleChoiceQuestionButtonFragment
               ...MultipleChoiceQuestionPreviewFragment
             }
-            item{
+            item {
               id
               associatedSkills {
                 id
                 skillName
               }
               associatedBloomLevels
-            }  
+            }
           }
         }
       }
     `);
 
-  const handleSubmit = (data: MultipleChoiceQuestionData,item:ItemData,newSkillAdded?:boolean) => {
+  const handleSubmit = (
+    data: MultipleChoiceQuestionData,
+    item: ItemData,
+    newSkillAdded?: boolean
+  ) => {
     addQuestion({
       variables: {
         assessmentId,
@@ -66,14 +74,14 @@ export function AddMultipleChoiceQuestionModal({
             feedback: answer.feedback,
           })),
         },
-        item:item,
+        item: item,
       },
       onCompleted: () => onClose(),
       updater(
         store,
         {
           mutateQuiz: {
-            addMultipleChoiceQuestion: { questionPool,item },
+            addMultipleChoiceQuestion: { questionPool, item },
           },
         }
       ) {
@@ -93,11 +101,11 @@ export function AddMultipleChoiceQuestionModal({
         }
 
         quiz.setLinkedRecords(allQuestions, "questionPool");
-	console.log("updatedQuestion");
+        console.log("updatedQuestion");
         const items = store
-        .getRoot()
-        .getLinkedRecord("items")
-        ?.getLinkedRecords("elements");
+          .getRoot()
+          .getLinkedRecord("items")
+          ?.getLinkedRecords("elements");
         const newItem = store.get(item!.id);
         if (!items || !newItem) return;
 
@@ -116,9 +124,9 @@ export function AddMultipleChoiceQuestionModal({
     hint: null,
     answers: [],
   };
-  const initialItem: ItemData={
-    associatedSkills:[],
-    associatedBloomLevels:[],
+  const initialItem: ItemData = {
+    associatedSkills: [],
+    associatedBloomLevels: [],
   };
 
   return (
