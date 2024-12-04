@@ -250,7 +250,7 @@ export function ContentLink({
               .map((rec) => (
                 <div key={rec.id}>
                   <div className="italic">{rec.name}</div>
-                  <div className="mb-1">{rec.summary || "No summary"}</div>
+                  <div className="mb-1" style={{whiteSpace: "pre"}}>{rec.summary || "No summary"}</div>
                 </div>
               ))}
 
