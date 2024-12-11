@@ -127,7 +127,7 @@ export function ContentMetadataFormSection({
         <>
           <div className="text-[10px] -mb-1 text-gray-600">Suggested Tags</div>
           <div className="flex gap-2 flex-wrap">
-            {suggestedTagsF.map((tag) => (
+            {suggestedTagsF.slice(0, 10).map((tag) => (
               <Chip
                 onClick={() => setTags([...tags, tag])}
                 key={tag}
