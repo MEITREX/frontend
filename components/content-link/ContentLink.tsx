@@ -246,11 +246,16 @@ export function ContentLink({
           <div>
             <div className="w-full border-b mb-2">Summary</div>
             {content.mediaRecords
-              .filter((x) => true)
+              .filter((x) => x.summary.length > 0)
               .map((rec) => (
                 <div key={rec.id}>
                   <div className="italic">{rec.name}</div>
-                  <div className="mb-1">{rec.summary || "No summary"}</div>
+                  <div className="mb-1">
+                    {rec.summary
+                      .flatMap((x) => x.split("\n"))
+                      .map((x, idx) => <div key={idx}>{x}</div>) ||
+                      "No summary"}
+                  </div>
                 </div>
               ))}
 

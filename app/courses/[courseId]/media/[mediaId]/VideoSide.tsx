@@ -332,20 +332,16 @@ function Segment({
               {linkedRecords.length > 0 && (
                 <div>
                   {linkedRecords.map((x) => (
-                    <div key={x.id}>
-                      {linkedRecords.map((x) => (
-                        <div
-                          className="text-xs font-medium text-emerald-900/80 hover:text-emerald-900 rounded-sm mb-1 transition-all cursor-pointer text-end"
-                          key={x.id}
-                          onClick={(e) => {
-                            dispatch({ type: "openPage", page: x.page });
-                            e.stopPropagation();
-                          }}
-                        >
-                          Page {(x.page ?? 0) + 1}{" "}
-                          <DescriptionOutlined className="h-4 inline mb-0.5" />
-                        </div>
-                      ))}
+                    <div
+                      className="text-xs font-medium text-emerald-900/80 hover:text-emerald-900 rounded-sm mb-1 transition-all cursor-pointer text-end"
+                      key={x.id}
+                      onClick={(e) => {
+                        dispatch({ type: "openPage", page: x.page });
+                        e.stopPropagation();
+                      }}
+                    >
+                      Page {(x.page ?? 0) + 1}{" "}
+                      <DescriptionOutlined className="h-4 inline mb-0.5" />
                     </div>
                   ))}
                 </div>
@@ -410,27 +406,20 @@ function CurrentSegment({
       </div>
 
       <div className="p-1 flex flex-col justify-center">
-        {linkedRecords.length > 0 && (
-          <div>
-            {linkedRecords.map((x) => (
-              <div key={x.id}>
-                {linkedRecords.map((x) => (
-                  <div
-                    className="text-xs font-medium text-emerald-900/80 hover:text-emerald-900  mb-1 rounded-sm transition-all cursor-pointer text-end"
-                    key={x.id}
-                    onClick={(e) => {
-                      dispatch({ type: "openPage", page: x.page });
-                      e.stopPropagation();
-                    }}
-                  >
-                    Page {(x.page ?? 0) + 1}{" "}
-                    <DescriptionOutlined className="h-4 inline mb-0.5" />
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        )}
+        {linkedRecords.length > 0 &&
+          linkedRecords.map((x) => (
+            <div
+              className="text-xs font-medium text-emerald-900/80 hover:text-emerald-900  mb-1 rounded-sm transition-all cursor-pointer text-end"
+              key={x.id}
+              onClick={(e) => {
+                dispatch({ type: "openPage", page: x.page });
+                e.stopPropagation();
+              }}
+            >
+              Page {(x.page ?? 0) + 1}{" "}
+              <DescriptionOutlined className="h-4 inline mb-0.5" />
+            </div>
+          ))}
 
         <div
           className="text-xs font-medium text-emerald-900/80 hover:text-emerald-900 rounded-sm transition-all cursor-pointer text-end"
