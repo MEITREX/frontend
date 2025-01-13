@@ -7,7 +7,7 @@ import duration from "dayjs/plugin/duration";
 
 dayjs.extend(duration);
 
-import { PageView, usePageView } from "@/src/currentView";
+import { PageView, PageViewContext } from "@/src/currentView";
 import {
   CollectionsBookmark,
   Dashboard,
@@ -38,7 +38,13 @@ import {
 import dayjs from "dayjs";
 import { chain, debounce } from "lodash";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactElement, useCallback, useState, useTransition } from "react";
+import {
+  ReactElement,
+  useCallback,
+  useContext,
+  useState,
+  useTransition,
+} from "react";
 import { useAuth } from "react-oidc-context";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
 
@@ -377,7 +383,7 @@ function NavbarLink({
 }
 
 function SwitchPageViewButton() {
-  const [pageView, setPageView] = usePageView();
+  const { pageView, setPageView } = useContext(PageViewContext)!;
 
   switch (pageView) {
     case PageView.Student:
@@ -440,7 +446,7 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
 }
 
 export function Navbar() {
-  const [pageView] = usePageView();
+  const { pageView } = useContext(PageViewContext)!;
 
   const { currentUserInfo } = useLazyLoadQuery<NavbarStudentQuery>(
     graphql`

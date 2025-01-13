@@ -1,5 +1,7 @@
 import { CourseCardFragment$key } from "@/__generated__/CourseCardFragment.graphql";
 import { YearDivision } from "@/__generated__/lecturerCreateCourseMutation.graphql";
+import { SuggestionFragment$key } from "@/__generated__/SuggestionFragment.graphql";
+import { PageView, PageViewContext } from "@/src/currentView";
 import {
   Card,
   CardContent,
@@ -10,10 +12,9 @@ import {
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
+import { useContext } from "react";
 import { graphql, useFragment } from "react-relay";
 import { Suggestion } from "./Suggestion";
-import { PageView, usePageView } from "@/src/currentView";
-import { SuggestionFragment$key } from "@/__generated__/SuggestionFragment.graphql";
 
 export const yearDivisionToString: Record<YearDivision, string> = {
   FIRST_SEMESTER: "Winter semester",
@@ -54,7 +55,7 @@ export function CourseCard({
   progress?: number;
   available?: boolean;
 }) {
-  const [pageView, _] = usePageView();
+  const { pageView } = useContext(PageViewContext)!;
   const course = useFragment(
     graphql`
       fragment CourseCardFragment on Course {

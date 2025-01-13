@@ -1,14 +1,15 @@
 "use client";
 
-import { PageView, usePageView } from "@/src/currentView";
-import StudentFlashcards from "./student";
-import EditFlashcards from "./lecturer";
-import { useParams } from "next/navigation";
-import { isUUID } from "@/src/utils";
 import { PageError } from "@/components/PageError";
+import { PageView, PageViewContext } from "@/src/currentView";
+import { isUUID } from "@/src/utils";
+import { useParams } from "next/navigation";
+import { useContext } from "react";
+import EditFlashcards from "./lecturer";
+import StudentFlashcards from "./student";
 
 export default function CoursePage() {
-  const [pageView, _] = usePageView();
+  const { pageView } = useContext(PageViewContext)!;
   const { flashcardSetId, courseId } = useParams();
 
   if (!isUUID(courseId)) {

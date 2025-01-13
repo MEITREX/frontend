@@ -5,7 +5,7 @@ import { pageCourseListItemFragment$key } from "@/__generated__/pageCourseListIt
 import { pageCourseListQuery } from "@/__generated__/pageCourseListQuery.graphql";
 import { pageCourseUpdateMembershipMutation } from "@/__generated__/pageCourseUpdateMembershipMutation.graphql";
 import { yearDivisionToStringShort } from "@/components/CourseCard";
-import { PageView, usePageView } from "@/src/currentView";
+import { PageView, PageViewContext } from "@/src/currentView";
 import { ArrowForward } from "@mui/icons-material";
 import {
   Alert,
@@ -22,7 +22,7 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ReactNode, useState } from "react";
+import { ReactNode, useContext, useState } from "react";
 import {
   graphql,
   useFragment,
@@ -31,7 +31,7 @@ import {
 } from "react-relay";
 
 export default function StudentCourseList() {
-  const [pageView] = usePageView();
+  const { pageView } = useContext(PageViewContext)!;
 
   const {
     courses,
@@ -309,7 +309,7 @@ function CourseListItem({
   action?: ReactNode;
 }) {
   const router = useRouter();
-  const [pageView] = usePageView();
+  const { pageView } = useContext(PageViewContext)!;
 
   const course = useFragment(
     graphql`

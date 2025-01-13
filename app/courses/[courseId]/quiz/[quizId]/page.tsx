@@ -1,14 +1,15 @@
 "use client";
 
 import { PageError } from "@/components/PageError";
-import { PageView, usePageView } from "@/src/currentView";
+import { PageView, PageViewContext } from "@/src/currentView";
 import { isUUID } from "@/src/utils";
 import { useParams } from "next/navigation";
+import { useContext } from "react";
 import LecturerQuiz from "./lecturer";
 import StudentQuiz from "./student";
 
 export default function CoursePage() {
-  const [pageView, _] = usePageView();
+  const { pageView } = useContext(PageViewContext)!;
   const { quizId, courseId } = useParams();
 
   if (!isUUID(courseId)) {

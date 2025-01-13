@@ -5,7 +5,7 @@ import {
   ContentLinkFragment$key,
   MediaType,
 } from "@/__generated__/ContentLinkFragment.graphql";
-import { PageView, usePageView } from "@/src/currentView";
+import { PageView, PageViewContext } from "@/src/currentView";
 import {
   ArrowRight,
   Description,
@@ -18,6 +18,7 @@ import {
 } from "@mui/icons-material";
 import { Chip, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
+import { useContext } from "react";
 import { graphql, useFragment } from "react-relay";
 import colors from "tailwindcss/colors";
 import { NoMaxWidthTooltip } from "../search/SearchResultItem";
@@ -114,7 +115,7 @@ export function ContentLink({
   const hasSuggestedTags =
     content.metadata.tagNames.length === 0 &&
     (content.mediaRecords?.some((x) => x.suggestedTags.length > 0) ?? false);
-  const [pageView] = usePageView();
+  const { pageView } = useContext(PageViewContext)!;
 
   const typeString =
     content.__typename === "MediaContent"

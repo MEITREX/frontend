@@ -1,7 +1,7 @@
 "use client";
 
 import { currentViewQuery } from "@/__generated__/currentViewQuery.graphql";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 
@@ -10,7 +10,7 @@ export enum PageView {
   Lecturer = "Lecturer",
 }
 
-const PageViewContext = React.createContext<{
+export const PageViewContext = React.createContext<{
   pageView: PageView;
   setPageView: (value: PageView) => void;
 } | null>(null);
@@ -31,7 +31,7 @@ export function PageViewProvider({ children }: { children: React.ReactNode }) {
     {}
   );
 
-  const [pageView, setPageView] = useState<PageView>();
+  const [pageView, setPageView] = useState<PageView | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined" && !pageView) {
@@ -77,9 +77,4 @@ export function PageViewProvider({ children }: { children: React.ReactNode }) {
       {children}
     </PageViewContext.Provider>
   );
-}
-
-export function usePageView(): [PageView, (value: PageView) => void] {
-  const { pageView, setPageView } = useContext(PageViewContext)!;
-  return [pageView, setPageView];
 }

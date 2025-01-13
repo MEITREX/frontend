@@ -1,11 +1,12 @@
 "use client";
 
-import { PageView, usePageView } from "@/src/currentView";
-import StudentPage from "./student";
+import { PageView, PageViewContext } from "@/src/currentView";
+import { useContext } from "react";
 import LecturerPage from "./lecturer";
+import StudentPage from "./student";
 
 export default function CoursePage() {
-  const [pageView, _] = usePageView();
+  const { pageView } = useContext(PageViewContext)!;
   switch (pageView) {
     case PageView.Student:
       return <StudentPage />;
