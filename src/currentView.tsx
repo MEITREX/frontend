@@ -34,28 +34,21 @@ export function PageViewProvider({ children }: { children: React.ReactNode }) {
   const [pageView, setPageView] = useState<PageView | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && !pageView) {
+    if (!pageView) {
       const defaultRole =
         currentUserInfo.realmRoles.includes("SUPER_USER") ||
         currentUserInfo.realmRoles.includes("COURSE_CREATOR")
           ? PageView.Lecturer
           : PageView.Student;
 
-      setPageView(
-        window.localStorage.getItem("current_pageview")
-          ? window.localStorage.getItem("current_pageview") ===
-            PageView.Lecturer
-            ? PageView.Lecturer
-            : PageView.Student
-          : defaultRole
-      );
-    } else if (pageView) {
-      window.localStorage.setItem(
-        "current_pageview",
-        pageView ?? PageView.Student
-      );
+      const currentPageView: PageView =
+        (window.localStorage.getItem("current_pageview") as PageView | null) ??
+        defaultRole;
+      setPageView(currentPageView);
+    } else {
+      window.localStorage.setItem("current_pageview", pageView);
     }
-  }, [pageView]);
+  }, [currentUserInfo.realmRoles, pageView]);
 
   useEffect(() => {
     const isTutor =
