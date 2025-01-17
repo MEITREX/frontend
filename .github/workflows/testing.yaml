@@ -73,7 +73,7 @@ jobs:
         with:
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: ghcr.io/it-rex-platform/frontend:latest
+          tags: ghcr.io/meitrex/frontend:latest
           push: true
 
   docker-build-keycloak-theme:
@@ -96,5 +96,5 @@ jobs:
           file: Dockerfile.keycloak
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: ghcr.io/it-rex-platform/keycloak:latest
+          tags: ghcr.io/meitrex/keycloak:latest
           push: true
