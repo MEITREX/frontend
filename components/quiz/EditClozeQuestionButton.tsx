@@ -5,12 +5,12 @@ import { Edit } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
 import { useMemo, useState } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
+import { ItemData } from "../ItemFormSection";
 import {
   ClozeElementData,
   ClozeQuestionData,
   ClozeQuestionModal,
 } from "./ClozeQuestionModal";
-import { ItemData } from "../ItemFormSection";
 
 export function EditClozeQuestionButton({
   _allRecords,

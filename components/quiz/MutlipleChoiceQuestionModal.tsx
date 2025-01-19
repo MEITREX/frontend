@@ -11,11 +11,11 @@ import {
   FormControlLabel,
   IconButton,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Form, FormSection } from "../Form";
 import { FormErrors } from "../FormErrors";
+import { ItemData, ItemFormSection } from "../ItemFormSection";
 import { RichTextEditor, serializeToText } from "../RichTextEditor";
-import { ItemFormSection, ItemData } from "../ItemFormSection";
 
 export type MultipleChoiceQuestionData = {
   text: string;
@@ -28,19 +28,7 @@ export type MultipleChoiceAnswerData = {
   answerText: string;
 };
 
-export function MultipleChoiceQuestionModal({
-  _allRecords,
-  open,
-  title,
-  error,
-  courseId,
-  item,
-  initialValue,
-  isLoading,
-  onSave,
-  onClose,
-  clearError,
-}: {
+type Props = {
   _allRecords: MediaRecordSelector$key;
   open: boolean;
   title: string;
@@ -56,47 +44,67 @@ export function MultipleChoiceQuestionModal({
   ) => void;
   onClose: () => void;
   clearError: () => void;
-}) {
-  const [data, setData] = useState(initialValue);
-  const [itemForQuestion, setItem] = useState(item);
-  const updateAnswer = (index: number, value: MultipleChoiceAnswerData) => {
-    setData((oldValue) => ({
-      ...oldValue,
-      answers: [
-        ...oldValue.answers.slice(0, index),
-        value,
-        ...oldValue.answers.slice(index + 1),
-      ],
-    }));
-  };
-  function handleItem(item: ItemData | null) {
-    if (item) {
-      setItem(item);
-    } else {
-      setItem({ associatedBloomLevels: [], associatedSkills: [] });
-    }
-  }
-  const oneAnswerCorrect = useMemo(
-    () => data.answers.some((x) => x.correct === true),
-    [data.answers]
+};
+
+export function MultipleChoiceQuestionModal({
+  _allRecords,
+  open,
+  title,
+  error,
+  courseId,
+  item,
+  initialValue,
+  isLoading,
+  onSave,
+  onClose,
+  clearError,
+}: Props) {
+  const [multipleChoiceQuestionData, setMultipleChoiceQuestionData] =
+    useState(initialValue);
+  const [itemForQuestion, setItem] = useState<ItemData>(item);
+
+  /**
+   * Add an answer to the question data state at a specific index
+   *
+   * @param answer Answer to add; destructured in the function
+   */
+  const addAnswerToQuestionDataAtIndex = useCallback(
+    (index: number, answer: MultipleChoiceAnswerData) => {
+      setMultipleChoiceQuestionData((oldValue) => ({
+        ...oldValue,
+        answers: [
+          ...oldValue.answers.slice(0, index),
+          answer,
+          ...oldValue.answers.slice(index + 1),
+        ],
+      }));
+    },
+    [setMultipleChoiceQuestionData]
   );
-  const atLeastTwoAnswers = data.answers.length >= 2;
-  const allAnswersFilled = useMemo(
-    () => data.answers.every((x) => !!serializeToText(x.answerText)),
-    [data.answers]
+  const handleItem = useCallback(
+    (item: ItemData | null) =>
+      setItem(item ?? { associatedBloomLevels: [], associatedSkills: [] }),
+    [setItem]
   );
 
-  const valid =
-    oneAnswerCorrect &&
-    atLeastTwoAnswers &&
-    !!serializeToText(data.text) &&
-    allAnswersFilled &&
+  const isOneAnswerCorrect = multipleChoiceQuestionData.answers.some(
+    (x) => x.correct === true
+  );
+  const hasAtLeastTwoAnswers = multipleChoiceQuestionData.answers.length >= 2;
+  const areAllAnswersFilled = multipleChoiceQuestionData.answers.every(
+    (x) => !!serializeToText(x.answerText)
+  );
+  const isQuestionDataValid =
+    isOneAnswerCorrect &&
+    hasAtLeastTwoAnswers &&
+    !!serializeToText(multipleChoiceQuestionData.text) &&
+    areAllAnswersFilled &&
     itemForQuestion.associatedBloomLevels.length > 0 &&
     itemForQuestion.associatedSkills.length > 0;
 
   useEffect(() => {
     if (!open) {
-      setData(initialValue);
+      setMultipleChoiceQuestionData(initialValue);
       setItem(item);
     }
   }, [open, initialValue, item]);
@@ -111,13 +119,16 @@ export function MultipleChoiceQuestionModal({
             courseId={courseId}
             item={itemForQuestion}
             onChange={handleItem}
-          ></ItemFormSection>
+          />
           <FormSection title="Question">
             <RichTextEditor
               _allRecords={_allRecords}
-              initialValue={data.text}
+              initialValue={multipleChoiceQuestionData.text}
               onChange={(text) =>
-                setData((oldValue) => ({ ...oldValue, text }))
+                setMultipleChoiceQuestionData((oldValue) => ({
+                  ...oldValue,
+                  text,
+                }))
               }
               className="w-[700px]"
               label="Title"
@@ -126,21 +137,24 @@ export function MultipleChoiceQuestionModal({
 
             <RichTextEditor
               _allRecords={_allRecords}
-              initialValue={data.hint ?? ""}
+              initialValue={multipleChoiceQuestionData.hint ?? ""}
               onChange={(hint) =>
-                setData((oldValue) => ({ ...oldValue, hint }))
+                setMultipleChoiceQuestionData((oldValue) => ({
+                  ...oldValue,
+                  hint,
+                }))
               }
               className="w-[700px]"
               label="Hint"
             />
           </FormSection>
-          {data.answers.map((answer, i) => (
-            <FormSection title={`Answer ${i + 1}`} key={i}>
+          {multipleChoiceQuestionData.answers.map((answer, i) => (
+            <FormSection title={`Answer ${++i}`} key={i}>
               <RichTextEditor
                 _allRecords={_allRecords}
                 initialValue={answer.answerText!}
                 onChange={(answerText) =>
-                  updateAnswer(i, { ...answer, answerText })
+                  addAnswerToQuestionDataAtIndex(i, { ...answer, answerText })
                 }
                 className="w-[700px]"
                 label="Text"
@@ -151,7 +165,7 @@ export function MultipleChoiceQuestionModal({
                 _allRecords={_allRecords}
                 initialValue={answer.feedback ?? ""}
                 onChange={(value) =>
-                  updateAnswer(i, {
+                  addAnswerToQuestionDataAtIndex(i, {
                     ...answer,
                     feedback:
                       value !==
@@ -169,7 +183,7 @@ export function MultipleChoiceQuestionModal({
                     <Checkbox
                       checked={answer.correct}
                       onChange={(e) =>
-                        updateAnswer(i, {
+                        addAnswerToQuestionDataAtIndex(i, {
                           ...answer,
                           correct: e.target.checked,
                         })
@@ -181,7 +195,7 @@ export function MultipleChoiceQuestionModal({
                 <IconButton
                   color="error"
                   onClick={() => {
-                    setData((oldValue) => ({
+                    setMultipleChoiceQuestionData((oldValue) => ({
                       ...oldValue,
                       answers: oldValue.answers.filter((_, idx) => idx !== i),
                     }));
@@ -196,7 +210,7 @@ export function MultipleChoiceQuestionModal({
           <div className="flex w-full justify-end col-span-full">
             <Button
               onClick={() =>
-                setData((oldValue) => ({
+                setMultipleChoiceQuestionData((oldValue) => ({
                   ...oldValue,
                   answers: [
                     ...oldValue.answers,
@@ -217,15 +231,17 @@ export function MultipleChoiceQuestionModal({
       </DialogContent>
       <DialogActions>
         <div className="text-red-600 text-xs mr-3">
-          {!oneAnswerCorrect && (
+          {!isOneAnswerCorrect && (
             <div>At least one answer has to be correct</div>
           )}
-          {!atLeastTwoAnswers && <div>At least two answers are required</div>}
+          {!hasAtLeastTwoAnswers && (
+            <div>At least two answers are required</div>
+          )}
 
-          {atLeastTwoAnswers && !allAnswersFilled && (
+          {hasAtLeastTwoAnswers && !areAllAnswersFilled && (
             <div>All answers need a text</div>
           )}
-          {!serializeToText(data.text) && (
+          {!serializeToText(multipleChoiceQuestionData.text) && (
             <div>A Question title is required</div>
           )}
         </div>
@@ -233,9 +249,9 @@ export function MultipleChoiceQuestionModal({
           Cancel
         </Button>
         <LoadingButton
-          disabled={!valid}
+          disabled={!isQuestionDataValid}
           loading={isLoading}
-          onClick={() => onSave(data, itemForQuestion)}
+          onClick={() => onSave(multipleChoiceQuestionData, itemForQuestion)}
         >
           Save
         </LoadingButton>

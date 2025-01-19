@@ -3,13 +3,13 @@ import { EditMultipleChoiceQuestionButtonMutation } from "@/__generated__/EditMu
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { Edit } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
+import { ItemData } from "../ItemFormSection";
 import {
   MultipleChoiceQuestionData,
   MultipleChoiceQuestionModal,
 } from "./MutlipleChoiceQuestionModal";
-import { ItemData } from "../ItemFormSection";
 
 export function EditMultipleChoiceQuestionButton({
   _allRecords,
@@ -73,11 +73,7 @@ export function EditMultipleChoiceQuestionButton({
       }
     `);
 
-  const handleSubmit = (
-    data: MultipleChoiceQuestionData,
-    item: ItemData,
-    newSkillAdded?: boolean
-  ) => {
+  const handleSubmit = (data: MultipleChoiceQuestionData, item: ItemData) =>
     updateQuestion({
       variables: {
         assessmentId,
@@ -97,25 +93,21 @@ export function EditMultipleChoiceQuestionButton({
       onError: setError,
       updater: (store) => store.invalidateStore(),
     });
-  };
 
-  const initialValue: MultipleChoiceQuestionData = useMemo(
-    () => ({
-      text: question.text,
-      hint: question.hint,
-      answers: question.answers.map((answer) => ({
-        answerText: answer.answerText,
-        correct: answer.correct,
-        feedback: answer.feedback,
-      })),
-    }),
-    [question]
-  );
+  const initialValue: MultipleChoiceQuestionData = {
+    text: question.text,
+    hint: question.hint,
+    answers: question.answers.map((answer) => ({
+      answerText: answer.answerText,
+      correct: answer.correct,
+      feedback: answer.feedback,
+    })),
+  };
 
   return (
     <>
       <IconButton onClick={() => setOpen(true)}>
-        <Edit fontSize="small"></Edit>
+        <Edit fontSize="small" />
       </IconButton>
       <MultipleChoiceQuestionModal
         _allRecords={_allRecords}

@@ -16,7 +16,7 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
 import { FormSection } from "./Form";
 
@@ -29,6 +29,7 @@ const bloomLevelLabel: Record<BloomLevel, string> = {
   UNDERSTAND: "Understand",
   "%future added value": "Unknown",
 };
+
 export function ItemFormSection({
   onChange,
   item,
@@ -41,19 +42,25 @@ export function ItemFormSection({
   const [bloomLevels, setBloomLevels] = useState<BloomLevel[]>(
     item?.associatedBloomLevels ?? []
   );
-  const [skills, setSkills] = useState<Skill[]>(item?.associatedSkills ?? []);
-  const [itemId, setItemId] = useState(item?.id);
-  const valid = bloomLevels.length > 0 && skills.length > 0;
-  const [newSkillAdded, setNewSkillAdded] = useState(false);
+  const [skillsSelected, setSkillsSelected] = useState<Set<Skill>>(
+    new Set(item?.associatedSkills)
+  );
+  const [itemId] = useState(item?.id);
+
+  const currentItemBloomAndSkillPresent =
+    bloomLevels.length > 0 && skillsSelected.size > 0;
+
+  const [skillNewAdded, setSkillNewAdded] = useState(false);
   const { coursesByIds } = useLazyLoadQuery<ItemFormSectionCourseSkillsQuery>(
     graphql`
       query ItemFormSectionCourseSkillsQuery($id: UUID!) {
         coursesByIds(ids: [$id]) {
           id
-          title
           skills {
             id
             skillName
+            skillCategory
+            isCustomSkill
           }
         }
       }
@@ -65,57 +72,63 @@ export function ItemFormSection({
     coursesByIds[0].skills
   );
   const [newSkill, setNewSkill] = useState(""); // new state variable for the new skill
-  function handleAddSkill() {
-    if (newSkill) {
-      const isAlreadyAvailable = availableSkills.some(
-        (skill) => skill.skillName === newSkill
-      );
-      if (!isAlreadyAvailable) {
-        setAvailableSkills([
-          ...availableSkills,
-          { skillName: newSkill, id: "" },
-        ]);
-        setNewSkill("");
-        setNewSkillAdded(true);
-      } else {
-        alert("The skill is already available!");
-      }
+
+  const addSkillToAvailableSkills = useCallback(() => {
+    if (!newSkill) return;
+
+    const isAlreadyAvailable = availableSkills.some(
+      (skill) => skill.skillName === newSkill
+    );
+    if (!isAlreadyAvailable) {
+      setAvailableSkills([
+        ...availableSkills,
+        {
+          skillName: newSkill,
+          id: "",
+          skillCategory: "test",
+          isCustomSkill: null, // TODO
+        },
+      ]);
+      setNewSkill("");
+      setSkillNewAdded(true);
+    } else {
+      alert("The skill is already available!");
     }
-  }
-  function checkIfAvailableSkillIsPartOfSkills(skillToTest: SkillInput) {
-    if (skills.length > 0) {
-      for (let i = 0; i < skills.length; i++) {
-        if (skills[i].skillName == skillToTest.skillName) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
+  }, [availableSkills, newSkill]);
+
   function handleSkillChange(
     e: React.ChangeEvent<HTMLInputElement>,
     skill: Skill
   ) {
-    if (e.target.checked) {
-      setSkills([...skills, skill]);
-    } else {
-      let newSkillSet = skills.filter((s) => s.id !== skill.id);
-      setSkills(newSkillSet);
-    }
+    if (e.target.checked) setSkillsSelected((prev) => new Set(prev).add(skill));
+    else
+      setSkillsSelected((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(skill);
+        return newSet;
+      });
   }
 
   useEffect(() => {
     onChange(
-      valid
+      currentItemBloomAndSkillPresent
         ? {
             id: itemId,
             associatedBloomLevels: bloomLevels,
-            associatedSkills: skills,
+            associatedSkills: [...skillsSelected],
           }
         : null,
-      newSkillAdded
+      skillNewAdded
     );
-  }, [bloomLevels, skills]);
+  }, [
+    bloomLevels,
+    currentItemBloomAndSkillPresent,
+    itemId,
+    onChange,
+    skillNewAdded,
+    skillsSelected,
+  ]);
+
   return (
     <FormSection title="Item Information">
       <FormControl variant="outlined">
@@ -170,7 +183,7 @@ export function ItemFormSection({
                 <Checkbox
                   sx={{ cursor: "default" }}
                   disableRipple
-                  checked={checkIfAvailableSkillIsPartOfSkills(availableSkill)}
+                  checked={skillsSelected.has(availableSkill)}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     handleSkillChange(e, availableSkill)
                   }
@@ -183,7 +196,11 @@ export function ItemFormSection({
         ))}
       </FormGroup>
       <FormSection title="Add New Skill">
-        <Button onClick={handleAddSkill} startIcon={<Add />}>
+        <Button
+          variant="contained"
+          onClick={addSkillToAvailableSkills}
+          startIcon={<Add />}
+        >
           Add Skill
         </Button>
         <TextField
@@ -205,4 +222,6 @@ export type ItemData = {
 export type Skill = {
   skillName: string;
   id?: string | null;
+  skillCategory: string;
+  isCustomSkill?: boolean | null;
 };

@@ -142,7 +142,7 @@ export function ClozeQuestionModal({
             onChange={handleItem}
             courseId={courseId}
             item={item}
-          ></ItemFormSection>
+          />
           <FormSection title="Cloze text">
             {data.clozeElements.map((elem, i) =>
               elem.type === "text" ? (

@@ -12,10 +12,10 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { Form, FormSection } from "../Form";
 import { FormErrors } from "../FormErrors";
+import { ItemData, ItemFormSection } from "../ItemFormSection";
 import { RichTextEditor, serializeToText } from "../RichTextEditor";
 import { EditRichTextButton } from "./EditRichTextButton";
 import { HintFormSection } from "./HintFormSection";
-import { ItemFormSection, ItemData } from "../ItemFormSection";
 
 export type AssociationQuestionData = {
   hint: string | null;
@@ -133,7 +133,7 @@ export function AssociationQuestionModal({
             courseId={courseId}
             item={itemForQuestion}
             onChange={handleItem}
-          ></ItemFormSection>
+          />
           <FormSection title="Question">
             <RichTextEditor
               className="w-[700px]"

@@ -7,8 +7,8 @@ import { AssessmentMetadataPayload } from "@/components/AssessmentMetadataFormSe
 import { ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
 import { ContentTags } from "@/components/ContentTags";
 import { EditFlashcardSetModal } from "@/components/EditFlashcardSetModal";
-import { ItemData } from "@/components/ItemFormSection";
 import { Heading } from "@/components/Heading";
+import { ItemData } from "@/components/ItemFormSection";
 import { PageError } from "@/components/PageError";
 import { FlashcardSideData } from "@/components/flashcard/FlashcardSide";
 import { Flashcard } from "@/components/flashcard/LecturerEditFlashcard";
@@ -56,6 +56,7 @@ export default function LecturerFlashcards() {
               associatedSkills {
                 id
                 skillName
+                skillCategory
               }
               associatedBloomLevels
             }
@@ -96,6 +97,7 @@ export default function LecturerFlashcards() {
               associatedSkills {
                 id
                 skillName
+                skillCategory
               }
               associatedBloomLevels
             }
@@ -154,6 +156,7 @@ export default function LecturerFlashcards() {
       associatedSkills: Array.from(item.associatedSkills).map((skill) => ({
         id: skill.id || undefined,
         skillName: skill.skillName,
+        skillCategory: skill.skillCategory,
       })),
       id: item.id,
     })) || [];

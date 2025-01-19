@@ -2,6 +2,7 @@ import { lecturerEditQuizQuery } from "@/__generated__/lecturerEditQuizQuery.gra
 import { ContentTags } from "@/components/ContentTags";
 import { FormErrors } from "@/components/FormErrors";
 import { Heading } from "@/components/Heading";
+import { ItemData } from "@/components/ItemFormSection";
 import { PageError } from "@/components/PageError";
 import { QuizModal } from "@/components/QuizModal";
 import { AddQuestionButton } from "@/components/quiz/AddQuestionButton";
@@ -18,7 +19,6 @@ import { Button } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
-import { ItemData } from "@/components/ItemFormSection";
 export default function LecturerQuiz() {
   const { quizId, courseId } = useParams();
   const router = useRouter();
@@ -56,6 +56,7 @@ export default function LecturerQuiz() {
               associatedSkills {
                 id
                 skillName
+                skillCategory
               }
               associatedBloomLevels
             }
