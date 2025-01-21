@@ -15,11 +15,83 @@ import { Flashcard } from "@/components/flashcard/LecturerEditFlashcard";
 import { LocalFlashcard } from "@/components/flashcard/LocalFlashcard";
 import { Add, Delete, Edit } from "@mui/icons-material";
 import { Alert, Backdrop, Button, CircularProgress } from "@mui/material";
+import { promises as fs } from "fs";
+import { GetStaticProps, InferGetStaticPropsType } from "next";
 import { useParams, useRouter } from "next/navigation";
+import path from "path";
 import { useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
-export default function LecturerFlashcards() {
+interface IEEEStandardizedCompetencies {
+  knowledgeAreas: KnowledgeArea[];
+  sources: Source[];
+}
+interface KnowledgeArea {
+  title: string;
+  shortTitle: string;
+  competencies: Competence[];
+}
+interface Competence {
+  title: string;
+  description: string;
+  taxonomy: string;
+  version: string;
+  sourceId: number;
+}
+interface Source {
+  id: string;
+  title: string;
+  author: string;
+  uri: string;
+}
+
+export const getStaticProps: GetStaticProps = async (_context) => {
+  const filePathSkillCompetencies = path.join(
+    process.cwd(),
+    "data",
+    "standardized-competency-catalog.json"
+  );
+  const jsonData = await fs.readFile(filePathSkillCompetencies, "utf-8");
+  const data: IEEEStandardizedCompetencies = JSON.parse(jsonData);
+  console.log(data);
+
+  const staticSkillCategorySkillMap = data.knowledgeAreas.reduce(
+    (acc, knowledgeArea) => {
+      const skills = knowledgeArea.competencies.map((competence) => ({
+        name: competence.title,
+        bloomTaxonomy: competence.taxonomy,
+        description: competence.description,
+        isCustomSkill: false,
+      }));
+      return {
+        ...acc,
+        [knowledgeArea.title]: skills,
+      };
+    },
+    {}
+  );
+  const staticSkillTitleShortNameMap = data.knowledgeAreas.reduce(
+    (acc, knowledgeArea) => {
+      return {
+        ...acc,
+        [knowledgeArea.title]: knowledgeArea.shortTitle,
+      };
+    }
+  );
+
+  return {
+    props: { staticSkillCategorySkillMap, staticSkillTitleShortNameMap },
+  };
+};
+export type GetStaticSkillCompetenciesPropsType = InferGetStaticPropsType<
+  typeof getStaticProps
+>;
+
+export default function LecturerFlashcards({
+  staticSkillCategorySkillMap,
+  staticSkillTitleShortNameMap,
+}: GetStaticSkillCompetenciesPropsType) {
+  console.log(staticSkillCategorySkillMap, staticSkillTitleShortNameMap);
   const { flashcardSetId, courseId } = useParams();
   const [del, deleting] =
     useMutation<lecturerDeleteFlashcardContentMutation>(graphql`

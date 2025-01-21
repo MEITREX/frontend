@@ -7,9 +7,8 @@ import { Add } from "@mui/icons-material";
 import {
   Button,
   Checkbox,
+  Chip,
   FormControl,
-  FormControlLabel,
-  FormGroup,
   InputLabel,
   ListItemText,
   MenuItem,
@@ -96,19 +95,6 @@ export function ItemFormSection({
     }
   }, [availableSkills, newSkill]);
 
-  function handleSkillChange(
-    e: React.ChangeEvent<HTMLInputElement>,
-    skill: Skill
-  ) {
-    if (e.target.checked) setSkillsSelected((prev) => new Set(prev).add(skill));
-    else
-      setSkillsSelected((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(skill);
-        return newSet;
-      });
-  }
-
   useEffect(() => {
     onChange(
       currentItemBloomAndSkillPresent
@@ -173,28 +159,8 @@ export function ItemFormSection({
           ))}
         </Select>
       </FormControl>
-      <FormGroup>
-        <InputLabel htmlFor="">Associated Skills:</InputLabel>
-        {availableSkills.map((availableSkill: SkillInput) => (
-          <div key={availableSkill.id}>
-            <FormControlLabel
-              sx={{ cursor: "default" }}
-              control={
-                <Checkbox
-                  sx={{ cursor: "default" }}
-                  disableRipple
-                  checked={skillsSelected.has(availableSkill)}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    handleSkillChange(e, availableSkill)
-                  }
-                  key={availableSkill.id}
-                />
-              }
-              label={availableSkill.skillName}
-            />
-          </div>
-        ))}
-      </FormGroup>
+      <InputLabel htmlFor="">Associated Skills:</InputLabel>
+      <Chip label="AnySkill" />
       <FormSection title="Add New Skill">
         <Button
           variant="contained"

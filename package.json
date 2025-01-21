@@ -82,5 +82,10 @@
     "prettier": "^2.8.8",
     "raw-loader": "^4.0.2",
     "relay-compiler": "15.0.0"
+  },
+  "browser": {
+    "fs": false,
+    "os": false,
+    "path": false
   }
 }
