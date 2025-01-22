@@ -5,8 +5,11 @@ import {
 import { ItemFormSectionCourseSkillsQuery } from "@/__generated__/ItemFormSectionCourseSkillsQuery.graphql";
 import { Add } from "@mui/icons-material";
 import {
+  Autocomplete,
+  Box,
   Button,
   Checkbox,
+  Chip,
   FormControl,
   FormControlLabel,
   FormGroup,
@@ -14,6 +17,7 @@ import {
   ListItemText,
   MenuItem,
   Select,
+  Stack,
   TextField,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
@@ -43,7 +47,7 @@ export function ItemFormSection({
     item?.associatedBloomLevels ?? []
   );
   const [skillsSelected, setSkillsSelected] = useState<Set<Skill>>(
-    new Set(item?.associatedSkills)
+    new Set()
   );
   const [itemId] = useState(item?.id);
 
@@ -71,43 +75,33 @@ export function ItemFormSection({
   const [availableSkills, setAvailableSkills] = useState(
     coursesByIds[0].skills
   );
-  const [newSkill, setNewSkill] = useState(""); // new state variable for the new skill
+
+  const [newSkillName, setNewSkillName] = useState(""); // new state variable for the new skill
+  const [newSkillCategory, setNewSkillCategory] = useState("");
 
   const addSkillToAvailableSkills = useCallback(() => {
-    if (!newSkill) return;
+    if (!newSkillName) return;
 
     const isAlreadyAvailable = availableSkills.some(
-      (skill) => skill.skillName === newSkill
-    );
-    if (!isAlreadyAvailable) {
-      setAvailableSkills([
-        ...availableSkills,
-        {
-          skillName: newSkill,
-          id: "",
-          skillCategory: "test",
-          isCustomSkill: null, // TODO
-        },
-      ]);
-      setNewSkill("");
-      setSkillNewAdded(true);
-    } else {
-      alert("The skill is already available!");
-    }
-  }, [availableSkills, newSkill]);
-
-  function handleSkillChange(
-    e: React.ChangeEvent<HTMLInputElement>,
-    skill: Skill
-  ) {
-    if (e.target.checked) setSkillsSelected((prev) => new Set(prev).add(skill));
-    else
-      setSkillsSelected((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(skill);
-        return newSet;
-      });
-  }
+        (skill) => skill.skillName === newSkillName
+      );
+      if (!isAlreadyAvailable) {
+        setAvailableSkills([
+          ...availableSkills,
+          {
+            skillName: newSkillName,
+            id: "",
+            skillCategory: newSkillCategory,
+            isCustomSkill: true
+          },
+        ]); 
+        setNewSkillName("");
+        setNewSkillCategory("");
+        setSkillNewAdded(true);
+      } else {
+        alert("The skill is already available!");
+      }
+  }, [availableSkills, newSkillName]);
 
   useEffect(() => {
     onChange(
@@ -128,6 +122,15 @@ export function ItemFormSection({
     skillNewAdded,
     skillsSelected,
   ]);
+
+  function inSelectedSkills(option: string): boolean {
+    return Array.from(skillsSelected).some(skill => skill.skillName === option);
+  }
+
+  function uniqueCategories(): string[] {
+    const uniqueCategories = availableSkills.map(skill => skill.skillCategory);
+    return Array.from(new Set(uniqueCategories));
+  }
 
   return (
     <FormSection title="Item Information">
@@ -173,43 +176,64 @@ export function ItemFormSection({
           ))}
         </Select>
       </FormControl>
-      <FormGroup>
-        <InputLabel htmlFor="">Associated Skills:</InputLabel>
-        {availableSkills.map((availableSkill: SkillInput) => (
-          <div key={availableSkill.id}>
-            <FormControlLabel
-              sx={{ cursor: "default" }}
-              control={
-                <Checkbox
-                  sx={{ cursor: "default" }}
-                  disableRipple
-                  checked={skillsSelected.has(availableSkill)}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    handleSkillChange(e, availableSkill)
-                  }
-                  key={availableSkill.id}
-                />
-              }
-              label={availableSkill.skillName}
-            />
-          </div>
+      
+      <InputLabel htmlFor="">Associated Skills:</InputLabel>
+      <Stack direction="row" spacing={1}>
+      {[...skillsSelected].map((selectedSkill: Skill) => (
+          <Chip
+            key={selectedSkill.skillName}
+            label={selectedSkill.skillName}
+            onDelete={() => setSkillsSelected((prev) => { prev.delete(selectedSkill); return new Set(prev); })}
+          />
         ))}
-      </FormGroup>
-      <FormSection title="Add New Skill">
+      </Stack>
+
+      <Stack direction={"row"} spacing={1}>
+        <Autocomplete
+          disablePortal
+          options={uniqueCategories()}
+          sx={{ width: 300 }}
+          renderInput={(params) => <TextField {...params} label="Knowledge Area" />}
+        />
+        <Autocomplete
+          disablePortal
+          options={availableSkills.map(skill => skill.skillName)}
+          sx={{ width: 300 }}
+          multiple
+          value={Array.from(skillsSelected).map((skill) => skill.skillName)}
+          onChange={(event, newValue) => {
+            setSkillsSelected(new Set(availableSkills.filter(skill => newValue.includes(skill.skillName))));
+          }}
+          renderTags={() => null}
+          renderInput={(params) => <TextField {...params} label="Skill" />}
+          getOptionDisabled={(option) => inSelectedSkills(option)}
+        />
+      </Stack>
+
+     <FormSection title="">
         <Button
           variant="contained"
           onClick={addSkillToAvailableSkills}
           startIcon={<Add />}
+          sx={{ marginBottom: 1 }}
         >
           Add Skill
         </Button>
+        <Stack direction={"row"} spacing={1}>
+        <TextField
+          label="New Knowledge Area"
+          value={newSkillCategory}
+          onChange={(e) => setNewSkillCategory(e.target.value)}
+        />
         <TextField
           label="New Skill"
-          value={newSkill}
-          onChange={(e) => setNewSkill(e.target.value)}
+          value={newSkillName}
+          onChange={(e) => setNewSkillName(e.target.value)}
         />
+        </Stack>
         <p />
       </FormSection>
+       
     </FormSection>
   );
 }
