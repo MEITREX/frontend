@@ -178,7 +178,7 @@ export function ItemFormSection({
       </FormControl>
       
       <InputLabel htmlFor="">Associated Skills:</InputLabel>
-      <Stack direction="row" spacing={1}>
+      <Stack direction="row" spacing={1} sx={{ marginBottom: 1 }}>
       {[...skillsSelected].map((selectedSkill: Skill) => (
           <Chip
             key={selectedSkill.skillName}
@@ -190,13 +190,11 @@ export function ItemFormSection({
 
       <Stack direction={"row"} spacing={1}>
         <Autocomplete
-          disablePortal
           options={uniqueCategories()}
           sx={{ width: 300 }}
           renderInput={(params) => <TextField {...params} label="Knowledge Area" />}
         />
         <Autocomplete
-          disablePortal
           options={availableSkills.map(skill => skill.skillName)}
           sx={{ width: 300 }}
           multiple
