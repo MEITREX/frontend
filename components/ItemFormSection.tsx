@@ -110,7 +110,7 @@ export function ItemFormSection({
     coursesByIds[0].skills
   );
 
-  const [newSkill, setNewSkill] = useState<SkillInAutocomplete | null>(null);
+  const [newSkill, setNewSkill] = useState<[SkillInAutocomplete]>();
   const [newSkillCategory, setNewSkillCategory] =
     useState<SkillCategoryInAutocomplete | null>(null);
 
@@ -159,6 +159,8 @@ export function ItemFormSection({
   //   );
   //   return Array.from(new Set(uniqueCategories));
   // }
+
+  const [key, setKey] = useState(0);
 
   return (
     <FormSection title="Item Information">
@@ -246,10 +248,7 @@ export function ItemFormSection({
           onChange={(_, newValue) =>
             // if a new skill category is selected, reset the skill since one skill shouldn't be present in multiple categories
             setNewSkillCategory((prev) => {
-              if (newValue?.category !== prev?.category) {
-                console.log("resetting skill");
-                setNewSkill(null);
-              }
+              if (newValue?.category !== prev?.category) setNewSkill(null);
               return newValue;
             })
           }
@@ -284,9 +283,35 @@ export function ItemFormSection({
         />
 
         <Autocomplete
+          // key={key}
           disabled={!newSkillCategory?.category}
+          multiple
           value={newSkill}
-          onChange={(_, newValue) => setNewSkill(newValue)}
+          onChange={(_, newValue) => {
+            console.log(newValue);
+            setNewSkill(undefined);
+            // setKey((prev) => prev + 1);
+            setSkillsSelected((prev) => {
+              if (!newValue) return prev;
+
+              const newSkills = [...prev];
+              newSkills.push(
+                ...newValue
+                  .filter(
+                    (skill) =>
+                      !skillsSelected.some(
+                        (s) => s.skillName === skill.skillName
+                      )
+                  )
+                  .map((skill) => ({
+                    skillName: skill.skillName,
+                    skillCategory: newSkillCategory?.category ?? "",
+                    isCustomSkill: skill.isCustomSkill,
+                  }))
+              );
+              return newSkills;
+            });
+          }}
           isOptionEqualToValue={(option, value) =>
             option.skillName === value.skillName
           }
@@ -319,9 +344,15 @@ export function ItemFormSection({
           ]}
           sx={{ width: 300 }}
           getOptionLabel={(option) => option.skillName}
-          renderTags={() => null}
           renderInput={(params) => <TextField {...params} label="Skill" />}
-          // getOptionDisabled={(option) => inSelectedSkills(option)}
+          renderTags={() => null}
+          getOptionDisabled={(value) =>
+            skillsSelected.some(
+              (skill) =>
+                skill.skillCategory === newSkillCategory?.category &&
+                value.skillName === skill.skillName
+            )
+          }
           filterOptions={(options, params) => {
             const filtered = filterOptionsSkill(options, params);
 
