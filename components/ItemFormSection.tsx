@@ -6,13 +6,10 @@ import { ItemFormSectionCourseSkillsQuery } from "@/__generated__/ItemFormSectio
 import { Add } from "@mui/icons-material";
 import {
   Autocomplete,
-  Box,
   Button,
   Checkbox,
   Chip,
   FormControl,
-  FormControlLabel,
-  FormGroup,
   InputLabel,
   ListItemText,
   MenuItem,
@@ -34,6 +31,18 @@ const bloomLevelLabel: Record<BloomLevel, string> = {
   "%future added value": "Unknown",
 };
 
+export type ItemData = {
+  associatedBloomLevels: BloomLevel[];
+  associatedSkills: SkillInput[];
+  id?: string;
+};
+export type Skill = {
+  skillName: string;
+  id?: string | null;
+  skillCategory: string;
+  isCustomSkill?: boolean | null;
+};
+
 export function ItemFormSection({
   onChange,
   item,
@@ -46,9 +55,7 @@ export function ItemFormSection({
   const [bloomLevels, setBloomLevels] = useState<BloomLevel[]>(
     item?.associatedBloomLevels ?? []
   );
-  const [skillsSelected, setSkillsSelected] = useState<Set<Skill>>(
-    new Set()
-  );
+  const [skillsSelected, setSkillsSelected] = useState<Set<Skill>>(new Set());
   const [itemId] = useState(item?.id);
 
   const currentItemBloomAndSkillPresent =
@@ -83,24 +90,24 @@ export function ItemFormSection({
     if (!newSkillName) return;
 
     const isAlreadyAvailable = availableSkills.some(
-        (skill) => skill.skillName === newSkillName
-      );
-      if (!isAlreadyAvailable) {
-        setAvailableSkills([
-          ...availableSkills,
-          {
-            skillName: newSkillName,
-            id: "",
-            skillCategory: newSkillCategory,
-            isCustomSkill: true
-          },
-        ]); 
-        setNewSkillName("");
-        setNewSkillCategory("");
-        setSkillNewAdded(true);
-      } else {
-        alert("The skill is already available!");
-      }
+      (skill) => skill.skillName === newSkillName
+    );
+    if (!isAlreadyAvailable) {
+      setAvailableSkills([
+        ...availableSkills,
+        {
+          skillName: newSkillName,
+          id: "",
+          skillCategory: newSkillCategory,
+          isCustomSkill: true,
+        },
+      ]);
+      setNewSkillName("");
+      setNewSkillCategory("");
+      setSkillNewAdded(true);
+    } else {
+      alert("The skill is already available!");
+    }
   }, [availableSkills, newSkillName]);
 
   useEffect(() => {
@@ -124,11 +131,15 @@ export function ItemFormSection({
   ]);
 
   function inSelectedSkills(option: string): boolean {
-    return Array.from(skillsSelected).some(skill => skill.skillName === option);
+    return Array.from(skillsSelected).some(
+      (skill) => skill.skillName === option
+    );
   }
 
   function uniqueCategories(): string[] {
-    const uniqueCategories = availableSkills.map(skill => skill.skillCategory);
+    const uniqueCategories = availableSkills.map(
+      (skill) => skill.skillCategory
+    );
     return Array.from(new Set(uniqueCategories));
   }
 
@@ -176,14 +187,19 @@ export function ItemFormSection({
           ))}
         </Select>
       </FormControl>
-      
+
       <InputLabel htmlFor="">Associated Skills:</InputLabel>
       <Stack direction="row" spacing={1} sx={{ marginBottom: 1 }}>
-      {[...skillsSelected].map((selectedSkill: Skill) => (
+        {[...skillsSelected].map((selectedSkill: Skill) => (
           <Chip
             key={selectedSkill.skillName}
             label={selectedSkill.skillName}
-            onDelete={() => setSkillsSelected((prev) => { prev.delete(selectedSkill); return new Set(prev); })}
+            onDelete={() =>
+              setSkillsSelected((prev) => {
+                prev.delete(selectedSkill);
+                return new Set(prev);
+              })
+            }
           />
         ))}
       </Stack>
@@ -192,15 +208,23 @@ export function ItemFormSection({
         <Autocomplete
           options={uniqueCategories()}
           sx={{ width: 300 }}
-          renderInput={(params) => <TextField {...params} label="Knowledge Area" />}
+          renderInput={(params) => (
+            <TextField {...params} label="Knowledge Area" />
+          )}
         />
         <Autocomplete
-          options={availableSkills.map(skill => skill.skillName)}
+          options={availableSkills.map((skill) => skill.skillName)}
           sx={{ width: 300 }}
           multiple
           value={Array.from(skillsSelected).map((skill) => skill.skillName)}
           onChange={(event, newValue) => {
-            setSkillsSelected(new Set(availableSkills.filter(skill => newValue.includes(skill.skillName))));
+            setSkillsSelected(
+              new Set(
+                availableSkills.filter((skill) =>
+                  newValue.includes(skill.skillName)
+                )
+              )
+            );
           }}
           renderTags={() => null}
           renderInput={(params) => <TextField {...params} label="Skill" />}
@@ -208,7 +232,7 @@ export function ItemFormSection({
         />
       </Stack>
 
-     <FormSection title="">
+      <FormSection title="">
         <Button
           variant="contained"
           onClick={addSkillToAvailableSkills}
@@ -218,32 +242,19 @@ export function ItemFormSection({
           Add Skill
         </Button>
         <Stack direction={"row"} spacing={1}>
-        <TextField
-          label="New Knowledge Area"
-          value={newSkillCategory}
-          onChange={(e) => setNewSkillCategory(e.target.value)}
-        />
-        <TextField
-          label="New Skill"
-          value={newSkillName}
-          onChange={(e) => setNewSkillName(e.target.value)}
-        />
+          <TextField
+            label="New Knowledge Area"
+            value={newSkillCategory}
+            onChange={(e) => setNewSkillCategory(e.target.value)}
+          />
+          <TextField
+            label="New Skill"
+            value={newSkillName}
+            onChange={(e) => setNewSkillName(e.target.value)}
+          />
         </Stack>
         <p />
       </FormSection>
-       
     </FormSection>
   );
 }
-
-export type ItemData = {
-  associatedBloomLevels: BloomLevel[];
-  associatedSkills: SkillInput[];
-  id?: string;
-};
-export type Skill = {
-  skillName: string;
-  id?: string | null;
-  skillCategory: string;
-  isCustomSkill?: boolean | null;
-};

@@ -81,11 +81,6 @@ export function MultipleChoiceQuestionModal({
     },
     [setMultipleChoiceQuestionData]
   );
-  const handleItem = useCallback(
-    (item: ItemData | null) =>
-      setItem(item ?? { associatedBloomLevels: [], associatedSkills: [] }),
-    [setItem]
-  );
 
   const isOneAnswerCorrect = multipleChoiceQuestionData.answers.some(
     (x) => x.correct === true
@@ -109,6 +104,28 @@ export function MultipleChoiceQuestionModal({
     }
   }, [open, initialValue, item]);
 
+  const onItemFormSectionSetItem = useCallback(
+    (item: ItemData | null) =>
+      setItem(item ?? { associatedBloomLevels: [], associatedSkills: [] }),
+    [setItem]
+  );
+
+  const addEmptyAnswer = useCallback(
+    () =>
+      setMultipleChoiceQuestionData((oldValue) => ({
+        ...oldValue,
+        answers: [
+          ...oldValue.answers,
+          {
+            correct: false,
+            answerText: "",
+            feedback: "",
+          },
+        ],
+      })),
+    []
+  );
+
   return (
     <Dialog open={open} maxWidth="lg" onClose={onClose}>
       <DialogTitle>{title}</DialogTitle>
@@ -118,7 +135,7 @@ export function MultipleChoiceQuestionModal({
           <ItemFormSection
             courseId={courseId}
             item={itemForQuestion}
-            onChange={handleItem}
+            onChange={onItemFormSectionSetItem}
           />
           <FormSection title="Question">
             <RichTextEditor
@@ -149,7 +166,7 @@ export function MultipleChoiceQuestionModal({
             />
           </FormSection>
           {multipleChoiceQuestionData.answers.map((answer, i) => (
-            <FormSection title={`Answer ${++i}`} key={i}>
+            <FormSection title={`Answer ${i + 1}`} key={i}>
               <RichTextEditor
                 _allRecords={_allRecords}
                 initialValue={answer.answerText!}
@@ -201,29 +218,14 @@ export function MultipleChoiceQuestionModal({
                     }));
                   }}
                 >
-                  <Delete></Delete>
+                  <Delete />
                 </IconButton>
               </div>
             </FormSection>
           ))}
 
           <div className="flex w-full justify-end col-span-full">
-            <Button
-              onClick={() =>
-                setMultipleChoiceQuestionData((oldValue) => ({
-                  ...oldValue,
-                  answers: [
-                    ...oldValue.answers,
-                    {
-                      correct: false,
-                      answerText: "",
-                      feedback: "",
-                    },
-                  ],
-                }))
-              }
-              startIcon={<Add />}
-            >
+            <Button onClick={addEmptyAnswer} startIcon={<Add />}>
               Add Answer
             </Button>
           </div>
