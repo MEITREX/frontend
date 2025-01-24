@@ -161,6 +161,7 @@ export function ItemFormSection({
   // }
 
   const [key, setKey] = useState(0);
+  const seenCategories = new Set();
 
   return (
     <FormSection title="Item Information">
@@ -238,11 +239,19 @@ export function ItemFormSection({
             })),
             ...availableSkills
               .filter((skill) => !FAKE_IEEE_SKILLS[skill.skillCategory])
+              .filter((skill) => {
+                if (seenCategories.has(skill.skillCategory)) {
+                  return false;
+                } else {
+                  seenCategories.add(skill.skillCategory);
+                  return true;
+                }
+              })
               .map((skill) => ({
                 category: skill.skillCategory,
                 isCustomSkillCategory: skill.isCustomSkill,
                 toBeAdded: false,
-              })),
+              }))
           ]}
           getOptionLabel={(option) => option.category}
           onChange={(_, newValue) =>
@@ -290,7 +299,7 @@ export function ItemFormSection({
           onChange={(_, newValue) => {
             console.log(newValue);
             setNewSkill([]);
-            // setKey((prev) => prev + 1);
+            // setKey((prev) => prev + 1);            
             setSkillsSelected((prev) => {
               if (!newValue) return prev;
 
