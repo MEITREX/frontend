@@ -147,20 +147,6 @@ export function ItemFormSection({
     skillsSelected,
   ]);
 
-  // function inSelectedSkills(option: string): boolean {
-  //   return Array.from(skillsSelected).some(
-  //     (skill) => skill.skillName === option
-  //   );
-  // }
-
-  // function uniqueCategories(): string[] {
-  //   const uniqueCategories = availableSkills.map(
-  //     (skill) => skill.skillCategory
-  //   );
-  //   return Array.from(new Set(uniqueCategories));
-  // }
-
-  const [key, setKey] = useState(0);
   const seenCategories = new Set();
 
   return (
@@ -213,7 +199,7 @@ export function ItemFormSection({
         {skillsSelected.map((skill, i) => (
           <Chip
             key={i}
-            label={skill.skillCategory + " > " + skill.skillName}
+            label={skill.skillCategory + ": " + skill.skillName}
             onDelete={() =>
               setSkillsSelected((prev) => {
                 const newSkills = [...prev];
@@ -250,7 +236,7 @@ export function ItemFormSection({
               .map((skill) => ({
                 category: skill.skillCategory,
                 isCustomSkillCategory: skill.isCustomSkill,
-                toBeAdded: false,
+                toBeAdded: false
               }))
           ]}
           getOptionLabel={(option) => option.category}
@@ -297,7 +283,6 @@ export function ItemFormSection({
           multiple
           value={newSkill}
           onChange={(_, newValue) => {
-            console.log(newValue);
             setNewSkill([]);
             // setKey((prev) => prev + 1);            
             setSkillsSelected((prev) => {
@@ -318,6 +303,7 @@ export function ItemFormSection({
                     isCustomSkill: skill.isCustomSkill,
                   }))
               );
+              setSkillNewAdded(newSkills.length > prev.length);
               return newSkills;
             });
           }}
@@ -349,7 +335,7 @@ export function ItemFormSection({
                 skillName: skill.skillName,
                 isCustomSkill: skill.isCustomSkill,
                 toBeAdded: false,
-              })),
+              }))
           ]}
           sx={{ width: 300 }}
           getOptionLabel={(option) => option.skillName}
