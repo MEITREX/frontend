@@ -110,7 +110,7 @@ export function ItemFormSection({
     coursesByIds[0].skills
   );
 
-  const [newSkill, setNewSkill] = useState<[SkillInAutocomplete]>();
+  const [newSkill, setNewSkill] = useState<SkillInAutocomplete[]>([]);
   const [newSkillCategory, setNewSkillCategory] =
     useState<SkillCategoryInAutocomplete | null>(null);
 
@@ -248,7 +248,7 @@ export function ItemFormSection({
           onChange={(_, newValue) =>
             // if a new skill category is selected, reset the skill since one skill shouldn't be present in multiple categories
             setNewSkillCategory((prev) => {
-              if (newValue?.category !== prev?.category) setNewSkill(null);
+              if (newValue?.category !== prev?.category) setNewSkill([]);
               return newValue;
             })
           }
@@ -289,7 +289,7 @@ export function ItemFormSection({
           value={newSkill}
           onChange={(_, newValue) => {
             console.log(newValue);
-            setNewSkill(undefined);
+            setNewSkill([]);
             // setKey((prev) => prev + 1);
             setSkillsSelected((prev) => {
               if (!newValue) return prev;
