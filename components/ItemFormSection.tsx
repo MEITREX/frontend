@@ -21,6 +21,8 @@ import { useEffect, useState } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
 import { FormSection } from "./Form";
 
+import {IEEE_SKILLS} from "./ImportIEEECompetencies";
+ 
 const bloomLevelLabel: Record<BloomLevel, string> = {
   CREATE: "Create",
   EVALUATE: "Evaluate",
@@ -62,11 +64,6 @@ const filterOptionsSkill = createFilterOptions<SkillInAutocomplete>({
   matchFrom: "start",
   trim: true,
 });
-
-const FAKE_IEEE_SKILLS: Record<string, string[]> = {
-  "Category 1": ["Skill 1", "Skill 2"],
-  "Category 2": ["Skill 3", "Skill 4"],
-};
 
 export function ItemFormSection({
   onChange,
@@ -218,13 +215,13 @@ export function ItemFormSection({
             option.category === value.category
           }
           options={[
-            ...Object.keys(FAKE_IEEE_SKILLS).map((category) => ({
+            ...Object.keys(IEEE_SKILLS).map((category) => ({
               category,
               isCustomSkillCategory: true,
               toBeAdded: false,
             })),
             ...availableSkills
-              .filter((skill) => !FAKE_IEEE_SKILLS[skill.skillCategory])
+              .filter((skill) => !IEEE_SKILLS[skill.skillCategory])
               .filter((skill) => {
                 if (seenCategories.has(skill.skillCategory)) {
                   return false;
@@ -311,8 +308,8 @@ export function ItemFormSection({
             option.skillName === value.skillName
           }
           options={[
-            ...(FAKE_IEEE_SKILLS[newSkillCategory?.category ?? ""]
-              ? FAKE_IEEE_SKILLS[newSkillCategory?.category ?? ""].map(
+            ...(IEEE_SKILLS[newSkillCategory?.category ?? ""]
+              ? IEEE_SKILLS[newSkillCategory?.category ?? ""].map(
                   (skill) => ({
                     skillName: skill,
                     isCustomSkill: true,
@@ -325,8 +322,8 @@ export function ItemFormSection({
                 (skill) =>
                   skill.skillCategory === newSkillCategory?.category &&
                   !(
-                    FAKE_IEEE_SKILLS[skill.skillCategory] &&
-                    FAKE_IEEE_SKILLS[skill.skillCategory].some(
+                    IEEE_SKILLS[skill.skillCategory] &&
+                    IEEE_SKILLS[skill.skillCategory].some(
                       (skillIEEE) => skillIEEE === skill.skillName
                     )
                   )
