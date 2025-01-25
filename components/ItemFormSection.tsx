@@ -21,7 +21,7 @@ import { useEffect, useState } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
 import { FormSection } from "./Form";
 
-import {IEEE_SKILLS} from "./ImportIEEECompetencies";
+import {IEEE_SKILLS, knowledgeAreaShortTitles} from "./ImportIEEECompetencies";
  
 const bloomLevelLabel: Record<BloomLevel, string> = {
   CREATE: "Create",
@@ -196,7 +196,7 @@ export function ItemFormSection({
         {skillsSelected.map((skill, i) => (
           <Chip
             key={i}
-            label={skill.skillCategory + ": " + skill.skillName}
+            label={(knowledgeAreaShortTitles[skill.skillCategory] || skill.skillCategory) + ": " + skill.skillName}
             onDelete={() =>
               setSkillsSelected((prev) => {
                 const newSkills = [...prev];
@@ -268,7 +268,8 @@ export function ItemFormSection({
               <Box key={key} {...optionProps} component="li">
                 {option.toBeAdded && "Add: "}
                 {option.category}
-                {!option.isCustomSkillCategory && " (Custom)"}
+                {knowledgeAreaShortTitles[option.category] !== undefined ? " (" + knowledgeAreaShortTitles[option.category] + ")" : " (Custom)"}
+                {/*!option.isCustomSkillCategory && " (Custom)"*/}
               </Box>
             );
           }}
