@@ -2,9 +2,9 @@ import { lecturerEditQuizQuery } from "@/__generated__/lecturerEditQuizQuery.gra
 import { ContentTags } from "@/components/ContentTags";
 import { FormErrors } from "@/components/FormErrors";
 import { Heading } from "@/components/Heading";
-import { ItemData } from "@/components/ItemFormSection";
 import { PageError } from "@/components/PageError";
 import { QuizModal } from "@/components/QuizModal";
+import { ItemData } from "@/components/form-sections/ItemFormSection";
 import { AddQuestionButton } from "@/components/quiz/AddQuestionButton";
 import { AssociationQuestionPreview } from "@/components/quiz/AssociationQuestionPreview";
 import { ClozeQuestionPreview } from "@/components/quiz/ClozeQuestionPreview";

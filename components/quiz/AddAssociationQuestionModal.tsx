@@ -2,11 +2,11 @@ import { AddAssociationQuestionModalMutation } from "@/__generated__/AddAssociat
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { useState } from "react";
 import { graphql, useMutation } from "react-relay";
+import { ItemData } from "../form-sections/ItemFormSection";
 import {
   AssociationQuestionData,
   AssociationQuestionModal,
 } from "./AssociationQuestionModal";
-import { ItemData } from "../ItemFormSection";
 
 export function AddAssociationQuestionModal({
   _allRecords,

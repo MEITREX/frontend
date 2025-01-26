@@ -11,8 +11,8 @@ import {
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { Form, FormSection } from "../Form";
+import { ItemData, ItemFormSection } from "../form-sections/ItemFormSection";
 import { FormErrors } from "../FormErrors";
-import { ItemData, ItemFormSection } from "../ItemFormSection";
 import { RichTextEditor, serializeToText } from "../RichTextEditor";
 import { EditRichTextButton } from "./EditRichTextButton";
 import { HintFormSection } from "./HintFormSection";

@@ -2,11 +2,11 @@ import { AddMultipleChoiceQuestionModalMutation } from "@/__generated__/AddMulti
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { useState } from "react";
 import { graphql, useMutation } from "react-relay";
+import { ItemData } from "../form-sections/ItemFormSection";
 import {
   MultipleChoiceQuestionData,
   MultipleChoiceQuestionModal,
 } from "./MutlipleChoiceQuestionModal";
-import { ItemData } from "../ItemFormSection";
 export function AddMultipleChoiceQuestionModal({
   _allRecords,
   assessmentId,

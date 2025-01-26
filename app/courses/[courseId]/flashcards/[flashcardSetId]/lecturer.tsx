@@ -8,11 +8,11 @@ import { ContentMetadataPayload } from "@/components/ContentMetadataFormSection"
 import { ContentTags } from "@/components/ContentTags";
 import { EditFlashcardSetModal } from "@/components/EditFlashcardSetModal";
 import { Heading } from "@/components/Heading";
-import { ItemData } from "@/components/ItemFormSection";
 import { PageError } from "@/components/PageError";
 import { FlashcardSideData } from "@/components/flashcard/FlashcardSide";
 import { Flashcard } from "@/components/flashcard/LecturerEditFlashcard";
 import { LocalFlashcard } from "@/components/flashcard/LocalFlashcard";
+import { ItemData } from "@/components/form-sections/ItemFormSection";
 import { Add, Delete, Edit } from "@mui/icons-material";
 import { Alert, Backdrop, Button, CircularProgress } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";

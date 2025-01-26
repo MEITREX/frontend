@@ -5,7 +5,7 @@ import { Edit } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
 import { useMemo, useState } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
-import { ItemData } from "../ItemFormSection";
+import { ItemData } from "../form-sections/ItemFormSection";
 import {
   ClozeElementData,
   ClozeQuestionData,

@@ -14,13 +14,13 @@ import {
   IconButton,
   TextField,
 } from "@mui/material";
-import { use, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Form, FormSection } from "../Form";
+import { ItemData, ItemFormSection } from "../form-sections/ItemFormSection";
 import { FormErrors } from "../FormErrors";
 import { RichTextEditor, serializeToText } from "../RichTextEditor";
 import { EditRichTextButton } from "./EditRichTextButton";
 import { HintFormSection } from "./HintFormSection";
-import { ItemFormSection, ItemData } from "../ItemFormSection";
 
 export type ClozeQuestionData = {
   hint: string | null;

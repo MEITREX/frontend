@@ -11,10 +11,9 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
+import { ItemData, ItemFormSection } from "../form-sections/ItemFormSection";
 import { EditSideModal } from "./EditSideModal";
 import { FlashcardSide, FlashcardSideData } from "./FlashcardSide";
-import { ItemFormSection, ItemData, Skill } from "../ItemFormSection";
-import { ItemInput } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
 export function Flashcard({
   title,
   onError,

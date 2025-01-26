@@ -17,9 +17,77 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { cache, useEffect, useState } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
-import { FormSection } from "./Form";
+import { FormSection } from "../Form";
+import standardizedCompetencies from "./data/standardized-competency-catalog.json";
+
+interface IEEEStandardizedCompetencies {
+  knowledgeAreas: KnowledgeArea[];
+  sources: Source[];
+}
+interface KnowledgeArea {
+  title: string;
+  shortTitle: string;
+  competencies: Competence[];
+}
+interface Competence {
+  title: string;
+  description: string;
+  taxonomy: string;
+  version: string;
+  sourceId: number;
+}
+interface Source {
+  id: number;
+  title: string;
+  author: string;
+  uri: string;
+}
+
+type MappedSkillType = {
+  skillName: string;
+  bloomTaxonomy: string;
+  description: string;
+  isCustomSkill: boolean;
+};
+
+export const processStandardizedCompetencies = (
+  standardizedCompetenciesRaw: IEEEStandardizedCompetencies
+): {
+  staticSkillCategorySkillMap: Record<string, MappedSkillType[]>;
+  staticSkillCategoryTitleShortNameMap: Record<string, string>;
+} => {
+  const staticSkillCategorySkillMap =
+    standardizedCompetenciesRaw.knowledgeAreas.reduce((acc, knowledgeArea) => {
+      const skills = knowledgeArea.competencies.map((competence) => ({
+        skillName: competence.title,
+        bloomTaxonomy: competence.taxonomy,
+        description: competence.description,
+        isCustomSkill: false,
+      }));
+      return {
+        ...acc,
+        [knowledgeArea.title]: skills,
+      };
+    }, {});
+  const staticSkillCategoryTitleShortNameMap =
+    standardizedCompetenciesRaw.knowledgeAreas.reduce((acc, knowledgeArea) => {
+      return {
+        ...acc,
+        [knowledgeArea.title]: knowledgeArea.shortTitle,
+      };
+    }, {} as Record<string, string>);
+
+  return {
+    staticSkillCategorySkillMap,
+    staticSkillCategoryTitleShortNameMap,
+  };
+};
+
+const getStandardizedCompetencies = cache(() =>
+  processStandardizedCompetencies(standardizedCompetencies)
+);
 
 const bloomLevelLabel: Record<BloomLevel, string> = {
   CREATE: "Create",
@@ -63,11 +131,6 @@ const filterOptionsSkill = createFilterOptions<SkillInAutocomplete>({
   trim: true,
 });
 
-const FAKE_IEEE_SKILLS: Record<string, string[]> = {
-  "Category 1": ["Skill 1", "Skill 2"],
-  "Category 2": ["Skill 3", "Skill 4"],
-};
-
 export function ItemFormSection({
   onChange,
   item,
@@ -77,12 +140,18 @@ export function ItemFormSection({
   item: ItemData;
   courseId: string;
 }) {
+  const {
+    staticSkillCategorySkillMap: SKILL_CATALOGUE,
+    staticSkillCategoryTitleShortNameMap: SKILL_CATEGORY_ABBREVIATION,
+  } = getStandardizedCompetencies();
+
   const [bloomLevels, setBloomLevels] = useState<BloomLevel[]>(
     item?.associatedBloomLevels ?? []
   );
   const [skillsSelected, setSkillsSelected] = useState<Skill[]>(
     item.associatedSkills
   );
+  console.log("skillsSelected", skillsSelected);
   const [itemId] = useState(item?.id);
 
   const currentItemBloomAndSkillPresent =
@@ -218,13 +287,13 @@ export function ItemFormSection({
             option.category === value.category
           }
           options={[
-            ...Object.keys(FAKE_IEEE_SKILLS).map((category) => ({
+            ...Object.keys(SKILL_CATALOGUE).map((category) => ({
               category,
               isCustomSkillCategory: true,
               toBeAdded: false,
             })),
             ...availableSkills
-              .filter((skill) => !FAKE_IEEE_SKILLS[skill.skillCategory])
+              .filter((skill) => !SKILL_CATALOGUE[skill.skillCategory])
               .filter((skill) => {
                 if (seenCategories.has(skill.skillCategory)) {
                   return false;
@@ -236,8 +305,8 @@ export function ItemFormSection({
               .map((skill) => ({
                 category: skill.skillCategory,
                 isCustomSkillCategory: skill.isCustomSkill,
-                toBeAdded: false
-              }))
+                toBeAdded: false,
+              })),
           ]}
           getOptionLabel={(option) => option.category}
           onChange={(_, newValue) =>
@@ -253,7 +322,6 @@ export function ItemFormSection({
           sx={{ width: 300 }}
           filterOptions={(options, params) => {
             const filtered = filterOptionsSkillCategory(options, params);
-
             if (params.inputValue !== "" && filtered.length === 0) {
               filtered.push({
                 category: params.inputValue,
@@ -284,7 +352,7 @@ export function ItemFormSection({
           value={newSkill}
           onChange={(_, newValue) => {
             setNewSkill([]);
-            // setKey((prev) => prev + 1);            
+            // setKey((prev) => prev + 1);
             setSkillsSelected((prev) => {
               if (!newValue) return prev;
 
@@ -310,35 +378,35 @@ export function ItemFormSection({
           isOptionEqualToValue={(option, value) =>
             option.skillName === value.skillName
           }
-          options={[
-            ...(FAKE_IEEE_SKILLS[newSkillCategory?.category ?? ""]
-              ? FAKE_IEEE_SKILLS[newSkillCategory?.category ?? ""].map(
-                  (skill) => ({
-                    skillName: skill,
-                    isCustomSkill: true,
-                    toBeAdded: false,
-                  })
-                )
-              : []),
-            ...availableSkills
-              .filter(
-                (skill) =>
-                  skill.skillCategory === newSkillCategory?.category &&
-                  !(
-                    FAKE_IEEE_SKILLS[skill.skillCategory] &&
-                    FAKE_IEEE_SKILLS[skill.skillCategory].some(
-                      (skillIEEE) => skillIEEE === skill.skillName
+          options={
+            !newSkillCategory?.category
+              ? []
+              : [
+                  ...(SKILL_CATALOGUE[newSkillCategory.category]
+                    ? SKILL_CATALOGUE[newSkillCategory.category].map(
+                        (skill) => ({
+                          skillName: skill.skillName,
+                          isCustomSkill: false,
+                          toBeAdded: false,
+                        })
+                      )
+                    : []),
+                  ...availableSkills
+                    .filter(
+                      (skill) =>
+                        skill.skillCategory === newSkillCategory.category &&
+                        (newSkillCategory.isCustomSkillCategory ||
+                          skill.isCustomSkill)
                     )
-                  )
-              )
-              .map((skill) => ({
-                skillName: skill.skillName,
-                isCustomSkill: skill.isCustomSkill,
-                toBeAdded: false,
-              }))
-          ]}
+                    .map((skill) => ({
+                      skillName: skill.skillName,
+                      isCustomSkill: true,
+                      toBeAdded: false,
+                    })),
+                ]
+          }
           sx={{ width: 300 }}
-          getOptionLabel={(option) => option.skillName}
+          getOptionLabel={(option) => option.skillName ?? ""}
           renderInput={(params) => <TextField {...params} label="Skill" />}
           renderTags={() => null}
           getOptionDisabled={(value) =>

@@ -1,9 +1,9 @@
-import { Button, Tooltip, Typography } from "@mui/material";
-import { EditSideModal } from "./EditSideModal";
-import { useState } from "react";
-import { FlashcardSide, FlashcardSideData } from "./FlashcardSide";
 import { Add } from "@mui/icons-material";
-import { ItemData, ItemFormSection } from "../ItemFormSection";
+import { Button, Tooltip, Typography } from "@mui/material";
+import { useState } from "react";
+import { ItemData, ItemFormSection } from "../form-sections/ItemFormSection";
+import { EditSideModal } from "./EditSideModal";
+import { FlashcardSide, FlashcardSideData } from "./FlashcardSide";
 export function LocalFlashcard({
   onClose,
   onSubmit,

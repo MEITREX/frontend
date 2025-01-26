@@ -13,8 +13,8 @@ import {
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { Form, FormSection } from "../Form";
+import { ItemData, ItemFormSection } from "../form-sections/ItemFormSection";
 import { FormErrors } from "../FormErrors";
-import { ItemData, ItemFormSection } from "../ItemFormSection";
 import { RichTextEditor, serializeToText } from "../RichTextEditor";
 
 export type MultipleChoiceQuestionData = {

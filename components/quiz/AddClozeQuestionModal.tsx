@@ -2,8 +2,8 @@ import { AddClozeQuestionModalMutation } from "@/__generated__/AddClozeQuestionM
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { useState } from "react";
 import { graphql, useMutation } from "react-relay";
+import { ItemData } from "../form-sections/ItemFormSection";
 import { ClozeQuestionData, ClozeQuestionModal } from "./ClozeQuestionModal";
-import { ItemData } from "../ItemFormSection";
 
 export function AddClozeQuestionModal({
   _allRecords,
