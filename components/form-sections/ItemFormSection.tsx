@@ -263,11 +263,26 @@ export function ItemFormSection({
         </Select>
       </FormControl>
 
-      <InputLabel htmlFor="">Associated Skills:</InputLabel>
-      <Stack direction="row" spacing={1} sx={{ marginBottom: 1 }}>
+      <InputLabel htmlFor="skills-selected">Associated Skills:</InputLabel>
+      <Stack
+        id="skills-selected"
+        direction="row"
+        sx={{
+          marginBottom: "1.5rem",
+          flexWrap: "wrap",
+          gap: 1,
+        }}
+      >
         {skillsSelected.map((skill, i) => (
           <Chip
             key={i}
+            sx={{
+              maxWidth: "250px",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+            }}
+            title={skill.skillCategory + ": " + skill.skillName}
             label={skill.skillCategory + ": " + skill.skillName}
             onDelete={() =>
               setSkillsSelected((prev) => {
