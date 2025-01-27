@@ -377,7 +377,9 @@ export function ItemFormSection({
                   .filter(
                     (skill) =>
                       !skillsSelected.some(
-                        (s) => s.skillName === skill.skillName
+                        (s) =>
+                          s.skillName === skill.skillName &&
+                          s.skillCategory === newSkillCategory!.category
                       )
                   )
                   .map((skill) => ({
