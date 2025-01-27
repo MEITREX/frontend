@@ -283,7 +283,7 @@ export function ItemFormSection({
               overflow: "hidden",
             }}
             title={skill.skillCategory + ": " + skill.skillName}
-            label={skill.skillCategory + ": " + skill.skillName}
+            label={(SKILL_CATEGORY_ABBREVIATION[skill.skillCategory] || skill.skillCategory) + ": " + skill.skillName}
             onDelete={() =>
               setSkillsSelected((prev) => {
                 const newSkills = [...prev];
