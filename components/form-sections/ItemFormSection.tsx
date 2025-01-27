@@ -434,7 +434,11 @@ export function ItemFormSection({
           filterOptions={(options, params) => {
             const filtered = filterOptionsSkill(options, params);
 
-            if (params.inputValue !== "" && filtered.length === 0) {
+            const inputValueExists = options.some(
+              (option) => option.skillName.toLowerCase() === params.inputValue.toLowerCase()
+            );
+
+            if (params.inputValue !== "" && !inputValueExists) {
               filtered.push({
                 skillName: params.inputValue,
                 isCustomSkill: true,
