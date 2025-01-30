@@ -57,6 +57,7 @@ export default function LecturerFlashcards() {
                 id
                 skillName
                 skillCategory
+                isCustomSkill
               }
               associatedBloomLevels
             }
@@ -98,6 +99,7 @@ export default function LecturerFlashcards() {
                 id
                 skillName
                 skillCategory
+                isCustomSkill
               }
               associatedBloomLevels
             }
@@ -157,6 +159,7 @@ export default function LecturerFlashcards() {
         id: skill.id || undefined,
         skillName: skill.skillName,
         skillCategory: skill.skillCategory,
+        isCustomSkill: skill.isCustomSkill || undefined,
       })),
       id: item.id,
     })) || [];

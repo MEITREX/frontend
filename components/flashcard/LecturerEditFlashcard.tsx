@@ -85,6 +85,8 @@ export function Flashcard({
               associatedSkills {
                 id
                 skillName
+                skillCategory
+                isCustomSkill
               }
               associatedBloomLevels
             }
