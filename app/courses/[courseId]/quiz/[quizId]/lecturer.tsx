@@ -57,6 +57,7 @@ export default function LecturerQuiz() {
                 id
                 skillName
                 skillCategory
+                isCustomSkill
               }
               associatedBloomLevels
             }

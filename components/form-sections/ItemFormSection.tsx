@@ -109,16 +109,16 @@ export type Skill = {
   skillName: string;
   id?: string | null;
   skillCategory: string;
-  isCustomSkill?: boolean | null;
+  isCustomSkill: boolean;
 };
 type SkillCategoryInAutocomplete = {
   skillCategory: string;
-  isCustomSkillCategory: boolean | null;
+  isCustomSkillCategory: boolean;
   toBeAdded?: boolean;
 };
 type SkillInAutocomplete = {
   skillName: string;
-  isCustomSkill: boolean | null;
+  isCustomSkill: boolean;
   toBeAdded?: boolean;
 };
 
@@ -197,7 +197,6 @@ export function ItemFormSection({
     bloomLevelsSelected,
     currentItemBloomAndSkillPresent,
     item?.id,
-    onChange,
     skillNewAdded,
     skillsSelected,
   ]);

@@ -159,7 +159,7 @@ export default function LecturerFlashcards() {
         id: skill.id || undefined,
         skillName: skill.skillName,
         skillCategory: skill.skillCategory,
-        isCustomSkill: skill.isCustomSkill || undefined,
+        isCustomSkill: skill.isCustomSkill,
       })),
       id: item.id,
     })) || [];
