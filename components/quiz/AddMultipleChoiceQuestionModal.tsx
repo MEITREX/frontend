@@ -117,6 +117,7 @@ export function AddMultipleChoiceQuestionModal({
       },
       onError: setError,
     });
+    window.location.reload();
   };
 
   const initialValue: MultipleChoiceQuestionData = {
