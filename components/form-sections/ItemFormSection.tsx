@@ -305,9 +305,6 @@ export function ItemFormSection({
     const currentSkillsAvailableSorted = useMemo(() => {
       if (!newSkillCategory?.skillCategory) return [];
 
-      console.log("skillsSelected", skillsSelected);
-      console.log("availableSkills", availableSkills);
-
       // sort already skills to be placed to the bottom of the Autocomplete list
       const skillAlreadySelected = skillsSelected.reduce((acc, skill) => {
         return acc.set(skill.skillName, true);
@@ -513,7 +510,7 @@ export function ItemFormSection({
                   <Box key={index ?? key} {...optionProps} component="li">
                     {option?.toBeAdded && "Add: "}
                     {option.skillCategory}
-                    {option.isCustomSkillCategory && " (Custom)"}
+                    {option.isCustomSkillCategory && <Chip label="Custom" variant="outlined" size="small" sx={{ ml: 1 }}/>}
                   </Box>
                   {/* add ruler after use categories */}
                   {index === amountOfUsedSkillCategories - 1 && (
@@ -624,7 +621,7 @@ export function ItemFormSection({
                 <Box key={key} {...optionProps} component="li">
                   {option.toBeAdded && "Add: "}
                   {option.skillName}
-                  {option.isCustomSkill && " (Custom)"}
+                  {option.isCustomSkill && <Chip label="Custom" variant="outlined" size="small" sx={{ ml: 1 }}/>}
                 </Box>
               );
             }}
