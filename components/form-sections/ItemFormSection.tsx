@@ -183,20 +183,21 @@ export function ItemFormSection({
   >([]);
 
   useEffect(() => {
+    if (!currentItemBloomAndSkillPresent) return;
+
     onChange(
-      currentItemBloomAndSkillPresent
-        ? {
-            id: item?.id,
-            associatedBloomLevels: bloomLevelsSelected,
-            associatedSkills: skillsSelected,
-          }
-        : null,
+      {
+        id: item?.id,
+        associatedBloomLevels: bloomLevelsSelected,
+        associatedSkills: skillsSelected,
+      },
       skillNewAdded
     );
   }, [
     bloomLevelsSelected,
     currentItemBloomAndSkillPresent,
     item?.id,
+    onChange,
     skillNewAdded,
     skillsSelected,
   ]);

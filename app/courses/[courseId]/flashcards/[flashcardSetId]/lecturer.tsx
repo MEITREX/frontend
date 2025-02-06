@@ -16,7 +16,7 @@ import { ItemData } from "@/components/form-sections/ItemFormSection";
 import { Add, Delete, Edit } from "@mui/icons-material";
 import { Alert, Backdrop, Button, CircularProgress } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
 export default function LecturerFlashcards() {
@@ -39,7 +39,7 @@ export default function LecturerFlashcards() {
           id
           metadata {
             name
-            chapterId #
+            chapterId
             ...ContentTags
           }
 
@@ -146,84 +146,87 @@ export default function LecturerFlashcards() {
     `);
   const isUpdating = isAddingFlashcard || isUpdatingFlashcardSet || isDeleting;
 
-  if (contentsByIds.length == 0) {
-    return <PageError message="No flashcards found with given id." />;
-  }
+  const [content, setContent] = useState<(typeof contentsByIds)[0] | null>(
+    null
+  );
+  useEffect(() => {
+    if (contentsByIds.length == 0) return;
+    setContent(contentsByIds[0]);
+  }, [contentsByIds]);
+  const flashcardSet = content?.flashcardSet;
 
-  const content = contentsByIds[0];
-  const flashcardSet = content.flashcardSet;
-  const transformedItems: ItemData[] =
-    content.items?.map((item) => ({
+  const [items, setItems] = useState<ItemData[]>([]);
+  useEffect(() => {
+    if (content == null) return;
+    const contentsItems = content.items;
+    if (!contentsItems) return;
+
+    console.log("contentsItems", contentsItems);
+    const itemsTransformed: ItemData[] = contentsItems.map((item) => ({
       associatedBloomLevels: Array.from(item.associatedBloomLevels),
       associatedSkills: Array.from(item.associatedSkills).map((skill) => ({
-        id: skill.id || undefined,
+        id: skill.id,
         skillName: skill.skillName,
         skillCategory: skill.skillCategory,
         isCustomSkill: skill.isCustomSkill,
       })),
       id: item.id,
-    })) || [];
-  const items = transformedItems;
+    }));
+    console.log("itemsTransformed", itemsTransformed);
+    setItems(itemsTransformed);
+  }, [content]);
 
-  if (flashcardSet == null) {
-    return (
-      <PageError
-        title={content.metadata.name}
-        message="Content is not of type flashcards."
-      />
-    );
-  }
+  const handleAddFlashcard = useCallback(
+    (sides: FlashcardSideData[], item: ItemData, newSkillAdded?: boolean) => {
+      if (flashcardSet == null) return;
 
-  function handleAddFlashcard(
-    sides: FlashcardSideData[],
-    item: ItemData,
-    newSkillAdded?: boolean
-  ) {
-    const newFlashcard = {
-      sides,
-      itemId: null,
-    };
+      const newFlashcard = {
+        sides,
+        itemId: null,
+      };
 
-    setAddFlashcardOpen(false);
-    addFlashcard({
-      variables: {
-        flashcard: newFlashcard,
-        assessmentId: flashcardSetId,
-        item: item,
-      },
-      onError: setError,
-      updater(store, response) {
-        // Get record of flashcard set and of the new flashcard
-        const flashcardSetRecord = store.get(flashcardSet!.__id);
-        const newRecord = store.get(
-          response.mutateFlashcardSet.createFlashcard.flashcard!.__id
-        );
-        if (!flashcardSetRecord || !newRecord) return;
+      setAddFlashcardOpen(false);
+      addFlashcard({
+        variables: {
+          flashcard: newFlashcard,
+          assessmentId: flashcardSetId,
+          item: item,
+        },
+        onError: setError,
+        updater(store, response) {
+          console.log("handleAddFlashcard > updater", response);
 
-        // Update the linked records of the flashcard set
-        const flashcardRecords =
-          flashcardSetRecord.getLinkedRecords("flashcards") ?? [];
-        console.log(flashcardRecords);
-        flashcardSetRecord.setLinkedRecords(
-          [...flashcardRecords, newRecord],
-          "flashcards"
-        );
-        const root = store.get(flashcardSetId);
+          // Get record of flashcard set and of the new flashcard
+          const flashcardSetRecord = store.get(flashcardSet.__id);
+          const newRecord = store.get(
+            response.mutateFlashcardSet.createFlashcard.flashcard!.__id
+          );
+          if (!flashcardSetRecord || !newRecord) return;
 
-        if (!root) return;
+          // Update the linked records of the flashcard set
+          const flashcardRecords =
+            flashcardSetRecord.getLinkedRecords("flashcards") ?? [];
+          console.log(flashcardRecords);
+          flashcardSetRecord.setLinkedRecords(
+            [...flashcardRecords, newRecord],
+            "flashcards"
+          );
+          const root = store.get(flashcardSetId);
 
-        const items = root?.getLinkedRecords("items") ?? [];
+          if (!root) return;
 
-        const newItem = store.get(
-          response.mutateFlashcardSet.createFlashcard.item!.id
-        );
+          const items = root?.getLinkedRecords("items") ?? [];
 
-        if (newItem) {
-          root.setLinkedRecords([...items, newItem], "items");
-        } else {
-          return;
-        }
-        /* const items = store
+          const newItem = store.get(
+            response.mutateFlashcardSet.createFlashcard.item!.id
+          );
+
+          if (newItem) {
+            root.setLinkedRecords([...items, newItem], "items");
+          } else {
+            return;
+          }
+          /* const items = store
         .getRoot()
         .getLinkedRecord("items")
         ?.getLinkedRecords("elements");
@@ -235,45 +238,54 @@ export default function LecturerFlashcards() {
           .getLinkedRecord("items")
           ?.setLinkedRecords([...items, newItem], "elements");*/
 
-        console.log(flashcardSetRecord.getLinkedRecords("flashcards"));
-      },
-      onCompleted() {
-        //reload page, when a new skill is added
-        if (newSkillAdded) {
-          console.log("reload");
-          window.location.reload();
-        }
-      },
-    });
-  }
+          console.log(flashcardSetRecord.getLinkedRecords("flashcards"));
+        },
+        onCompleted() {
+          //reload page, when a new skill is added
+          if (newSkillAdded) {
+            console.log("handleAddFlashcard > reload suppressed");
+            window.location.reload();
+          }
+        },
+      });
+    },
+    [addFlashcard, flashcardSet, flashcardSetId]
+  );
 
-  function handleDeleteFlashcard(flashcardId: string) {
-    deleteFlashcard({
-      variables: {
-        flashcardId: flashcardId,
-        assessmentId: flashcardSetId,
-      },
-      onError: setError,
-      updater(store) {
-        // Get record of flashcard set
-        const flashcardSetRecord = store.get(flashcardSet!.__id);
-        if (!flashcardSetRecord) return;
+  const handleDeleteFlashcard = useCallback(
+    (flashcardId: string) => {
+      if (flashcardSet == null) return;
 
-        // Update the linked records of the flashcard set
-        const flashcardRecords =
-          flashcardSetRecord.getLinkedRecords("flashcards") ?? [];
-        flashcardSetRecord.setLinkedRecords(
-          flashcardRecords.filter((x) => x.getDataID() !== flashcardId),
-          "flashcards"
-        );
-      },
-    });
-  }
+      deleteFlashcard({
+        variables: {
+          flashcardId: flashcardId,
+          assessmentId: flashcardSetId,
+        },
+        onError: setError,
+        updater(store) {
+          // Get record of flashcard set
+          const flashcardSetRecord = store.get(flashcardSet.__id);
+          if (!flashcardSetRecord) return;
+
+          // Update the linked records of the flashcard set
+          const flashcardRecords =
+            flashcardSetRecord.getLinkedRecords("flashcards") ?? [];
+          flashcardSetRecord.setLinkedRecords(
+            flashcardRecords.filter((x) => x.getDataID() !== flashcardId),
+            "flashcards"
+          );
+        },
+      });
+    },
+    [deleteFlashcard, flashcardSet, flashcardSetId]
+  );
 
   function handleUpdateFlashcardSet(
     metadata: ContentMetadataPayload,
     assessmentMetadata: AssessmentMetadataPayload
   ) {
+    if (content === null) return;
+
     setEditSetOpen(false);
     updateFlashcardSet({
       variables: {
@@ -288,6 +300,19 @@ export default function LecturerFlashcards() {
       },
       onError: setError,
     });
+  }
+
+  if (content === null) {
+    return <PageError message="No flashcards found with given id." />;
+  }
+
+  if (flashcardSet == null) {
+    return (
+      <PageError
+        title={content.metadata.name}
+        message="Content is not of type flashcards."
+      />
+    );
   }
 
   return (
@@ -334,7 +359,6 @@ export default function LecturerFlashcards() {
         }
         backButton
       />
-
       <ContentTags metadata={content.metadata} />
       {error && (
         <div className="flex flex-col gap-2 mt-8">

@@ -9,11 +9,12 @@ import {
   IconButton,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
 import { ItemData, ItemFormSection } from "../form-sections/ItemFormSection";
 import { EditSideModal } from "./EditSideModal";
 import { FlashcardSide, FlashcardSideData } from "./FlashcardSide";
+
 export function Flashcard({
   title,
   onError,
@@ -44,23 +45,38 @@ export function Flashcard({
     _flashcard
   );
 
-  const findAvailableItem = (items: ItemData[], itemId: string): ItemData => {
-    for (let itemFromList of items) {
-      if (itemFromList.id === itemId) {
-        return itemFromList;
+  // const [content, setContent] = useState<(typeof contentsByIds)[0] | null>(
+  //   null
+  // );
+  // useEffect(() => {
+  //   if (contentsByIds.length == 0) return;
+  //   setContent(contentsByIds[0]);
+  // }, [contentsByIds]);
+  // const flashcardSet = content?.flashcardSet;
+
+  const [item, setItem] = useState<ItemData | null>({
+    associatedBloomLevels: [],
+    associatedSkills: [],
+    id: undefined,
+  });
+  useEffect(() => {
+    console.log("findAvailableItem", items, flashcard.itemId);
+
+    for (const itemFromList of items) {
+      if (itemFromList.id === flashcard.itemId) {
+        setItem(itemFromList);
+        return;
       }
     }
-    return {
+    setItem({
       associatedBloomLevels: [],
       associatedSkills: [],
       id: undefined,
-    };
-  };
+    });
+  }, [flashcard.itemId, items]);
 
   const [addSideOpen, setAddSideOpen] = useState(false);
-  const [item, setItem] = useState<ItemData>(() =>
-    findAvailableItem(items, flashcard.itemId)
-  );
+
   const [updateFlashcard, isUpdating] =
     useMutation<LecturerEditFlashcardMutation>(graphql`
       mutation LecturerEditFlashcardMutation(
@@ -95,34 +111,106 @@ export function Flashcard({
       }
     `);
 
-  function handleEditFlashcardSide(idx: number, editedSide: FlashcardSideData) {
-    const newFlashcard = {
-      itemId: flashcard.itemId,
-      sides: flashcard.sides.map((side, i) => {
-        const { label, text, isQuestion, isAnswer } =
-          i == idx ? editedSide : side;
-        return { label, text, isQuestion, isAnswer };
-      }),
-    };
-
-    updateFlashcard({
-      variables: {
-        assessmentId: _assessmentId,
-        flashcard: newFlashcard,
-        item: item,
-      },
-      onError,
-    });
-  }
-
-  function handleItem(item: ItemData | null, newSkillAdded?: boolean) {
-    if (item) {
-      setItem(item);
+  const handleEditFlashcardSide = useCallback(
+    (idx: number, editedSide: FlashcardSideData) => {
       const newFlashcard = {
         itemId: flashcard.itemId,
-        sides: flashcard.sides,
+        sides: flashcard.sides.map((side, i) => {
+          const { label, text, isQuestion, isAnswer } =
+            i == idx ? editedSide : side;
+          return { label, text, isQuestion, isAnswer };
+        }),
       };
 
+      console.log("handleEditFlashcardSide", newFlashcard);
+      updateFlashcard({
+        variables: {
+          assessmentId: _assessmentId,
+          flashcard: newFlashcard,
+          item: item,
+        },
+        onError,
+      });
+    },
+    [
+      _assessmentId,
+      flashcard.itemId,
+      flashcard.sides,
+      item,
+      onError,
+      updateFlashcard,
+    ]
+  );
+
+  const handleItem = useCallback(
+    (item: ItemData | null, newSkillAdded?: boolean) => {
+      if (item) {
+        setItem(item);
+        const newFlashcard = {
+          itemId: flashcard.itemId,
+          sides: flashcard.sides,
+        };
+
+        console.log("handleItem", newFlashcard);
+        updateFlashcard({
+          variables: {
+            assessmentId: _assessmentId,
+            flashcard: newFlashcard,
+            item: item,
+          },
+          onError,
+          onCompleted() {
+            console.log("reloading in LecturerEditFlashcard.tsx");
+          },
+        });
+      }
+    },
+    [_assessmentId, flashcard.itemId, flashcard.sides, onError, updateFlashcard]
+  );
+
+  const handleDeleteFlashcardSide = useCallback(
+    (idx: number) => {
+      const newFlashcard = {
+        itemId: flashcard.itemId,
+        sides: flashcard.sides.filter((_, i) => i != idx),
+      };
+
+      console.log("handleDeleteFlashcardSide", newFlashcard);
+      updateFlashcard({
+        variables: {
+          assessmentId: _assessmentId,
+          flashcard: newFlashcard,
+          item: item,
+        },
+        onError,
+      });
+    },
+    [
+      _assessmentId,
+      flashcard.itemId,
+      flashcard.sides,
+      item,
+      onError,
+      updateFlashcard,
+    ]
+  );
+
+  const handleAddSideSubmit = useCallback(
+    (newSide: FlashcardSideData) => {
+      const newFlashcard = {
+        itemId: flashcard.itemId,
+        sides: [
+          ...flashcard.sides.map(({ label, text, isQuestion, isAnswer }) => ({
+            label,
+            text,
+            isQuestion,
+            isAnswer,
+          })),
+          newSide,
+        ],
+      };
+
+      console.log("handleAddSideSubmit", newFlashcard);
       updateFlashcard({
         variables: {
           assessmentId: _assessmentId,
@@ -131,59 +219,19 @@ export function Flashcard({
         },
         onError,
         onCompleted() {
-          //reload page, when a new skill is added
-          if (newSkillAdded) {
-            console.log("reload");
-            window.location.reload();
-          }
-          console.log("logger");
+          setAddSideOpen(false);
         },
       });
-    }
-  }
-
-  function handleDeleteFlashcardSide(idx: number) {
-    const newFlashcard = {
-      itemId: flashcard.itemId,
-      sides: flashcard.sides.filter((_, i) => i != idx),
-    };
-
-    updateFlashcard({
-      variables: {
-        assessmentId: _assessmentId,
-        flashcard: newFlashcard,
-        item: item,
-      },
+    },
+    [
+      _assessmentId,
+      flashcard.itemId,
+      flashcard.sides,
+      item,
       onError,
-    });
-  }
-
-  function handleAddSideSubmit(newSide: FlashcardSideData) {
-    const newFlashcard = {
-      itemId: flashcard.itemId,
-      sides: [
-        ...flashcard.sides.map(({ label, text, isQuestion, isAnswer }) => ({
-          label,
-          text,
-          isQuestion,
-          isAnswer,
-        })),
-        newSide,
-      ],
-    };
-
-    updateFlashcard({
-      variables: {
-        assessmentId: _assessmentId,
-        flashcard: newFlashcard,
-        item: item,
-      },
-      onError,
-      onCompleted() {
-        setAddSideOpen(false);
-      },
-    });
-  }
+      updateFlashcard,
+    ]
+  );
 
   return (
     <>
