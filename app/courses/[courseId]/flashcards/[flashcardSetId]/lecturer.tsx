@@ -1,36 +1,37 @@
 import { lecturerAddFlashcardMutation } from "@/__generated__/lecturerAddFlashcardMutation.graphql";
-import { lecturerDeleteFlashcardContentMutation } from "@/__generated__/lecturerDeleteFlashcardContentMutation.graphql";
 import { lecturerDeleteFlashcardMutation } from "@/__generated__/lecturerDeleteFlashcardMutation.graphql";
 import { lecturerEditFlashcardSetMutation } from "@/__generated__/lecturerEditFlashcardSetMutation.graphql";
 import { lecturerEditFlashcardsQuery } from "@/__generated__/lecturerEditFlashcardsQuery.graphql";
 import { AssessmentMetadataPayload } from "@/components/AssessmentMetadataFormSection";
 import { ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
-import { ContentTags } from "@/components/ContentTags";
 import { EditFlashcardSetModal } from "@/components/EditFlashcardSetModal";
-import { Heading } from "@/components/Heading";
 import { PageError } from "@/components/PageError";
 import { FlashcardSideData } from "@/components/flashcard/FlashcardSide";
 import { Flashcard } from "@/components/flashcard/LecturerEditFlashcard";
+import LecturerFlashcardHeading from "@/components/flashcard/LecturerFlashcardHeading";
 import { LocalFlashcard } from "@/components/flashcard/LocalFlashcard";
 import { ItemData } from "@/components/form-sections/ItemFormSection";
-import { Add, Delete, Edit } from "@mui/icons-material";
-import { Alert, Backdrop, Button, CircularProgress } from "@mui/material";
+import { Add, Delete } from "@mui/icons-material";
+import { Backdrop, Button, CircularProgress } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
+
+interface ErrorContextProps {
+  error: Error | null;
+  setError: (error: Error | null) => void;
+}
+const ErrorContext = createContext<ErrorContextProps>({
+  error: null,
+  setError: () => {},
+});
+export const useError = () => useContext(ErrorContext);
 
 export default function LecturerFlashcards() {
   const { flashcardSetId, courseId } = useParams();
-  const [del, deleting] =
-    useMutation<lecturerDeleteFlashcardContentMutation>(graphql`
-      mutation lecturerDeleteFlashcardContentMutation($id: UUID!) {
-        mutateContent(contentId: $id) {
-          deleteContent
-        }
-      }
-    `);
-
   const router = useRouter();
+
+  const [error, setError] = useState<Error | null>(null);
 
   const { contentsByIds } = useLazyLoadQuery<lecturerEditFlashcardsQuery>(
     graphql`
@@ -39,10 +40,10 @@ export default function LecturerFlashcards() {
           id
           metadata {
             name
-            chapterId #
-            ...ContentTags
+            chapterId
           }
 
+          ...LecturerFlashcardHeadingFragment
           ... on FlashcardSetAssessment {
             flashcardSet {
               __id
@@ -71,8 +72,6 @@ export default function LecturerFlashcards() {
 
   const [isAddFlashcardOpen, setAddFlashcardOpen] = useState(false);
   const [isEditSetOpen, setEditSetOpen] = useState(false);
-
-  const [error, setError] = useState<any>(null);
 
   const [addFlashcard, isAddingFlashcard] =
     useMutation<lecturerAddFlashcardMutation>(graphql`
@@ -292,91 +291,46 @@ export default function LecturerFlashcards() {
 
   return (
     <main>
-      <Heading
-        title={content.metadata.name}
-        action={
-          <div className="flex gap-2">
-            <Button
-              sx={{ color: "text.secondary" }}
-              startIcon={deleting ? <CircularProgress size={16} /> : <Delete />}
-              onClick={() => {
-                if (
-                  confirm(
-                    "Do you really want to delete this flashcard set? This can't be undone."
-                  )
-                ) {
-                  del({
-                    variables: { id: content.id },
-                    onCompleted() {
-                      router.push(`/courses/${courseId}`);
-                    },
-                    onError(error) {
-                      setError(error);
-                    },
-                    updater(store) {
-                      store.get(content.id)?.invalidateRecord();
-                    },
-                  });
-                }
-              }}
-            >
-              Delete
-            </Button>
+      <ErrorContext.Provider value={{ error, setError }}>
+        <LecturerFlashcardHeading
+          content={contentsByIds[0]}
+          courseId={courseId}
+          setEditContentModal={setEditSetOpen}
+        />
 
-            <Button
-              sx={{ color: "text.secondary" }}
-              startIcon={<Edit />}
-              onClick={() => setEditSetOpen(true)}
-            >
-              Edit
-            </Button>
-          </div>
-        }
-        backButton
-      />
-
-      <ContentTags metadata={content.metadata} />
-      {error && (
-        <div className="flex flex-col gap-2 mt-8">
-          {error?.source?.errors.map((err: any, i: number) => (
-            <Alert key={i} severity="error" onClose={() => setError(null)}>
-              {err.message}
-            </Alert>
+        <div className="mt-8 flex flex-col gap-6">
+          {flashcardSet.flashcards.map((flashcard, i) => (
+            <div key={i}>
+              <Flashcard
+                key={flashcard.itemId}
+                title={`Card ${i + 1}/${flashcardSet.flashcards.length}`}
+                onError={setError}
+                _flashcard={flashcard}
+                _assessmentId={flashcardSetId}
+                courseId={courseId}
+                items={items}
+              />
+              <Button
+                sx={{ float: "left", color: "red" }}
+                startIcon={<Delete />}
+                onClick={() => {
+                  handleDeleteFlashcard(flashcard.itemId);
+                }}
+              >
+                Delete Flashcard
+              </Button>
+            </div>
           ))}
         </div>
-      )}
-      <div className="mt-8 flex flex-col gap-6">
-        {flashcardSet.flashcards.map((flashcard, i) => (
-          <div key={i}>
-            <Flashcard
-              key={flashcard.itemId}
-              title={`Card ${i + 1}/${flashcardSet.flashcards.length}`}
-              onError={setError}
-              _flashcard={flashcard}
-              _assessmentId={flashcardSetId}
+
+        <div className="mt-4">
+          {isAddFlashcardOpen ? (
+            <LocalFlashcard
               courseId={courseId}
-              items={items}
+              onClose={() => setAddFlashcardOpen(false)}
+              onSubmit={handleAddFlashcard}
             />
-            <Button
-              sx={{ float: "left", color: "red" }}
-              startIcon={<Delete />}
-              onClick={() => {
-                handleDeleteFlashcard(flashcard.itemId);
-              }}
-            >
-              Delete Flashcard
-            </Button>
-          </div>
-        ))}
-        {isAddFlashcardOpen && (
-          <LocalFlashcard
-            courseId={courseId}
-            onClose={() => setAddFlashcardOpen(false)}
-            onSubmit={handleAddFlashcard}
-          />
-        )}
-        <div>
-          {!isAddFlashcardOpen && (
+          ) : (
             <Button
               startIcon={<Add />}
               onClick={() => setAddFlashcardOpen(true)}
@@ -385,17 +339,18 @@ export default function LecturerFlashcards() {
             </Button>
           )}
         </div>
-      </div>
-      <Backdrop open={isUpdating} sx={{ zIndex: "modal" }}>
-        <CircularProgress />
-      </Backdrop>
-      {isEditSetOpen && (
-        <EditFlashcardSetModal
-          onClose={() => setEditSetOpen(false)}
-          onSubmit={handleUpdateFlashcardSet}
-          _content={content}
-        />
-      )}
+
+        <Backdrop open={isUpdating} sx={{ zIndex: "modal" }}>
+          <CircularProgress />
+        </Backdrop>
+        {isEditSetOpen && (
+          <EditFlashcardSetModal
+            onClose={() => setEditSetOpen(false)}
+            onSubmit={handleUpdateFlashcardSet}
+            _content={content}
+          />
+        )}
+      </ErrorContext.Provider>
     </main>
   );
 }
