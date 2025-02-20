@@ -3,6 +3,7 @@ import { LecturerFlashcardHeadingFragment$key } from "@/__generated__/LecturerFl
 import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import { Delete, Edit } from "@mui/icons-material";
 import { Alert, Button, CircularProgress } from "@mui/material";
+import { useParams } from "next/navigation";
 import router from "next/router";
 import { useFragment, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
@@ -30,15 +31,12 @@ const metadataFragment = graphql`
 
 interface Props {
   content: LecturerFlashcardHeadingFragment$key;
-  courseId: string;
   setEditContentModal: (open: boolean) => void;
 }
 
-const LecturerFlashcardHeading = ({
-  content,
-  courseId,
-  setEditContentModal,
-}: Props) => {
+const LecturerFlashcardHeading = ({ content, setEditContentModal }: Props) => {
+  const { courseId } = useParams();
+
   const [commitDeleteFlashcard, isDeleteCommitInFlight] =
     useMutation<LecturerFlashcardHeadingDeleteAllFlashcardContentMutation>(
       deleteFlashcardMutation

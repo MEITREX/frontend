@@ -132,6 +132,42 @@ const filterOptionsSkill = createFilterOptions<SkillInAutocomplete>({
   trim: true,
 });
 
+// Since the quiz & flashcard entities are managed in different services, GQL schema stitching is necessary to
+//  adjust the schema response tree to the component tree necessary to use relay.js (somewhat) idiomatically
+// GraphQL Mesh (rightfully) doesn't allow you to extend an interface type which could have solved with less redundance
+export const itemFormSectionFragment = graphql`
+  fragment ItemFormSectionFragment on Flashcard {
+    item {
+      id
+    }
+  }
+  fragment ItemFormSectionMCQuestionFragment on MultipleChoiceQuestion {
+    item {
+      id
+    }
+  }
+  fragment ItemFormSectionClozeQuestionFragment on ClozeQuestion {
+    item {
+      id
+    }
+  }
+  fragment ItemFormSectionAssociationQuestionFragment on AssociationQuestion {
+    item {
+      id
+    }
+  }
+  fragment ItemFormSectionExactAnswerQuestionFragment on ExactAnswerQuestion {
+    item {
+      id
+    }
+  }
+  fragment ItemFormSectionNumericQuestionFragment on NumericQuestion {
+    item {
+      id
+    }
+  }
+`;
+
 export function ItemFormSection({
   onChange,
   item,
