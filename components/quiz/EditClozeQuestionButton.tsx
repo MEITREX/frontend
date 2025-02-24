@@ -70,14 +70,14 @@ export function EditClozeQuestionButton({
               ...EditClozeQuestionButtonFragment
               ...ClozeQuestionPreviewFragment
             }
-            item {
-              id
-              associatedSkills {
-                id
-                skillName
-              }
-              associatedBloomLevels
-            }
+            # item {
+            #   id
+            #   associatedSkills {
+            #     id
+            #     skillName
+            #   }
+            #   associatedBloomLevels
+            # }
           }
         }
       }

@@ -43,14 +43,14 @@ export function AddAssociationQuestionModal({
               number
               ...AssociationQuestionPreviewFragment
             }
-            item {
-              id
-              associatedSkills {
-                id
-                skillName
-              }
-              associatedBloomLevels
-            }
+            # item {
+            #   id
+            #   associatedSkills {
+            #     id
+            #     skillName
+            #   }
+            #   associatedBloomLevels
+            # }
           }
         }
       }

@@ -60,14 +60,14 @@ export function EditMultipleChoiceQuestionButton({
             questionPool {
               ...EditMultipleChoiceQuestionButtonFragment
             }
-            item {
-              id
-              associatedSkills {
-                id
-                skillName
-              }
-              associatedBloomLevels
-            }
+            # item {
+            #   id
+            #   associatedSkills {
+            #     id
+            #     skillName
+            #   }
+            #   associatedBloomLevels
+            # }
           }
         }
       }

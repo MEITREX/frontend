@@ -42,14 +42,14 @@ export function AddClozeQuestionModal({
               ...EditClozeQuestionButtonFragment
               ...ClozeQuestionPreviewFragment
             }
-            item {
-              id
-              associatedSkills {
-                id
-                skillName
-              }
-              associatedBloomLevels
-            }
+            # item {
+            #   id
+            #   associatedSkills {
+            #     id
+            #     skillName
+            #   }
+            #   associatedBloomLevels
+            # }
           }
         }
       }

@@ -81,7 +81,7 @@ const LecturerFlashcardHeading = ({ content, setEditContentModal }: Props) => {
                 }
               }}
             >
-              Delete
+              Delete Flashcard Set
             </Button>
 
             <Button

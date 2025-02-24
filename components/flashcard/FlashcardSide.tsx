@@ -1,3 +1,4 @@
+import { Edit, Help, QuestionAnswer } from "@mui/icons-material";
 import {
   Card,
   CardContent,
@@ -5,9 +6,9 @@ import {
   IconButton,
   Typography,
 } from "@mui/material";
+import { ClearIcon } from "@mui/x-date-pickers";
+import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { EditSideModal } from "./EditSideModal";
-import { Edit, Help, QuestionAnswer } from "@mui/icons-material";
-import { useState } from "react";
 
 export type FlashcardSideData = {
   label: string;
@@ -16,36 +17,78 @@ export type FlashcardSideData = {
   isAnswer: boolean;
 };
 
-export function FlashcardSide({
-  side,
-  onChange,
-}: {
-  onChange: (side: FlashcardSideData) => void;
-  side: FlashcardSideData;
-}) {
-  const [edit, setEdit] = useState(false);
+export type FlashcardSideProps =
+  | {
+      operation: "view";
+      sideData: FlashcardSideData;
+    }
+  | {
+      operation: "edit" | "create";
+      sideData: FlashcardSideData;
+      setSideData: Dispatch<SetStateAction<FlashcardSideData[]>>;
+      sideDataIndex: number;
+    };
 
-  function handleEditSubmit(data: FlashcardSideData) {
-    setEdit(false);
-    onChange(data);
-  }
+const isFlashcardSideEditable = (
+  props: FlashcardSideProps
+): props is Extract<
+  FlashcardSideProps,
+  { operation: "edit" } | { operation: "create" }
+> => props.operation === "edit";
+
+export function FlashcardSide(props: FlashcardSideProps) {
+  const { sideData, operation } = props;
+  const isEditable = operation === "edit";
+
+  const [isEditing, setIsEditing] = useState(false);
+  const onEditSubmit = useCallback(
+    (data: FlashcardSideData) => {
+      if (!isFlashcardSideEditable(props)) return;
+      const { setSideData, sideDataIndex } = props;
+
+      setIsEditing(false);
+      setSideData((prev) => {
+        const newSideData = [...prev];
+        newSideData.splice(sideDataIndex, 1, data);
+        return newSideData;
+      });
+    },
+    [props]
+  );
 
   return (
     <>
       <Card variant="outlined" className="min-w-[20rem] max-w-[30%]">
         <CardHeader
-          title={side.label}
+          title={sideData.label}
           avatar={
-            side.isQuestion ? (
+            sideData.isQuestion ? (
               <Help fontSize="large" sx={{ color: "grey.400" }} />
             ) : (
               <QuestionAnswer fontSize="large" sx={{ color: "grey.400" }} />
             )
           }
           action={
-            <IconButton onClick={() => setEdit(true)}>
-              <Edit fontSize="small" />
-            </IconButton>
+            isEditable && (
+              <>
+                <IconButton onClick={() => setIsEditing(true)}>
+                  <Edit fontSize="small" />
+                </IconButton>
+
+                <IconButton
+                  // Inline since isEditable serves as type predicate
+                  onClick={() => {
+                    props.setSideData((prev) => {
+                      const newSideData = [...prev];
+                      newSideData.splice(props.sideDataIndex, 1);
+                      return newSideData;
+                    });
+                  }}
+                >
+                  <ClearIcon />
+                </IconButton>
+              </>
+            )
           }
           classes={{
             action: "!my-0",
@@ -53,15 +96,16 @@ export function FlashcardSide({
         />
         <CardContent>
           <Typography variant="body2" color="textSecondary">
-            {side.text}
+            {sideData.text}
           </Typography>
         </CardContent>
       </Card>
-      {edit && (
+
+      {isEditing && (
         <EditSideModal
-          onClose={() => setEdit(false)}
-          onSubmit={handleEditSubmit}
-          side={side}
+          onClose={() => setIsEditing(false)}
+          onSubmit={onEditSubmit}
+          side={sideData}
         />
       )}
     </>

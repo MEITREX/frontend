@@ -61,14 +61,14 @@ export function EditAssociationQuestionButton({
             questionPool {
               ...EditAssociationQuestionButtonFragment
             }
-            item {
-              id
-              associatedSkills {
-                id
-                skillName
-              }
-              associatedBloomLevels
-            }
+            # item {
+            #   id
+            #   associatedSkills {
+            #     id
+            #     skillName
+            #   }
+            #   associatedBloomLevels
+            # }
           }
         }
       }

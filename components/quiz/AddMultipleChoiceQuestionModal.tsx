@@ -44,14 +44,14 @@ export function AddMultipleChoiceQuestionModal({
               ...EditMultipleChoiceQuestionButtonFragment
               ...MultipleChoiceQuestionPreviewFragment
             }
-            item {
-              id
-              associatedSkills {
-                id
-                skillName
-              }
-              associatedBloomLevels
-            }
+            # item {
+            #   id
+            #   associatedSkills {
+            #     id
+            #     skillName
+            #   }
+            #   associatedBloomLevels
+            # }
           }
         }
       }
