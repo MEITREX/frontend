@@ -1,9 +1,10 @@
 import { AddFlashcardFragment$key } from "@/__generated__/AddFlashcardFragment.graphql";
 import { AddFlashcardMutation } from "@/__generated__/AddFlashcardMutation.graphql";
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
-import { useFragment, useMutation } from "react-relay";
+import { PreloadedQuery, useFragment, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
 import { CreateItem } from "../form-sections/item/ItemFormSectionNew";
 import Flashcard from "./Flashcard";
@@ -12,7 +13,7 @@ import { FlashcardSideData } from "./FlashcardSide";
 const addFlashcardFragment = graphql`
   fragment AddFlashcardFragment on FlashcardSetAssessment {
     flashcardSet {
-      assessmentId # __id
+      assessmentId # == __id?
     }
   }
 `;
@@ -54,11 +55,16 @@ const addFlashcardMutation = graphql`
 `;
 
 interface Props {
-  onCancel: () => void;
   flashcardSet: AddFlashcardFragment$key;
+  onCancel: () => void;
+  allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
 }
 
-export function AddFlashcard({ onCancel, flashcardSet }: Props) {
+export function AddFlashcard({
+  onCancel,
+  flashcardSet,
+  allSkillsQueryRef,
+}: Props) {
   const { courseId } = useParams();
   const { setError } = useError();
 
@@ -152,6 +158,7 @@ export function AddFlashcard({ onCancel, flashcardSet }: Props) {
       setItem={setFlashcardItem}
       onSave={handleAddFlashcard}
       onCancel={onCancel}
+      allSkillsQueryRef={allSkillsQueryRef}
     />
   );
 }

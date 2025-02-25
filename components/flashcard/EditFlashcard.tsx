@@ -6,9 +6,10 @@ import {
   EditFlashcardMutation,
   UpdateFlashcardInput,
 } from "@/__generated__/EditFlashcardMutation.graphql";
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import { useCallback, useState } from "react";
-import { graphql, useFragment, useMutation } from "react-relay";
+import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
 import { CreateItem, Item } from "../form-sections/item/ItemFormSectionNew";
 import Flashcard from "./Flashcard";
 import { FlashcardSideData } from "./FlashcardSide";
@@ -16,7 +17,6 @@ import { FlashcardSideData } from "./FlashcardSide";
 // Move the whole thing into react-state to handle updates on it
 export const FlashcardFragment = graphql`
   fragment EditFlashcardFragment on Flashcard {
-    ...ItemFormSectionNewFragment
     itemId
     sides {
       label
@@ -69,6 +69,7 @@ interface Props {
   onCancel: () => void;
   flashcard: EditFlashcardFragment$key;
   assessmentId: string;
+  allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
 }
 
 export function EditFlashcard({
@@ -76,6 +77,7 @@ export function EditFlashcard({
   flashcard,
   assessmentId,
   onCancel,
+  allSkillsQueryRef,
 }: Props) {
   const data = useFragment(FlashcardFragment, flashcard);
   const [updateFlashcard, isUpdating] = useMutation<EditFlashcardMutation>(
@@ -83,9 +85,6 @@ export function EditFlashcard({
   );
 
   const { setError } = useError();
-
-  // FIXME state update cycles might occur when a new skill is added:
-  //  returning a id to the new created skill should re-trigger the update
 
   // Destructuring necessary due to `readonly` types from relay
   const [item, setItem] = useState<Item | CreateItem>({
@@ -95,7 +94,6 @@ export function EditFlashcard({
     })),
     associatedBloomLevels: data.item.associatedBloomLevels as BloomLevel[],
   });
-  // TODO does this work as expected?
   const [flashcardSides, setFlashcardSides] = useState<FlashcardSideData[]>(
     data.sides.map((readOnlySide) => ({ ...readOnlySide }))
   );
@@ -140,6 +138,7 @@ export function EditFlashcard({
       setSideData={setFlashcardSides}
       onSave={onSave}
       onCancel={onCancel}
+      allSkillsQueryRef={allSkillsQueryRef}
     />
   );
 }

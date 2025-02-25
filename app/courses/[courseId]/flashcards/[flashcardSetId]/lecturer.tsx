@@ -1,3 +1,4 @@
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { lecturerDeleteFlashcardMutation } from "@/__generated__/lecturerDeleteFlashcardMutation.graphql";
 import { lecturerEditFlashcardsQuery } from "@/__generated__/lecturerEditFlashcardsQuery.graphql";
 import { lecturerUpdateFlashcardAssessmentMutation } from "@/__generated__/lecturerUpdateFlashcardAssessmentMutation.graphql";
@@ -12,8 +13,19 @@ import LecturerFlashcardHeading from "@/components/flashcard/LecturerFlashcardHe
 import { Add, Delete, Edit } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import { useParams } from "next/navigation";
-import { createContext, useCallback, useContext, useState } from "react";
-import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import {
+  graphql,
+  useLazyLoadQuery,
+  useMutation,
+  useQueryLoader,
+} from "react-relay";
 
 interface ErrorContextProps {
   error: Error | null;
@@ -42,7 +54,6 @@ const rootQuery = graphql`
           __id
           flashcards {
             itemId
-            ...ItemFormSectionNewFragment
             ...EditFlashcardFragment
           }
         }
@@ -76,6 +87,14 @@ const updateFlashcardSetMutation = graphql`
   }
 `;
 
+export const allSkillQuery = graphql`
+  query lecturerAllSkillsQuery($courseId: UUID!) {
+    coursesByIds(ids: [$courseId]) {
+      ...ItemFormSectionNewAllSkillsFragment
+    }
+  }
+`;
+
 export default function LecturerFlashcards() {
   const { flashcardSetId, courseId } = useParams();
   const [error, setError] = useState<Error | null>(null);
@@ -83,6 +102,9 @@ export default function LecturerFlashcards() {
   const data = useLazyLoadQuery<lecturerEditFlashcardsQuery>(rootQuery, {
     id: flashcardSetId,
   });
+  const [queryReference, loadQuery] =
+    useQueryLoader<lecturerAllSkillsQuery>(allSkillQuery);
+
   const [updateFlashcardSet, isUpdatingFlashcardSet] =
     useMutation<lecturerUpdateFlashcardAssessmentMutation>(
       updateFlashcardSetMutation
@@ -96,9 +118,12 @@ export default function LecturerFlashcards() {
   const onEditCancel = useCallback(() => {
     setEditingFlashcard(null);
   }, []);
-  const onEdit = useCallback((index: number) => {
-    setEditingFlashcard(index);
-  }, []);
+
+  useEffect(() => {
+    if (!queryReference) {
+      loadQuery({ courseId });
+    }
+  }, [courseId, loadQuery, queryReference]);
 
   const [deleteFlashcard, isDeleting] =
     useMutation<lecturerDeleteFlashcardMutation>(graphql`
@@ -190,6 +215,7 @@ export default function LecturerFlashcards() {
                   flashcard={flashcard}
                   assessmentId={content.id}
                   onCancel={onEditCancel}
+                  allSkillsQueryRef={queryReference}
                 />
               ) : (
                 <>
@@ -198,7 +224,7 @@ export default function LecturerFlashcards() {
                     flashcard={flashcard}
                   />
                   {/* unfortunately, this css must be adjusted to the one in Flashcard.tsx */}
-                  <div className="flex flex-row justify-between gap-x-2 mt-2">
+                  <div className="flex flex-row justify-between gap-x-2 mt-4">
                     <Button
                       disabled={isAddFlashcardOpen}
                       startIcon={<Edit />}
@@ -228,6 +254,7 @@ export default function LecturerFlashcards() {
             <AddFlashcard
               onCancel={() => setIsAddFlashcardOpen(false)}
               flashcardSet={content}
+              allSkillsQueryRef={queryReference}
             />
           ) : (
             <Button

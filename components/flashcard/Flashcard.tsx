@@ -89,7 +89,7 @@ const Flashcard = (props: FlashcardProps) => {
       </div>
       {isEditable && (
         // unfortunately, this css must be adjusted to the one in lecturer.tsx
-        <div className="flex gap-x-2 mt-2">
+        <div className="flex gap-x-2 mt-4">
           <Tooltip title={errorMessage} disableHoverListener={isFlashcardValid}>
             {/* required for Tooltip to work */}
             <span>
