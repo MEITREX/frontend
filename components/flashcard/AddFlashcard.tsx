@@ -2,8 +2,9 @@ import { AddFlashcardFragment$key } from "@/__generated__/AddFlashcardFragment.g
 import { AddFlashcardMutation } from "@/__generated__/AddFlashcardMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
+import { addFlashcardUpdaterClosure } from "@/src/relay-helpers";
 import { useParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { PreloadedQuery, useFragment, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
 import { CreateItem } from "../form-sections/item/ItemFormSectionNew";
@@ -56,16 +57,20 @@ const addFlashcardMutation = graphql`
 
 interface Props {
   flashcardSet: AddFlashcardFragment$key;
-  onCancel: () => void;
+  onClose: () => void;
   allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
+  flashcardSetNumber: number;
+  setFlashcardSetNumber: Dispatch<SetStateAction<number>>;
 }
 
 export function AddFlashcard({
-  onCancel,
+  onClose,
   flashcardSet,
   allSkillsQueryRef,
+  flashcardSetNumber,
+  setFlashcardSetNumber,
 }: Props) {
-  const { courseId } = useParams();
+  const { flashcardSetId } = useParams();
   const { setError } = useError();
 
   const data = useFragment(addFlashcardFragment, flashcardSet);
@@ -78,10 +83,15 @@ export function AddFlashcard({
   });
   const [flashcardSides, setFlashcardSides] = useState<FlashcardSideData[]>([]);
 
+  const [isAdding, setIsAdding] = useState<boolean>(false);
+  const updaterClosure = useCallback(
+    () => addFlashcardUpdaterClosure(flashcardSetId, flashcardSetNumber),
+    [flashcardSetId, flashcardSetNumber]
+  );
+
   const handleAddFlashcard = useCallback(() => {
+    setIsAdding(true);
     const newFlashcard = { sides: flashcardSides };
-    console.log("🚨 alarm " + "flashcardItem:", flashcardItem);
-    console.log("🚨 alarm " + "flashcardSides:", flashcardSides);
 
     addFlashcard({
       variables: {
@@ -89,63 +99,28 @@ export function AddFlashcard({
         assessmentId: data.flashcardSet!.assessmentId,
         item: flashcardItem,
       },
-      onError: (error) => {
-        console.log("🚨 alarm " + "error:", error);
-        setError(error);
+      onError: setError,
+      updater: updaterClosure(),
+      onCompleted: (response) => {
+        // TODO display toast
+        alert(
+          `Successfully created flashcard ${response.mutateFlashcardSet.createFlashcard.flashcard}`
+        );
+
+        setFlashcardSetNumber((prev) => prev + 1);
+        setIsAdding(false);
+        onClose();
       },
-      // updater: (store, response) => {
-      //   // TODO this shouldn't fit the schema any more; some id's might be ambiguous?!
-
-      //   const payload = response.mutateFlashcardSet?.createFlashcard;
-      //   console.log("👾️ alien " + "payload:", payload);
-      //   if (!payload) return;
-
-      //   const flashcardSetId = data.flashcardSet!;
-      //   const flashcardSetsAssessmentRecord = store.get(
-      //     flashcardSetId.assessmentId
-      //   );
-      //   console.log(
-      //     "🧠 brain.exe " + "flashcardSetRecord:",
-      //     flashcardSetsAssessmentRecord
-      //   );
-      //   if (!flashcardSetsAssessmentRecord) return;
-
-      //   // Add new flashcard to record
-      //   const newFlashcardRecord = store.get(payload.flashcard.item.id);
-      //   console.log("🐒 monkey " + "newFlashcardRecord:", newFlashcardRecord);
-      //   if (!newFlashcardRecord) return;
-      //   const existingFlashcards =
-      //     flashcardSetsAssessmentRecord.getLinkedRecords("flashcards") || [];
-      //   console.log("🐒 monkey " + "existingFlashcards:", existingFlashcards);
-      //   flashcardSetsAssessmentRecord.setLinkedRecords(
-      //     [...existingFlashcards, newFlashcardRecord],
-      //     "flashcards"
-      //   );
-
-      //   // Add the new item record
-      //   const newItemRecord = store.get(payload.flashcard.item.id);
-      //   console.log("🔍 debug " + "newFlashcardRecord:", newFlashcardRecord);
-      //   if (!newItemRecord) return;
-      //   const existingItems =
-      //     flashcardSetsAssessmentRecord.getLinkedRecords("items") || [];
-      //   console.log("🔍 debug " + "existingItems:", existingItems);
-      //   const isItemPresent = existingItems.some(
-      //     (rec) => rec.getDataID() === newItemRecord.getDataID()
-      //   );
-      //   if (!isItemPresent) {
-      //     flashcardSetsAssessmentRecord.setLinkedRecords(
-      //       [...existingItems, newItemRecord],
-      //       "items"
-      //     );
-      //   }
-      // },
     });
   }, [
     addFlashcard,
+    flashcardSides,
     data.flashcardSet,
     flashcardItem,
-    flashcardSides,
     setError,
+    updaterClosure,
+    setFlashcardSetNumber,
+    onClose,
   ]);
 
   return (
@@ -157,8 +132,9 @@ export function AddFlashcard({
       item={flashcardItem}
       setItem={setFlashcardItem}
       onSave={handleAddFlashcard}
-      onCancel={onCancel}
+      onCancel={onClose}
       allSkillsQueryRef={allSkillsQueryRef}
+      isProcessing={isAdding}
     />
   );
 }

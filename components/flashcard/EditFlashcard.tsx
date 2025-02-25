@@ -8,6 +8,7 @@ import {
 } from "@/__generated__/EditFlashcardMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
+import { editFlashcardUpdaterClosure } from "@/src/relay-helpers";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
 import { CreateItem, Item } from "../form-sections/item/ItemFormSectionNew";
@@ -98,6 +99,11 @@ export function EditFlashcard({
     data.sides.map((readOnlySide) => ({ ...readOnlySide }))
   );
 
+  const updaterClosure = useCallback(
+    () => editFlashcardUpdaterClosure("TODO"),
+    []
+  );
+
   const onSave = useCallback(() => {
     const flashcardUpdate: UpdateFlashcardInput = {
       itemId: data.itemId,
@@ -111,10 +117,7 @@ export function EditFlashcard({
         flashcard: flashcardUpdate,
       },
       onError: setError,
-      updater(store, data) {
-        // TODO
-        console.log("updater @EditFlashcard", store, data);
-      },
+      updater: updaterClosure(),
       onCompleted(response, errors) {
         console.log("onCompleted", response, errors);
       },
@@ -126,6 +129,7 @@ export function EditFlashcard({
     item,
     setError,
     updateFlashcard,
+    updaterClosure,
   ]);
 
   return (
@@ -139,6 +143,8 @@ export function EditFlashcard({
       onSave={onSave}
       onCancel={onCancel}
       allSkillsQueryRef={allSkillsQueryRef}
+      // TODO
+      isProcessing
     />
   );
 }

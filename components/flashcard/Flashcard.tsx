@@ -18,6 +18,7 @@ type FlashcardProps = {
         setSideData: Dispatch<SetStateAction<FlashcardSideData[]>>;
         onCancel: () => void;
         onSave: () => void;
+        isProcessing: boolean;
       }
     | {
         operation: "view";
@@ -68,23 +69,24 @@ const Flashcard = (props: FlashcardProps) => {
                   })}
             />
           ))}
-          {isEditable && addNewFlashcardSide ? (
-            <EditSideModal
-              onClose={() => setAddNewFlashcardSide(false)}
-              onSubmit={(data) => {
-                props.setSideData((prev) => {
-                  const newSideData = [...prev];
-                  newSideData.push(data);
-                  return newSideData;
-                });
-                setAddNewFlashcardSide(false);
-              }}
-            />
-          ) : (
-            <IconButton onClick={() => setAddNewFlashcardSide(true)}>
-              <Add fontSize="small" />
-            </IconButton>
-          )}
+          {isEditable &&
+            (addNewFlashcardSide ? (
+              <EditSideModal
+                onClose={() => setAddNewFlashcardSide(false)}
+                onSubmit={(data) => {
+                  props.setSideData((prev) => {
+                    const newSideData = [...prev];
+                    newSideData.push(data);
+                    return newSideData;
+                  });
+                  setAddNewFlashcardSide(false);
+                }}
+              />
+            ) : (
+              <IconButton onClick={() => setAddNewFlashcardSide(true)}>
+                <Add fontSize="small" />
+              </IconButton>
+            ))}
         </div>
       </div>
       {isEditable && (
@@ -99,6 +101,7 @@ const Flashcard = (props: FlashcardProps) => {
                 onClick={props.onSave}
               >
                 Save
+                {props.isProcessing && "ing..."}
               </Button>
             </span>
           </Tooltip>

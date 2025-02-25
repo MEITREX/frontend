@@ -148,6 +148,8 @@ export default function LecturerFlashcards() {
         updater(store) {
           console.log("updater @lecturer", store, data);
 
+          // TODO re-implement this without relying on query flashcard set data
+
           // Get record of flashcard set
           // const flashcardSetRecord = store.get(flashcardSet!.__id);
           // if (!flashcardSetRecord) return;
@@ -187,6 +189,11 @@ export default function LecturerFlashcards() {
 
   const content = data.contentsByIds[0];
   const flashcardSet = content.flashcardSet;
+
+  const [flashcardSetsAdded, setFlashcardSetsAdded] = useState<number>(
+    // can be enforced since only used in AddFlashcard, which only can be present if the FlashcardSet is defined
+    flashcardSet!.flashcards.length
+  );
 
   if (flashcardSet == null) {
     return (
@@ -252,9 +259,11 @@ export default function LecturerFlashcards() {
         <div className="mt-4">
           {isAddFlashcardOpen ? (
             <AddFlashcard
-              onCancel={() => setIsAddFlashcardOpen(false)}
+              onClose={() => setIsAddFlashcardOpen(false)}
               flashcardSet={content}
               allSkillsQueryRef={queryReference}
+              flashcardSetNumber={flashcardSetsAdded!}
+              setFlashcardSetNumber={setFlashcardSetsAdded!}
             />
           ) : (
             <Button
@@ -266,9 +275,6 @@ export default function LecturerFlashcards() {
           )}
         </div>
 
-        {/* <Backdrop open={isUpdating} sx={{ zIndex: "modal" }}>
-          <CircularProgress />
-        </Backdrop> */}
         {isEditSetOpen && (
           <EditFlashcardSetModal
             onClose={() => setEditSetOpen(false)}
