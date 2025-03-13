@@ -17,8 +17,8 @@ import {
   Item,
   itemFormSectionFragment,
   ItemSkill,
-  MappedSkillType,
 } from "./ItemFormSectionNew";
+import { MappedSkillType } from "./standardizedCompentencies";
 
 type SkillCategoryInAutocomplete = (
   | Pick<ItemSkill, "skillCategory" | "id">
