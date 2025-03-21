@@ -144,7 +144,7 @@ export function EditFlashcard({
       onCancel={onCancel}
       allSkillsQueryRef={allSkillsQueryRef}
       // TODO
-      isProcessing
+      isProcessing={isUpdating}
     />
   );
 }
