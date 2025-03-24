@@ -61,6 +61,7 @@ interface Props {
   allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
   flashcardSetNumber: number;
   setFlashcardSetNumber: Dispatch<SetStateAction<number>>;
+  showSuccessSnackbar: () => void;
 }
 
 export function AddFlashcard({
@@ -69,6 +70,7 @@ export function AddFlashcard({
   allSkillsQueryRef,
   flashcardSetNumber,
   setFlashcardSetNumber,
+  showSuccessSnackbar,
 }: Props) {
   const { flashcardSetId } = useParams();
   const { setError } = useError();
@@ -102,24 +104,22 @@ export function AddFlashcard({
       onError: setError,
       updater: updaterClosure(),
       onCompleted: (response) => {
-        // TODO display toast
-        alert(
-          `Successfully created flashcard ${response.mutateFlashcardSet.createFlashcard.flashcard}`
-        );
-
         setFlashcardSetNumber((prev) => prev + 1);
         setIsAdding(false);
+
+        showSuccessSnackbar();
         onClose();
       },
     });
   }, [
-    addFlashcard,
     flashcardSides,
+    addFlashcard,
     data.flashcardSet,
     flashcardItem,
     setError,
     updaterClosure,
     setFlashcardSetNumber,
+    showSuccessSnackbar,
     onClose,
   ]);
 

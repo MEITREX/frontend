@@ -10,6 +10,7 @@ import { AddFlashcard } from "@/components/flashcard/AddFlashcard";
 import { EditFlashcard } from "@/components/flashcard/EditFlashcard";
 import FlashcardView from "@/components/flashcard/FlashcardView";
 import LecturerFlashcardHeading from "@/components/flashcard/LecturerFlashcardHeading";
+import SuccessSnackbar from "@/components/flashcard/SuccessSnackbar";
 import { Add, Delete, Edit } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import { useParams } from "next/navigation";
@@ -113,6 +114,7 @@ export default function LecturerFlashcards() {
   const [isEditSetOpen, setEditSetOpen] = useState(false);
 
   const [isAddFlashcardOpen, setIsAddFlashcardOpen] = useState(false);
+  const [isSnackbarVisible, setIsSnackbarVisible] = useState<boolean>(false);
 
   const [editingFlashcard, setEditingFlashcard] = useState<number | null>(null);
   const onEditCancel = useCallback(() => {
@@ -264,6 +266,7 @@ export default function LecturerFlashcards() {
               allSkillsQueryRef={queryReference}
               flashcardSetNumber={flashcardSetsAdded!}
               setFlashcardSetNumber={setFlashcardSetsAdded!}
+              showSuccessSnackbar={() => setIsSnackbarVisible(true)}
             />
           ) : (
             <Button
@@ -283,6 +286,12 @@ export default function LecturerFlashcards() {
           />
         )}
       </ErrorContext.Provider>
+
+      <SuccessSnackbar
+        visible={isSnackbarVisible}
+        onClose={() => setIsSnackbarVisible(false)}
+        message="Flashcard added successfully!"
+      />
     </main>
   );
 }
