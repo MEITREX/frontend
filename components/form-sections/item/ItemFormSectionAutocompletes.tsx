@@ -9,7 +9,14 @@ import {
   TextField,
 } from "@mui/material";
 import { Record as RecordIm, Set as SetIm } from "immutable";
-import { Dispatch, SetStateAction, useMemo, useState } from "react";
+import {
+  Dispatch,
+  Fragment,
+  SetStateAction,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 import { PreloadedQuery, useFragment, usePreloadedQuery } from "react-relay";
 import {
   CreateItem,
@@ -33,7 +40,11 @@ type SkillInAutocomplete = (
 ) & {
   toBeAdded?: boolean;
 };
+type SkillAndCategoryInAutocomplete = (ItemSkill | CreateItemSkill) & {
+  toBeAdded?: boolean;
+};
 
+// redundant due to typing error when using |
 const filterOptionsSkillCategory =
   createFilterOptions<SkillCategoryInAutocomplete>({
     matchFrom: "start",
@@ -43,6 +54,11 @@ const filterOptionsSkill = createFilterOptions<SkillInAutocomplete>({
   matchFrom: "start",
   trim: true,
 });
+const filterOptionsSkillAndCategory =
+  createFilterOptions<SkillAndCategoryInAutocomplete>({
+    matchFrom: "start",
+    trim: true,
+  });
 
 // used for simple structural comparison between objects for sorting
 const SkillCategoryRecord = RecordIm<SkillCategoryInAutocomplete>({
@@ -55,6 +71,7 @@ interface Props {
   setItem: Dispatch<SetStateAction<CreateItem | Item>>;
   allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery>;
   SKILL_CATALOGUE: Record<string, MappedSkillType[]>;
+  SKILL_CATEGORY_ABBREVIATION: Record<string, string>;
 }
 
 const ItemFormSectionAutocompletes = ({
@@ -62,6 +79,7 @@ const ItemFormSectionAutocompletes = ({
   setItem,
   allSkillsQueryRef,
   SKILL_CATALOGUE,
+  SKILL_CATEGORY_ABBREVIATION,
 }: Props) => {
   const { coursesByIds } = usePreloadedQuery(allSkillQuery, allSkillsQueryRef);
   const { skills: skillsAvailable } = useFragment(
@@ -76,6 +94,26 @@ const ItemFormSectionAutocompletes = ({
   const [newSkill, setNewSkill] = useState<
     Omit<SkillInAutocomplete, "toBeAdded">[]
   >([]);
+
+  const searchInAllCategories = !newSkillCategory?.skillCategory;
+  const [newSkillAndCategory, setNewSkillAndCategory] = useState<
+    Omit<SkillAndCategoryInAutocomplete, "toBeAdded">[]
+  >([]);
+
+  const isSkillAlreadySelected = useCallback(
+    <T extends SkillInAutocomplete | SkillAndCategoryInAutocomplete>(
+      skill: T
+    ): boolean => {
+      return skillsSelected.some((selectedSkill) =>
+        "skillCategory" in skill
+          ? selectedSkill.skillName === skill.skillName &&
+            selectedSkill.skillCategory === skill.skillCategory
+          : selectedSkill.skillName === skill.skillName &&
+            selectedSkill.skillCategory === newSkillCategory?.skillCategory
+      );
+    },
+    [newSkillCategory?.skillCategory, skillsSelected]
+  );
 
   const { allSkillCategoriesSorted, allSkillCategoriesUsed } = useMemo(() => {
     // selected skills take precedence in sorting over ones available in the course
@@ -218,9 +256,76 @@ const ItemFormSectionAutocompletes = ({
       );
   }, [SKILL_CATALOGUE, newSkillCategory, skillsAvailable, skillsSelected]);
 
+  // caching the flattened skill catalogue for performance
+  const skillCatalogueFlattened = useMemo(() => {
+    const SkillRecord = RecordIm<SkillAndCategoryInAutocomplete>({
+      skillName: "",
+      skillCategory: "",
+      isCustomSkill: false,
+    });
+
+    return Object.entries(SKILL_CATALOGUE).flatMap(([category, skills]) =>
+      skills.map(
+        (skill) =>
+          new SkillRecord({
+            skillName: skill.skillName,
+            skillCategory: category,
+            isCustomSkill: false,
+          })
+      )
+    );
+  }, [SKILL_CATALOGUE]);
+
+  const skillsAndCategoriesAvailableSorted = useMemo(() => {
+    if (!searchInAllCategories) return [];
+
+    // enable easy structural comparison between objects
+    const SkillRecord = RecordIm<SkillAndCategoryInAutocomplete>({
+      skillName: "",
+      skillCategory: "",
+      isCustomSkill: false,
+    });
+    const mapToImmutableRecord = (skill: ItemSkill | CreateItemSkill) =>
+      new SkillRecord({
+        skillName: skill.skillName,
+        skillCategory: skill.skillCategory,
+        isCustomSkill: skill.isCustomSkill,
+      });
+
+    let skillsSelectable = SetIm<SkillAndCategoryInAutocomplete>();
+    skillsSelectable = skillsSelectable.union(
+      skillsAvailable.map(mapToImmutableRecord),
+      skillsSelected.map(mapToImmutableRecord),
+      skillCatalogueFlattened
+    );
+
+    const skillSelected = skillsSelected.reduce((acc, skill) => {
+      return acc.set(skill.skillName, true);
+    }, new Map<string, boolean>());
+    return skillsSelectable.toArray().sort((a, b) => {
+      const isASelected = skillSelected.has(a.skillName);
+      const isBSelected = skillSelected.has(b.skillName);
+
+      if (isASelected && !isBSelected) return 1;
+      else if (!isASelected && isBSelected) return -1;
+      else {
+        return (
+          a.skillName.localeCompare(b.skillName) ||
+          a.skillCategory.localeCompare(b.skillCategory)
+        );
+      }
+    });
+  }, [
+    searchInAllCategories,
+    skillCatalogueFlattened,
+    skillsAvailable,
+    skillsSelected,
+  ]);
+
   return (
     <Stack className="flex flex-row gap-x-2 mb-8">
       <Autocomplete
+        disabled={allSkillCategoriesSorted.length === 0}
         fullWidth
         isOptionEqualToValue={(option, value) =>
           option.skillCategory === value.skillCategory
@@ -263,8 +368,8 @@ const ItemFormSectionAutocompletes = ({
             | undefined;
 
           return (
-            <>
-              <Box key={index ?? key} {...optionProps} component="li">
+            <Fragment key={`${index}-${key}`}>
+              <Box {...optionProps} component="li">
                 {option?.toBeAdded && "Add: "}
                 {option.skillCategory}
                 {option.isCustomSkillCategory && (
@@ -303,98 +408,185 @@ const ItemFormSectionAutocompletes = ({
                   />
                 </>
               )}
-            </>
+            </Fragment>
           );
         }}
       />
 
-      <Autocomplete
-        fullWidth
-        // key={key}
-        disabled={!newSkillCategory?.skillCategory}
-        multiple
-        value={newSkill}
-        onChange={(_, newValue) => {
-          setNewSkill([]);
-          // setKey((prev) => prev + 1);
+      {!searchInAllCategories ? (
+        <Autocomplete
+          fullWidth
+          disabled={searchInAllCategories}
+          multiple
+          value={newSkill}
+          onChange={(_, newValue) => {
+            setNewSkill([]);
+            // setKey((prev) => prev + 1);
 
-          setItem((prev) => {
-            // TODO is this necessary?
-            if (!newValue) return prev;
+            setItem((prev) => {
+              // TODO is this necessary?
+              if (!newValue) return prev;
 
-            const newSkills = [...prev.associatedSkills];
-            // TODO check if array is always one element only?
-            newSkills.push(
-              ...newValue
-                .filter(
-                  (skillFromNewVal) =>
-                    !skillsSelected.some(
-                      (s) =>
-                        s.skillName === skillFromNewVal.skillName &&
-                        s.skillCategory === newSkillCategory!.skillCategory
-                    )
-                )
-                .map((skill) => ({
-                  skillName: skill.skillName,
-                  skillCategory: newSkillCategory!.skillCategory,
-                  isCustomSkill: skill.isCustomSkill,
-                }))
-            );
-            return { ...prev, associatedSkills: newSkills };
-          });
-        }}
-        isOptionEqualToValue={(option, value) =>
-          option.skillName === value.skillName
-        }
-        options={currentSkillsAvailableSorted}
-        sx={{ width: 300 }}
-        getOptionLabel={(option) => option.skillName ?? ""}
-        renderInput={(params) => <TextField {...params} label="Skill" />}
-        renderTags={() => null}
-        getOptionDisabled={(value) =>
-          skillsSelected.some(
-            (skill) =>
-              skill.skillCategory === newSkillCategory?.skillCategory &&
-              value.skillName === skill.skillName
-          )
-        }
-        filterOptions={(options, params) => {
-          const filtered = filterOptionsSkill(options, params);
-
-          const inputValueExists = options.some(
-            (option) =>
-              option.skillName.toLowerCase() === params.inputValue.toLowerCase()
-          );
-
-          if (params.inputValue !== "" && !inputValueExists) {
-            filtered.push({
-              skillName: params.inputValue,
-              isCustomSkill: true,
-              toBeAdded: true,
+              const newSkills = [...prev.associatedSkills];
+              // TODO check if array is always one element only?
+              newSkills.push(
+                ...newValue
+                  .filter(
+                    (skillFromNewVal) =>
+                      !skillsSelected.some(
+                        (s) =>
+                          s.skillName === skillFromNewVal.skillName &&
+                          s.skillCategory === newSkillCategory!.skillCategory
+                      )
+                  )
+                  .map((skill) => ({
+                    skillName: skill.skillName,
+                    skillCategory: newSkillCategory!.skillCategory,
+                    isCustomSkill: skill.isCustomSkill,
+                  }))
+              );
+              return { ...prev, associatedSkills: newSkills };
             });
+          }}
+          isOptionEqualToValue={(option, value) =>
+            option.skillName === value.skillName
           }
-          return filtered;
-        }}
-        renderOption={(props, option: SkillInAutocomplete) => {
-          // api bug
-          const { key, ...optionProps } =
-            props as React.HTMLAttributes<HTMLLIElement> & { key: string };
-          return (
-            <Box key={key} {...optionProps} component="li">
-              {option.toBeAdded && "Add: "}
-              {option.skillName}
-              {option.isCustomSkill && (
+          options={currentSkillsAvailableSorted}
+          sx={{ width: 300 }}
+          getOptionLabel={(option) => option.skillName ?? ""}
+          renderInput={(params) => <TextField {...params} label="Skills" />}
+          renderTags={() => null}
+          getOptionDisabled={isSkillAlreadySelected<SkillInAutocomplete>}
+          filterOptions={(options, params) => {
+            const filtered = filterOptionsSkill(options, params);
+
+            const inputValueExists = options.some(
+              (option) =>
+                option.skillName.toLowerCase() ===
+                params.inputValue.toLowerCase()
+            );
+
+            if (params.inputValue !== "" && !inputValueExists) {
+              filtered.push({
+                skillName: params.inputValue,
+                isCustomSkill: true,
+                toBeAdded: true,
+              });
+            }
+            return filtered;
+          }}
+          renderOption={(props, option: SkillInAutocomplete) => {
+            // api bug
+            const { key, ...optionProps } =
+              props as React.HTMLAttributes<HTMLLIElement> & { key: string };
+            return (
+              <Box key={key} {...optionProps} component="li">
+                {option.toBeAdded && "Add: "}
+                {option.skillName}
+                {option.isCustomSkill && (
+                  <Chip
+                    label="Custom"
+                    variant="outlined"
+                    size="small"
+                    sx={{ ml: 1 }}
+                  />
+                )}
+              </Box>
+            );
+          }}
+        />
+      ) : (
+        <Autocomplete
+          fullWidth
+          disabled={
+            !searchInAllCategories ||
+            skillsAndCategoriesAvailableSorted.length === 0
+          }
+          multiple
+          sx={{ width: 300 }}
+          value={newSkillAndCategory}
+          // render stuff
+          renderInput={(params) => <TextField {...params} label="All Skills" />}
+          renderTags={() => null}
+          // data stuff
+          options={skillsAndCategoriesAvailableSorted}
+          getOptionDisabled={
+            isSkillAlreadySelected<SkillAndCategoryInAutocomplete>
+          }
+          getOptionLabel={(option) =>
+            // avoids duplication of option labels; return of this function is used for comparison in `filterOptions`
+            `${option.skillName} [${option.skillCategory}]`
+          }
+          filterOptions={(options, inputState) => {
+            const filtered = filterOptionsSkillAndCategory(options, inputState);
+            const inputValueExists = options.some(
+              (option) =>
+                option.skillName.toLowerCase() ===
+                inputState.inputValue.toLowerCase()
+            );
+
+            if (inputState.inputValue !== "" && !inputValueExists) {
+              return [
+                {
+                  skillCategory: "Custom",
+                  skillName: inputState.inputValue,
+                  isCustomSkill: true,
+                  toBeAdded: true,
+                },
+                ...filtered,
+              ];
+            } else return filtered;
+          }}
+          onChange={(_, newValues) => {
+            if (!newValues || !Array.isArray(newValues)) return;
+
+            setItem((prev) => {
+              const notPresentInItemsSkills = newValues.find(
+                (newSkill) =>
+                  !prev.associatedSkills.some(
+                    (s) =>
+                      s.skillName === newSkill.skillName &&
+                      s.skillCategory === newSkill.skillCategory
+                  )
+              );
+              if (!notPresentInItemsSkills) return prev;
+
+              const newItemSkills = [...prev.associatedSkills];
+              newItemSkills.push({
+                skillName: notPresentInItemsSkills.skillName,
+                skillCategory: notPresentInItemsSkills.skillCategory,
+                isCustomSkill: notPresentInItemsSkills.isCustomSkill,
+              });
+
+              return { ...prev, associatedSkills: newItemSkills };
+            });
+          }}
+          // render data stuff
+          renderOption={(props, option: SkillAndCategoryInAutocomplete) => {
+            const { key, ...optionProps } = props;
+            return (
+              <Box
+                key={key || option.skillName}
+                {...optionProps}
+                component="li"
+              >
+                {option.toBeAdded && "Add: "}
+                {option.skillName}
                 <Chip
-                  label="Custom"
+                  label={
+                    SKILL_CATEGORY_ABBREVIATION[option.skillCategory!] ||
+                    option.skillCategory
+                  }
+                  title={!option.isCustomSkill ? option.skillCategory : ""}
                   variant="outlined"
                   size="small"
                   sx={{ ml: 1 }}
                 />
-              )}
-            </Box>
-          );
-        }}
-      />
+              </Box>
+            );
+          }}
+        />
+      )}
     </Stack>
   );
 };

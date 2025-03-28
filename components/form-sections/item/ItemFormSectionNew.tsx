@@ -206,6 +206,7 @@ const ItemFormSectionNew = (props: ItemFormSectionProps) => {
           setItem={props.setItem}
           allSkillsQueryRef={props.allSkillsQueryRef}
           SKILL_CATALOGUE={SKILL_CATALOGUE}
+          SKILL_CATEGORY_ABBREVIATION={SKILL_CATEGORY_ABBREVIATION}
         />
       )}
     </FormSection>
