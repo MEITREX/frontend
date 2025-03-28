@@ -160,24 +160,11 @@ const ItemFormSectionAutocompletes = ({
     };
   }, [SKILL_CATALOGUE, skillsAvailable, skillsSelected]);
 
-  // TODO can this be simplified?
   const currentSkillsAvailableSorted = useMemo(() => {
+    // don't do filtering for second autocomplete when it's disabled
     if (!newSkillCategory?.skillCategory) return [];
 
-    // sort already skills to be placed to the bottom of the Autocomplete list
-    const skillAlreadySelected = skillsSelected.reduce((acc, skill) => {
-      return acc.set(skill.skillName, true);
-    }, new Map<string, boolean>());
-    const skillOccurrencesAvailable = skillsAvailable.reduce((acc, skill) => {
-      const currentOccurrence = acc.get(skill.skillName) ?? 0;
-      return acc.set(skill.skillName, currentOccurrence + 1);
-    }, new Map<string, number>());
-
-    // TODO can this be simplified?
-    const isCustomSkill = (skill: ItemSkill | CreateItemSkill) =>
-      skill.skillCategory === newSkillCategory.skillCategory &&
-      (newSkillCategory.isCustomSkillCategory || skill.isCustomSkill);
-
+    // enable easy structural comparison between objects
     const SkillRecord = RecordIm<SkillInAutocomplete>({
       skillName: "",
       isCustomSkill: false,
@@ -187,52 +174,49 @@ const ItemFormSectionAutocompletes = ({
         skillName: skill.skillName,
         isCustomSkill: skill.isCustomSkill,
       });
-    let allSkillsCurrentlyAvailableSorted = [
-      ...SetIm([
-        ...skillsAvailable.filter(isCustomSkill).map(mapSkillToImmutableRecord),
-        ...skillsSelected.filter(isCustomSkill).map(mapSkillToImmutableRecord),
-      ]),
-    ];
 
-    const isIEEESkill = !!SKILL_CATALOGUE[newSkillCategory.skillCategory];
-    if (isIEEESkill) {
-      allSkillsCurrentlyAvailableSorted = [
-        ...SetIm([
-          ...allSkillsCurrentlyAvailableSorted,
-          ...SKILL_CATALOGUE[newSkillCategory.skillCategory].map(
-            (skill) =>
-              new SkillRecord({
-                skillName: skill.skillName,
-                isCustomSkill: false,
-              })
-          ),
-        ]),
-      ];
+    let skillsSelectable = SetIm<SkillInAutocomplete>();
+    const skillsAvailableInCurrentCategoryFromCourse = skillsAvailable
+      .filter((skill) => skill.skillCategory === newSkillCategory.skillCategory)
+      .map(mapSkillToImmutableRecord);
+    const skillsAvailableInCurrentCategory = skillsSelected
+      .filter((skill) => skill.skillCategory === newSkillCategory.skillCategory)
+      .map(mapSkillToImmutableRecord);
+
+    skillsSelectable = skillsSelectable.union(
+      skillsAvailableInCurrentCategoryFromCourse,
+      skillsAvailableInCurrentCategory
+    );
+
+    const isCurrentCategoryIEEE =
+      !!SKILL_CATALOGUE[newSkillCategory.skillCategory];
+    if (isCurrentCategoryIEEE) {
+      const skillsIEEE = SKILL_CATALOGUE[newSkillCategory.skillCategory];
+      skillsSelectable = skillsSelectable.union(
+        skillsIEEE.map(
+          (skill) =>
+            new SkillRecord({
+              skillName: skill.skillName,
+              isCustomSkill: false,
+            })
+        )
+      );
     }
 
-    allSkillsCurrentlyAvailableSorted.sort((a, b) => {
-      const aOccSelected = skillAlreadySelected.get(a.skillName);
-      const bOccSelected = skillAlreadySelected.get(b.skillName);
-      // place selected skills to the bottom
-      if (aOccSelected === undefined && bOccSelected) return -1;
-      else if (aOccSelected && bOccSelected === undefined) return 1;
-      else if (aOccSelected && bOccSelected)
-        return a.skillName.localeCompare(b.skillName);
-
-      // if not selected and available in the course, place to the top
-      const aOccAvailable = skillOccurrencesAvailable.get(a.skillName);
-      const bOccAvailable = skillOccurrencesAvailable.get(b.skillName);
-      if (!aOccAvailable && bOccAvailable) return -1;
-      else if (aOccAvailable && !bOccAvailable) return 1;
-      else if (aOccAvailable && bOccAvailable)
-        return aOccAvailable !== bOccAvailable
-          ? bOccAvailable - aOccAvailable
-          : a.skillName.localeCompare(b.skillName);
-      else return a.skillName.localeCompare(b.skillName);
-    });
-
-    return allSkillsCurrentlyAvailableSorted;
-  }, [SKILL_CATALOGUE, skillsAvailable, newSkillCategory, skillsSelected]);
+    // sort already selected skills to the bottom of the Autocomplete list
+    const skillSelected = skillsSelected.reduce((acc, skill) => {
+      return acc.set(skill.skillName, true);
+    }, new Map<string, boolean>());
+    return skillsSelectable
+      .toArray()
+      .sort((a, b) =>
+        skillSelected.has(a.skillName)
+          ? 1
+          : skillSelected.has(b.skillName)
+          ? -1
+          : a.skillName.localeCompare(b.skillName)
+      );
+  }, [SKILL_CATALOGUE, newSkillCategory, skillsAvailable, skillsSelected]);
 
   return (
     <Stack className="flex flex-row gap-x-2 mb-8">
