@@ -12,10 +12,8 @@ import { PageError } from "@/components/PageError";
 import { Add, People, Settings } from "@mui/icons-material";
 import { orderBy } from "lodash";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { LecturerChapter } from "./LecturerChapter";
-import { codeAssessmentProvider } from "@/components/ProviderConfig";
-import { ro } from "date-fns/locale";
 
 graphql`
   fragment lecturerCourseFragment on Course {

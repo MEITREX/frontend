@@ -1,5 +1,5 @@
 import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Alert } from "@mui/material";
-import { codeAssessmentProvider, ExternalServiceProvider, providerConfig } from "./ProviderConfig";
+import { codeAssessmentProvider, providerConfig } from "./ProviderConfig";
 
 export function ProviderAuthorizationDialog({
   open,
