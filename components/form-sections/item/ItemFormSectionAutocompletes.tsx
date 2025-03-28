@@ -12,11 +12,9 @@ import {
 import { Record as RecordIm, Set as SetIm } from "immutable";
 import {
   Dispatch,
-  Fragment,
   SetStateAction,
   useCallback,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { PreloadedQuery, useFragment, usePreloadedQuery } from "react-relay";
@@ -112,11 +110,10 @@ const ItemFormSectionAutocompletes = ({
         "skillCategory" in skill
           ? selectedSkill.skillName === skill.skillName &&
             selectedSkill.skillCategory === skill.skillCategory
-          : selectedSkill.skillName === skill.skillName &&
-            selectedSkill.skillCategory === newSkillCategory?.skillCategory
+          : selectedSkill.skillName === skill.skillName
       );
     },
-    [newSkillCategory?.skillCategory, skillsSelected]
+    [skillsSelected]
   );
 
   const { allSkillCategoriesSorted, allSkillCategoriesUsed } = useMemo(() => {
@@ -299,7 +296,7 @@ const ItemFormSectionAutocompletes = ({
 
     let skillsSelectable = SetIm<SkillAndCategoryInAutocomplete>();
     skillsSelectable = skillsSelectable.union(
-      (skillsAvailable || []).map(mapToImmutableRecord),
+      skillsAvailable.map(mapToImmutableRecord),
       skillsSelected.map(mapToImmutableRecord),
       skillCatalogueFlattened
     );
@@ -326,28 +323,6 @@ const ItemFormSectionAutocompletes = ({
     skillsAvailable,
     skillsSelected,
   ]);
-
-  // used for conditionally rendering the ruler of skill categories used in the
-  // course in Autocomplete
-  const [isCategoryInputEmpty, setIsCategoryInputEmpty] =
-    useState<boolean>(true);
-  const handleInputChange = (
-    event: React.SyntheticEvent,
-    newInputValue: string
-  ) => {
-    if (newInputValue.trim() === "") {
-      setIsCategoryInputEmpty(true);
-    } else {
-      setIsCategoryInputEmpty(false);
-    }
-  };
-
-  const popupRefSkills = useRef<HTMLButtonElement>(null);
-  const popupRefKnowledgeArea = useRef<HTMLButtonElement>(null);
-  const [isInfoPopupSkillsVisible, setIsInfoPopupSkillsVisible] =
-    useState(false);
-  const [isInfoPopupKnowledgeAreaVisible, setInfoPopupIsKnowledgeAreaVisible] =
-    useState(false);
 
   return (
     <Stack className="flex flex-row gap-x-2 mb-2">
@@ -442,15 +417,6 @@ const ItemFormSectionAutocompletes = ({
         }}
       />
 
-      <InfoPopover>
-        <Typography variant="body1">
-          Knowledge Areas are based on the IEEE Standardized Competencies to
-          propose groupings for skills of the Computer Science filed. <br />
-          You can create custom Knowledge Areas yourself, if you find the
-          standardized ones not suitable.
-        </Typography>
-      </InfoPopover>
-
       {!searchInAllCategories ? (
         <Autocomplete
           fullWidth
@@ -535,11 +501,9 @@ const ItemFormSectionAutocompletes = ({
         />
       ) : (
         <Autocomplete
+          // styling stuff
           fullWidth
-          disabled={
-            !searchInAllCategories ||
-            skillsAndCategoriesAvailableSorted.length === 0
-          }
+          disabled={!searchInAllCategories}
           multiple
           sx={{ width: 300 }}
           value={newSkillAndCategory}
@@ -552,8 +516,7 @@ const ItemFormSectionAutocompletes = ({
             isSkillAlreadySelected<SkillAndCategoryInAutocomplete>
           }
           getOptionLabel={(option) =>
-            // avoids duplication of option labels; return of this function is
-            // used for comparison in `filterOptions`
+            // avoids duplication of option labels; return of this function is used for comparison in `filterOptions`
             `${option.skillName} [${option.skillCategory}]`
           }
           filterOptions={(options, inputState) => {
@@ -565,16 +528,14 @@ const ItemFormSectionAutocompletes = ({
             );
 
             if (inputState.inputValue !== "" && !inputValueExists) {
-              return [
-                {
-                  skillCategory: "Custom",
-                  skillName: inputState.inputValue,
-                  isCustomSkill: true,
-                  toBeAdded: true,
-                },
-                ...filtered,
-              ];
-            } else return filtered;
+              filtered.push({
+                skillCategory: "Custom",
+                skillName: inputState.inputValue,
+                isCustomSkill: true,
+                toBeAdded: true,
+              });
+            }
+            return filtered;
           }}
           onChange={(_, newValues) => {
             if (!newValues || !Array.isArray(newValues)) return;
@@ -602,23 +563,19 @@ const ItemFormSectionAutocompletes = ({
           }}
           // render data stuff
           renderOption={(props, option: SkillAndCategoryInAutocomplete) => {
+            // api bug
             const { key, ...optionProps } =
-              props as React.HTMLAttributes<HTMLLIElement> & {
-                key: string;
-              } & Record<string, unknown>;
-
+              props as React.HTMLAttributes<HTMLLIElement> & { key: string };
             return (
-              <Box
-                key={key ?? option.skillName}
-                {...optionProps}
-                component="li"
-              >
+              <Box key={key} {...optionProps} component="li">
                 {option.toBeAdded && "Add: "}
                 {option.skillName}
                 <Chip
                   label={
-                    SKILL_CATEGORY_ABBREVIATION[option.skillCategory!] ||
-                    option.skillCategory
+                    option.isCustomSkill
+                      ? "Custom"
+                      : SKILL_CATEGORY_ABBREVIATION[option.skillCategory!] ||
+                        option.skillCategory
                   }
                   title={!option.isCustomSkill ? option.skillCategory : ""}
                   variant="outlined"
@@ -630,22 +587,6 @@ const ItemFormSectionAutocompletes = ({
           }}
         />
       )}
-
-      <InfoPopover>
-        {!searchInAllCategories ? (
-          <Typography variant="body1">
-            Search through the Skills of the selected Knowledge Area.
-          </Typography>
-        ) : (
-          <Typography variant="body1">
-            Search through the Skills grouped in any Knowledge Areas present in
-            this course. If you add a new skill here, it will be added to the
-            default Knowledge Area called &quot;<i>Custom</i>&quot;.
-            <br /> For more control, use the dropdown on the left to create a
-            new Knowledge Area and then add a Skill.
-          </Typography>
-        )}
-      </InfoPopover>
     </Stack>
   );
 };
