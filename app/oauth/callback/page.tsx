@@ -8,8 +8,7 @@ import { graphql, useMutation, useLazyLoadQuery } from "react-relay";
 import type {
   pageGenerateAccessTokenMutation,
 } from "../../../__generated__/pageGenerateAccessTokenMutation.graphql";
-
-const codeAssessmentProvider = "GITHUB"; // or dynamic if needed
+import { codeAssessmentProvider } from "@/components/ProviderConfig";
 
 export default function OAuthCallback() {
   const router = useRouter();
