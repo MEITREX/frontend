@@ -1,8 +1,6 @@
 "use client";
 
 import { lecturerLecturerCourseIdQuery } from "@/__generated__/lecturerLecturerCourseIdQuery.graphql";
-import { lecturerGenerateAccessTokenMutation } from "@/__generated__/lecturerGenerateAccessTokenMutation.graphql";
-import { lecturerAccessTokenQuery } from "@/__generated__/lecturerAccessTokenQuery.graphql";
 import { Button, IconButton, Typography } from "@mui/material";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
@@ -43,51 +41,6 @@ export default function LecturerCoursePage() {
 
   // Get course id from url
   const { courseId } = useParams();
-
-  // Authorization code from external provider
-  const code = useSearchParams().get("code");
-  const [commitGenerateAccessToken] = useMutation<lecturerGenerateAccessTokenMutation>(
-    graphql`
-      mutation lecturerGenerateAccessTokenMutation($input: GenerateAccessTokenInput!) {
-        generateAccessToken(input: $input)
-      }
-    `
-  );
-
-  const { isAccessTokenAvailable } = useLazyLoadQuery<lecturerAccessTokenQuery>(
-      graphql`
-        query lecturerAccessTokenQuery($provider: ExternalServiceProviderDto!) {
-          isAccessTokenAvailable(provider: $provider)
-        }
-      `,
-      { provider: codeAssessmentProvider },
-    );
-
-  const hasRun = useRef(false);
-
-  useEffect(() => {
-    if (!code || hasRun.current || isAccessTokenAvailable) return;
-  
-    hasRun.current = true;
-
-    commitGenerateAccessToken({
-      variables: {
-        input: {
-          provider: codeAssessmentProvider,
-          authorizationCode: code,
-        },
-      },
-      onCompleted: (response) => {
-        if (response.generateAccessToken) {
-          console.log("Access token generated successfully.");
-          router.replace(pathname, { scroll: false });
-        }
-      },
-      onError: (err) => {
-        console.error("Failed to generate token", err);
-      },
-    });
-  }, []);
 
   // Info dialog
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);

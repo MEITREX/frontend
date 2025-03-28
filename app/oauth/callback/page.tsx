@@ -1,21 +1,59 @@
 "use client";
-import { useEffect } from "react";
+
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
+import { graphql, useMutation, useLazyLoadQuery } from "react-relay";
+
+import type {
+  pageGenerateAccessTokenMutation,
+} from "../../../__generated__/pageGenerateAccessTokenMutation.graphql";
+
+const codeAssessmentProvider = "GITHUB"; // or dynamic if needed
 
 export default function OAuthCallback() {
   const router = useRouter();
-  const params = new URLSearchParams(window.location.search);
+
+  const searchParams = useSearchParams();
+  const code = searchParams.get("code");
+  
+  const hasRun = useRef(false);
+
+  const [commitGenerateAccessToken] = useMutation<pageGenerateAccessTokenMutation>(graphql`
+    mutation pageGenerateAccessTokenMutation($input: GenerateAccessTokenInput!) {
+      generateAccessToken(input: $input)
+    }
+  `);
 
   useEffect(() => {
-    const code = params.get("code");
+    if (!code || hasRun.current) return;
 
-    if (!code) {
-      console.error("Missing state or code");
-      return;
-    }
+    hasRun.current = true;
 
-    router.replace(localStorage.getItem("returnTo" ) + "?code=" + code || "/");
-  }, []);
+    const returnTo = localStorage.getItem("returnTo") || "/";
+    localStorage.removeItem("returnTo");
 
-  return <></>;
+    commitGenerateAccessToken({
+      variables: {
+        input: {
+          provider: codeAssessmentProvider,
+          authorizationCode: code,
+        },
+      },
+      onCompleted: (response) => {
+        if (response?.generateAccessToken) {
+          console.log("Access token generated successfully:");
+        } else {
+          console.error("Failed to generate access token.");
+        }
+        router.replace(returnTo);
+      },
+      onError: (err) => {
+        console.error("Failed to generate token:", err);
+        router.replace(returnTo);
+      },
+    });
+  }, [code, commitGenerateAccessToken, router]);
+
+  return null;
 }
