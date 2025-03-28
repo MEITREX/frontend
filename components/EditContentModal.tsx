@@ -3,7 +3,7 @@ import { EditContentModalFragment$key } from "@/__generated__/EditContentModalFr
 import { EditContentModalUpdateStageMutation } from "@/__generated__/EditContentModalUpdateStageMutation.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { AddFlashcardSetModal } from "@/components/AddFlashcardSetModal";
-import { Add, Edit, EditNote } from "@mui/icons-material";
+import { Add, Code, Edit, EditNote } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
 import {
   Alert,
@@ -27,6 +27,7 @@ import { useEffect, useState } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
 import { MediaContentModal } from "./MediaContentModal";
 import { QuizModal } from "./QuizModal";
+import { CodeAssignmentModal } from "./CodeAssignmentModal";
 
 export function EditContentModal({
   chapterId,
@@ -51,6 +52,7 @@ export function EditContentModal({
   const [openMediaModal, setOpenMediaModal] = useState(false);
   const [openFlashcardModal, setOpenFlashcardModal] = useState(false);
   const [openAddQuizModal, setOpenAddQuizModal] = useState(false);
+  const [openCodeAssignmentModal, setOpenCodeAssignmentModal] = useState(false);
 
   const [openModal, setOpenModal] = useState(false);
 
@@ -317,6 +319,14 @@ export function EditContentModal({
           >
             Add Quiz
           </Button>
+          <Button
+            onClick={() => setOpenCodeAssignmentModal(true)}
+            variant="text"
+            className="mt-4"
+            startIcon={<Add />}
+          >
+            Add Code Assignment 
+          </Button>
         </DialogContent>
         <DialogActions>
           <LoadingButton loading={loading} onClick={submit}>
@@ -343,6 +353,11 @@ export function EditContentModal({
           _chapter={chapter}
         />
       )}
+      <CodeAssignmentModal
+        isOpen={openCodeAssignmentModal}
+        onClose={() => setOpenCodeAssignmentModal(false)}
+        chapterId={chapterId}
+      />
     </>
   );
 }
