@@ -1,9 +1,11 @@
 "use client";
 
 import { lecturerLecturerCourseIdQuery } from "@/__generated__/lecturerLecturerCourseIdQuery.graphql";
+import { lecturerGenerateAccessTokenMutation } from "@/__generated__/lecturerGenerateAccessTokenMutation.graphql";
+import { lecturerAccessTokenQuery } from "@/__generated__/lecturerAccessTokenQuery.graphql";
 import { Button, IconButton, Typography } from "@mui/material";
-import { useParams } from "next/navigation";
-import { graphql, useLazyLoadQuery } from "react-relay";
+import { useParams, usePathname, useSearchParams } from "next/navigation";
+import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
 import { AddChapterModal } from "@/components/AddChapterModal";
 import { EditCourseModal } from "@/components/EditCourseModal";
@@ -12,8 +14,10 @@ import { PageError } from "@/components/PageError";
 import { Add, People, Settings } from "@mui/icons-material";
 import { orderBy } from "lodash";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LecturerChapter } from "./LecturerChapter";
+import { codeAssessmentProvider } from "@/components/ProviderConfig";
+import { ro } from "date-fns/locale";
 
 graphql`
   fragment lecturerCourseFragment on Course {
@@ -35,9 +39,55 @@ graphql`
 
 export default function LecturerCoursePage() {
   const router = useRouter();
+  const pathname = usePathname();
 
   // Get course id from url
   const { courseId } = useParams();
+
+  // Authorization code from external provider
+  const code = useSearchParams().get("code");
+  const [commitGenerateAccessToken] = useMutation<lecturerGenerateAccessTokenMutation>(
+    graphql`
+      mutation lecturerGenerateAccessTokenMutation($input: GenerateAccessTokenInput!) {
+        generateAccessToken(input: $input)
+      }
+    `
+  );
+
+  const { isAccessTokenAvailable } = useLazyLoadQuery<lecturerAccessTokenQuery>(
+      graphql`
+        query lecturerAccessTokenQuery($provider: ExternalServiceProviderDto!) {
+          isAccessTokenAvailable(provider: $provider)
+        }
+      `,
+      { provider: codeAssessmentProvider },
+    );
+
+  const hasRun = useRef(false);
+
+  useEffect(() => {
+    if (!code || hasRun.current || isAccessTokenAvailable) return;
+  
+    hasRun.current = true;
+
+    commitGenerateAccessToken({
+      variables: {
+        input: {
+          provider: codeAssessmentProvider,
+          authorizationCode: code,
+        },
+      },
+      onCompleted: (response) => {
+        if (response.generateAccessToken) {
+          console.log("Access token generated successfully.");
+          router.replace(pathname, { scroll: false });
+        }
+      },
+      onError: (err) => {
+        console.error("Failed to generate token", err);
+      },
+    });
+  }, []);
 
   // Info dialog
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
