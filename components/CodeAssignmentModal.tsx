@@ -117,7 +117,6 @@ export function CodeAssignmentModal({
       {!isLoading && !isAccessTokenAvailable && (
         <ProviderAuthorizationDialog
           open={isOpen}
-          provider={codeAssessmentProvider}
           onClose={onClose}
         />
       )}
