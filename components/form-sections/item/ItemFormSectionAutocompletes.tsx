@@ -188,7 +188,7 @@ const ItemFormSectionAutocompletes = ({
         skillCategory: category,
         isCustomSkillCategory: false,
       }))
-      .toSorted((a, b) => a.skillCategory.localeCompare(b.skillCategory));
+      .sort((a, b) => a.skillCategory.localeCompare(b.skillCategory));
 
     // used to show badge in Autocomplete list
     const usedSkillCategoryCount = new Set([

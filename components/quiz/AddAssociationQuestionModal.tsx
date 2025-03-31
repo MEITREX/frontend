@@ -26,9 +26,9 @@ export function AddAssociationQuestionModal({
   const [addQuestion, isUpdating] =
     useMutation<AddAssociationQuestionModalMutation>(graphql`
       mutation AddAssociationQuestionModalMutation(
-        $input: CreateAssociationQuestionInput!
+        $input: CreateAssociationQuestionInputWithoutItem!
         $assessmentId: UUID!
-        $item: ItemInput!
+        $item: CreateItemInput!
       ) {
         mutateQuiz(assessmentId: $assessmentId) {
           assessmentId
@@ -77,7 +77,7 @@ export function AddAssociationQuestionModal({
         store,
         {
           mutateQuiz: {
-            addAssociationQuestion: { questionPool, item },
+            addAssociationQuestion: { questionPool /* item */ },
           },
         }
       ) {
@@ -100,7 +100,7 @@ export function AddAssociationQuestionModal({
           .getRoot()
           .getLinkedRecord("items")
           ?.getLinkedRecords("elements");
-        const newItem = store.get(item!.id);
+        const newItem = store.get("item!.id"); // TODO
         if (!items || !newItem) return;
 
         store

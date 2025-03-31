@@ -100,12 +100,14 @@ const LecturerFlashcardHeading = ({ content, setEditContentModal }: Props) => {
 
       {error && (
         <div className="flex flex-col gap-2 mt-8">
-          {/* TODO ??? */}
-          {error?.source?.errors.map((err: any, i: number) => (
-            <Alert key={i} severity="error" onClose={() => setError(null)}>
-              {err.message}
-            </Alert>
-          ))}
+          {/* this seems to be the actual error type structure: */}
+          {(error.cause as { errors: { message: string }[] })?.errors.map(
+            (err, i: number) => (
+              <Alert key={i} severity="error" onClose={() => setError(null)}>
+                {err?.message}
+              </Alert>
+            )
+          )}
         </div>
       )}
     </>

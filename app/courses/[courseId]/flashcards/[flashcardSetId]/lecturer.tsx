@@ -28,9 +28,14 @@ import {
   useQueryLoader,
 } from "react-relay";
 
+// relay.js references something like this for its error handling functions
+interface ES2022Error {
+  cause?: unknown;
+}
+
 interface ErrorContextProps {
-  error: Error | null;
-  setError: (error: Error | null) => void;
+  error: ES2022Error | null;
+  setError: (error: ES2022Error | null) => void;
 }
 const ErrorContext = createContext<ErrorContextProps>({
   error: null,
@@ -98,7 +103,7 @@ export const allSkillQuery = graphql`
 
 export default function LecturerFlashcards() {
   const { flashcardSetId, courseId } = useParams();
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<ES2022Error | null>(null);
 
   const data = useLazyLoadQuery<lecturerEditFlashcardsQuery>(rootQuery, {
     id: flashcardSetId,

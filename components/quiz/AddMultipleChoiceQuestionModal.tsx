@@ -26,8 +26,8 @@ export function AddMultipleChoiceQuestionModal({
     useMutation<AddMultipleChoiceQuestionModalMutation>(graphql`
       mutation AddMultipleChoiceQuestionModalMutation(
         $assessmentId: UUID!
-        $input: CreateMultipleChoiceQuestionInput!
-        $item: ItemInput!
+        $input: CreateMultipleChoiceQuestionInputWithoutItem!
+        $item: CreateItemInput!
       ) {
         mutateQuiz(assessmentId: $assessmentId) {
           assessmentId
@@ -81,7 +81,7 @@ export function AddMultipleChoiceQuestionModal({
         store,
         {
           mutateQuiz: {
-            addMultipleChoiceQuestion: { questionPool, item },
+            addMultipleChoiceQuestion: { questionPool /* item */ },
           },
         }
       ) {
@@ -106,7 +106,7 @@ export function AddMultipleChoiceQuestionModal({
           .getRoot()
           .getLinkedRecord("items")
           ?.getLinkedRecords("elements");
-        const newItem = store.get(item!.id);
+        const newItem = store.get("item!.id"); // TODO
         if (!items || !newItem) return;
 
         store

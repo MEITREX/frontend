@@ -24,8 +24,8 @@ export function AddClozeQuestionModal({
     useMutation<AddClozeQuestionModalMutation>(graphql`
       mutation AddClozeQuestionModalMutation(
         $assessmentId: UUID!
-        $questionInput: CreateClozeQuestionInput!
-        $item: ItemInput!
+        $questionInput: CreateClozeQuestionInputWithoutItem!
+        $item: CreateItemInput!
       ) {
         mutateQuiz(assessmentId: $assessmentId) {
           assessmentId
@@ -84,7 +84,7 @@ export function AddClozeQuestionModal({
         store,
         {
           mutateQuiz: {
-            addClozeQuestion: { questionPool, item },
+            addClozeQuestion: { questionPool /* item */ },
           },
         }
       ) {
@@ -107,7 +107,7 @@ export function AddClozeQuestionModal({
           .getRoot()
           .getLinkedRecord("items")
           ?.getLinkedRecords("elements");
-        const newItem = store.get(item!.id);
+        const newItem = store.get("item!.id"); // TODO
         if (!items || !newItem) return;
 
         store

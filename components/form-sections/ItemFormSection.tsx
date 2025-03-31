@@ -285,7 +285,7 @@ export function ItemFormSection({
           skillCategory: category,
           isCustomSkillCategory: false,
         }))
-        .toSorted((a, b) => a.skillCategory.localeCompare(b.skillCategory));
+        .sort((a, b) => a.skillCategory.localeCompare(b.skillCategory));
 
       const elementsInOrderMaps = new Set([
         ...categoryOccurrencesSelected.keys(),

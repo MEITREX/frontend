@@ -98,11 +98,12 @@ export function EditClozeQuestionButton({
           additionalWrongAnswers: data.additionalWrongAnswers,
           clozeElements: data.clozeElements.map((elem) =>
             elem.type === "text"
-              ? { type: "TEXT", text: elem.text }
+              ? { type: "TEXT", text: elem.text, itemId: question.itemId } // TODO
               : {
                   type: "BLANK",
                   correctAnswer: elem.correctAnswer,
                   feedback: elem.feedback,
+                  itemId: question.itemId, // TODO added without verification to fix build
                 }
           ),
         },
