@@ -26,6 +26,8 @@ import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
 import { useState } from "react";
+import CompetencyProgressbar from "@/components/CompetencyProgressbar";
+import { Skill } from "@/components/Skill";
 
 interface Data {
   name: string;
@@ -86,6 +88,7 @@ export default function StudentCoursePage() {
                 userProgressData {
                   nextLearnDate
                   lastLearnDate
+                  
                 }
 
                 id
@@ -255,6 +258,14 @@ export default function StudentCoursePage() {
             </Button>
           </Link>
         </div>
+      </div>
+
+      <div className="competency-progressbars">
+        {course.skills.map((skill) => (
+          <CompetencyProgressbar key={skill.skillName} competencyName={skill.skillName} progressValue={skill.skillLevels?.analyze.value}></CompetencyProgressbar>
+
+        ))}
+                
       </div>
 
       <section className="mt-8 mb-20">
