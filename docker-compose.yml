@@ -12,6 +12,8 @@ services:
         NEXT_PUBLIC_OAUTH_AUTHORITY: "http://localhost:9009/realms/GITS"
     ports:
       - "3005:3000"
+    networks:
+      - dapr-network
 
   keycloak:
     image: quay.io/keycloak/keycloak:21.1.1
@@ -25,3 +27,10 @@ services:
       - type: bind
         source: ./../frontend/keycloak-realm
         target: /opt/keycloak/data/import
+    networks:
+      - dapr-network
+
+networks:
+  dapr-network:
+    name: dapr-network
+    external: true
