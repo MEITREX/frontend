@@ -5,8 +5,11 @@ import {
   Box,
   Chip,
   createFilterOptions,
+  IconButton,
+  Popover,
   Stack,
   TextField,
+  Typography,
 } from "@mui/material";
 import { Record as RecordIm, Set as SetIm } from "immutable";
 import {
@@ -15,6 +18,7 @@ import {
   SetStateAction,
   useCallback,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { PreloadedQuery, useFragment, usePreloadedQuery } from "react-relay";
@@ -26,6 +30,8 @@ import {
   ItemSkill,
 } from "./ItemFormSectionNew";
 import { MappedSkillType } from "./standardizedCompentencies";
+import InfoIcon from "@mui/icons-material/Info";
+import InfoPopover from "./InfoPopover";
 
 type SkillCategoryInAutocomplete = (
   | Pick<ItemSkill, "skillCategory" | "id">
@@ -336,6 +342,13 @@ const ItemFormSectionAutocompletes = ({
     }
   };
 
+  const popupRefSkills = useRef<HTMLButtonElement>(null);
+  const popupRefKnowledgeArea = useRef<HTMLButtonElement>(null);
+  const [isInfoPopupSkillsVisible, setIsInfoPopupSkillsVisible] =
+    useState(false);
+  const [isInfoPopupKnowledgeAreaVisible, setInfoPopupIsKnowledgeAreaVisible] =
+    useState(false);
+
   return (
     <Stack className="flex flex-row gap-x-2 mb-8">
       <Autocomplete
@@ -427,6 +440,15 @@ const ItemFormSectionAutocompletes = ({
           );
         }}
       />
+
+      <InfoPopover>
+        <Typography variant="body1">
+          Knowledge Areas are based on the IEEE Standardized Competencies to
+          propose groupings for skills of the Computer Science filed. <br />
+          You can create custom Knowledge Areas yourself, if you find the
+          standardized ones not suitable.
+        </Typography>
+      </InfoPopover>
 
       {!searchInAllCategories ? (
         <Autocomplete
@@ -602,6 +624,22 @@ const ItemFormSectionAutocompletes = ({
           }}
         />
       )}
+
+      <InfoPopover>
+        {!searchInAllCategories ? (
+          <Typography variant="body1">
+            Search through the Skills of the selected Knowledge Area.
+          </Typography>
+        ) : (
+          <Typography variant="body1">
+            Search through the Skills grouped in any Knowledge Areas present in
+            this course. If you add a new skill here, it will be added to the
+            default Knowledge Area called &quot;<i>Custom</i>&quot;.
+            <br /> For more control, use the dropdown on the left to create a
+            new Knowledge Area and then add a Skill.
+          </Typography>
+        )}
+      </InfoPopover>
     </Stack>
   );
 };
