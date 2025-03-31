@@ -322,6 +322,20 @@ const ItemFormSectionAutocompletes = ({
     skillsSelected,
   ]);
 
+  // used for conditionally rendering the ruler of skill categories used in the  course in Autocomplete
+  const [isCategoryInputEmpty, setIsCategoryInputEmpty] =
+    useState<boolean>(true);
+  const handleInputChange = (
+    event: React.SyntheticEvent,
+    newInputValue: string
+  ) => {
+    if (newInputValue.trim() === "") {
+      setIsCategoryInputEmpty(true);
+    } else {
+      setIsCategoryInputEmpty(false);
+    }
+  };
+
   return (
     <Stack className="flex flex-row gap-x-2 mb-8">
       <Autocomplete
@@ -331,6 +345,7 @@ const ItemFormSectionAutocompletes = ({
           option.skillCategory === value.skillCategory
         }
         options={allSkillCategoriesSorted}
+        onInputChange={handleInputChange}
         getOptionLabel={(option) => option.skillCategory}
         onChange={(_, newValue) =>
           // if a new skill category is selected, reset the skill since one skill shouldn't be present in multiple categories
@@ -381,8 +396,8 @@ const ItemFormSectionAutocompletes = ({
                   />
                 )}
               </Box>
-              {/* add ruler after use categories */}
-              {index === allSkillCategoriesUsed - 1 && (
+              {/* add ruler after used categories */}
+              {isCategoryInputEmpty && index === allSkillCategoriesUsed - 1 && (
                 <>
                   <Box
                     key="used-in-course-label"
