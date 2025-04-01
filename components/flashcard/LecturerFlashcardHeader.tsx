@@ -1,5 +1,3 @@
-import { LecturerFlashcardHeadingDeleteAllFlashcardContentMutation } from "@/__generated__/LecturerFlashcardHeadingDeleteAllFlashcardContentMutation.graphql";
-import { LecturerFlashcardHeadingFragment$key } from "@/__generated__/LecturerFlashcardHeadingFragment.graphql";
 import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import { Delete, Edit } from "@mui/icons-material";
 import { Alert, Button, CircularProgress } from "@mui/material";
@@ -9,18 +7,19 @@ import { useFragment, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
 import { ContentTags } from "../ContentTags";
 import { Heading } from "../Heading";
+import { LecturerFlashcardHeaderFragment$key } from "@/__generated__/LecturerFlashcardHeaderFragment.graphql";
+import { LecturerFlashcardHeaderDeleteFlashcardSetMutation } from "@/__generated__/LecturerFlashcardHeaderDeleteFlashcardSetMutation.graphql";
+import { FormErrors } from "../FormErrors";
 
 const deleteFlashcardMutation = graphql`
-  mutation LecturerFlashcardHeadingDeleteAllFlashcardContentMutation(
-    $id: UUID!
-  ) {
+  mutation LecturerFlashcardHeaderDeleteFlashcardSetMutation($id: UUID!) {
     mutateContent(contentId: $id) {
       deleteContent
     }
   }
 `;
 const metadataFragment = graphql`
-  fragment LecturerFlashcardHeadingFragment on Content {
+  fragment LecturerFlashcardHeaderFragment on Content {
     id
     metadata {
       name
@@ -30,15 +29,18 @@ const metadataFragment = graphql`
 `;
 
 interface Props {
-  content: LecturerFlashcardHeadingFragment$key;
-  setEditContentModal: (open: boolean) => void;
+  content: LecturerFlashcardHeaderFragment$key;
+  openEditFlashcardSetModal: () => void;
 }
 
-const LecturerFlashcardHeading = ({ content, setEditContentModal }: Props) => {
+const LecturerFlashcardHeader = ({
+  content,
+  openEditFlashcardSetModal,
+}: Props) => {
   const { courseId } = useParams();
 
   const [commitDeleteFlashcard, isDeleteCommitInFlight] =
-    useMutation<LecturerFlashcardHeadingDeleteAllFlashcardContentMutation>(
+    useMutation<LecturerFlashcardHeaderDeleteFlashcardSetMutation>(
       deleteFlashcardMutation
     );
 
@@ -87,7 +89,7 @@ const LecturerFlashcardHeading = ({ content, setEditContentModal }: Props) => {
             <Button
               sx={{ color: "text.secondary" }}
               startIcon={<Edit />}
-              onClick={() => setEditContentModal(true)}
+              onClick={openEditFlashcardSetModal}
             >
               Edit
             </Button>
@@ -98,20 +100,9 @@ const LecturerFlashcardHeading = ({ content, setEditContentModal }: Props) => {
 
       <ContentTags metadata={metadata} />
 
-      {error && (
-        <div className="flex flex-col gap-2 mt-8">
-          {/* this seems to be the actual error type structure: */}
-          {(error.cause as { errors: { message: string }[] })?.errors.map(
-            (err, i: number) => (
-              <Alert key={i} severity="error" onClose={() => setError(null)}>
-                {err?.message}
-              </Alert>
-            )
-          )}
-        </div>
-      )}
+      <FormErrors error={error} onClose={() => setError(null)} />
     </>
   );
 };
 
-export default LecturerFlashcardHeading;
+export default LecturerFlashcardHeader;

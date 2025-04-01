@@ -5,11 +5,12 @@ import { lecturerUpdateFlashcardAssessmentMutation } from "@/__generated__/lectu
 import { AssessmentMetadataPayload } from "@/components/AssessmentMetadataFormSection";
 import { ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
 import { EditFlashcardSetModal } from "@/components/EditFlashcardSetModal";
+import { ES2022Error } from "@/components/FormErrors";
 import { PageError } from "@/components/PageError";
 import { AddFlashcard } from "@/components/flashcard/AddFlashcard";
 import { EditFlashcard } from "@/components/flashcard/EditFlashcard";
 import FlashcardView from "@/components/flashcard/FlashcardView";
-import LecturerFlashcardHeading from "@/components/flashcard/LecturerFlashcardHeading";
+import LecturerFlashcardHeader from "@/components/flashcard/LecturerFlashcardHeader";
 import SuccessSnackbar from "@/components/flashcard/SuccessSnackbar";
 import { Add, Delete, Edit } from "@mui/icons-material";
 import { Button } from "@mui/material";
@@ -28,21 +29,6 @@ import {
   useQueryLoader,
 } from "react-relay";
 
-// relay.js references something like this for its error handling functions
-interface ES2022Error {
-  cause?: unknown;
-}
-
-interface ErrorContextProps {
-  error: ES2022Error | null;
-  setError: (error: ES2022Error | null) => void;
-}
-const ErrorContext = createContext<ErrorContextProps>({
-  error: null,
-  setError: () => {},
-});
-export const useError = () => useContext(ErrorContext);
-
 const rootQuery = graphql`
   query lecturerEditFlashcardsQuery($id: UUID!) {
     contentsByIds(ids: [$id]) {
@@ -52,7 +38,7 @@ const rootQuery = graphql`
         chapterId
       }
 
-      ...LecturerFlashcardHeadingFragment
+      ...LecturerFlashcardHeaderFragment
       ...EditFlashcardSetModalFragment
       ...AddFlashcardFragment
       ... on FlashcardSetAssessment {
@@ -100,6 +86,16 @@ export const allSkillQuery = graphql`
     }
   }
 `;
+
+interface ErrorContextProps {
+  error: ES2022Error | null;
+  setError: (error: ES2022Error | null) => void;
+}
+const ErrorContext = createContext<ErrorContextProps>({
+  error: null,
+  setError: () => {},
+});
+export const useError = () => useContext(ErrorContext);
 
 export default function LecturerFlashcards() {
   const { flashcardSetId, courseId } = useParams();
@@ -206,7 +202,7 @@ export default function LecturerFlashcards() {
     return (
       <PageError
         title={content.metadata.name}
-        message="Content is not of type flashcards."
+        message="Content is not of type flashcard set."
       />
     );
   }
@@ -214,9 +210,9 @@ export default function LecturerFlashcards() {
   return (
     <main>
       <ErrorContext.Provider value={{ error, setError }}>
-        <LecturerFlashcardHeading
+        <LecturerFlashcardHeader
           content={content}
-          setEditContentModal={setEditSetOpen}
+          openEditFlashcardSetModal={() => setEditSetOpen(false)}
         />
 
         <div className="mt-8 flex flex-col gap-6">
