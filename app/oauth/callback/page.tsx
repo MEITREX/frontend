@@ -7,8 +7,9 @@ import { graphql, useMutation, useLazyLoadQuery } from "react-relay";
 
 import type {
   pageGenerateAccessTokenMutation,
-} from "../../../__generated__/pageGenerateAccessTokenMutation.graphql";
+} from "@/__generated__/pageGenerateAccessTokenMutation.graphql";
 import { codeAssessmentProvider } from "@/components/ProviderConfig";
+import toast from "react-hot-toast";
 
 export default function OAuthCallback() {
   const router = useRouter();
@@ -41,13 +42,14 @@ export default function OAuthCallback() {
       },
       onCompleted: (response) => {
         if (response?.generateAccessToken) {
-          console.log("Access token generated successfully:");
+          toast.success("Access token generated successfully.");
         } else {
-          console.error("Failed to generate access token.");
+          toast.error("Failed to generate access token.");
         }
         router.replace(returnTo);
       },
       onError: (err) => {
+        toast.error("Failed to generate access token.");
         console.error("Failed to generate token:", err);
         router.replace(returnTo);
       },
