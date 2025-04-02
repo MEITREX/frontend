@@ -100,6 +100,7 @@ export default function StudentCoursePage() {
           }
           skills {
             skillName
+            skillCategory
             skillLevels {
               remember {
                 value
@@ -150,6 +151,15 @@ export default function StudentCoursePage() {
 
   // Extract course
   const course = coursesByIds[0];
+
+  const [expandedBars, setExpandedBars] = useState<Record<string, boolean>>({});
+  
+  const toggleProgressbar = (id: string) => {
+    setExpandedBars((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   return (
     <main>
@@ -261,14 +271,37 @@ export default function StudentCoursePage() {
       </div>
 
       <div className="competency-progressbars">
-      {Array.from(
-        new Map(course.skills.map((skill) => [skill.skillName, skill])).values()
-      ).map((uniqueSkill) => (
-        <CompetencyProgressbar
-          key={uniqueSkill.skillName}
-          competencyName={uniqueSkill.skillName}
-          progressValue={30}
-        />))}       
+        {/* Creates an array that only contains unique skillcategories. Those get a progressbar. */}
+        {Array.from(
+          new Map(course.skills.map((skill) => [skill.skillCategory, skill])).values()
+        ).map((uniqueSkill) => (
+          <div key={uniqueSkill.skillCategory} className="mb-4">
+            <div onClick={() => toggleProgressbar(uniqueSkill.skillCategory)}>
+              <CompetencyProgressbar
+                competencyName={uniqueSkill.skillCategory}
+                progressValue={30}
+              />
+            </div>
+            {/* Creates an array for every unique skill of an skillCategory. Those get a progressbar.*/}
+            {expandedBars[uniqueSkill.skillCategory] && (
+              <div className="ml-4">
+                {Array.from(
+                  new Set(
+                    course.skills
+                      .filter(skill => skill.skillCategory === uniqueSkill.skillCategory)
+                      .map(skill => skill.skillName)
+                  )
+                ).map(skillName => (
+                  <CompetencyProgressbar
+                    key={skillName}
+                    competencyName={skillName}
+                    progressValue={20}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       <section className="mt-8 mb-20">
