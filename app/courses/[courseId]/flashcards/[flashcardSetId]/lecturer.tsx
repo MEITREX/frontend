@@ -150,7 +150,7 @@ export default function LecturerFlashcards() {
         onError: setError,
         updater(store) {
           console.log("updater @lecturer", store, data);
-
+          
           // TODO re-implement this without relying on query flashcard set data
 
           // Get record of flashcard set
@@ -226,6 +226,8 @@ export default function LecturerFlashcards() {
                   assessmentId={content.id}
                   onCancel={onEditCancel}
                   allSkillsQueryRef={queryReference}
+                  flashcardPosition={i}
+                  flashcardSetId={flashcardSet.__id}
                 />
               ) : (
                 <>

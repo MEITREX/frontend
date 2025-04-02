@@ -51,13 +51,21 @@ const editFlashcardMutation = graphql`
         item: $item
       ) {
         flashcard {
+          itemId
           item {
+            associatedBloomLevels
             associatedSkills {
               id
+              skillCategory
+              skillName
+              isCustomSkill
             }
           }
           sides {
             label
+            isAnswer
+            isQuestion
+            text
           }
         }
       }
@@ -71,6 +79,8 @@ interface Props {
   flashcard: EditFlashcardFragment$key;
   assessmentId: string;
   allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
+  flashcardPosition: number;
+  flashcardSetId: string;
 }
 
 export function EditFlashcard({
@@ -79,6 +89,8 @@ export function EditFlashcard({
   assessmentId,
   onCancel,
   allSkillsQueryRef,
+  flashcardPosition,
+  flashcardSetId,
 }: Props) {
   const data = useFragment(FlashcardFragment, flashcard);
   const [updateFlashcard, isUpdating] = useMutation<EditFlashcardMutation>(
@@ -100,7 +112,7 @@ export function EditFlashcard({
   );
 
   const updaterClosure = useCallback(
-    () => editFlashcardUpdaterClosure("TODO"),
+    () => editFlashcardUpdaterClosure(flashcardPosition, flashcardSetId),
     []
   );
 
@@ -119,7 +131,7 @@ export function EditFlashcard({
       onError: setError,
       updater: updaterClosure(),
       onCompleted(response, errors) {
-        console.log("onCompleted", response, errors);
+        onCancel();
       },
     });
   }, [
