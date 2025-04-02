@@ -15,7 +15,7 @@ type CompetencyProgressbarProps = {
   return (
     <Box sx={{ width: '100%' }}>
       <label>{ competencyName }</label>
-      <LinearProgress variant="determinate" value={progressValue} />
+      <LinearProgress variant="determinate" value={progressValue}/>
     </Box>
   );
 }
