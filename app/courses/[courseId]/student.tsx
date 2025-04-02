@@ -28,6 +28,7 @@ import Link from "next/link";
 import { useState } from "react";
 import CompetencyProgressbar from "@/components/CompetencyProgressbar";
 import { Skill } from "@/components/Skill";
+import { SkillLevels } from "@/components/SkillLevels";
 
 interface Data {
   name: string;
@@ -291,13 +292,17 @@ export default function StudentCoursePage() {
                       .filter(skill => skill.skillCategory === uniqueSkill.skillCategory)
                       .map(skill => skill.skillName)
                   )
-                ).map(skillName => (
-                  <CompetencyProgressbar
-                    key={skillName}
-                    competencyName={skillName}
-                    progressValue={20}
-                  />
-                ))}
+                ).map(skillName => {
+                  const skill = course.skills.find(s => s.skillName === skillName);
+                  const progressValue = (skill?.skillLevels?.analyze?.value || 0) + (skill?.skillLevels?.apply?.value || 0) + (skill?.skillLevels?.create?.value || 0) + (skill?.skillLevels?.evaluate?.value || 0) + (skill?.skillLevels?.remember?.value || 0) + (skill?.skillLevels?.understand?.value || 0);
+                  return (
+                    <CompetencyProgressbar
+                      key={skillName}
+                      competencyName={skillName}
+                      progressValue={progressValue}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>
