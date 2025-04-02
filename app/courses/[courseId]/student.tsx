@@ -261,11 +261,14 @@ export default function StudentCoursePage() {
       </div>
 
       <div className="competency-progressbars">
-        {course.skills.map((skill) => (
-          <CompetencyProgressbar key={skill.skillName} competencyName={skill.skillName} progressValue={skill.skillLevels?.analyze.value}></CompetencyProgressbar>
-
-        ))}
-                
+      {Array.from(
+        new Map(course.skills.map((skill) => [skill.skillName, skill])).values()
+      ).map((uniqueSkill) => (
+        <CompetencyProgressbar
+          key={uniqueSkill.skillName}
+          competencyName={uniqueSkill.skillName}
+          progressValue={30}
+        />))}       
       </div>
 
       <section className="mt-8 mb-20">
