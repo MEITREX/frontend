@@ -29,6 +29,7 @@ import { useState } from "react";
 import CompetencyProgressbar from "@/components/CompetencyProgressbar";
 import { Skill } from "@/components/Skill";
 import { SkillLevels } from "@/components/SkillLevels";
+import { progress } from "framer-motion";
 
 interface Data {
   name: string;
@@ -272,42 +273,46 @@ export default function StudentCoursePage() {
       </div>
 
       <div className="competency-progressbars">
-        {/* Creates an array that only contains unique skillcategories. Those get a progressbar. */}
-        {Array.from(
-          new Map(course.skills.map((skill) => [skill.skillCategory, skill])).values()
-        ).map((uniqueSkill) => (
-          <div key={uniqueSkill.skillCategory} className="mb-4">
-            <div onClick={() => toggleProgressbar(uniqueSkill.skillCategory)}>
-              <CompetencyProgressbar
-                competencyName={uniqueSkill.skillCategory}
-                progressValue={30}
-              />
-            </div>
-            {/* Creates an array for every unique skill of an skillCategory. Those get a progressbar.*/}
-            {expandedBars[uniqueSkill.skillCategory] && (
-              <div className="ml-4">
-                {Array.from(
-                  new Set(
-                    course.skills
-                      .filter(skill => skill.skillCategory === uniqueSkill.skillCategory)
-                      .map(skill => skill.skillName)
-                  )
-                ).map(skillName => {
-                  const skill = course.skills.find(s => s.skillName === skillName);
-                  const progressValue = (skill?.skillLevels?.analyze?.value || 0) + (skill?.skillLevels?.apply?.value || 0) + (skill?.skillLevels?.create?.value || 0) + (skill?.skillLevels?.evaluate?.value || 0) + (skill?.skillLevels?.remember?.value || 0) + (skill?.skillLevels?.understand?.value || 0);
-                  return (
-                    <CompetencyProgressbar
-                      key={skillName}
-                      competencyName={skillName}
-                      progressValue={progressValue}
-                    />
-                  );
-                })}
-              </div>
-            )}
+      {/* Remove duplicate Competencies (skillCategories)*/}
+      {Array.from(new Map(course.skills.map((skill) => [skill.skillCategory, skill])).values()).map((uniqueSkill) => {
+      const skillsInCategory = course.skills.filter(skill => skill.skillCategory === uniqueSkill.skillCategory);
+
+      // Calculate Progress for competency by adding all skillValues of all skills together
+      const totalCategoryProgress = skillsInCategory.reduce((acc, skill) => 
+        acc + Object.values(skill.skillLevels || {}).reduce((sum, level) => sum + (level?.value || 0), 0), 
+        0
+      );
+      const categoryProgressValue = Math.min(totalCategoryProgress * 100 / skillsInCategory.length, 100); 
+
+      return (
+        <div key={uniqueSkill.skillCategory} className="mb-4">
+          <div onClick={() => toggleProgressbar(uniqueSkill.skillCategory)}>
+            <CompetencyProgressbar
+              competencyName={uniqueSkill.skillCategory}
+              progressValue={categoryProgressValue}
+            />
           </div>
-        ))}
-      </div>
+          {expandedBars[uniqueSkill.skillCategory] && (
+            <div className="ml-4">
+              {/* Remove duplicate skills */}
+              {Array.from(new Set(skillsInCategory.map(skill => skill.skillName))).map(skillName => {
+                const skill = skillsInCategory.find(s => s.skillName === skillName);
+                const skillProgressValue = Object.values(skill?.skillLevels || {}).reduce((sum, level) => sum + (level?.value || 0), 0) * 100;
+
+                return (
+                  <CompetencyProgressbar
+                    key={skillName}
+                    competencyName={skillName}
+                    progressValue={Math.min(skillProgressValue, 100)}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    })}
+  </div>
 
       <section className="mt-8 mb-20">
         <div className="flex justify-between items-center">
