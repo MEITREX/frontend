@@ -1,4 +1,5 @@
 import { BloomLevel } from "@/__generated__/AddFlashcardSetModalMutation.graphql";
+import { EditFlashcardFragment$data } from "@/__generated__/EditFlashcardFragment.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import {
   Checkbox,
@@ -16,7 +17,6 @@ import { FormSection } from "../../Form";
 import standardizedCompetencies from "../data/standardized-competency-catalog.json";
 import ItemFormSectionAutocompletes from "./ItemFormSectionAutocompletes";
 import { processStandardizedCompetencies } from "./standardizedCompentencies";
-
 
 const getStandardizedCompetencies = cache(() =>
   processStandardizedCompetencies(standardizedCompetencies)
@@ -52,6 +52,21 @@ export type ItemSkill = {
   skillCategory: string;
   isCustomSkill: boolean;
 };
+
+/**
+ * This function maps the item > skill returned by relay to the react-state compatible type.
+ * The destructuring is necessary due to `readonly` types from relay
+ */
+export const mapRelayItemToItem = (
+  relayItem: Readonly<Pick<EditFlashcardFragment$data, "item" | "itemId">>
+): Item => ({
+  id: relayItem.itemId,
+  associatedSkills: relayItem.item.associatedSkills.map((skill) => ({
+    ...skill,
+  })),
+  associatedBloomLevels: relayItem.item.associatedBloomLevels as BloomLevel[],
+});
+
 
 export const itemFormSectionFragment = graphql`
   fragment ItemFormSectionNewAllSkillsFragment on Course {

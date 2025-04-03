@@ -1,127 +1,140 @@
 import { EditMultipleChoiceQuestionButtonFragment$key } from "@/__generated__/EditMultipleChoiceQuestionButtonFragment.graphql";
 import { EditMultipleChoiceQuestionButtonMutation } from "@/__generated__/EditMultipleChoiceQuestionButtonMutation.graphql";
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
-import { Edit } from "@mui/icons-material";
-import { IconButton } from "@mui/material";
-import { useState } from "react";
-import { graphql, useFragment, useMutation } from "react-relay";
-import { ItemData } from "../form-sections/ItemFormSection";
+import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
+import { useParams } from "next/navigation";
+import { useCallback, useState } from "react";
+import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
+import {
+  CreateItem,
+  Item,
+  mapRelayItemToItem,
+} from "../form-sections/item/ItemFormSectionNew";
 import {
   MultipleChoiceQuestionData,
   MultipleChoiceQuestionModal,
 } from "./MutlipleChoiceQuestionModal";
 
-export function EditMultipleChoiceQuestionButton({
-  _allRecords,
-  _question,
-  assessmentId,
-  courseId,
-  item,
-}: {
-  _allRecords: MediaRecordSelector$key;
-  _question: EditMultipleChoiceQuestionButtonFragment$key;
-  assessmentId: string;
-  courseId: string;
-  item: ItemData;
-}) {
-  const [open, setOpen] = useState(false);
-  const [error, setError] = useState<any>(null);
-  const question = useFragment(
-    graphql`
-      fragment EditMultipleChoiceQuestionButtonFragment on MultipleChoiceQuestion {
-        itemId
-        text
-        hint
-        answers {
-          answerText
-          correct
-          feedback
-        }
+const MultipleChoiceQuestionFragment = graphql`
+  fragment EditMultipleChoiceQuestionButtonFragment on MultipleChoiceQuestion {
+    itemId
+    item {
+      associatedBloomLevels
+      associatedSkills {
+        id
+        skillName
+        skillCategory
+        isCustomSkill
       }
-    `,
-    _question
-  );
+    }
 
-  const [updateQuestion, isUpdating] =
-    useMutation<EditMultipleChoiceQuestionButtonMutation>(graphql`
-      mutation EditMultipleChoiceQuestionButtonMutation(
-        $assessmentId: UUID!
-        $questionInput: UpdateMultipleChoiceQuestionInput!
-        $item: ItemInput!
+    text
+    hint
+    answers {
+      answerText
+      correct
+      feedback
+    }
+  }
+`;
+
+const MultipleChoiceQuestionMutation = graphql`
+  mutation EditMultipleChoiceQuestionButtonMutation(
+    $assessmentId: UUID!
+    $questionInput: UpdateMultipleChoiceQuestionInput!
+    $item: ItemInput!
+  ) {
+    mutateQuiz(assessmentId: $assessmentId) {
+      assessmentId
+      updateMultipleChoiceQuestion(
+        questionInput: $questionInput
+        assessmentId: $assessmentId
+        item: $item
       ) {
-        mutateQuiz(assessmentId: $assessmentId) {
-          assessmentId
-          updateMultipleChoiceQuestion(
-            questionInput: $questionInput
-            assessmentId: $assessmentId
-            item: $item
-          ) {
-            assessmentId
-            questionPool {
-              ...EditMultipleChoiceQuestionButtonFragment
-            }
-            # item {
-            #   id
-            #   associatedSkills {
-            #     id
-            #     skillName
-            #   }
-            #   associatedBloomLevels
-            # }
-          }
+        assessmentId
+        questionPool {
+          ...EditMultipleChoiceQuestionButtonFragment
         }
       }
-    `);
+    }
+  }
+`;
 
-  const handleSubmit = (data: MultipleChoiceQuestionData, item: ItemData) =>
-    updateQuestion({
-      variables: {
-        assessmentId,
-        questionInput: {
-          itemId: question.itemId,
-          text: data.text,
-          hint: data.hint,
-          answers: data.answers.map((answer) => ({
-            answerText: answer.answerText,
-            correct: answer.correct,
-            feedback: answer.feedback,
-          })),
-        },
-        item: item,
-      },
-      onCompleted: () => setOpen(false),
-      onError: setError,
-      updater: (store) => store.invalidateStore(),
-    });
+type Props = {
+  mediaRecords: MediaRecordSelector$key;
+  allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
+  question: EditMultipleChoiceQuestionButtonFragment$key;
+  onClose: () => void;
+  open: boolean;
+};
 
-  const initialValue: MultipleChoiceQuestionData = {
-    text: question.text,
-    hint: question.hint,
-    answers: question.answers.map((answer) => ({
+export function EditMultipleChoiceQuestionButton({
+  mediaRecords,
+  allSkillsQueryRef,
+  question,
+  onClose,
+  open,
+}: Props) {
+  const { quizId } = useParams();
+  const { setError } = useError();
+
+  const data = useFragment(MultipleChoiceQuestionFragment, question);
+
+  const [item, setItem] = useState<Item | CreateItem>(mapRelayItemToItem(data));
+  const [questionData, setQuestionData] = useState<MultipleChoiceQuestionData>({
+    text: data.text,
+    hint: data.hint,
+    answers: data.answers.map((answer) => ({
       answerText: answer.answerText,
       correct: answer.correct,
       feedback: answer.feedback,
     })),
-  };
+  });
+
+  const [updateQuestion, isUpdating] =
+    useMutation<EditMultipleChoiceQuestionButtonMutation>(
+      MultipleChoiceQuestionMutation
+    );
+
+  const onSubmit = useCallback(() => {
+    const questionUpdate = {
+      assessmentId: quizId,
+      questionInput: {
+        ...questionData,
+        itemId: data.itemId,
+      },
+      item: item,
+    };
+    updateQuestion({
+      variables: questionUpdate,
+      onCompleted: onClose,
+      onError: setError,
+      updater: (store) => store.invalidateStore(),
+    });
+  }, [
+    data.itemId,
+    item,
+    onClose,
+    questionData,
+    quizId,
+    setError,
+    updateQuestion,
+  ]);
 
   return (
-    <>
-      <IconButton onClick={() => setOpen(true)}>
-        <Edit fontSize="small" />
-      </IconButton>
-      <MultipleChoiceQuestionModal
-        _allRecords={_allRecords}
-        open={open}
-        title="Edit multiple choice question"
-        error={error}
-        initialValue={initialValue}
-        isLoading={isUpdating}
-        courseId={courseId}
-        item={item}
-        onSave={handleSubmit}
-        onClose={() => setOpen(false)}
-        clearError={() => setError(null)}
-      />
-    </>
+    <MultipleChoiceQuestionModal
+      _allRecords={mediaRecords}
+      allSkillsQueryRef={allSkillsQueryRef}
+      title="Edit multiple choice question"
+      open={open}
+      isLoading={isUpdating}
+      item={item}
+      setItem={setItem}
+      questionData={questionData}
+      setQuestionData={setQuestionData}
+      onSubmit={onSubmit}
+      onClose={onClose}
+    />
   );
 }

@@ -1,24 +1,20 @@
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { lecturerEditQuizQuery } from "@/__generated__/lecturerEditQuizQuery.graphql";
 import { ES2022Error } from "@/components/FormErrors";
 import { PageError } from "@/components/PageError";
 import { QuizModal } from "@/components/QuizModal";
-import { ItemData } from "@/components/form-sections/ItemFormSection";
 import { AddQuestionButton } from "@/components/quiz/AddQuestionButton";
-import { AssociationQuestionPreview } from "@/components/quiz/AssociationQuestionPreview";
-import { ClozeQuestionPreview } from "@/components/quiz/ClozeQuestionPreview";
-import { DeleteQuestionButton } from "@/components/quiz/DeleteQuestionButton";
-import { EditAssociationQuestionButton } from "@/components/quiz/EditAssociationQuestionButton";
-import { EditClozeQuestionButton } from "@/components/quiz/EditClozeQuestionButton";
-import { EditMultipleChoiceQuestionButton } from "@/components/quiz/EditMultipleChoiceQuestionButton";
 import LecturerQuizHeader from "@/components/quiz/LecturerQuizHeader";
-import { MultipleChoiceQuestionPreview } from "@/components/quiz/MultipleChoiceQuestionPreview";
+import QuestionPreview from "@/components/quiz/QuestionPreview";
 import { useParams } from "next/navigation";
-import { createContext, useContext, useState } from "react";
-import { graphql, useLazyLoadQuery } from "react-relay";
+import { createContext, useContext, useEffect, useState } from "react";
+import { graphql, useLazyLoadQuery, useQueryLoader } from "react-relay";
+import { AllSkillQuery } from "../../flashcards/[flashcardSetId]/lecturer";
 
-const rootQuery = graphql`
+const RootQuery = graphql`
   query lecturerEditQuizQuery($id: UUID!, $courseId: UUID!) {
     ...MediaRecordSelector
+
     contentsByIds(ids: [$id]) {
       ...LecturerQuizHeaderFragment
 
@@ -32,6 +28,8 @@ const rootQuery = graphql`
         quiz {
           assessmentId
           questionPool {
+            ...QuestionPreviewFragment
+
             itemId
             type
             number
@@ -73,34 +71,23 @@ export default function LecturerQuiz() {
   const { quizId, courseId } = useParams();
   const [error, setError] = useState<ES2022Error | null>(null);
 
-  // TODO `...query` should be removed after clean relay.js fragment refactoring
-  const { contentsByIds, ...query } = useLazyLoadQuery<lecturerEditQuizQuery>(
-    rootQuery,
-    {
+  const { contentsByIds, ...mediaSelectorQuery } =
+    useLazyLoadQuery<lecturerEditQuizQuery>(RootQuery, {
       id: quizId,
       courseId,
+    });
+  const [queryReference, loadQuery] =
+    useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
+  useEffect(() => {
+    if (!queryReference) {
+      loadQuery({ courseId });
     }
-  );
+  }, [courseId, loadQuery, queryReference]);
 
-  const [isEditSetOpen, setEditSetOpen] = useState(false);
+  const [isEditSetModalOpen, setEditSetModalOpen] = useState(false);
 
   const content = contentsByIds[0];
   const quiz = content.quiz;
-
-  function getItem(itemId: string): ItemData {
-    if (content && content.items) {
-      for (let i = 0; i < content.items.length; i++) {
-        if (content.items[i].id === itemId) {
-          return {
-            associatedBloomLevels: [...content.items[i].associatedBloomLevels],
-            associatedSkills: [...content.items[i].associatedSkills],
-            id: itemId,
-          };
-        }
-      }
-    }
-    return { associatedBloomLevels: [], associatedSkills: [] };
-  }
 
   if (!quiz) {
     return (
@@ -110,91 +97,36 @@ export default function LecturerQuiz() {
       />
     );
   }
-
   return (
     <main>
       <ErrorContext.Provider value={{ error, setError }}>
         <LecturerQuizHeader
-          openEditQuizModal={() => setEditSetOpen(true)}
+          openEditQuizModal={() => setEditSetModalOpen(true)}
           content={content}
         />
 
         {quiz.questionPool.map((question, i) => (
-          <div
-            key={question.itemId}
-            className="my-3 py-3 border-b flex justify-between items-start"
-          >
-            {question.type === "MULTIPLE_CHOICE" && (
-              <>
-                <MultipleChoiceQuestionPreview _question={question} />
-                <div className="flex">
-                  <EditMultipleChoiceQuestionButton
-                    _allRecords={query}
-                    _question={question}
-                    assessmentId={content.id!}
-                    courseId={courseId}
-                    item={getItem(question.itemId)}
-                  />
-                  <DeleteQuestionButton
-                    assessmentId={content.id!}
-                    questionId={question.itemId}
-                    num={question.number}
-                  />
-                </div>
-              </>
-            )}
-            {question.type === "CLOZE" && (
-              <>
-                <ClozeQuestionPreview _question={question} />
-                <div className="flex">
-                  <EditClozeQuestionButton
-                    _allRecords={query}
-                    _question={question}
-                    assessmentId={content.id}
-                    courseId={courseId}
-                    item={getItem(question.itemId)}
-                  />
-                  <DeleteQuestionButton
-                    assessmentId={content.id}
-                    questionId={question.itemId}
-                    num={question.number}
-                  />
-                </div>
-              </>
-            )}
-            {question.type === "ASSOCIATION" && (
-              <>
-                <AssociationQuestionPreview _question={question} />
-                <div className="flex">
-                  <EditAssociationQuestionButton
-                    _allRecords={query}
-                    _question={question}
-                    assessmentId={content.id}
-                    courseId={courseId}
-                    item={getItem(question.itemId)}
-                  />
-                  <DeleteQuestionButton
-                    assessmentId={content.id}
-                    questionId={question.itemId}
-                    num={question.number}
-                  />
-                </div>
-              </>
-            )}
+          <div key={i}>
+            <QuestionPreview
+              mediaRecords={mediaSelectorQuery}
+              allSkillsQueryRef={queryReference}
+              question={question}
+            />
           </div>
         ))}
 
         <div className="mt-8 flex flex-col items-start">
           <AddQuestionButton
-            _allRecords={query}
+            _allRecords={mediaSelectorQuery}
+            allSkillsQueryRef={queryReference}
             assessmentId={content.id}
             courseId={courseId}
           />
         </div>
 
         <QuizModal
-          onClose={() => setEditSetOpen(false)}
-          isOpen={isEditSetOpen}
+          onClose={() => setEditSetModalOpen(false)}
+          isOpen={isEditSetModalOpen}
           _existingQuiz={quiz}
           chapterId={content.metadata.chapterId}
         />

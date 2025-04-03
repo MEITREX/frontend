@@ -1,12 +1,10 @@
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
-import { allSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
+import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import {
   Autocomplete,
   Box,
   Chip,
   createFilterOptions,
-  IconButton,
-  Popover,
   Stack,
   TextField,
   Typography,
@@ -22,6 +20,7 @@ import {
   useState,
 } from "react";
 import { PreloadedQuery, useFragment, usePreloadedQuery } from "react-relay";
+import InfoPopover from "./InfoPopover";
 import {
   CreateItem,
   CreateItemSkill,
@@ -30,8 +29,6 @@ import {
   ItemSkill,
 } from "./ItemFormSectionNew";
 import { MappedSkillType } from "./standardizedCompentencies";
-import InfoIcon from "@mui/icons-material/Info";
-import InfoPopover from "./InfoPopover";
 
 type SkillCategoryInAutocomplete = (
   | Pick<ItemSkill, "skillCategory" | "id">
@@ -87,7 +84,7 @@ const ItemFormSectionAutocompletes = ({
   SKILL_CATALOGUE,
   SKILL_CATEGORY_ABBREVIATION,
 }: Props) => {
-  const { coursesByIds } = usePreloadedQuery(allSkillQuery, allSkillsQueryRef);
+  const { coursesByIds } = usePreloadedQuery(AllSkillQuery, allSkillsQueryRef);
   const { skills: skillsAvailable } = useFragment(
     itemFormSectionFragment,
     coursesByIds[0]

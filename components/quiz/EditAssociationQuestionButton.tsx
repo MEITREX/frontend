@@ -11,69 +11,73 @@ import {
   AssociationQuestionModal,
 } from "./AssociationQuestionModal";
 
+const AssociationQuestionMutation = graphql`
+  mutation EditAssociationQuestionButtonMutation(
+    $assessmentId: UUID!
+    $questionInput: UpdateAssociationQuestionInput!
+    $itemInput: ItemInput!
+  ) {
+    mutateQuiz(assessmentId: $assessmentId) {
+      assessmentId
+      updateAssociationQuestion(
+        questionInput: $questionInput
+        assessmentId: $assessmentId
+        item: $itemInput
+      ) {
+        assessmentId
+        questionPool {
+          ...EditAssociationQuestionButtonFragment
+        }
+        # item {
+        #   id
+        #   associatedSkills {
+        #     id
+        #     skillName
+        #   }
+        #   associatedBloomLevels
+        # }
+      }
+    }
+  }
+`;
+
+const AssociationQuestionFragment = graphql`
+  fragment EditAssociationQuestionButtonFragment on AssociationQuestion {
+    itemId
+    text
+    hint
+    correctAssociations {
+      left
+      right
+      feedback
+    }
+  }
+`;
+
+type Props = {
+  _allRecords: MediaRecordSelector$key;
+  _question: EditAssociationQuestionButtonFragment$key;
+  assessmentId: string;
+  item: ItemData;
+  courseId: string;
+};
+
 export function EditAssociationQuestionButton({
   _allRecords,
   _question,
   assessmentId,
   item,
   courseId,
-}: {
-  _allRecords: MediaRecordSelector$key;
-  _question: EditAssociationQuestionButtonFragment$key;
-  assessmentId: string;
-  item: ItemData;
-  courseId: string;
-}) {
+}: Props) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<any>(null);
 
-  const question = useFragment(
-    graphql`
-      fragment EditAssociationQuestionButtonFragment on AssociationQuestion {
-        itemId
-        text
-        hint
-        correctAssociations {
-          left
-          right
-          feedback
-        }
-      }
-    `,
-    _question
-  );
+  const question = useFragment(AssociationQuestionFragment, _question);
 
   const [updateQuestion, isUpdating] =
-    useMutation<EditAssociationQuestionButtonMutation>(graphql`
-      mutation EditAssociationQuestionButtonMutation(
-        $assessmentId: UUID!
-        $questionInput: UpdateAssociationQuestionInput!
-        $itemInput: ItemInput!
-      ) {
-        mutateQuiz(assessmentId: $assessmentId) {
-          assessmentId
-          updateAssociationQuestion(
-            questionInput: $questionInput
-            assessmentId: $assessmentId
-            item: $itemInput
-          ) {
-            assessmentId
-            questionPool {
-              ...EditAssociationQuestionButtonFragment
-            }
-            # item {
-            #   id
-            #   associatedSkills {
-            #     id
-            #     skillName
-            #   }
-            #   associatedBloomLevels
-            # }
-          }
-        }
-      }
-    `);
-
+    useMutation<EditAssociationQuestionButtonMutation>(
+      AssociationQuestionMutation
+    );
   const handleSubmit = (
     data: AssociationQuestionData,
     item: ItemData,

@@ -29,7 +29,7 @@ import {
   useQueryLoader,
 } from "react-relay";
 
-const rootQuery = graphql`
+const RootQuery = graphql`
   query lecturerEditFlashcardsQuery($id: UUID!) {
     contentsByIds(ids: [$id]) {
       id
@@ -54,7 +54,7 @@ const rootQuery = graphql`
   }
 `;
 
-const updateFlashcardSetMutation = graphql`
+const UpdateFlashcardSetMutation = graphql`
   mutation lecturerUpdateFlashcardAssessmentMutation(
     $assessment: UpdateAssessmentInput!
     $contentId: UUID!
@@ -79,7 +79,7 @@ const updateFlashcardSetMutation = graphql`
   }
 `;
 
-export const allSkillQuery = graphql`
+export const AllSkillQuery = graphql`
   query lecturerAllSkillsQuery($courseId: UUID!) {
     coursesByIds(ids: [$courseId]) {
       ...ItemFormSectionNewAllSkillsFragment
@@ -101,15 +101,15 @@ export default function LecturerFlashcards() {
   const { flashcardSetId, courseId } = useParams();
   const [error, setError] = useState<ES2022Error | null>(null);
 
-  const data = useLazyLoadQuery<lecturerEditFlashcardsQuery>(rootQuery, {
+  const data = useLazyLoadQuery<lecturerEditFlashcardsQuery>(RootQuery, {
     id: flashcardSetId,
   });
   const [queryReference, loadQuery] =
-    useQueryLoader<lecturerAllSkillsQuery>(allSkillQuery);
+    useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
 
   const [updateFlashcardSet, isUpdatingFlashcardSet] =
     useMutation<lecturerUpdateFlashcardAssessmentMutation>(
-      updateFlashcardSetMutation
+      UpdateFlashcardSetMutation
     );
 
   const [isEditSetOpen, setEditSetOpen] = useState(false);
@@ -150,7 +150,7 @@ export default function LecturerFlashcards() {
         onError: setError,
         updater(store) {
           console.log("updater @lecturer", store, data);
-          
+
           // TODO re-implement this without relying on query flashcard set data
 
           // Get record of flashcard set

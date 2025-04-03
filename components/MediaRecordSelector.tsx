@@ -131,11 +131,9 @@ export function MediaRecordSelector({
         deleteMediaRecord(id: $id)
       }
     `);
-
-  const courseMediaRecords = coursesByIds[0].mediaRecords;
+  const courseMediaRecords = coursesByIds[0].mediaRecords || [];
 
   const courseMediaRecordIds = courseMediaRecords.map((x) => x.id);
-
   const recordsNotInCourse = userMediaRecords.filter(
     (x) => !courseMediaRecordIds.includes(x.id)
   );

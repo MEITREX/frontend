@@ -1,5 +1,6 @@
 import { AddAssociationQuestionModalMutation } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
+import { useParams } from "next/navigation";
 import { useState } from "react";
 import { graphql, useMutation } from "react-relay";
 import { ItemData } from "../form-sections/ItemFormSection";
@@ -10,17 +11,15 @@ import {
 
 export function AddAssociationQuestionModal({
   _allRecords,
-  assessmentId,
   open,
   onClose,
-  courseId,
 }: {
   _allRecords: MediaRecordSelector$key;
-  assessmentId: string;
   open: boolean;
   onClose: () => void;
-  courseId: string;
 }) {
+  const { quizId, courseId } = useParams();
+
   const [error, setError] = useState<any>(null);
 
   const [addQuestion, isUpdating] =
@@ -63,7 +62,7 @@ export function AddAssociationQuestionModal({
   ) => {
     addQuestion({
       variables: {
-        assessmentId,
+        assessmentId: quizId,
         input: {
           text: data.text,
           hint: data.hint,
@@ -83,7 +82,7 @@ export function AddAssociationQuestionModal({
       ) {
         store.invalidateStore();
 
-        const content = store.get(assessmentId);
+        const content = store.get(quizId);
         const quiz = content?.getLinkedRecord("quiz");
         const allQuestions = questionPool.flatMap((x) => {
           const record = store.get(x.itemId);

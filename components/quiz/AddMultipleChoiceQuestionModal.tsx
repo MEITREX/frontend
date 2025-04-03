@@ -1,81 +1,89 @@
 import { AddMultipleChoiceQuestionModalMutation } from "@/__generated__/AddMultipleChoiceQuestionModalMutation.graphql";
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
-import { useState } from "react";
-import { graphql, useMutation } from "react-relay";
-import { ItemData } from "../form-sections/ItemFormSection";
+import { useError } from "@/app/courses/[courseId]/quiz/[quizId]/lecturer";
+import { useParams } from "next/navigation";
+import { useCallback, useState } from "react";
+import { graphql, PreloadedQuery, useMutation } from "react-relay";
+import { CreateItem } from "../form-sections/item/ItemFormSectionNew";
 import {
   MultipleChoiceQuestionData,
   MultipleChoiceQuestionModal,
 } from "./MutlipleChoiceQuestionModal";
+
+const MultipleChoiceQuestionMutation = graphql`
+  mutation AddMultipleChoiceQuestionModalMutation(
+    $assessmentId: UUID!
+    $input: CreateMultipleChoiceQuestionInputWithoutItem!
+    $item: CreateItemInput!
+  ) {
+    mutateQuiz(assessmentId: $assessmentId) {
+      assessmentId
+      addMultipleChoiceQuestion(
+        questionInput: $input
+        assessmentId: $assessmentId
+        item: $item
+      ) {
+        assessmentId
+        questionPool {
+          itemId
+          type # without type and number, the question will not appear properly and be deletable until a page reload
+          number
+          ...EditMultipleChoiceQuestionButtonFragment
+          ...MultipleChoiceQuestionPreviewFragment
+        }
+        # item {
+        #   id
+        #   associatedSkills {
+        #     id
+        #     skillName
+        #   }
+        #   associatedBloomLevels
+        # }
+      }
+    }
+  }
+`;
+
+type Props = {
+  mediaRecords: MediaRecordSelector$key;
+  allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
+  onClose: () => void;
+  open: boolean;
+};
+
 export function AddMultipleChoiceQuestionModal({
-  _allRecords,
-  assessmentId,
-  courseId,
+  mediaRecords,
+  allSkillsQueryRef,
   open,
   onClose,
-}: {
-  _allRecords: MediaRecordSelector$key;
-  assessmentId: string;
-  courseId: string;
-  open: boolean;
-  onClose: () => void;
-}) {
-  const [error, setError] = useState<any>(null);
+}: Props) {
+  const { quizId } = useParams();
+  const { setError } = useError();
+
+  const [item, setItem] = useState<CreateItem>({
+    associatedSkills: [],
+    associatedBloomLevels: [],
+  });
+  const [questionData, setQuestionData] = useState<MultipleChoiceQuestionData>({
+    text: "",
+    hint: "",
+    answers: [],
+  });
 
   const [addQuestion, isUpdating] =
-    useMutation<AddMultipleChoiceQuestionModalMutation>(graphql`
-      mutation AddMultipleChoiceQuestionModalMutation(
-        $assessmentId: UUID!
-        $input: CreateMultipleChoiceQuestionInputWithoutItem!
-        $item: CreateItemInput!
-      ) {
-        mutateQuiz(assessmentId: $assessmentId) {
-          assessmentId
-          addMultipleChoiceQuestion(
-            questionInput: $input
-            assessmentId: $assessmentId
-            item: $item
-          ) {
-            assessmentId
-            questionPool {
-              itemId
-              type # without type and number, the question will not appear properly and be deletable until a page reload
-              number
-              ...EditMultipleChoiceQuestionButtonFragment
-              ...MultipleChoiceQuestionPreviewFragment
-            }
-            # item {
-            #   id
-            #   associatedSkills {
-            #     id
-            #     skillName
-            #   }
-            #   associatedBloomLevels
-            # }
-          }
-        }
-      }
-    `);
+    useMutation<AddMultipleChoiceQuestionModalMutation>(
+      MultipleChoiceQuestionMutation
+    );
+  const onSubmit = useCallback(() => {
+    const questionUpdate = {
+      assessmentId: quizId,
+      input: questionData,
+      item: item,
+    };
 
-  const handleSubmit = (
-    data: MultipleChoiceQuestionData,
-    item: ItemData,
-    newSkillAdded?: boolean
-  ) => {
     addQuestion({
-      variables: {
-        assessmentId,
-        input: {
-          text: data.text,
-          hint: data.hint,
-          answers: data.answers.map((answer) => ({
-            answerText: answer.answerText,
-            correct: answer.correct,
-            feedback: answer.feedback,
-          })),
-        },
-        item: item,
-      },
+      variables: questionUpdate,
       onCompleted: () => onClose(),
       updater(
         store,
@@ -88,7 +96,7 @@ export function AddMultipleChoiceQuestionModal({
         console.log(store);
         store.invalidateStore();
 
-        const content = store.get(assessmentId);
+        const content = store.get(quizId);
         const quiz = content?.getLinkedRecord("quiz");
         const allQuestions = questionPool.flatMap((x) => {
           const record = store.get(x.itemId);
@@ -118,31 +126,21 @@ export function AddMultipleChoiceQuestionModal({
       onError: setError,
     });
     window.location.reload();
-  };
-
-  const initialValue: MultipleChoiceQuestionData = {
-    text: "",
-    hint: null,
-    answers: [],
-  };
-  const initialItem: ItemData = {
-    associatedSkills: [],
-    associatedBloomLevels: [],
-  };
+  }, [addQuestion, item, onClose, questionData, quizId, setError]);
 
   return (
     <MultipleChoiceQuestionModal
-      _allRecords={_allRecords}
-      open={open}
+      _allRecords={mediaRecords}
+      allSkillsQueryRef={allSkillsQueryRef}
       title="Add multiple choice question"
-      error={error}
-      initialValue={initialValue}
+      open={open}
       isLoading={isUpdating}
-      item={initialItem}
-      courseId={courseId}
-      onSave={handleSubmit}
+      item={item}
+      setItem={setItem}
+      questionData={questionData}
+      setQuestionData={setQuestionData}
+      onSubmit={onSubmit}
       onClose={onClose}
-      clearError={() => setError(null)}
     />
   );
 }

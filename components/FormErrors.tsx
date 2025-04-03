@@ -9,7 +9,7 @@ export interface ES2022Error {
 
 type Props = {
   error: ES2022Error | null;
-  onClose: () => void;
+  onClose?: () => void;
 };
 
 export function FormErrors({ error, onClose }: Props) {
@@ -20,7 +20,7 @@ export function FormErrors({ error, onClose }: Props) {
       {/* this seems to be the actual error type structure: */}
       {(error.cause as { errors: { message: string }[] })?.errors.map(
         (err, i: number) => (
-          <Alert key={i} severity="error" onClose={() => onClose()}>
+          <Alert key={i} severity="error" onClose={onClose}>
             {err?.message}
           </Alert>
         )
