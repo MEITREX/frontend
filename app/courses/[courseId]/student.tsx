@@ -163,6 +163,18 @@ export default function StudentCoursePage() {
     }));
   };
 
+  // Colors for Progressbar
+  function getColorByIndex(index: number): string {
+    const colors = [
+      "#EF4444", "#F97316", "#F59E0B", "#EAB308", "#84CC16",
+      "#22C55E", "#10B981", "#14B8A6", "#06B6D4", "#0EA5E9",
+      "#3B82F6", "#6366F1", "#8B5CF6", "#A855F7", "#D946EF",
+      "#EC4899", "#F43F5E", "#78716C", "#64748B", "#475569",
+      "#334155", "#0F172A", "#172554", "#1E3A8A", "#312E81"
+    ];
+    return colors[index % colors.length];
+  }
+
   return (
     <main>
       <FormErrors error={error} onClose={() => setError(null)} />
@@ -273,48 +285,95 @@ export default function StudentCoursePage() {
       </div>
 
       <div className="competency-progressbars">
-      {/* Remove duplicate Competencies (skillCategories)*/}
-      {Array.from(new Map(course.skills.map((skill) => [skill.skillCategory, skill])).values()).map((uniqueSkill) => {
-      const skillsInCategory = course.skills.filter(skill => skill.skillCategory === uniqueSkill.skillCategory);
+        {/* Remove duplicate Competencies (skillCategories) */}
+        {Array.from(new Map(course.skills.map((skill) => [skill.skillCategory, skill])).values()).map((uniqueSkill) => {
+          const skillsInCategory = course.skills.filter(skill => skill.skillCategory === uniqueSkill.skillCategory);
 
-      // Calculate Progress for competency by adding all skillValues of all skills together
-      const totalCategoryProgress = skillsInCategory.reduce((acc, skill) => 
-        acc + Object.values(skill.skillLevels || {}).reduce((sum, level) => sum + (level?.value || 0), 0), 
-        0
-      );
-      const categoryProgressValue = Math.min(totalCategoryProgress * 100 / skillsInCategory.length, 100); 
+          // Remove duplicates in skills, based on skillName
+          const uniqueSkillsInCategory = Array.from(
+            new Map(skillsInCategory.map(skill => [skill.skillName, skill])).values()
+          );
 
-      return (
-        <div key={uniqueSkill.skillCategory} className="mb-4">
-          <div onClick={() => toggleProgressbar(uniqueSkill.skillCategory)}>
-            <CompetencyProgressbar
-              competencyName={uniqueSkill.skillCategory}
-              heightValue={10}
-              progressValue={categoryProgressValue}
-            />
-          </div>
-          {expandedBars[uniqueSkill.skillCategory] && (
-            <div className="ml-4">
-              {/* Remove duplicate skills */}
-              {Array.from(new Set(skillsInCategory.map(skill => skill.skillName))).map(skillName => {
-                const skill = skillsInCategory.find(s => s.skillName === skillName);
-                const skillProgressValue = Object.values(skill?.skillLevels || {}).reduce((sum, level) => sum + (level?.value || 0), 0) * 100;
+          // Calculate Progress for competency by adding all skillValues of all skills together
+          const totalCategoryProgress = uniqueSkillsInCategory.reduce((acc, skill) =>
+            acc + Object.values(skill.skillLevels || {}).reduce((sum, level) => sum + (level?.value || 0), 0),
+            0
+          );
+          const categoryProgressValue = Math.min(totalCategoryProgress * 100 / uniqueSkillsInCategory.length, 100);
 
-                return (
-                  <CompetencyProgressbar
-                    key={skillName}
-                    competencyName={skillName}
-                    heightValue={7}
-                    progressValue={Math.min(skillProgressValue, 100)}
-                  />
-                );
-              })}
+          // Generate bar sections with individual skill colors and progress values
+          const barSections: { color: string; widthPercent: number }[] = [];
+          let totalProgress = 0;
+
+          uniqueSkillsInCategory.forEach((skill, index) => {
+            const skillProgressValue = Object.values(skill.skillLevels || {}).reduce(
+              (sum, level) => sum + (level?.value || 0),
+              0
+            );
+            const clampedProgress = Math.min(skillProgressValue, 1); // TODO: confirm value calc. currently Value is between 0 and 1?
+            const percent = clampedProgress * 100;
+
+            if (percent > 0) {
+              barSections.push({
+                color: getColorByIndex(index), // Color based on index in the skill array
+                widthPercent: percent,
+              });
+              totalProgress += percent;
+            }
+          });
+
+          // Grey for the rest of the progressbar
+          if (totalProgress < 100) {
+            barSections.push({
+              color: "#E5E7EB",
+              widthPercent: 100 - totalProgress,
+            });
+          }
+
+          return (
+            <div key={uniqueSkill.skillCategory} className="mb-4">
+              <div onClick={() => toggleProgressbar(uniqueSkill.skillCategory)}>
+                <CompetencyProgressbar
+                  competencyName={uniqueSkill.skillCategory}
+                  heightValue={10}
+                  progressValue={categoryProgressValue}
+                  barSections={barSections}
+                />
+              </div>
+              {expandedBars[uniqueSkill.skillCategory] && (
+                <div className="ml-4">
+                  {uniqueSkillsInCategory.map((skill, index) => {
+                    const skillProgressValue = Object.values(skill?.skillLevels || {}).reduce(
+                      (sum, level) => sum + (level?.value || 0),
+                      0
+                    ) * 100;
+
+                    return (
+                      <CompetencyProgressbar
+                        key={skill.skillName}
+                        competencyName={skill.skillName}
+                        heightValue={7}
+                        progressValue={Math.min(skillProgressValue, 100)}
+                        barSections={[
+                          {
+                            color: getColorByIndex(index), // Color based on Index of the skill in the array
+                            widthPercent: Math.min(skillProgressValue, 100),
+                          },
+                          {
+                            color: "#E5E7EB", // rest of progressbar is grey
+                            widthPercent: 100 - Math.min(skillProgressValue, 100),
+                          },
+                        ]}
+                      />
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      );
-    })}
-  </div>
+          );
+        })}
+      </div>
+
 
       <section className="mt-8 mb-20">
         <div className="flex justify-between items-center">
