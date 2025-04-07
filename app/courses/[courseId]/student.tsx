@@ -289,6 +289,7 @@ export default function StudentCoursePage() {
           <div onClick={() => toggleProgressbar(uniqueSkill.skillCategory)}>
             <CompetencyProgressbar
               competencyName={uniqueSkill.skillCategory}
+              heightValue={10}
               progressValue={categoryProgressValue}
             />
           </div>
@@ -303,6 +304,7 @@ export default function StudentCoursePage() {
                   <CompetencyProgressbar
                     key={skillName}
                     competencyName={skillName}
+                    heightValue={7}
                     progressValue={Math.min(skillProgressValue, 100)}
                   />
                 );
