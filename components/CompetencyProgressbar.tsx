@@ -5,17 +5,19 @@ import LinearProgress from '@mui/material/LinearProgress';
 type CompetencyProgressbarProps = {
     competencyName: string;
     progressValue: number;
+    heightValue: number;
   };
 
   export default function CompetencyProgressbar(props: CompetencyProgressbarProps) {
   
   const { competencyName } = props;
   const { progressValue } = props;
+  const { heightValue } = props;
 
   return (
     <Box sx={{ width: '100%' }}>
       <label>{ competencyName }</label>
-      <LinearProgress variant="determinate" value={progressValue}/>
+      <LinearProgress variant="determinate" value={progressValue} sx={{ height: heightValue, borderRadius: 5}}/>
     </Box>
   );
 }
