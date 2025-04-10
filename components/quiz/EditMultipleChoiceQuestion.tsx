@@ -1,5 +1,5 @@
-import { EditMultipleChoiceQuestionButtonFragment$key } from "@/__generated__/EditMultipleChoiceQuestionButtonFragment.graphql";
-import { EditMultipleChoiceQuestionButtonMutation } from "@/__generated__/EditMultipleChoiceQuestionButtonMutation.graphql";
+import { EditMultipleChoiceQuestionFragment$key } from "@/__generated__/EditMultipleChoiceQuestionFragment.graphql";
+import { EditMultipleChoiceQuestionMutation } from "@/__generated__/EditMultipleChoiceQuestionMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
@@ -17,7 +17,7 @@ import {
 } from "./MutlipleChoiceQuestionModal";
 
 const MultipleChoiceQuestionFragment = graphql`
-  fragment EditMultipleChoiceQuestionButtonFragment on MultipleChoiceQuestion {
+  fragment EditMultipleChoiceQuestionFragment on MultipleChoiceQuestion {
     itemId
     item {
       associatedBloomLevels
@@ -40,7 +40,7 @@ const MultipleChoiceQuestionFragment = graphql`
 `;
 
 const MultipleChoiceQuestionMutation = graphql`
-  mutation EditMultipleChoiceQuestionButtonMutation(
+  mutation EditMultipleChoiceQuestionMutation(
     $assessmentId: UUID!
     $questionInput: UpdateMultipleChoiceQuestionInput!
     $item: ItemInput!
@@ -54,7 +54,7 @@ const MultipleChoiceQuestionMutation = graphql`
       ) {
         assessmentId
         questionPool {
-          ...EditMultipleChoiceQuestionButtonFragment
+          ...EditMultipleChoiceQuestionFragment
         }
       }
     }
@@ -62,20 +62,20 @@ const MultipleChoiceQuestionMutation = graphql`
 `;
 
 type Props = {
-  mediaRecords: MediaRecordSelector$key;
+  _allRecords: MediaRecordSelector$key;
   allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
-  question: EditMultipleChoiceQuestionButtonFragment$key;
+  question: EditMultipleChoiceQuestionFragment$key;
   onClose: () => void;
   open: boolean;
 };
 
-export function EditMultipleChoiceQuestionButton({
-  mediaRecords,
+export function EditMultipleChoiceQuestion({
+  _allRecords,
   allSkillsQueryRef,
   question,
   onClose,
   open,
-}: Props) {
+}: Readonly<Props>) {
   const { quizId } = useParams();
   const { setError } = useError();
 
@@ -93,7 +93,7 @@ export function EditMultipleChoiceQuestionButton({
   });
 
   const [updateQuestion, isUpdating] =
-    useMutation<EditMultipleChoiceQuestionButtonMutation>(
+    useMutation<EditMultipleChoiceQuestionMutation>(
       MultipleChoiceQuestionMutation
     );
 
@@ -106,6 +106,7 @@ export function EditMultipleChoiceQuestionButton({
       },
       item: item,
     };
+
     updateQuestion({
       variables: questionUpdate,
       onCompleted: onClose,
@@ -124,7 +125,7 @@ export function EditMultipleChoiceQuestionButton({
 
   return (
     <MultipleChoiceQuestionModal
-      _allRecords={mediaRecords}
+      _allRecords={_allRecords}
       allSkillsQueryRef={allSkillsQueryRef}
       title="Edit multiple choice question"
       open={open}

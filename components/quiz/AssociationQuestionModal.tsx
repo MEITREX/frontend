@@ -1,4 +1,6 @@
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
+import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import { Add, Clear, Feedback } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
 import {
@@ -9,9 +11,13 @@ import {
   DialogTitle,
   IconButton,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
+import { PreloadedQuery } from "react-relay";
 import { Form, FormSection } from "../Form";
-import { ItemData, ItemFormSection } from "../form-sections/ItemFormSection";
+import ItemFormSectionNew, {
+  CreateItem,
+  Item,
+} from "../form-sections/item/ItemFormSectionNew";
 import { FormErrors } from "../FormErrors";
 import { RichTextEditor, serializeToText } from "../RichTextEditor";
 import { EditRichTextButton } from "./EditRichTextButton";
@@ -29,127 +35,131 @@ export type SingleAssociationData = {
   feedback: string | null;
 };
 
+type Props = {
+  _allRecords: MediaRecordSelector$key;
+  allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
+  title: string;
+  open: boolean;
+  isLoading: boolean;
+  item: Item | CreateItem;
+  setItem: Dispatch<SetStateAction<Item | CreateItem>>;
+  questionData: AssociationQuestionData;
+  setQuestionData: Dispatch<SetStateAction<AssociationQuestionData>>;
+  onSubmit: () => void;
+  onClose: () => void;
+};
+
 export function AssociationQuestionModal({
   _allRecords,
-  open,
+  allSkillsQueryRef,
   title,
-  item,
-  courseId,
-  error,
-  initialValue,
+  open,
   isLoading,
-  onSave,
+  item,
+  setItem,
+  questionData,
+  setQuestionData,
   onClose,
-  clearError,
-}: {
-  _allRecords: MediaRecordSelector$key;
-  open: boolean;
-  title: string;
-  error: any;
-  item: ItemData;
-  courseId: string;
-  initialValue: AssociationQuestionData;
-  isLoading: boolean;
-  onSave: (
-    data: AssociationQuestionData,
-    item: ItemData,
-    newSkillAdded?: boolean
-  ) => void;
-  onClose: () => void;
-  clearError: () => void;
-}) {
-  const [data, setData] = useState(initialValue);
-  const [itemForQuestion, setItem] = useState(item);
-  const updateElement = (index: number, value: SingleAssociationData) => {
-    setData((oldValue) => ({
-      ...oldValue,
-      correctAssociations: [
-        ...oldValue.correctAssociations.slice(0, index),
-        value,
-        ...oldValue.correctAssociations.slice(index + 1),
-      ],
-    }));
-  };
-  const addElement = (value: SingleAssociationData) => {
-    setData((oldValue) => ({
-      ...oldValue,
-      correctAssociations: [...oldValue.correctAssociations, value],
-    }));
-  };
-  const deleteElement = (index: number) => {
-    setData((oldValue) => ({
-      ...oldValue,
-      correctAssociations: [
-        ...oldValue.correctAssociations.slice(0, index),
-        ...oldValue.correctAssociations.slice(index + 1),
-      ],
-    }));
-  };
+  onSubmit,
+}: Readonly<Props>) {
+  const { error } = useError();
 
-  const atLeastTwoItems = useMemo(
-    () => data.correctAssociations.length >= 2,
-    [data.correctAssociations]
+  const updateQuestionData = useCallback(
+    <K extends keyof AssociationQuestionData>(
+      key: K,
+      value: AssociationQuestionData[K]
+    ) => {
+      setQuestionData((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
+    },
+    [setQuestionData]
   );
 
-  const hasTitle = !!serializeToText(data.text);
+  const updateCorrectAssociationAt = useCallback(
+    (index: number, value: SingleAssociationData) => {
+      setQuestionData((oldValue) => ({
+        ...oldValue,
+        correctAssociations: [
+          ...oldValue.correctAssociations.slice(0, index),
+          value,
+          ...oldValue.correctAssociations.slice(index + 1),
+        ],
+      }));
+    },
+    [setQuestionData]
+  );
+  const addCorrectAssociation = useCallback(
+    (value: SingleAssociationData) => {
+      setQuestionData((oldValue) => ({
+        ...oldValue,
+        correctAssociations: [...oldValue.correctAssociations, value],
+      }));
+    },
+    [setQuestionData]
+  );
+  const deleteElement = useCallback(
+    (index: number) => {
+      setQuestionData((oldValue) => ({
+        ...oldValue,
+        correctAssociations: [
+          ...oldValue.correctAssociations.slice(0, index),
+          ...oldValue.correctAssociations.slice(index + 1),
+        ],
+      }));
+    },
+    [setQuestionData]
+  );
+
+  const hatAtLeastTwoItems = useMemo(
+    () => questionData.correctAssociations.length >= 2,
+    [questionData.correctAssociations]
+  );
+
+  const hasTitle = !!serializeToText(questionData.text);
 
   const allItemsFilled = useMemo(
     () =>
-      data.correctAssociations.every(
+      questionData.correctAssociations.every(
         (x) => serializeToText(x.left) && serializeToText(x.right)
       ),
-    [data.correctAssociations]
+    [questionData.correctAssociations]
   );
 
   const valid =
     hasTitle &&
-    atLeastTwoItems &&
+    hatAtLeastTwoItems &&
     allItemsFilled &&
-    itemForQuestion.associatedBloomLevels.length > 0 &&
-    itemForQuestion.associatedSkills.length > 0;
+    item.associatedBloomLevels.length > 0 &&
+    item.associatedSkills.length > 0;
 
-  useEffect(() => {
-    if (!open) {
-      setData(initialValue);
-      setItem(item);
-    }
-  }, [open, initialValue, item]);
-
-  function handleItem(itemInput: ItemData | null) {
-    if (itemInput) {
-      setItem(itemInput);
-    } else {
-      setItem({ associatedBloomLevels: [], associatedSkills: [] });
-    }
-    console.log("finished");
-  }
   return (
     <Dialog open={open} maxWidth="lg" onClose={onClose}>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
-        <FormErrors error={error} onClose={clearError} />
+        <FormErrors error={error} />
         <Form>
-          <ItemFormSection
-            courseId={courseId}
-            item={itemForQuestion}
-            onChange={handleItem}
+          <ItemFormSectionNew
+            operation="edit"
+            item={item}
+            setItem={setItem}
+            allSkillsQueryRef={allSkillsQueryRef}
           />
           <FormSection title="Question">
             <RichTextEditor
               className="w-[700px]"
               _allRecords={_allRecords}
               label="Text"
-              initialValue={data.text}
+              initialValue={questionData.text}
               required
-              onChange={(text) =>
-                setData((oldValue) => ({ ...oldValue, text }))
-              }
+              onChange={(text) => updateQuestionData("text", text)}
             />
           </FormSection>
           <FormSection title="Items">
-            {data.correctAssociations.length > 0 && (
+            {questionData.correctAssociations.length > 0 && (
               <div className="flex flex-col gap-8 mb-2">
-                {data.correctAssociations.map((elem, i) => (
+                {questionData.correctAssociations.map((elem, i) => (
                   <div key={i} className="flex items-center">
                     <div className="flex flex-col items-center">
                       <div className="flex items-end relative pl-2">
@@ -161,7 +171,7 @@ export function AssociationQuestionModal({
                           initialValue={elem.left}
                           required
                           onChange={(left) =>
-                            updateElement(i, { ...elem, left })
+                            updateCorrectAssociationAt(i, { ...elem, left })
                           }
                         />
                       </div>
@@ -174,7 +184,7 @@ export function AssociationQuestionModal({
                           initialValue={elem.right}
                           required
                           onChange={(right) =>
-                            updateElement(i, { ...elem, right })
+                            updateCorrectAssociationAt(i, { ...elem, right })
                           }
                         />
                       </div>
@@ -187,7 +197,7 @@ export function AssociationQuestionModal({
                         initialValue={elem.feedback ?? ""}
                         placeholder="Feedback"
                         onSave={(value) =>
-                          updateElement(i, {
+                          updateCorrectAssociationAt(i, {
                             ...elem,
                             feedback:
                               value !==
@@ -209,7 +219,7 @@ export function AssociationQuestionModal({
               <Button
                 startIcon={<Add />}
                 onClick={() =>
-                  addElement({ left: "", right: "", feedback: null })
+                  addCorrectAssociation({ left: "", right: "", feedback: null })
                 }
               >
                 Add item
@@ -218,35 +228,29 @@ export function AssociationQuestionModal({
           </FormSection>
           <HintFormSection
             _allRecords={_allRecords}
-            initialValue={data.hint}
-            onChange={(hint) => {
-              setData((oldData) => ({ ...oldData, hint }));
-            }}
+            initialValue={questionData.hint}
+            onChange={(hint) => updateQuestionData("hint", hint)}
           />
         </Form>
       </DialogContent>
       <DialogActions>
         <div className="text-red-600 text-xs mr-3">
-          {!atLeastTwoItems && <div>Add at least two items</div>}
-          {atLeastTwoItems && !allItemsFilled && (
+          {!hatAtLeastTwoItems && <div>Add at least two items</div>}
+          {hatAtLeastTwoItems && !allItemsFilled && (
             <div>All items need a text</div>
           )}
           {!hasTitle && <div>A title is required</div>}
-          {itemForQuestion.associatedBloomLevels.length < 1 && (
+          {item.associatedBloomLevels.length < 1 && (
             <div>Level of Blooms Taxonomy are required</div>
           )}
-          {itemForQuestion.associatedSkills.length < 1 && (
+          {item.associatedSkills.length < 1 && (
             <div>At least one skill is required</div>
           )}
         </div>
         <Button disabled={isLoading} onClick={onClose}>
           Cancel
         </Button>
-        <LoadingButton
-          disabled={!valid}
-          loading={isLoading}
-          onClick={() => onSave(data, itemForQuestion)}
-        >
+        <LoadingButton disabled={!valid} loading={isLoading} onClick={onSubmit}>
           Save
         </LoadingButton>
       </DialogActions>

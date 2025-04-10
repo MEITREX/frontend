@@ -1,84 +1,86 @@
 import { AddClozeQuestionModalMutation } from "@/__generated__/AddClozeQuestionModalMutation.graphql";
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
-import { useState } from "react";
-import { graphql, useMutation } from "react-relay";
-import { ItemData } from "../form-sections/ItemFormSection";
+import { useError } from "@/app/courses/[courseId]/quiz/[quizId]/lecturer";
+import { useParams } from "next/navigation";
+import { useCallback, useState } from "react";
+import { graphql, PreloadedQuery, useMutation } from "react-relay";
+import { CreateItem } from "../form-sections/item/ItemFormSectionNew";
 import { ClozeQuestionData, ClozeQuestionModal } from "./ClozeQuestionModal";
+
+const ClozeQuestionMutation = graphql`
+  mutation AddClozeQuestionModalMutation(
+    $assessmentId: UUID!
+    $input: CreateClozeQuestionInputWithoutItem!
+    $item: CreateItemInput!
+  ) {
+    mutateQuiz(assessmentId: $assessmentId) {
+      assessmentId
+      addClozeQuestion(
+        assessmentId: $assessmentId
+        questionInput: $input
+        item: $item
+      ) {
+        assessmentId
+        questionPool {
+          itemId
+          type # without type and number, the question will not appear properly and be deletable until a page reload
+          number
+          ...ClozeQuestionPreviewFragment
+        }
+        # item {
+        #   id
+        #   associatedSkills {
+        #     id
+        #     skillName
+        #   }
+        #   associatedBloomLevels
+        # }
+      }
+    }
+  }
+`;
+
+type Props = {
+  _allRecords: MediaRecordSelector$key;
+  allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
+  onClose: () => void;
+  open: boolean;
+};
 
 export function AddClozeQuestionModal({
   _allRecords,
-  assessmentId,
-  courseId,
   open,
   onClose,
-}: {
-  _allRecords: MediaRecordSelector$key;
-  assessmentId: string;
-  courseId: string;
-  open: boolean;
-  onClose: () => void;
-}) {
-  const [error, setError] = useState<any>(null);
+  allSkillsQueryRef,
+}: Readonly<Props>) {
+  const { quizId } = useParams();
+  const { setError } = useError();
 
-  const [addQuestion, isUpdating] =
-    useMutation<AddClozeQuestionModalMutation>(graphql`
-      mutation AddClozeQuestionModalMutation(
-        $assessmentId: UUID!
-        $questionInput: CreateClozeQuestionInputWithoutItem!
-        $item: CreateItemInput!
-      ) {
-        mutateQuiz(assessmentId: $assessmentId) {
-          assessmentId
-          addClozeQuestion(
-            assessmentId: $assessmentId
-            questionInput: $questionInput
-            item: $item
-          ) {
-            assessmentId
-            questionPool {
-              itemId
-              type # without type and number, the question will not appear properly and be deletable until a page reload
-              number
-              ...EditClozeQuestionButtonFragment
-              ...ClozeQuestionPreviewFragment
-            }
-            # item {
-            #   id
-            #   associatedSkills {
-            #     id
-            #     skillName
-            #   }
-            #   associatedBloomLevels
-            # }
-          }
-        }
-      }
-    `);
+  const [item, setItem] = useState<CreateItem>({
+    associatedSkills: [],
+    associatedBloomLevels: [],
+  });
+  const [questionData, setQuestionData] = useState<ClozeQuestionData>({
+    showBlanksList: true,
+    clozeElements: [],
+    additionalWrongAnswers: [],
+    hint: null,
+  });
 
-  const handleSubmit = (
-    data: ClozeQuestionData,
-    item: ItemData,
-    newSkillAdded?: boolean
-  ) => {
+  const [addQuestion, isUpdating] = useMutation<AddClozeQuestionModalMutation>(
+    ClozeQuestionMutation
+  );
+
+  const onSubmit = useCallback(() => {
+    const questionUpdate = {
+      assessmentId: quizId,
+      input: questionData,
+      item: item,
+    };
+
     addQuestion({
-      variables: {
-        assessmentId,
-        questionInput: {
-          hint: data.hint,
-          showBlanksList: data.showBlanksList,
-          additionalWrongAnswers: data.additionalWrongAnswers,
-          clozeElements: data.clozeElements.map((elem) =>
-            elem.type === "text"
-              ? { type: "TEXT", text: elem.text }
-              : {
-                  type: "BLANK",
-                  correctAnswer: elem.correctAnswer,
-                  feedback: elem.feedback,
-                }
-          ),
-        },
-        item: item,
-      },
+      variables: questionUpdate,
       onCompleted: () => onClose(),
       updater(
         store,
@@ -90,7 +92,7 @@ export function AddClozeQuestionModal({
       ) {
         store.invalidateStore();
 
-        const content = store.get(assessmentId);
+        const content = store.get(quizId);
         const quiz = content?.getLinkedRecord("quiz");
         const allQuestions = questionPool.flatMap((x) => {
           const record = store.get(x.itemId);
@@ -117,31 +119,22 @@ export function AddClozeQuestionModal({
       },
       onError: setError,
     });
-  };
+    window.location.reload();
+  }, [addQuestion, item, onClose, questionData, quizId, setError]);
 
-  const initialValue: ClozeQuestionData = {
-    hint: null,
-    showBlanksList: true,
-    additionalWrongAnswers: [],
-    clozeElements: [],
-  };
-  const initialItem: ItemData = {
-    associatedSkills: [],
-    associatedBloomLevels: [],
-  };
   return (
     <ClozeQuestionModal
       _allRecords={_allRecords}
       open={open}
       title="Add cloze question"
-      error={error}
-      initialValue={initialValue}
-      item={initialItem}
+      item={item}
       isLoading={isUpdating}
-      courseId={courseId}
-      onSave={handleSubmit}
+      onSubmit={onSubmit}
       onClose={onClose}
-      clearError={() => setError(null)}
+      questionData={questionData}
+      setItem={setItem}
+      setQuestionData={setQuestionData}
+      allSkillsQueryRef={allSkillsQueryRef}
     />
   );
 }

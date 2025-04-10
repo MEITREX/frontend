@@ -35,10 +35,7 @@ const RootQuery = graphql`
             number
             ...MultipleChoiceQuestionPreviewFragment
             ...ClozeQuestionPreviewFragment
-            ...EditMultipleChoiceQuestionButtonFragment
             ...AssociationQuestionPreviewFragment
-            ...EditClozeQuestionButtonFragment
-            ...EditAssociationQuestionButtonFragment
           }
           ...QuizModalFragment
         }

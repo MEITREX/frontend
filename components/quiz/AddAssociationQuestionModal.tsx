@@ -1,76 +1,89 @@
 import { AddAssociationQuestionModalMutation } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
+import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import { useParams } from "next/navigation";
-import { useState } from "react";
-import { graphql, useMutation } from "react-relay";
-import { ItemData } from "../form-sections/ItemFormSection";
+import { useCallback, useState } from "react";
+import { graphql, PreloadedQuery, useMutation } from "react-relay";
+import { CreateItem } from "../form-sections/item/ItemFormSectionNew";
 import {
   AssociationQuestionData,
   AssociationQuestionModal,
 } from "./AssociationQuestionModal";
 
+const AssociationQuestionMutation = graphql`
+  mutation AddAssociationQuestionModalMutation(
+    $input: CreateAssociationQuestionInputWithoutItem!
+    $assessmentId: UUID!
+    $item: CreateItemInput!
+  ) {
+    mutateQuiz(assessmentId: $assessmentId) {
+      assessmentId
+      addAssociationQuestion(
+        questionInput: $input
+        assessmentId: $assessmentId
+        item: $item
+      ) {
+        questionPool {
+          itemId
+          type # without type and number, the question will not appear properly and be deletable until a page reload
+          number
+          ...AssociationQuestionPreviewFragment
+        }
+        # item {
+        #   id
+        #   associatedSkills {
+        #     id
+        #     skillName
+        #   }
+        #   associatedBloomLevels
+        # }
+      }
+    }
+  }
+`;
+
+type Props = {
+  _allRecords: MediaRecordSelector$key;
+  allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
+  onClose: () => void;
+  open: boolean;
+};
+
 export function AddAssociationQuestionModal({
   _allRecords,
+  allSkillsQueryRef,
   open,
   onClose,
-}: {
-  _allRecords: MediaRecordSelector$key;
-  open: boolean;
-  onClose: () => void;
-}) {
-  const { quizId, courseId } = useParams();
+}: Readonly<Props>) {
+  const { quizId } = useParams();
+  const { setError } = useError();
 
-  const [error, setError] = useState<any>(null);
+  const [item, setItem] = useState<CreateItem>({
+    associatedSkills: [],
+    associatedBloomLevels: [],
+  });
+  const [questionData, setQuestionData] = useState<AssociationQuestionData>({
+    text: "",
+    hint: "",
+    correctAssociations: [],
+  });
 
   const [addQuestion, isUpdating] =
-    useMutation<AddAssociationQuestionModalMutation>(graphql`
-      mutation AddAssociationQuestionModalMutation(
-        $input: CreateAssociationQuestionInputWithoutItem!
-        $assessmentId: UUID!
-        $item: CreateItemInput!
-      ) {
-        mutateQuiz(assessmentId: $assessmentId) {
-          assessmentId
-          addAssociationQuestion(
-            questionInput: $input
-            assessmentId: $assessmentId
-            item: $item
-          ) {
-            questionPool {
-              itemId
-              type # without type and number, the question will not appear properly and be deletable until a page reload
-              number
-              ...AssociationQuestionPreviewFragment
-            }
-            # item {
-            #   id
-            #   associatedSkills {
-            #     id
-            #     skillName
-            #   }
-            #   associatedBloomLevels
-            # }
-          }
-        }
-      }
-    `);
+    useMutation<AddAssociationQuestionModalMutation>(
+      AssociationQuestionMutation
+    );
 
-  const handleSubmit = (
-    data: AssociationQuestionData,
-    item: ItemData,
-    newSkillAdded?: boolean
-  ) => {
+  const onSubmit = useCallback(() => {
+    const questionUpdate = {
+      assessmentId: quizId,
+      input: questionData,
+      item: item,
+    };
+
     addQuestion({
-      variables: {
-        assessmentId: quizId,
-        input: {
-          text: data.text,
-          hint: data.hint,
-          correctAssociations: data.correctAssociations,
-        },
-        item: item,
-      },
-      onCompleted: () => onClose(),
+      variables: questionUpdate,
+      onCompleted: onClose,
       onError: setError,
       updater(
         store,
@@ -108,30 +121,22 @@ export function AddAssociationQuestionModal({
           ?.setLinkedRecords([...items, newItem], "elements");
       },
     });
-  };
-  const initialItem: ItemData = {
-    associatedSkills: [],
-    associatedBloomLevels: [],
-  };
-  const initialValue: AssociationQuestionData = {
-    text: "",
-    hint: null,
-    correctAssociations: [],
-  };
+    window.location.reload();
+  }, [addQuestion, item, onClose, questionData, quizId, setError]);
 
   return (
     <AssociationQuestionModal
-      _allRecords={_allRecords}
-      open={open}
       title="Add association question"
-      error={error}
-      courseId={courseId}
-      item={initialItem}
-      initialValue={initialValue}
+      _allRecords={_allRecords}
+      allSkillsQueryRef={allSkillsQueryRef}
+      open={open}
       isLoading={isUpdating}
-      onSave={handleSubmit}
+      item={item}
+      setItem={setItem}
+      questionData={questionData}
+      setQuestionData={setQuestionData}
+      onSubmit={onSubmit}
       onClose={onClose}
-      clearError={() => setError(null)}
     />
   );
 }

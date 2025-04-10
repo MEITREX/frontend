@@ -82,24 +82,22 @@ export function AddQuestionButton({
       </Dialog>
 
       <AddMultipleChoiceQuestionModal
-        mediaRecords={_allRecords}
+        _allRecords={_allRecords}
         open={addMultipleChoice}
         onClose={() => setAddMultipleChoice(false)}
         allSkillsQueryRef={allSkillsQueryRef}
       />
       <AddClozeQuestionModal
         _allRecords={_allRecords}
-        assessmentId={assessmentId}
-        courseId={courseId}
         open={addCloze}
         onClose={() => setAddCloze(false)}
+        allSkillsQueryRef={allSkillsQueryRef}
       />
       <AddAssociationQuestionModal
         _allRecords={_allRecords}
-        assessmentId={assessmentId}
-        courseId={courseId}
         open={addAssociation}
         onClose={() => setAddAssociation(false)}
+        allSkillsQueryRef={allSkillsQueryRef}
       />
     </>
   );

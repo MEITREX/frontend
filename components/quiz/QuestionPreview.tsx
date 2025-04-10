@@ -18,7 +18,9 @@ import { RenderRichText } from "../RichTextEditor";
 import { AssociationQuestionPreview } from "./AssociationQuestionPreview";
 import { ClozeQuestionPreview } from "./ClozeQuestionPreview";
 import { DeleteQuestionButton } from "./DeleteQuestionButton";
-import { EditMultipleChoiceQuestionButton } from "./EditMultipleChoiceQuestionButton";
+import { EditAssociationQuestion } from "./EditAssociationQuestion";
+import { EditClozeQuestion } from "./EditClozeQuestion";
+import { EditMultipleChoiceQuestion } from "./EditMultipleChoiceQuestion";
 import { MultipleChoiceQuestionPreview } from "./MultipleChoiceQuestionPreview";
 
 const QuestionFragment = graphql`
@@ -29,6 +31,7 @@ const QuestionFragment = graphql`
     itemId
     ... on AssociationQuestion {
       ...AssociationQuestionPreviewFragment
+      ...EditAssociationQuestionFragment
       type
       text
 
@@ -45,7 +48,7 @@ const QuestionFragment = graphql`
     }
     ... on MultipleChoiceQuestion {
       ...MultipleChoiceQuestionPreviewFragment
-      ...EditMultipleChoiceQuestionButtonFragment
+      ...EditMultipleChoiceQuestionFragment
       type
       text
 
@@ -62,7 +65,13 @@ const QuestionFragment = graphql`
     }
     ... on ClozeQuestion {
       ...ClozeQuestionPreviewFragment
+      ...EditClozeQuestionFragment
       type
+      clozeElements {
+        ... on ClozeBlankElement {
+          correctAnswer
+        }
+      }
 
       item {
         id
@@ -134,8 +143,8 @@ const QuestionPreview = ({
       </IconButton>
 
       {openEditModal === "MULTIPLE_CHOICE" && (
-        <EditMultipleChoiceQuestionButton
-          mediaRecords={mediaRecords}
+        <EditMultipleChoiceQuestion
+          _allRecords={mediaRecords}
           allSkillsQueryRef={allSkillsQueryRef}
           onClose={() => setOpenEditModal(null)}
           open={openEditModal === "MULTIPLE_CHOICE"}
@@ -148,6 +157,24 @@ const QuestionPreview = ({
         assessmentId={quizId}
         questionId={data.itemId}
       />
+      {openEditModal === "CLOZE" && (
+        <EditClozeQuestion
+          _allRecords={mediaRecords}
+          allSkillsQueryRef={allSkillsQueryRef}
+          onClose={() => setOpenEditModal(null)}
+          open={openEditModal === "CLOZE"}
+          question={data}
+        />
+      )}
+      {openEditModal === "ASSOCIATION" && (
+        <EditAssociationQuestion
+          _allRecords={mediaRecords}
+          allSkillsQueryRef={allSkillsQueryRef}
+          onClose={() => setOpenEditModal(null)}
+          open={openEditModal === "ASSOCIATION"}
+          question={data}
+        />
+      )}
     </div>
   );
 };

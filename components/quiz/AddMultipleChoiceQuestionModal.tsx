@@ -29,7 +29,6 @@ const MultipleChoiceQuestionMutation = graphql`
           itemId
           type # without type and number, the question will not appear properly and be deletable until a page reload
           number
-          ...EditMultipleChoiceQuestionButtonFragment
           ...MultipleChoiceQuestionPreviewFragment
         }
         # item {
@@ -46,18 +45,18 @@ const MultipleChoiceQuestionMutation = graphql`
 `;
 
 type Props = {
-  mediaRecords: MediaRecordSelector$key;
+  _allRecords: MediaRecordSelector$key;
   allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
   onClose: () => void;
   open: boolean;
 };
 
 export function AddMultipleChoiceQuestionModal({
-  mediaRecords,
+  _allRecords,
   allSkillsQueryRef,
   open,
   onClose,
-}: Props) {
+}: Readonly<Props>) {
   const { quizId } = useParams();
   const { setError } = useError();
 
@@ -130,7 +129,7 @@ export function AddMultipleChoiceQuestionModal({
 
   return (
     <MultipleChoiceQuestionModal
-      _allRecords={mediaRecords}
+      _allRecords={_allRecords}
       allSkillsQueryRef={allSkillsQueryRef}
       title="Add multiple choice question"
       open={open}

@@ -85,10 +85,11 @@ const ItemFormSectionAutocompletes = ({
   SKILL_CATEGORY_ABBREVIATION,
 }: Props) => {
   const { coursesByIds } = usePreloadedQuery(AllSkillQuery, allSkillsQueryRef);
+  // FIXME: after waiting some time, this turns undefined?!
   const { skills: skillsAvailable } = useFragment(
     itemFormSectionFragment,
     coursesByIds[0]
-  ) as { skills: ItemSkill[] };
+  ) as { skills: ItemSkill[] | undefined };
 
   const [newSkillCategory, setNewSkillCategory] = useState<Omit<
     SkillCategoryInAutocomplete,
@@ -131,7 +132,7 @@ const ItemFormSectionAutocompletes = ({
       occurrenceReducer,
       new Map<string, number>()
     );
-    const occurrencesAvailable = skillsAvailable.reduce(
+    const occurrencesAvailable = (skillsAvailable || []).reduce(
       occurrenceReducer,
       new Map<string, number>()
     );
@@ -146,7 +147,7 @@ const ItemFormSectionAutocompletes = ({
               isCustomSkillCategory: !SKILL_CATALOGUE[s.skillCategory],
             })
         ),
-        ...skillsAvailable.map(
+        ...(skillsAvailable || []).map(
           (s) =>
             new SkillCategoryRecord({
               skillCategory: s.skillCategory,
@@ -217,7 +218,7 @@ const ItemFormSectionAutocompletes = ({
       });
 
     let skillsSelectable = SetIm<SkillInAutocomplete>();
-    const skillsAvailableInCurrentCategoryFromCourse = skillsAvailable
+    const skillsAvailableInCurrentCategoryFromCourse = (skillsAvailable || [])
       .filter((skill) => skill.skillCategory === newSkillCategory.skillCategory)
       .map(mapSkillToImmutableRecord);
     const skillsAvailableInCurrentCategory = skillsSelected
@@ -297,7 +298,7 @@ const ItemFormSectionAutocompletes = ({
 
     let skillsSelectable = SetIm<SkillAndCategoryInAutocomplete>();
     skillsSelectable = skillsSelectable.union(
-      skillsAvailable.map(mapToImmutableRecord),
+      (skillsAvailable || []).map(mapToImmutableRecord),
       skillsSelected.map(mapToImmutableRecord),
       skillCatalogueFlattened
     );

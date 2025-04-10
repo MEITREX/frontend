@@ -60,7 +60,7 @@ export function MultipleChoiceQuestionModal({
   setQuestionData,
   onSubmit,
   onClose,
-}: Props) {
+}: Readonly<Props>) {
   const { error } = useError();
 
   const updateQuestionData = useCallback(
@@ -163,7 +163,7 @@ export function MultipleChoiceQuestionModal({
             <FormSection title={`Answer ${i + 1}`} key={i}>
               <RichTextEditor
                 _allRecords={_allRecords}
-                initialValue={answer.answerText!}
+                initialValue={answer.answerText}
                 onChange={(answerText) =>
                   updateQuestionAnswerAt(i, { ...answer, answerText })
                 }
