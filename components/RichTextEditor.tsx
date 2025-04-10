@@ -680,17 +680,22 @@ function Leaf({
   return <span {...attributes}>{children}</span>;
 }
 
-export function RenderRichText({ value }: { value: string | undefined }) {
+type RenderRichTextProps = {
+  value: string | undefined;
+  className?: string;
+};
+
+export function RenderRichText({ value, className }: RenderRichTextProps) {
   if (!value) return null;
 
   const parsed = parseFromString(value);
 
   return (
-    <>
+    <div className={className}>
       {parsed.map((x, idx) => (
         <RecursiveRichText key={idx} val={x}></RecursiveRichText>
       ))}
-    </>
+    </div>
   );
 }
 
