@@ -4,6 +4,7 @@ import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.g
 import {
   Checkbox,
   Chip,
+  Divider,
   FormControl,
   InputLabel,
   ListItemText,
@@ -67,6 +68,16 @@ export const mapRelayItemToItem = (
   associatedBloomLevels: relayItem.item.associatedBloomLevels as BloomLevel[],
 });
 
+const BLOOM_TAXONOMY_COLORS: Record<BloomLevel, string> = {
+  REMEMBER: "#FF0000",
+  UNDERSTAND: "#FF7F00",
+  APPLY: "#FFFF00",
+  ANALYZE: "#7FFF00",
+  EVALUATE: "#00FF00",
+  CREATE: "#00FF7F",
+  "%future added value": "#FFFFFF",
+} as const;
+
 export const itemFormSectionFragment = graphql`
   fragment ItemFormSectionNewAllSkillsFragment on Course {
     skills {
@@ -121,7 +132,54 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
 
   const skillsSelected = item.associatedSkills;
 
-  return (
+  return operation === "view" ? (
+    <Stack
+      id="skills-selected"
+      direction="row"
+      alignItems="center"
+      minWidth="250px"
+      sx={{
+        alignItems: "start",
+        flexWrap: "wrap",
+        gap: 1,
+      }}
+    >
+      {item.associatedBloomLevels.map((level, i) => (
+        <Chip
+          key={level}
+          sx={{
+            backgroundColor: BLOOM_TAXONOMY_COLORS[level] + "45",
+            border: `solid 1px ${BLOOM_TAXONOMY_COLORS[level] + "48"}`,
+          }}
+          label={level[0].toUpperCase() + level.slice(1).toLowerCase()}
+          title="Bloom Taxonomy"
+        />
+      ))}
+      <Divider
+        flexItem
+        orientation="vertical"
+        sx={{ margin: "0 4px", height: "32px" }}
+      />
+      {skillsSelected.map((skill, i) => (
+        <Chip
+          key={`${skill.skillCategory}-${skill.skillName}`}
+          sx={{
+            maxWidth: "200px",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+          }}
+          title={skill.skillCategory + ": " + skill.skillName}
+          label={
+            (SKILL_CATEGORY_ABBREVIATION[skill.skillCategory] ||
+              skill.skillCategory) +
+            ": " +
+            skill.skillName
+          }
+        />
+      ))}
+    </Stack>
+  ) : (
     <FormSection title="Item Information">
       <FormControl variant="outlined">
         <InputLabel htmlFor="assessmentBloomLevelsInput">
@@ -129,7 +187,6 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
         </InputLabel>
 
         <Select
-          disabled={!isEditable}
           // prevent selection text from
           sx={{
             ".Mui-disabled": {
@@ -162,7 +219,7 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
           multiple
         >
           {BLOOM_LEVELS.map((level, i) => (
-            <MenuItem value={level} key={i}>
+            <MenuItem value={level} key={level}>
               <Checkbox
                 checked={item.associatedBloomLevels.indexOf(level) !== -1}
               />

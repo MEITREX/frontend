@@ -5,7 +5,7 @@ import {
   QuestionPreviewFragment$key,
 } from "@/__generated__/QuestionPreviewFragment.graphql";
 import { Edit } from "@mui/icons-material";
-import { IconButton } from "@mui/material";
+import { Button } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { PreloadedQuery, useFragment } from "react-relay";
@@ -119,26 +119,41 @@ const QuestionPreview = ({
     useState<ImplementedQuestionTypes | null>(null);
 
   return (
-    <div className="flex flex-col gap-2">
-      <RenderRichText value={data.text ?? "Cloze??"} />
+    <>
+      <div className="flex flex-col gap-2 mb-8">
+        <div className="flex justify-between">
+          <div className="flex flex-col gap-2 xl:flex-row max-lg:pr-4">
+            {data.text ? (
+              <RenderRichText
+                value={data.text}
+                className="text-xl font-bold self-start mr-4"
+              />
+            ) : (
+              <span className="text-xl font-bold mr-4">
+                Clozure: {data.clozeElements![1].correctAnswer}
+              </span>
+            )}
+            <ItemFormSection operation="view" item={item} />
+          </div>
 
-      <ItemFormSection operation="view" item={item} />
+          <div className="flex flex-row justify-between gap-x-2 self-start min-w-fit">
+            <Button startIcon={<Edit />} sx={{ minWidth: "fit-content" }}>
+              <span className="max-lg:hidden">Edit</span>
+            </Button>
+            <DeleteQuestionButton num={data.number} assessmentId={quizId} />
+          </div>
+        </div>
 
-      <div className="flex flex-col gap-2">
-        {data.type === "ASSOCIATION" ? (
-          <AssociationQuestionPreview question={data} />
-        ) : data.type === "MULTIPLE_CHOICE" ? (
-          <MultipleChoiceQuestionPreview question={data} />
-        ) : data.type === "CLOZE" ? (
-          <ClozeQuestionPreview question={data} />
-        ) : null}
+        <div className="flex flex-col gap-2 items-start ml-2">
+          {data.type === "ASSOCIATION" ? (
+            <AssociationQuestionPreview question={data} />
+          ) : data.type === "MULTIPLE_CHOICE" ? (
+            <MultipleChoiceQuestionPreview question={data} />
+          ) : data.type === "CLOZE" ? (
+            <ClozeQuestionPreview question={data} />
+          ) : null}
+        </div>
       </div>
-
-      <IconButton
-        onClick={() => setOpenEditModal(data.type as ImplementedQuestionTypes)}
-      >
-        <Edit fontSize="small" />
-      </IconButton>
 
       {openEditModal === "MULTIPLE_CHOICE" && (
         <EditMultipleChoiceQuestion
@@ -150,7 +165,6 @@ const QuestionPreview = ({
         />
       )}
 
-      <DeleteQuestionButton num={data.number} assessmentId={quizId} />
       {openEditModal === "CLOZE" && (
         <EditClozeQuestion
           _allRecords={mediaRecords}
@@ -169,7 +183,7 @@ const QuestionPreview = ({
           question={data}
         />
       )}
-    </div>
+    </>
   );
 };
 
