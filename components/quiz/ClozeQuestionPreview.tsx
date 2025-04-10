@@ -17,6 +17,7 @@ const ClozeQuestionPreviewFragment = graphql`
     }
     allBlanks
     showBlanksList
+    hint
   }
 `;
 
@@ -47,15 +48,23 @@ export function ClozeQuestionPreview({ question }: Props) {
         ) : null
       )}
 
+      {data.hint && (
+        <div className="flex justify-start flex-wrap gap-2 mt-2">
+          Hint:
+          <RenderRichText value={data.hint} />
+        </div>
+      )}
+
       {data.showBlanksList && (
-        <div className="max-w-sm flex justify-start gap-2 mt-4 flex-wrap">
+        <div className="max-w-sm flex justify-start gap-2 flex-wrap mt-2">
+          Blanks:
           {data.allBlanks.map((value, i) => (
-            <div
+            <span
               key={i}
               className="border border-gray-300 rounded-sm px-2 min-h-[1rem]"
             >
               {value}
-            </div>
+            </span>
           ))}
         </div>
       )}

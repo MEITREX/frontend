@@ -1,7 +1,7 @@
 import { DeleteQuestionButtonMutation } from "@/__generated__/DeleteQuestionButtonMutation.graphql";
 import { questionUpdaterDeleteClosure } from "@/src/relay-helpers/question";
 import { Delete } from "@mui/icons-material";
-import { IconButton } from "@mui/material";
+import { Button } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useCallback } from "react";
 import { graphql, useMutation } from "react-relay";
@@ -35,11 +35,15 @@ export function DeleteQuestionButton({ assessmentId, num }: Props) {
       onError: setError,
       updater: questionUpdaterDeleteClosure(quizId, num, courseId),
     });
-  }, []);
+  }, [assessmentId, courseId, deleteQuestion, num, quizId, setError]);
 
   return (
-    <IconButton onClick={() => handleDelete()}>
-      <Delete fontSize="small" />
-    </IconButton>
+    <Button
+      startIcon={<Delete />}
+      onClick={() => handleDelete()}
+      sx={{ minWidth: "fit-content", color: "red" }}
+    >
+      <span className="max-lg:hidden">Delete</span>
+    </Button>
   );
 }

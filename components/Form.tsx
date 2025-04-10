@@ -16,16 +16,13 @@ export function FormSection({
   children?: ReactNode;
 }) {
   return (
-    <>
-      <FormDivider />
-      <div>
-        <Typography className="pl-4 pt-2">{title}</Typography>
-        <div className="pl-4 pt-2 !max-w-[200px] w-max break-words text-[10px] text-gray-500">
-          {subtitle}
-        </div>
+    <div>
+      <Typography className="pt-2">{title}</Typography>
+      <div className="pl-4 pt-3 !max-w-[200px] w-max break-words text-[10px] text-gray-500">
+        {subtitle}
       </div>
       <div className="flex flex-col gap-3 items-start pr-4">{children}</div>
-    </>
+    </div>
   );
 }
 

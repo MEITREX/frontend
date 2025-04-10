@@ -51,7 +51,7 @@ const Flashcard = (props: FlashcardProps) => {
 
         {/* Prop destructuring is fix for type error */}
         <ItemFormSection {...(isItemEditable(props) ? props : props)} />
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mt-4">
           {flashcardSides.map((currentSide, i) => (
             <FlashcardSide
               key={`flashcard-${title}-side-${i}`}
