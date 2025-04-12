@@ -1,13 +1,13 @@
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { lecturerEditQuizQuery } from "@/__generated__/lecturerEditQuizQuery.graphql";
-import { ES2022Error } from "@/components/FormErrors";
+import { ErrorContext, ES2022Error } from "@/components/ErrorContext";
 import { PageError } from "@/components/PageError";
 import { QuizModal } from "@/components/QuizModal";
 import { AddQuestionButton } from "@/components/quiz/AddQuestionButton";
 import LecturerQuizHeader from "@/components/quiz/LecturerQuizHeader";
 import QuestionPreview from "@/components/quiz/QuestionPreview";
 import { useParams } from "next/navigation";
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { graphql, useLazyLoadQuery, useQueryLoader } from "react-relay";
 import { AllSkillQuery } from "../../flashcards/[flashcardSetId]/lecturer";
 
@@ -54,19 +54,10 @@ const RootQuery = graphql`
   }
 `;
 
-interface ErrorContextProps {
-  error: ES2022Error | null;
-  setError: (error: ES2022Error | null) => void;
-}
-const ErrorContext = createContext<ErrorContextProps>({
-  error: null,
-  setError: () => {},
-});
-export const useError = () => useContext(ErrorContext);
-
 export default function LecturerQuiz() {
   const { quizId, courseId } = useParams();
   const [error, setError] = useState<ES2022Error | null>(null);
+  const errorContext = useMemo(() => ({ error, setError }), [error, setError]);
 
   const { contentsByIds, ...mediaSelectorQuery } =
     useLazyLoadQuery<lecturerEditQuizQuery>(RootQuery, {
@@ -96,7 +87,7 @@ export default function LecturerQuiz() {
   }
   return (
     <main>
-      <ErrorContext.Provider value={{ error, setError }}>
+      <ErrorContext.Provider value={errorContext}>
         <LecturerQuizHeader
           openEditQuizModal={() => setEditSetModalOpen(true)}
           content={content}

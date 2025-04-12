@@ -4,13 +4,13 @@ import {
   BloomLevel,
   QuestionPreviewFragment$key,
 } from "@/__generated__/QuestionPreviewFragment.graphql";
-import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import { Edit } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { PreloadedQuery, useFragment } from "react-relay";
 import { graphql } from "relay-runtime";
+import { useError } from "../ErrorContext";
 import ItemFormSectionNew, {
   Item,
 } from "../form-sections/item/ItemFormSectionNew";

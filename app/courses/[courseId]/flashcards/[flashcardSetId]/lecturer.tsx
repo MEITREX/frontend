@@ -5,23 +5,18 @@ import { lecturerUpdateFlashcardAssessmentMutation } from "@/__generated__/lectu
 import { AssessmentMetadataPayload } from "@/components/AssessmentMetadataFormSection";
 import { ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
 import { EditFlashcardSetModal } from "@/components/EditFlashcardSetModal";
-import { ES2022Error } from "@/components/FormErrors";
+import { ErrorContext, ES2022Error } from "@/components/ErrorContext";
 import { PageError } from "@/components/PageError";
 import { AddFlashcard } from "@/components/flashcard/AddFlashcard";
 import { EditFlashcard } from "@/components/flashcard/EditFlashcard";
 import FlashcardView from "@/components/flashcard/FlashcardView";
 import LecturerFlashcardHeader from "@/components/flashcard/LecturerFlashcardHeader";
 import SuccessSnackbar from "@/components/flashcard/SuccessSnackbar";
+import { flashcardUpdaterDeleteClosure } from "@/src/relay-helpers";
 import { Add, Delete, Edit } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import { useParams } from "next/navigation";
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   graphql,
   useLazyLoadQuery,
@@ -87,23 +82,15 @@ export const AllSkillQuery = graphql`
   }
 `;
 
-interface ErrorContextProps {
-  error: ES2022Error | null;
-  setError: (error: ES2022Error | null) => void;
-}
-const ErrorContext = createContext<ErrorContextProps>({
-  error: null,
-  setError: () => {},
-});
-export const useError = () => useContext(ErrorContext);
-
 export default function LecturerFlashcards() {
   const { flashcardSetId, courseId } = useParams();
-  const [error, setError] = useState<ES2022Error | null>(null);
+  const [error, setError] = useState<ES2022Error | Error | null>(null);
+  const errorContext = useMemo(() => ({ error, setError }), [error]);
 
   const data = useLazyLoadQuery<lecturerEditFlashcardsQuery>(RootQuery, {
     id: flashcardSetId,
   });
+
   const [queryReference, loadQuery] =
     useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
 
@@ -141,30 +128,18 @@ export default function LecturerFlashcards() {
     `);
 
   const handleDeleteFlashcard = useCallback(
-    (flashcardId: string) => {
+    (flashcardId: string, flashcardNumber: number) => {
       deleteFlashcard({
         variables: {
           flashcardId: flashcardId,
           assessmentId: flashcardSetId,
         },
         onError: setError,
-        updater(store) {
-          console.log("updater @lecturer", store, data);
-
-          // TODO re-implement this without relying on query flashcard set data
-
-          // Get record of flashcard set
-          // const flashcardSetRecord = store.get(flashcardSet!.__id);
-          // if (!flashcardSetRecord) return;
-
-          // Update the linked records of the flashcard set
-          // const flashcardRecords =
-          //   flashcardSetRecord.getLinkedRecords("flashcards") ?? [];
-          // flashcardSetRecord.setLinkedRecords(
-          //   flashcardRecords.filter((x) => x.getDataID() !== flashcardId),
-          //   "flashcards"
-          // );
-        },
+        updater: flashcardUpdaterDeleteClosure(
+          flashcardSetId,
+          flashcardNumber,
+          courseId
+        ),
       });
     },
     [data, deleteFlashcard, flashcardSetId]
@@ -209,7 +184,7 @@ export default function LecturerFlashcards() {
 
   return (
     <main>
-      <ErrorContext.Provider value={{ error, setError }}>
+      <ErrorContext.Provider value={errorContext}>
         <LecturerFlashcardHeader
           content={content}
           openEditFlashcardSetModal={() => setEditSetOpen(false)}
@@ -226,8 +201,7 @@ export default function LecturerFlashcards() {
                   assessmentId={content.id}
                   onCancel={onEditCancel}
                   allSkillsQueryRef={queryReference}
-                  flashcardPosition={i}
-                  flashcardSetId={flashcardSet.__id}
+                  flashcardNumber={i}
                 />
               ) : (
                 <>
@@ -249,7 +223,13 @@ export default function LecturerFlashcards() {
                       sx={{ color: "red" }}
                       startIcon={<Delete />}
                       onClick={() => {
-                        handleDeleteFlashcard(flashcard.itemId);
+                        if (
+                          confirm(
+                            "Do you really want to delete this flashcard? This can't be undone."
+                          )
+                        ) {
+                          handleDeleteFlashcard(flashcard.itemId, i);
+                        }
                       }}
                     >
                       Delete Flashcard
@@ -267,8 +247,8 @@ export default function LecturerFlashcards() {
               onClose={() => setIsAddFlashcardOpen(false)}
               flashcardSet={content}
               allSkillsQueryRef={queryReference}
-              flashcardSetNumber={flashcardSetsAdded!}
-              setFlashcardSetNumber={setFlashcardSetsAdded!}
+              flashcardSetNumber={flashcardSetsAdded}
+              setFlashcardSetNumber={setFlashcardSetsAdded}
               showSuccessSnackbar={() => setIsSnackbarVisible(true)}
             />
           ) : (

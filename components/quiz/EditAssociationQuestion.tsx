@@ -2,10 +2,10 @@ import { EditAssociationQuestionFragment$key } from "@/__generated__/EditAssocia
 import { EditAssociationQuestionMutation } from "@/__generated__/EditAssociationQuestionMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
-import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
+import { useError } from "../ErrorContext";
 import {
   CreateItem,
   Item,

@@ -7,10 +7,11 @@ import {
   UpdateFlashcardInput,
 } from "@/__generated__/EditFlashcardMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
-import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
-import { editFlashcardUpdaterClosure } from "@/src/relay-helpers";
+import { flashcardUpdaterClosure } from "@/src/relay-helpers";
+import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
+import { useError } from "../ErrorContext";
 import { CreateItem, Item } from "../form-sections/item/ItemFormSectionNew";
 import Flashcard from "./Flashcard";
 import { FlashcardSideData } from "./FlashcardSide";
@@ -51,8 +52,8 @@ const editFlashcardMutation = graphql`
         item: $item
       ) {
         flashcard {
-          itemId
           item {
+            id
             associatedBloomLevels
             associatedSkills {
               id
@@ -79,8 +80,7 @@ interface Props {
   flashcard: EditFlashcardFragment$key;
   assessmentId: string;
   allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
-  flashcardPosition: number;
-  flashcardSetId: string;
+  flashcardNumber: number;
 }
 
 export function EditFlashcard({
@@ -89,15 +89,15 @@ export function EditFlashcard({
   assessmentId,
   onCancel,
   allSkillsQueryRef,
-  flashcardPosition,
-  flashcardSetId,
+  flashcardNumber,
 }: Props) {
+  const { flashcardSetId, courseId } = useParams();
+  const { setError, error } = useError();
+
   const data = useFragment(FlashcardFragment, flashcard);
   const [updateFlashcard, isUpdating] = useMutation<EditFlashcardMutation>(
     editFlashcardMutation
   );
-
-  const { setError } = useError();
 
   // Destructuring necessary due to `readonly` types from relay
   const [item, setItem] = useState<Item | CreateItem>({
@@ -111,9 +111,15 @@ export function EditFlashcard({
     data.sides.map((readOnlySide) => ({ ...readOnlySide }))
   );
 
-  const updaterClosure = useCallback(
-    () => editFlashcardUpdaterClosure(flashcardPosition, flashcardSetId),
-    []
+  const updater = useCallback(
+    () =>
+      flashcardUpdaterClosure(
+        "update",
+        flashcardSetId,
+        flashcardNumber,
+        courseId
+      ),
+    [flashcardNumber, flashcardSetId, courseId]
   );
 
   const onSave = useCallback(() => {
@@ -129,9 +135,10 @@ export function EditFlashcard({
         flashcard: flashcardUpdate,
       },
       onError: setError,
-      updater: updaterClosure(),
-      onCompleted(response, errors) {
+      updater: updater(),
+      onCompleted: () => {
         onCancel();
+        // TODO add snackbar
       },
     });
   }, [
@@ -139,9 +146,10 @@ export function EditFlashcard({
     data.itemId,
     flashcardSides,
     item,
+    onCancel,
     setError,
     updateFlashcard,
-    updaterClosure,
+    updater,
   ]);
 
   return (

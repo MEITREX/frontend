@@ -1,155 +1,252 @@
 import { AddFlashcardMutation$data } from "@/__generated__/AddFlashcardMutation.graphql";
-import { EditFlashcardFragment$data } from "@/__generated__/EditFlashcardFragment.graphql";
 import { EditFlashcardMutation$data } from "@/__generated__/EditFlashcardMutation.graphql";
-import { add } from "lodash";
+import { lecturerDeleteFlashcardMutation$data } from "@/__generated__/lecturerDeleteFlashcardMutation.graphql";
+import _ from "lodash";
 import { RecordProxy, RecordSourceSelectorProxy } from "relay-runtime";
 
-const generateRelayStoreSideDataId = (
-  flashcardSetId: string,
+/*
+ * id generation for relay store
+ */
+const generateRelayStoreDataIdFCSet = (flashcardSetAssessmentId: string) =>
+  `client:${flashcardSetAssessmentId}:flashcardSet`;
+const generateRelayStoreDataIdFC = (
+  flashcardSetAssessmentId: string,
+  number: number
+) => `client:${flashcardSetAssessmentId}:flashcardSet:flashcards:${number}`;
+const generateRelayStoreDataIdFCSide = (
+  flashcardSetAssessmentId: string,
   flashcardSetNumber: number,
   sideNumber: number
 ) =>
-  `client:${flashcardSetId}:flashcardSet:flashcards:${flashcardSetNumber}:sides:${sideNumber}`;
+  `${generateRelayStoreDataIdFC(
+    flashcardSetAssessmentId,
+    flashcardSetNumber
+  )}:sides:${sideNumber}`;
 
-const generateRelayStoreSkillDataId = (itemId: string, skillNumber: number) =>
-  `${itemId}:skills:${skillNumber}`;
+const generateRelayStoreDataIdCourseIdSkills = (courseId: string) =>
+  `client:root:coursesByIds(ids:["${courseId}"]):0`;
 
-const generateRelayStoreItemDataId = (
+/*
+ * updater functions, wrapped in closures to provide necessary context & play well with react's useCallback
+ */
+
+export function flashcardUpdaterClosure(
+  mode: "create",
   flashcardSetId: string,
-  flashcardSetNumber: number
-) =>
-  `client:${flashcardSetId}:flashcardSet:flashcards:${flashcardSetNumber}:item`;
+  flashcardNumber: number,
+  courseId: string
+): (
+  store: RecordSourceSelectorProxy<AddFlashcardMutation$data>,
+  data: AddFlashcardMutation$data
+) => void;
+
+export function flashcardUpdaterClosure(
+  mode: "update",
+  flashcardSetId: string,
+  flashcardNumber: number,
+  courseId: string
+): (
+  store: RecordSourceSelectorProxy<EditFlashcardMutation$data>,
+  data: EditFlashcardMutation$data
+) => void;
+
+// Implementation signature (less specific)
+export function flashcardUpdaterClosure(
+  mode: "create" | "update",
+  flashcardSetAssessmentId: string,
+  flashcardNumber: number,
+  courseId: string
+) {
+  return (
+    store: RecordSourceSelectorProxy<
+      AddFlashcardMutation$data | EditFlashcardMutation$data
+    >,
+    data: AddFlashcardMutation$data | EditFlashcardMutation$data
+  ) => {
+    const payloadFlashcard =
+      mode === "create"
+        ? (data as AddFlashcardMutation$data).mutateFlashcardSet.createFlashcard
+            .flashcard
+        : (data as EditFlashcardMutation$data).mutateFlashcardSet
+            .updateFlashcard.flashcard;
+
+    let flashcard;
+    const flashcardDataId = generateRelayStoreDataIdFC(
+      flashcardSetAssessmentId,
+      flashcardNumber
+    );
+    if (mode === "create") {
+      flashcard = store.create(flashcardDataId, "Flashcard");
+    } /* update */ else {
+      flashcard = assertRecordExists(
+        store.get(flashcardDataId),
+        flashcardDataId
+      );
+
+      // delete leftover sides
+      const flashcardSides = flashcard.getLinkedRecords("sides");
+      const sidesLengthRecord = Number(flashcardSides?.length);
+      const sidesLengthPayload = payloadFlashcard.sides.length;
+      if (sidesLengthRecord > sidesLengthPayload) {
+        const delta = sidesLengthRecord - sidesLengthPayload;
+
+        // mimic pythons range without possibility for an offset
+        [...Array<undefined>(delta).keys()].forEach((n) => {
+          store.delete(flashcardSides![sidesLengthPayload + n].getDataID());
+        });
+      }
+    }
+
+    const flashcardSides = createFlashcardSidesFromPayload(
+      store,
+      payloadFlashcard,
+      _.curry(generateRelayStoreDataIdFCSide)(
+        flashcardSetAssessmentId,
+        flashcardNumber
+      )
+    );
+    flashcard.setLinkedRecords(flashcardSides, "sides");
+
+    const flashcardItem = createItemFromPayload(
+      store,
+      payloadFlashcard.item,
+      courseId
+    );
+    flashcard.setLinkedRecord(flashcardItem, "item");
+    flashcard.setValue(payloadFlashcard.item.id, "itemId");
+
+    const flashcardSet = store
+      .get(data.mutateFlashcardSet.assessmentId)!
+      .getLinkedRecord("flashcardSet")!;
+    let currentFlashcards = flashcardSet.getLinkedRecords("flashcards")!;
+    currentFlashcards =
+      mode === "create"
+        ? [...currentFlashcards, flashcard]
+        : [
+            ...currentFlashcards.slice(0, flashcardNumber),
+            flashcard,
+            ...currentFlashcards.slice(flashcardNumber + 1),
+          ];
+    flashcardSet.setLinkedRecords(currentFlashcards, "flashcards");
+  };
+}
 
 /**
- * Wrapper to make the function to provide necessary context/ closure and paly
- * well with react's useCallback hook for performant caching
+ * To our luck relay seems to already interconnect entities that contain a prop named `id`
  */
-// TODO refactor this to avoid redundancy with similar functions to be added
-export const addFlashcardUpdaterClosure =
-  (flashcardSetId: string, flashcardSetNumber: number) =>
-    (
-      store: RecordSourceSelectorProxy<AddFlashcardMutation$data>,
-      data: AddFlashcardMutation$data
-    ) => {
-      const flashcardSetAssessmentRecord = store.get(
-        data.mutateFlashcardSet.assessmentId
-      )!;
-      const flashcardSetRecord =
-        flashcardSetAssessmentRecord.getLinkedRecord("flashcardSet")!;
-      const currentFlashcardsRecords =
-        flashcardSetRecord.getLinkedRecords("flashcards")!;
+export const flashcardUpdaterDeleteClosure =
+  (
+    flashcardSetAssessmentId: string,
+    flashcardNumber: number,
+    courseId: string
+  ) =>
+  (
+    store: RecordSourceSelectorProxy<lecturerDeleteFlashcardMutation$data>,
+    data: lecturerDeleteFlashcardMutation$data
+  ) => {
+    const flashcardSet = store.get(
+      generateRelayStoreDataIdFCSet(flashcardSetAssessmentId)
+    )!;
+    const flashcards = flashcardSet.getLinkedRecords("flashcards")!;
+    const flashcardDeleted = flashcards.splice(flashcardNumber, 1)[0];
+    flashcardSet.setLinkedRecords(flashcards, "flashcards");
 
-      const payloadFlashcard = data.mutateFlashcardSet.createFlashcard.flashcard;
-      const newFlashcardRecord = store.get(payloadFlashcard.item.id);
-      if (!newFlashcardRecord) return;
+    // removing the skills so that they won't appear in the Autocompletes
+    const coursesByIds = assertRecordExists(
+      store.get(generateRelayStoreDataIdCourseIdSkills(courseId)),
+      "coursesByIds"
+    );
+    const knownSkills = new Map(
+      coursesByIds
+        .getLinkedRecords("skills")!
+        .map((skill) => [skill.getValue("id") as string, skill])
+    );
 
-      // sides aren't automatically added to store, hence adding them from response
-      const newFlashcardRecordSides: RecordProxy[] = [];
-      payloadFlashcard.sides.forEach((flashcardSide, i) => {
-        const record = store.create(
-          generateRelayStoreSideDataId(flashcardSetId, flashcardSetNumber, i),
-          "FlashcardSide"
-        );
-        record.setValue(flashcardSide.label, "label");
-        record.setValue(flashcardSide.isAnswer, "isAnswer");
-        record.setValue(flashcardSide.isQuestion, "isQuestion");
-        record.setValue(flashcardSide.text, "text");
-        newFlashcardRecordSides.push(record);
-      });
-      newFlashcardRecord.setLinkedRecords(newFlashcardRecordSides, "sides");
+    const flashcardDeletedSkills = flashcardDeleted
+      .getLinkedRecord("item")!
+      .getLinkedRecords("associatedSkills")!;
+    flashcardDeletedSkills.forEach((skill: any) =>
+      knownSkills.delete(skill.getValue("id") as string)
+    );
+    coursesByIds.setLinkedRecords(Array.from(knownSkills.values()), "skills");
 
-      const newFlashcardRecordSkills: RecordProxy[] = [];
-      payloadFlashcard.item.associatedSkills.forEach((skill, i) => {
-        const record = store.create(
-          generateRelayStoreSkillDataId(payloadFlashcard.item.id, i),
-          "Skill"
-        );
-        record.setValue(skill.id, "id");
-        record.setValue(skill.skillCategory, "skillCategory");
-        record.setValue(skill.skillName, "skillName");
-        record.setValue(skill.isCustomSkill, "isCustomSkill");
-        newFlashcardRecordSkills.push(record);
-      });
-      const newFlashcardRecordItem = store.create(
-        generateRelayStoreItemDataId(flashcardSetId, flashcardSetNumber),
-        "Item"
-      );
-      newFlashcardRecordItem.setLinkedRecords(
-        newFlashcardRecordSkills,
-        "associatedSkills"
-      );
-      newFlashcardRecordItem.setValue(payloadFlashcard.item.id, "id");
-      newFlashcardRecordItem.setValue(
-        [...payloadFlashcard.item.associatedBloomLevels],
-        "associatedBloomLevels"
-      );
-      newFlashcardRecord.setLinkedRecord(newFlashcardRecordItem, "item");
+    flashcardDeletedSkills.forEach((skill: any) =>
+      store.delete(skill.getDataID())
+    );
+  };
 
-      const flashcardRecordsUpdated = [
-        ...currentFlashcardsRecords,
-        newFlashcardRecord,
-      ];
-      flashcardSetRecord.setLinkedRecords(flashcardRecordsUpdated, "flashcards");
-    };
+/*
+ * helper functions to create records from payloads
+ */
 
-export const editFlashcardUpdaterClosure =
-  (flashcardPosition: number, flashcardSetId: string) =>
-    (
-      store: RecordSourceSelectorProxy<EditFlashcardMutation$data>,
-      data: EditFlashcardMutation$data
-    ) => {
-      const payloadFlashcard = data.mutateFlashcardSet.updateFlashcard.flashcard;
+const createFlashcardSidesFromPayload = (
+  store: RecordSourceSelectorProxy,
+  payload: Omit<
+    AddFlashcardMutation$data["mutateFlashcardSet"]["createFlashcard"]["flashcard"],
+    "item"
+  >,
+  getFlashcardSideDataId: (index: number) => string
+): RecordProxy[] =>
+  payload.sides.map((flashcardSide, i) => {
+    const dataId = getFlashcardSideDataId(i);
+    const sideRecord =
+      store.get(dataId) ?? store.create(dataId, "FlashcardSide");
 
-      const storeId = `${flashcardSetId}:flashcards:${flashcardPosition}`;
-      const flashcardRecord = store.get(storeId);
-      if (!flashcardRecord) return;
+    sideRecord.setValue(flashcardSide.label, "label");
+    sideRecord.setValue(flashcardSide.isAnswer, "isAnswer");
+    sideRecord.setValue(flashcardSide.isQuestion, "isQuestion");
+    sideRecord.setValue(flashcardSide.text, "text");
 
-      const updatedFlashcardSides: RecordProxy[] =
-        payloadFlashcard.sides.map((flashcardSide, i) => {
-          const sideStoreId = `${flashcardSetId}flashcards:${flashcardPosition}:sides:${i}`;
+    return sideRecord;
+  });
 
-          let record = store.get(sideStoreId);
-          if (!record) record = store.create(sideStoreId, "Skill");
+/*
+ * helper functions for items & skills
+ */
 
-          record.setValue(flashcardSide.label, "label");
-          record.setValue(flashcardSide.isAnswer, "isAnswer");
-          record.setValue(flashcardSide.isQuestion, "isQuestion");
-          record.setValue(flashcardSide.text, "text");
-          return record;
+type ItemPayload =
+  AddFlashcardMutation$data["mutateFlashcardSet"]["createFlashcard"]["flashcard"]["item"];
+const createItemFromPayload = (
+  store: RecordSourceSelectorProxy,
+  payload: ItemPayload,
+  courseId: string
+) => {
+  // update skills in second query for ItemFormSection Autocompletes
+  const courseByIds = assertRecordExists(
+    store.get(generateRelayStoreDataIdCourseIdSkills(courseId)),
+    "coursesByIds"
+  );
+  const allCourseSkills = courseByIds.getLinkedRecords("skills")!;
+  const knownSkills = new Set(
+    allCourseSkills.map((skill) => skill.getValue("id") as string)
+  );
 
-        });
-      flashcardRecord.setLinkedRecords(updatedFlashcardSides, "sides");
+  payload.associatedSkills.forEach((skill) => {
+    const skillRecord = store.get(skill.id)!;
+    if (!knownSkills.has(skill.id)) {
+      allCourseSkills.push(skillRecord);
+    }
+  });
+  courseByIds.setLinkedRecords(allCourseSkills, "skills");
 
-      const itemStoreId = `${flashcardSetId}:flashcards:${flashcardPosition}:item`;
+  return store.get(payload.id)!;
+};
 
-      const itemRecord = store.get(itemStoreId);
-      if (!itemRecord) return;
+/*
+ * etc.
+ */
 
-      const updatedFlashcardSkills: RecordProxy[] =
-        payloadFlashcard.item.associatedSkills.map((skill, i) => {
-          const skillStoreId = `${flashcardSetId}flashcards:${flashcardPosition}:skills:${i}`;
+const assertRecordExists = <T, U>(
+  record: RecordProxy<T> | null | undefined,
+  identifier: string,
+  baseRecord?: RecordProxy<U>
+): RecordProxy<T> | never => {
+  if (record) return record;
 
-          let record = store.get(skillStoreId);
-          if (!record) record = store.create(skillStoreId, "Skill");
-
-          record.setValue(skill.id, "id");
-          record.setValue(skill.skillCategory, "skillCategory");
-          record.setValue(skill.skillName, "skillName");
-          record.setValue(skill.isCustomSkill, "isCustomSkill");
-          return record;
-        });
-
-      itemRecord.setLinkedRecords(updatedFlashcardSkills, "associatedSkills");
-      itemRecord.setValue([...payloadFlashcard.item.associatedBloomLevels], "associatedBloomLevels");
-      flashcardRecord.setLinkedRecord(itemRecord, "item");
-
-      const flashcardSetRecord = store.get(flashcardSetId);
-      if (!flashcardSetRecord) return;
-
-      const Flashcards = flashcardSetRecord.getLinkedRecords("flashcards")!;
-
-      Flashcards[flashcardPosition] = flashcardRecord;
-      flashcardSetRecord.setLinkedRecords(Flashcards, "flashcards");
-
-      return;
-    };
+  let errorMessage = `Failure to access '${identifier}' in relay store`;
+  if (baseRecord) {
+    errorMessage += ` on base record ${baseRecord.getDataID()}`;
+    console.error(baseRecord);
+  }
+  throw Error(errorMessage);
+};

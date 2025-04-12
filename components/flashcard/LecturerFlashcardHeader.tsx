@@ -1,15 +1,15 @@
-import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
+import { LecturerFlashcardHeaderDeleteFlashcardSetMutation } from "@/__generated__/LecturerFlashcardHeaderDeleteFlashcardSetMutation.graphql";
+import { LecturerFlashcardHeaderFragment$key } from "@/__generated__/LecturerFlashcardHeaderFragment.graphql";
 import { Delete, Edit } from "@mui/icons-material";
-import { Alert, Button, CircularProgress } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import { useParams } from "next/navigation";
 import router from "next/router";
 import { useFragment, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
 import { ContentTags } from "../ContentTags";
-import { Heading } from "../Heading";
-import { LecturerFlashcardHeaderFragment$key } from "@/__generated__/LecturerFlashcardHeaderFragment.graphql";
-import { LecturerFlashcardHeaderDeleteFlashcardSetMutation } from "@/__generated__/LecturerFlashcardHeaderDeleteFlashcardSetMutation.graphql";
+import { useError } from "../ErrorContext";
 import { FormErrors } from "../FormErrors";
+import { Heading } from "../Heading";
 
 const deleteFlashcardMutation = graphql`
   mutation LecturerFlashcardHeaderDeleteFlashcardSetMutation($id: UUID!) {

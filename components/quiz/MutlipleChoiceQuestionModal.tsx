@@ -1,6 +1,5 @@
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
-import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import { Add, Delete } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
 import {
@@ -15,6 +14,7 @@ import {
 } from "@mui/material";
 import { Dispatch, SetStateAction, useCallback } from "react";
 import { PreloadedQuery } from "react-relay";
+import { useError } from "../ErrorContext";
 import { Form, FormSection } from "../Form";
 import ItemFormSectionNew, {
   CreateItem,

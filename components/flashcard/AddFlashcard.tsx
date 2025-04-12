@@ -1,12 +1,12 @@
 import { AddFlashcardFragment$key } from "@/__generated__/AddFlashcardFragment.graphql";
 import { AddFlashcardMutation } from "@/__generated__/AddFlashcardMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
-import { useError } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
-import { addFlashcardUpdaterClosure } from "@/src/relay-helpers";
+import { flashcardUpdaterClosure } from "@/src/relay-helpers";
 import { useParams } from "next/navigation";
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { PreloadedQuery, useFragment, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
+import { useError } from "../ErrorContext";
 import { CreateItem } from "../form-sections/item/ItemFormSectionNew";
 import Flashcard from "./Flashcard";
 import { FlashcardSideData } from "./FlashcardSide";
@@ -72,7 +72,7 @@ export function AddFlashcard({
   setFlashcardSetNumber,
   showSuccessSnackbar,
 }: Props) {
-  const { flashcardSetId } = useParams();
+  const { flashcardSetId, courseId } = useParams();
   const { setError } = useError();
 
   const data = useFragment(addFlashcardFragment, flashcardSet);
@@ -86,9 +86,15 @@ export function AddFlashcard({
   const [flashcardSides, setFlashcardSides] = useState<FlashcardSideData[]>([]);
 
   const [isAdding, setIsAdding] = useState<boolean>(false);
-  const updaterClosure = useCallback(
-    () => addFlashcardUpdaterClosure(flashcardSetId, flashcardSetNumber),
-    [flashcardSetId, flashcardSetNumber]
+  const updater = useCallback(
+    () =>
+      flashcardUpdaterClosure(
+        "create",
+        flashcardSetId,
+        flashcardSetNumber,
+        courseId
+      ),
+    [flashcardSetId, flashcardSetNumber, courseId]
   );
 
   const handleAddFlashcard = useCallback(() => {
@@ -102,7 +108,7 @@ export function AddFlashcard({
         item: flashcardItem,
       },
       onError: setError,
-      updater: updaterClosure(),
+      updater: updater(),
       onCompleted: (response) => {
         setFlashcardSetNumber((prev) => prev + 1);
         setIsAdding(false);
@@ -117,7 +123,7 @@ export function AddFlashcard({
     data.flashcardSet,
     flashcardItem,
     setError,
-    updaterClosure,
+    updater,
     setFlashcardSetNumber,
     showSuccessSnackbar,
     onClose,
