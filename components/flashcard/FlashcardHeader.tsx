@@ -1,9 +1,10 @@
+import { FlashcardHeaderFragment$key } from "@/__generated__/FlashcardHeaderFragment.graphql";
 import { LecturerFlashcardHeaderDeleteFlashcardSetMutation } from "@/__generated__/LecturerFlashcardHeaderDeleteFlashcardSetMutation.graphql";
-import { LecturerFlashcardHeaderFragment$key } from "@/__generated__/LecturerFlashcardHeaderFragment.graphql";
+import { flashcardSetUpdaterDelete } from "@/src/relay-helpers";
 import { Delete, Edit } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
-import { useParams } from "next/navigation";
-import router from "next/router";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback } from "react";
 import { useFragment, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
 import { ContentTags } from "../ContentTags";
@@ -12,15 +13,14 @@ import { FormErrors } from "../FormErrors";
 import { Heading } from "../Heading";
 
 const deleteFlashcardMutation = graphql`
-  mutation LecturerFlashcardHeaderDeleteFlashcardSetMutation($id: UUID!) {
+  mutation FlashcardHeaderDeleteFlashcardSetMutation($id: UUID!) {
     mutateContent(contentId: $id) {
       deleteContent
     }
   }
 `;
 const metadataFragment = graphql`
-  fragment LecturerFlashcardHeaderFragment on Content {
-    id
+  fragment FlashcardHeaderFragment on Content {
     metadata {
       name
       ...ContentTags
@@ -29,7 +29,7 @@ const metadataFragment = graphql`
 `;
 
 interface Props {
-  content: LecturerFlashcardHeaderFragment$key;
+  content: FlashcardHeaderFragment$key;
   openEditFlashcardSetModal: () => void;
 }
 
@@ -37,16 +37,32 @@ const LecturerFlashcardHeader = ({
   content,
   openEditFlashcardSetModal,
 }: Props) => {
-  const { courseId } = useParams();
+  const { courseId, flashcardSetId } = useParams();
+  const router = useRouter();
+
+  const { error, setError } = useError();
 
   const [commitDeleteFlashcard, isDeleteCommitInFlight] =
     useMutation<LecturerFlashcardHeaderDeleteFlashcardSetMutation>(
       deleteFlashcardMutation
     );
 
-  const { id, metadata } = useFragment(metadataFragment, content);
+  const updater = useCallback(
+    () => flashcardSetUpdaterDelete(courseId),
+    [courseId]
+  );
+  const deleteFlashcardSet = useCallback(
+    () =>
+      commitDeleteFlashcard({
+        variables: { id: flashcardSetId },
+        onCompleted: () => router.push(`/courses/${courseId}`),
+        onError: (error) => setError(error),
+        updater: updater(),
+      }),
+    [commitDeleteFlashcard, courseId, flashcardSetId, router, setError, updater]
+  );
 
-  const { error, setError } = useError();
+  const { metadata } = useFragment(metadataFragment, content);
 
   return (
     <>
@@ -68,19 +84,8 @@ const LecturerFlashcardHeader = ({
                   confirm(
                     "Do you really want to delete this flashcard set? This can't be undone."
                   )
-                ) {
-                  commitDeleteFlashcard({
-                    variables: { id: id },
-                    onCompleted: () => {
-                      router.push(`/courses/${courseId}`);
-                    },
-                    onError: (error) => setError(error),
-                    updater: (store) => {
-                      // store.get(id)?.invalidateRecord();
-                      store.delete(id);
-                    },
-                  });
-                }
+                )
+                  deleteFlashcardSet();
               }}
             >
               Delete Flashcard Set

@@ -9,8 +9,8 @@ import { ErrorContext, ES2022Error } from "@/components/ErrorContext";
 import { PageError } from "@/components/PageError";
 import { AddFlashcard } from "@/components/flashcard/AddFlashcard";
 import { EditFlashcard } from "@/components/flashcard/EditFlashcard";
+import LecturerFlashcardHeader from "@/components/flashcard/FlashcardHeader";
 import FlashcardView from "@/components/flashcard/FlashcardView";
-import LecturerFlashcardHeader from "@/components/flashcard/LecturerFlashcardHeader";
 import SuccessSnackbar from "@/components/flashcard/SuccessSnackbar";
 import { flashcardUpdaterDeleteClosure } from "@/src/relay-helpers";
 import { Add, Delete, Edit } from "@mui/icons-material";
@@ -33,7 +33,7 @@ const RootQuery = graphql`
         chapterId
       }
 
-      ...LecturerFlashcardHeaderFragment
+      ...FlashcardHeaderFragment
       ...EditFlashcardSetModalFragment
       ...AddFlashcardFragment
       ... on FlashcardSetAssessment {
