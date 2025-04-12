@@ -2,6 +2,7 @@ import { EditAssociationQuestionFragment$key } from "@/__generated__/EditAssocia
 import { EditAssociationQuestionMutation } from "@/__generated__/EditAssociationQuestionMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
+import { questionUpdaterClosure } from "@/src/relay-helpers";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
@@ -30,17 +31,32 @@ const AssociationQuestionMutation = graphql`
         item: $item
       ) {
         assessmentId
-        questionPool {
-          ...EditAssociationQuestionFragment
+        modifiedQuestion {
+          number
+          type
+          hint
+          ... on AssociationQuestion {
+            correctAssociations {
+              feedback
+              left
+              right
+            }
+            # TODO fix schema
+            # leftSide
+            # rightSide
+            text
+            item {
+              id
+              associatedBloomLevels
+              associatedSkills {
+                id
+                skillName
+                skillCategory
+                isCustomSkill
+              }
+            }
+          }
         }
-        # item {
-        #   id
-        #   associatedSkills {
-        #     id
-        #     skillName
-        #   }
-        #   associatedBloomLevels
-        # }
       }
     }
   }
@@ -84,7 +100,7 @@ export function EditAssociationQuestion({
   onClose,
   open,
 }: Readonly<Props>) {
-  const { quizId } = useParams();
+  const { quizId, courseId } = useParams();
   const { setError } = useError();
 
   const data = useFragment(AssociationQuestionFragment, question);
@@ -102,6 +118,12 @@ export function EditAssociationQuestion({
 
   const [updateQuestion, isUpdating] =
     useMutation<EditAssociationQuestionMutation>(AssociationQuestionMutation);
+
+  const updater = useCallback(
+    () =>
+      questionUpdaterClosure("update", "AssociationQuestion", quizId, courseId),
+    [courseId, quizId]
+  );
   const onSubmit = useCallback(() => {
     const questionUpdate = {
       assessmentId: quizId,
@@ -114,9 +136,9 @@ export function EditAssociationQuestion({
 
     updateQuestion({
       variables: questionUpdate,
-      updater: (store) => store.invalidateStore(),
-      onCompleted: onClose,
+      updater: updater(),
       onError: setError,
+      onCompleted: onClose,
     });
   }, [
     data.itemId,
@@ -126,6 +148,7 @@ export function EditAssociationQuestion({
     quizId,
     setError,
     updateQuestion,
+    updater,
   ]);
 
   return (

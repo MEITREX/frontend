@@ -2,6 +2,7 @@ import { EditClozeQuestionFragment$key } from "@/__generated__/EditClozeQuestion
 import { EditClozeQuestionMutation } from "@/__generated__/EditClozeQuestionMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
+import { questionUpdaterClosure } from "@/src/relay-helpers";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
@@ -56,19 +57,36 @@ const ClozeQuestionMutation = graphql`
         item: $item
       ) {
         assessmentId
-        questionPool {
-          itemId
-          ...EditClozeQuestionFragment
-          ...ClozeQuestionPreviewFragment
+        modifiedQuestion {
+          number
+          type
+          hint
+          ... on ClozeQuestion {
+            clozeElements {
+              __typename
+              ... on ClozeBlankElement {
+                correctAnswer
+                feedback
+              }
+              ... on ClozeTextElement {
+                text
+              }
+            }
+            showBlanksList
+            additionalWrongAnswers
+            allBlanks
+            item {
+              id
+              associatedBloomLevels
+              associatedSkills {
+                id
+                skillName
+                skillCategory
+                isCustomSkill
+              }
+            }
+          }
         }
-        # item {
-        #   id
-        #   associatedSkills {
-        #     id
-        #     skillName
-        #   }
-        #   associatedBloomLevels
-        # }
       }
     }
   }
@@ -89,7 +107,7 @@ export function EditClozeQuestion({
   onClose,
   open,
 }: Readonly<Props>) {
-  const { quizId } = useParams();
+  const { quizId, courseId } = useParams();
   const { setError } = useError();
 
   const data = useFragment(ClozeQuestionFragment, question);
@@ -119,6 +137,11 @@ export function EditClozeQuestion({
     ClozeQuestionMutation
   );
 
+  const updater = useCallback(
+    () => questionUpdaterClosure("update", "ClozeQuestion", quizId, courseId),
+    [courseId, quizId]
+  );
+
   const onSubmit = useCallback(() => {
     const questionUpdate = {
       assessmentId: quizId,
@@ -131,7 +154,7 @@ export function EditClozeQuestion({
 
     updateQuestion({
       variables: questionUpdate,
-      updater: (store) => store.invalidateStore(),
+      updater: updater(),
       onCompleted: onClose,
       onError: setError,
     });
@@ -143,6 +166,7 @@ export function EditClozeQuestion({
     quizId,
     setError,
     updateQuestion,
+    updater,
   ]);
 
   return (

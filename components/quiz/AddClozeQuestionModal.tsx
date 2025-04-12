@@ -1,6 +1,7 @@
 import { AddClozeQuestionModalMutation } from "@/__generated__/AddClozeQuestionModalMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
+import { questionUpdaterClosure } from "@/src/relay-helpers";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useMutation } from "react-relay";
@@ -22,20 +23,36 @@ const ClozeQuestionMutation = graphql`
         item: $item
       ) {
         assessmentId
-        questionPool {
-          itemId
-          type # without type and number, the question will not appear properly and be deletable until a page reload
+        modifiedQuestion {
           number
-          ...ClozeQuestionPreviewFragment
+          type
+          hint
+          ... on ClozeQuestion {
+            clozeElements {
+              __typename
+              ... on ClozeBlankElement {
+                correctAnswer
+                feedback
+              }
+              ... on ClozeTextElement {
+                text
+              }
+            }
+            showBlanksList
+            additionalWrongAnswers
+            allBlanks
+            item {
+              id
+              associatedBloomLevels
+              associatedSkills {
+                id
+                skillName
+                skillCategory
+                isCustomSkill
+              }
+            }
+          }
         }
-        # item {
-        #   id
-        #   associatedSkills {
-        #     id
-        #     skillName
-        #   }
-        #   associatedBloomLevels
-        # }
       }
     }
   }
@@ -54,7 +71,7 @@ export function AddClozeQuestionModal({
   onClose,
   allSkillsQueryRef,
 }: Readonly<Props>) {
-  const { quizId } = useParams();
+  const { quizId, courseId } = useParams();
   const { setError } = useError();
 
   const [item, setItem] = useState<CreateItem>({
@@ -72,6 +89,11 @@ export function AddClozeQuestionModal({
     ClozeQuestionMutation
   );
 
+  const updater = useCallback(
+    () => questionUpdaterClosure("add", "ClozeQuestion", quizId, courseId),
+    [courseId, quizId]
+  );
+
   const onSubmit = useCallback(() => {
     const questionUpdate = {
       assessmentId: quizId,
@@ -81,46 +103,11 @@ export function AddClozeQuestionModal({
 
     addQuestion({
       variables: questionUpdate,
-      onCompleted: () => onClose(),
-      updater(
-        store,
-        {
-          mutateQuiz: {
-            addClozeQuestion: { questionPool /* item */ },
-          },
-        }
-      ) {
-        store.invalidateStore();
-
-        const content = store.get(quizId);
-        const quiz = content?.getLinkedRecord("quiz");
-        const allQuestions = questionPool.flatMap((x) => {
-          const record = store.get(x.itemId);
-          return record ? [record] : [];
-        });
-
-        if (!quiz) {
-          console.error("not found");
-          return;
-        }
-
-        quiz.setLinkedRecords(allQuestions, "questionPool");
-        const items = store
-          .getRoot()
-          .getLinkedRecord("items")
-          ?.getLinkedRecords("elements");
-        const newItem = store.get("item!.id"); // TODO
-        if (!items || !newItem) return;
-
-        store
-          .getRoot()
-          .getLinkedRecord("items")
-          ?.setLinkedRecords([...items, newItem], "elements");
-      },
       onError: setError,
+      updater: updater(),
+      onCompleted: () => onClose(),
     });
-    window.location.reload();
-  }, [addQuestion, item, onClose, questionData, quizId, setError]);
+  }, [addQuestion, item, onClose, questionData, quizId, setError, updater]);
 
   return (
     <ClozeQuestionModal

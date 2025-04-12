@@ -1,6 +1,7 @@
 import { AddMultipleChoiceQuestionModalMutation } from "@/__generated__/AddMultipleChoiceQuestionModalMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
+import { questionUpdaterClosure } from "@/src/relay-helpers";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useMutation } from "react-relay";
@@ -25,20 +26,31 @@ const MultipleChoiceQuestionMutation = graphql`
         item: $item
       ) {
         assessmentId
-        questionPool {
-          itemId
-          type # without type and number, the question will not appear properly and be deletable until a page reload
+        modifiedQuestion {
           number
-          ...MultipleChoiceQuestionPreviewFragment
+          type
+          hint
+          ... on MultipleChoiceQuestion {
+            answers {
+              answerText
+              correct
+              feedback
+            }
+            text
+            # TODO adjust schema
+            # numberOfCorrectAnswers
+            item {
+              id
+              associatedBloomLevels
+              associatedSkills {
+                id
+                skillName
+                skillCategory
+                isCustomSkill
+              }
+            }
+          }
         }
-        # item {
-        #   id
-        #   associatedSkills {
-        #     id
-        #     skillName
-        #   }
-        #   associatedBloomLevels
-        # }
       }
     }
   }
@@ -57,7 +69,7 @@ export function AddMultipleChoiceQuestionModal({
   open,
   onClose,
 }: Readonly<Props>) {
-  const { quizId } = useParams();
+  const { quizId, courseId } = useParams();
   const { setError } = useError();
 
   const [item, setItem] = useState<CreateItem>({
@@ -74,6 +86,13 @@ export function AddMultipleChoiceQuestionModal({
     useMutation<AddMultipleChoiceQuestionModalMutation>(
       MultipleChoiceQuestionMutation
     );
+
+  const updater = useCallback(
+    () =>
+      questionUpdaterClosure("add", "MultipleChoiceQuestion", quizId, courseId),
+    [courseId, quizId]
+  );
+
   const onSubmit = useCallback(() => {
     const questionUpdate = {
       assessmentId: quizId,
@@ -83,49 +102,11 @@ export function AddMultipleChoiceQuestionModal({
 
     addQuestion({
       variables: questionUpdate,
-      onCompleted: () => onClose(),
-      updater(
-        store,
-        {
-          mutateQuiz: {
-            addMultipleChoiceQuestion: { questionPool /* item */ },
-          },
-        }
-      ) {
-        console.log(store);
-        store.invalidateStore();
-
-        const content = store.get(quizId);
-        const quiz = content?.getLinkedRecord("quiz");
-        const allQuestions = questionPool.flatMap((x) => {
-          const record = store.get(x.itemId);
-          return record ? [record] : [];
-        });
-
-        if (!quiz) {
-          console.error("not found");
-          return;
-        }
-
-        quiz.setLinkedRecords(allQuestions, "questionPool");
-        console.log("updatedQuestion");
-        const items = store
-          .getRoot()
-          .getLinkedRecord("items")
-          ?.getLinkedRecords("elements");
-        const newItem = store.get("item!.id"); // TODO
-        if (!items || !newItem) return;
-
-        store
-          .getRoot()
-          .getLinkedRecord("items")
-          ?.setLinkedRecords([...items, newItem], "elements");
-        console.log(store);
-      },
+      updater: updater(),
       onError: setError,
+      onCompleted: () => onClose(),
     });
-    window.location.reload();
-  }, [addQuestion, item, onClose, questionData, quizId, setError]);
+  }, [addQuestion, item, onClose, questionData, quizId, setError, updater]);
 
   return (
     <MultipleChoiceQuestionModal

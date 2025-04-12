@@ -2,6 +2,7 @@ import { EditMultipleChoiceQuestionFragment$key } from "@/__generated__/EditMult
 import { EditMultipleChoiceQuestionMutation } from "@/__generated__/EditMultipleChoiceQuestionMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
+import { questionUpdaterClosure } from "@/src/relay-helpers";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
@@ -53,8 +54,30 @@ const MultipleChoiceQuestionMutation = graphql`
         item: $item
       ) {
         assessmentId
-        questionPool {
-          ...EditMultipleChoiceQuestionFragment
+        modifiedQuestion {
+          number
+          type
+          hint
+          ... on MultipleChoiceQuestion {
+            answers {
+              answerText
+              correct
+              feedback
+            }
+            text
+            # TODO adjust schema
+            # numberOfCorrectAnswers
+            item {
+              id
+              associatedBloomLevels
+              associatedSkills {
+                id
+                skillName
+                skillCategory
+                isCustomSkill
+              }
+            }
+          }
         }
       }
     }
@@ -76,7 +99,7 @@ export function EditMultipleChoiceQuestion({
   onClose,
   open,
 }: Readonly<Props>) {
-  const { quizId } = useParams();
+  const { quizId, courseId } = useParams();
   const { setError } = useError();
 
   const data = useFragment(MultipleChoiceQuestionFragment, question);
@@ -97,6 +120,17 @@ export function EditMultipleChoiceQuestion({
       MultipleChoiceQuestionMutation
     );
 
+  const updater = useCallback(
+    () =>
+      questionUpdaterClosure(
+        "update",
+        "MultipleChoiceQuestion",
+        quizId,
+        courseId
+      ),
+    [courseId, quizId]
+  );
+
   const onSubmit = useCallback(() => {
     const questionUpdate = {
       assessmentId: quizId,
@@ -109,18 +143,19 @@ export function EditMultipleChoiceQuestion({
 
     updateQuestion({
       variables: questionUpdate,
-      onCompleted: onClose,
+      updater: updater(),
       onError: setError,
-      updater: (store) => store.invalidateStore(),
+      onCompleted: () => onClose(),
     });
   }, [
+    quizId,
+    questionData,
     data.itemId,
     item,
-    onClose,
-    questionData,
-    quizId,
-    setError,
     updateQuestion,
+    updater,
+    setError,
+    onClose,
   ]);
 
   return (

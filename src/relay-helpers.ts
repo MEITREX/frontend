@@ -1,5 +1,11 @@
+import { AddAssociationQuestionModalMutation$data } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
+import { AddClozeQuestionModalMutation$data } from "@/__generated__/AddClozeQuestionModalMutation.graphql";
 import { AddFlashcardMutation$data } from "@/__generated__/AddFlashcardMutation.graphql";
+import { AddMultipleChoiceQuestionModalMutation$data } from "@/__generated__/AddMultipleChoiceQuestionModalMutation.graphql";
+import { EditAssociationQuestionMutation$data } from "@/__generated__/EditAssociationQuestionMutation.graphql";
+import { EditClozeQuestionMutation$data } from "@/__generated__/EditClozeQuestionMutation.graphql";
 import { EditFlashcardMutation$data } from "@/__generated__/EditFlashcardMutation.graphql";
+import { EditMultipleChoiceQuestionMutation$data } from "@/__generated__/EditMultipleChoiceQuestionMutation.graphql";
 import { lecturerDeleteFlashcardMutation$data } from "@/__generated__/lecturerDeleteFlashcardMutation.graphql";
 import _ from "lodash";
 import { RecordProxy, RecordSourceSelectorProxy } from "relay-runtime";
@@ -23,6 +29,40 @@ const generateRelayStoreDataIdFCSide = (
     flashcardSetNumber
   )}:sides:${sideNumber}`;
 
+const generateRelayStoreDataIdQuiz = (quizAssessmentId: string) =>
+  `client:${quizAssessmentId}:quiz`;
+const generateRelayStoreDataIdQuestion = (
+  quizAssessmentId: string,
+  questionNumber: number
+) => `client:${quizAssessmentId}:quiz:questionPool:${questionNumber}`;
+const generateRelayStoreDataIdMCAnswer = (
+  quizAssessmentId: string,
+  questionNumber: number,
+  answerNumber: number
+) =>
+  `${generateRelayStoreDataIdQuestion(
+    quizAssessmentId,
+    questionNumber
+  )}:answers:${answerNumber}`;
+const generateRelayStoreDataIdCorrectAssociation = (
+  quizAssessmentId: string,
+  questionNumber: number,
+  associationNumber: number
+) =>
+  `${generateRelayStoreDataIdQuestion(
+    quizAssessmentId,
+    questionNumber
+  )}:correctAssociations:${associationNumber}`;
+const generateRelayStoreDataIdClozeElement = (
+  quizAssessmentId: string,
+  questionNumber: number,
+  associationNumber: number
+) =>
+  `${generateRelayStoreDataIdQuestion(
+    quizAssessmentId,
+    questionNumber
+  )}:clozeElements:${associationNumber}`;
+
 const generateRelayStoreDataIdCourseIdSkills = (courseId: string) =>
   `client:root:coursesByIds(ids:["${courseId}"]):0`;
 
@@ -31,7 +71,7 @@ const generateRelayStoreDataIdCourseIdSkills = (courseId: string) =>
  */
 
 export function flashcardUpdaterClosure(
-  mode: "create",
+  mode: "add",
   flashcardSetId: string,
   flashcardNumber: number,
   courseId: string
@@ -52,7 +92,7 @@ export function flashcardUpdaterClosure(
 
 // Implementation signature (less specific)
 export function flashcardUpdaterClosure(
-  mode: "create" | "update",
+  mode: "add" | "update",
   flashcardSetAssessmentId: string,
   flashcardNumber: number,
   courseId: string
@@ -64,7 +104,7 @@ export function flashcardUpdaterClosure(
     data: AddFlashcardMutation$data | EditFlashcardMutation$data
   ) => {
     const payloadFlashcard =
-      mode === "create"
+      mode === "add"
         ? (data as AddFlashcardMutation$data).mutateFlashcardSet.createFlashcard
             .flashcard
         : (data as EditFlashcardMutation$data).mutateFlashcardSet
@@ -75,26 +115,13 @@ export function flashcardUpdaterClosure(
       flashcardSetAssessmentId,
       flashcardNumber
     );
-    if (mode === "create") {
+    if (mode === "add") {
       flashcard = store.create(flashcardDataId, "Flashcard");
     } /* update */ else {
       flashcard = assertRecordExists(
         store.get(flashcardDataId),
         flashcardDataId
       );
-
-      // delete leftover sides
-      const flashcardSides = flashcard.getLinkedRecords("sides");
-      const sidesLengthRecord = Number(flashcardSides?.length);
-      const sidesLengthPayload = payloadFlashcard.sides.length;
-      if (sidesLengthRecord > sidesLengthPayload) {
-        const delta = sidesLengthRecord - sidesLengthPayload;
-
-        // mimic pythons range without possibility for an offset
-        [...Array<undefined>(delta).keys()].forEach((n) => {
-          store.delete(flashcardSides![sidesLengthPayload + n].getDataID());
-        });
-      }
     }
 
     const flashcardSides = createFlashcardSidesFromPayload(
@@ -120,7 +147,7 @@ export function flashcardUpdaterClosure(
       .getLinkedRecord("flashcardSet")!;
     let currentFlashcards = flashcardSet.getLinkedRecords("flashcards")!;
     currentFlashcards =
-      mode === "create"
+      mode === "add"
         ? [...currentFlashcards, flashcard]
         : [
             ...currentFlashcards.slice(0, flashcardNumber),
@@ -175,18 +202,140 @@ export const flashcardUpdaterDeleteClosure =
     );
   };
 
+type Types =
+  | AddMultipleChoiceQuestionModalMutation$data
+  | EditMultipleChoiceQuestionMutation$data
+  | AddAssociationQuestionModalMutation$data
+  | EditAssociationQuestionMutation$data
+  | AddClozeQuestionModalMutation$data
+  | EditClozeQuestionMutation$data;
+export function questionUpdaterClosure(
+  mode: "add" | "update",
+  variant: "AssociationQuestion" | "ClozeQuestion" | "MultipleChoiceQuestion",
+  quizAssessmentId: string,
+  courseId: string
+) {
+  return (store: RecordSourceSelectorProxy<Types>, data: Types) => {
+    // (data.mutateQuiz[`${mode}${variant}`] as undefined as Types)
+    //  as undefined as AddAssociationQuestionModalMutation$data["mutateQuiz"]["addAssociationQuestion"]["modifiedQuestion"];
+
+    let payloadQuestion = data.mutateQuiz[`${mode}${variant}`].modifiedQuestion;
+    let question;
+    let questionIndex;
+    // questions are mapped via array index numbers, not via the number prop
+    const questionDataId = _.curry(generateRelayStoreDataIdQuestion)(
+      quizAssessmentId
+    );
+    if (mode === "add") {
+      const questionPoolSize = store
+        .get(generateRelayStoreDataIdQuiz(quizAssessmentId))!
+        .getLinkedRecords("questionPool")!.length;
+      questionIndex = questionPoolSize;
+
+      question = store.create(questionDataId(questionPoolSize), variant);
+    } /* update */ else {
+      const indexInQuestionPool = store
+        .get(generateRelayStoreDataIdQuiz(quizAssessmentId))!
+        .getLinkedRecords("questionPool")!
+        .findIndex(
+          (question) => question.getValue("itemId") === payloadQuestion.item!.id
+        );
+      questionIndex = indexInQuestionPool;
+
+      question = assertRecordExists(
+        store.get(questionDataId(indexInQuestionPool)),
+        questionDataId(indexInQuestionPool)
+      );
+    }
+
+    if (variant === "MultipleChoiceQuestion") {
+      const questionAnswers = createMCAnswersFromPayload(
+        store,
+        payloadQuestion,
+        _.curry(generateRelayStoreDataIdMCAnswer)(
+          quizAssessmentId,
+          questionIndex
+        )
+      );
+      question.setLinkedRecords(questionAnswers, "answers");
+
+      question.setValue(payloadQuestion.text, "text");
+      // TODO fix schema
+      // question.setValue(
+      //   payloadQuestion.numberOfCorrectAnswers,
+      //   "numberOfCorrectAnswers"
+      // );
+    } else if (variant === "AssociationQuestion") {
+      const questionAssociations = createCorrectAssociationsFromPayload(
+        store,
+        payloadQuestion,
+        _.curry(generateRelayStoreDataIdCorrectAssociation)(
+          quizAssessmentId,
+          questionIndex
+        )
+      );
+      question.setLinkedRecords(questionAssociations, "correctAssociations");
+
+      // TODO fix schema
+      // forgot what I commented out...
+      question.setValue(payloadQuestion.text, "text");
+    } else if (variant === "ClozeQuestion") {
+      const questionClozeElements = createClozeElementsFromPayload(
+        store,
+        payloadQuestion,
+        _.curry(generateRelayStoreDataIdClozeElement)(
+          quizAssessmentId,
+          questionIndex
+        )
+      );
+      question.setLinkedRecords(questionClozeElements, "clozeElements");
+
+      question.setValue(payloadQuestion.allBlanks, "allBlanks");
+      question.setValue(payloadQuestion.showBlankList, "showBlankList");
+      question.setValue(
+        payloadQuestion.additionalWrongAnswers,
+        "additionalWrongAnswers"
+      );
+    }
+
+    question.setValue(payloadQuestion.number, "number");
+    question.setValue(payloadQuestion.type, "type");
+    if ("hint" in payloadQuestion)
+      question.setValue(payloadQuestion.hint, "hint");
+
+    const questionItem = createItemFromPayload(
+      store,
+      payloadQuestion.item!,
+      courseId
+    );
+    question.setLinkedRecord(questionItem, "item");
+    question.setValue(payloadQuestion.item!.id, "itemId");
+
+    const questionQuiz = store
+      .get(data.mutateQuiz.assessmentId)!
+      .getLinkedRecord("quiz")!;
+    let currentQuestionPool = questionQuiz.getLinkedRecords("questionPool")!;
+    currentQuestionPool =
+      mode === "add"
+        ? [...currentQuestionPool, question]
+        : [
+            ...currentQuestionPool.slice(0, questionIndex),
+            question,
+            ...currentQuestionPool.slice(questionIndex + 1),
+          ];
+    questionQuiz.setLinkedRecords(currentQuestionPool, "questionPool");
+  };
+}
+
 /*
  * helper functions to create records from payloads
  */
 
 const createFlashcardSidesFromPayload = (
   store: RecordSourceSelectorProxy,
-  payload: Omit<
-    AddFlashcardMutation$data["mutateFlashcardSet"]["createFlashcard"]["flashcard"],
-    "item"
-  >,
+  payload: AddFlashcardMutation$data["mutateFlashcardSet"]["createFlashcard"]["flashcard"],
   getFlashcardSideDataId: (index: number) => string
-): RecordProxy[] =>
+) =>
   payload.sides.map((flashcardSide, i) => {
     const dataId = getFlashcardSideDataId(i);
     const sideRecord =
@@ -198,6 +347,72 @@ const createFlashcardSidesFromPayload = (
     sideRecord.setValue(flashcardSide.text, "text");
 
     return sideRecord;
+  });
+
+const createMCAnswersFromPayload = (
+  store: RecordSourceSelectorProxy,
+  payload: Omit<
+    AddMultipleChoiceQuestionModalMutation$data["mutateQuiz"]["addMultipleChoiceQuestion"]["modifiedQuestion"],
+    " $fragmentSpreads"
+  >,
+  getMCAnswerDataId: (index: number) => string
+) =>
+  payload.answers!.map((answer, i) => {
+    const dataId = getMCAnswerDataId(i);
+    const answerRecord =
+      store.get(dataId) ?? store.create(dataId, "MultipleChoiceAnswer");
+
+    answerRecord.setValue(answer.answerText, "answerText");
+    answerRecord.setValue(answer.correct, "correct");
+    answerRecord.setValue(answer.feedback, "feedback");
+
+    return answerRecord;
+  });
+
+const createCorrectAssociationsFromPayload = (
+  store: RecordSourceSelectorProxy,
+  payload: Omit<
+    AddAssociationQuestionModalMutation$data["mutateQuiz"]["addAssociationQuestion"]["modifiedQuestion"],
+    " $fragmentSpreads"
+  >,
+  getCorrectAssociationAnswerDataId: (index: number) => string
+) =>
+  payload.correctAssociations?.map((association, i) => {
+    const dataId = getCorrectAssociationAnswerDataId(i);
+    const assocRecord =
+      store.get(dataId) ?? store.create(dataId, "SingleAssociation");
+
+    assocRecord.setValue(association.right, "right");
+    assocRecord.setValue(association.left, "left");
+    if (association.feedback)
+      assocRecord.setValue(association.feedback, "feedback");
+
+    return assocRecord;
+  });
+
+const createClozeElementsFromPayload = (
+  store: RecordSourceSelectorProxy,
+  payload: Omit<
+    AddClozeQuestionModalMutation$data["mutateQuiz"]["addClozeQuestion"]["modifiedQuestion"],
+    " $fragmentSpreads"
+  >,
+  getClozeElementDataId: (index: number) => string
+) =>
+  payload.clozeElements!.map((clozeElement, i) => {
+    const dataId = getClozeElementDataId(i);
+    const clozeRecord =
+      store.get(dataId) ?? store.create(dataId, "MultipleChoiceAnswer");
+
+      clozeRecord.setValue(clozeElement.__typename, "__typename");
+      if (clozeElement.__typename === "ClozeTextElement") {
+        clozeRecord.setValue(clozeElement.text, "text");
+      } else if (clozeElement.__typename === "ClozeBlankElement") {
+        clozeRecord.setValue(clozeElement.correctAnswer, "correctAnswer");
+        if (clozeElement.feedback)
+          clozeRecord.setValue(clozeElement.feedback, "feedback");
+      }
+
+      return clozeRecord;
   });
 
 /*
@@ -223,6 +438,8 @@ const createItemFromPayload = (
 
   payload.associatedSkills.forEach((skill) => {
     const skillRecord = store.get(skill.id)!;
+    skillRecord.setValue(skill.skillName, "skillName");
+
     if (!knownSkills.has(skill.id)) {
       allCourseSkills.push(skillRecord);
     }

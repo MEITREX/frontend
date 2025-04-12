@@ -1,6 +1,7 @@
 import { AddAssociationQuestionModalMutation } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
+import { questionUpdaterClosure } from "@/src/relay-helpers";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useMutation } from "react-relay";
@@ -24,20 +25,32 @@ const AssociationQuestionMutation = graphql`
         assessmentId: $assessmentId
         item: $item
       ) {
-        questionPool {
-          itemId
-          type # without type and number, the question will not appear properly and be deletable until a page reload
+        modifiedQuestion {
           number
-          ...AssociationQuestionPreviewFragment
+          type
+          hint
+          ... on AssociationQuestion {
+            correctAssociations {
+              feedback
+              left
+              right
+            }
+            # TODO fix schema
+            # leftSide
+            # rightSide
+            text
+            item {
+              id
+              associatedBloomLevels
+              associatedSkills {
+                id
+                skillName
+                skillCategory
+                isCustomSkill
+              }
+            }
+          }
         }
-        # item {
-        #   id
-        #   associatedSkills {
-        #     id
-        #     skillName
-        #   }
-        #   associatedBloomLevels
-        # }
       }
     }
   }
@@ -56,7 +69,7 @@ export function AddAssociationQuestionModal({
   open,
   onClose,
 }: Readonly<Props>) {
-  const { quizId } = useParams();
+  const { quizId, courseId } = useParams();
   const { setError } = useError();
 
   const [item, setItem] = useState<CreateItem>({
@@ -74,6 +87,11 @@ export function AddAssociationQuestionModal({
       AssociationQuestionMutation
     );
 
+  const updater = useCallback(
+    () =>
+      questionUpdaterClosure("add", "AssociationQuestion", quizId, courseId),
+    [courseId, quizId]
+  );
   const onSubmit = useCallback(() => {
     const questionUpdate = {
       assessmentId: quizId,
@@ -83,46 +101,11 @@ export function AddAssociationQuestionModal({
 
     addQuestion({
       variables: questionUpdate,
-      onCompleted: onClose,
       onError: setError,
-      updater(
-        store,
-        {
-          mutateQuiz: {
-            addAssociationQuestion: { questionPool /* item */ },
-          },
-        }
-      ) {
-        store.invalidateStore();
-
-        const content = store.get(quizId);
-        const quiz = content?.getLinkedRecord("quiz");
-        const allQuestions = questionPool.flatMap((x) => {
-          const record = store.get(x.itemId);
-          return record ? [record] : [];
-        });
-
-        if (!quiz) {
-          console.error("not found");
-          return;
-        }
-
-        quiz.setLinkedRecords(allQuestions, "questionPool");
-        const items = store
-          .getRoot()
-          .getLinkedRecord("items")
-          ?.getLinkedRecords("elements");
-        const newItem = store.get("item!.id"); // TODO
-        if (!items || !newItem) return;
-
-        store
-          .getRoot()
-          .getLinkedRecord("items")
-          ?.setLinkedRecords([...items, newItem], "elements");
-      },
+      updater: updater(),
+      onCompleted: onClose,
     });
-    window.location.reload();
-  }, [addQuestion, item, onClose, questionData, quizId, setError]);
+  }, [addQuestion, item, onClose, questionData, quizId, setError, updater]);
 
   return (
     <AssociationQuestionModal

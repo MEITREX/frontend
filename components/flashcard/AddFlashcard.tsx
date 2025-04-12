@@ -89,7 +89,7 @@ export function AddFlashcard({
   const updater = useCallback(
     () =>
       flashcardUpdaterClosure(
-        "create",
+        "add",
         flashcardSetId,
         flashcardSetNumber,
         courseId
