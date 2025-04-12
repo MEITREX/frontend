@@ -2,7 +2,6 @@ import { EditAssociationQuestionFragment$key } from "@/__generated__/EditAssocia
 import { EditAssociationQuestionMutation } from "@/__generated__/EditAssociationQuestionMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
-import { questionUpdaterClosure } from "@/src/relay-helpers";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
@@ -16,6 +15,7 @@ import {
   AssociationQuestionData,
   AssociationQuestionModal,
 } from "./AssociationQuestionModal";
+import { questionUpdaterClosure } from "@/src/relay-helpers/question";
 
 const AssociationQuestionMutation = graphql`
   mutation EditAssociationQuestionMutation(

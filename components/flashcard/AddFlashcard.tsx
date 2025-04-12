@@ -1,7 +1,7 @@
 import { AddFlashcardFragment$key } from "@/__generated__/AddFlashcardFragment.graphql";
 import { AddFlashcardMutation } from "@/__generated__/AddFlashcardMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
-import { flashcardUpdaterClosure } from "@/src/relay-helpers";
+import { flashcardUpdaterClosure } from "@/src/relay-helpers/flashcard";
 import { useParams } from "next/navigation";
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { PreloadedQuery, useFragment, useMutation } from "react-relay";

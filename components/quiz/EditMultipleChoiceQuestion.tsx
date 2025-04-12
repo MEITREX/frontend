@@ -2,7 +2,7 @@ import { EditMultipleChoiceQuestionFragment$key } from "@/__generated__/EditMult
 import { EditMultipleChoiceQuestionMutation } from "@/__generated__/EditMultipleChoiceQuestionMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
-import { questionUpdaterClosure } from "@/src/relay-helpers";
+import { questionUpdaterClosure } from "@/src/relay-helpers/question";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";

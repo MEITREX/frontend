@@ -12,7 +12,7 @@ import { EditFlashcard } from "@/components/flashcard/EditFlashcard";
 import LecturerFlashcardHeader from "@/components/flashcard/FlashcardHeader";
 import FlashcardView from "@/components/flashcard/FlashcardView";
 import SuccessSnackbar from "@/components/flashcard/SuccessSnackbar";
-import { flashcardUpdaterDeleteClosure } from "@/src/relay-helpers";
+import { flashcardUpdaterDeleteClosure } from "@/src/relay-helpers/flashcard";
 import { Add, Delete, Edit } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import { useParams } from "next/navigation";

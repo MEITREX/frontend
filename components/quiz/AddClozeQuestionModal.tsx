@@ -1,13 +1,13 @@
 import { AddClozeQuestionModalMutation } from "@/__generated__/AddClozeQuestionModalMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
-import { questionUpdaterClosure } from "@/src/relay-helpers";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useMutation } from "react-relay";
 import { useError } from "../ErrorContext";
 import { CreateItem } from "../form-sections/item/ItemFormSectionNew";
 import { ClozeQuestionData, ClozeQuestionModal } from "./ClozeQuestionModal";
+import { questionUpdaterClosure } from "@/src/relay-helpers/question";
 
 const ClozeQuestionMutation = graphql`
   mutation AddClozeQuestionModalMutation(

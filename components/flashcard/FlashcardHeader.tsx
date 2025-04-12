@@ -1,6 +1,6 @@
+import { FlashcardHeaderDeleteFlashcardSetMutation } from "@/__generated__/FlashcardHeaderDeleteFlashcardSetMutation.graphql";
 import { FlashcardHeaderFragment$key } from "@/__generated__/FlashcardHeaderFragment.graphql";
-import { LecturerFlashcardHeaderDeleteFlashcardSetMutation } from "@/__generated__/LecturerFlashcardHeaderDeleteFlashcardSetMutation.graphql";
-import { flashcardSetUpdaterDelete } from "@/src/relay-helpers";
+import { flashcardSetUpdaterDelete } from "@/src/relay-helpers/flashcard";
 import { Delete, Edit } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
@@ -43,7 +43,7 @@ const LecturerFlashcardHeader = ({
   const { error, setError } = useError();
 
   const [commitDeleteFlashcard, isDeleteCommitInFlight] =
-    useMutation<LecturerFlashcardHeaderDeleteFlashcardSetMutation>(
+    useMutation<FlashcardHeaderDeleteFlashcardSetMutation>(
       deleteFlashcardMutation
     );
 

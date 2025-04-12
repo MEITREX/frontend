@@ -7,7 +7,7 @@ import {
   UpdateFlashcardInput,
 } from "@/__generated__/EditFlashcardMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
-import { flashcardUpdaterClosure } from "@/src/relay-helpers";
+import { flashcardUpdaterClosure } from "@/src/relay-helpers/flashcard";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
