@@ -109,9 +109,7 @@ export function MultipleChoiceQuestionModal({
     isOneAnswerCorrect &&
     hasAtLeastTwoAnswers &&
     !!serializeToText(questionData.text) &&
-    areAllAnswersFilled &&
-    item.associatedBloomLevels.length > 0 &&
-    item.associatedSkills.length > 0;
+    areAllAnswersFilled;
 
   const addEmptyAnswer = useCallback(
     () =>

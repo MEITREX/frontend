@@ -130,9 +130,7 @@ export function AssociationQuestionModal({
   const valid =
     hasTitle &&
     hatAtLeastTwoItems &&
-    allItemsFilled &&
-    item.associatedBloomLevels.length > 0 &&
-    item.associatedSkills.length > 0;
+    allItemsFilled;
 
   return (
     <Dialog open={open} maxWidth="lg" onClose={onClose}>

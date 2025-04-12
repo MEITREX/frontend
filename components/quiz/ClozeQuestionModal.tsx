@@ -142,9 +142,7 @@ export function ClozeQuestionModal({
   const valid =
     hasAtLeastOneTextElement &&
     hasAtLeastOneBlankElement &&
-    allElementsAreFilled &&
-    item.associatedBloomLevels.length > 0 &&
-    item.associatedSkills.length > 0;
+    allElementsAreFilled;
 
   return (
     <Dialog open={open} maxWidth="lg" onClose={onClose}>

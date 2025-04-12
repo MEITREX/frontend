@@ -348,7 +348,7 @@ const ItemFormSectionAutocompletes = ({
     useState(false);
 
   return (
-    <Stack className="flex flex-row gap-x-2 mb-8">
+    <Stack className="flex flex-row gap-x-2 mb-2">
       <Autocomplete
         disabled={allSkillCategoriesSorted.length === 0}
         fullWidth

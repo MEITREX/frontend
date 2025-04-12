@@ -35,9 +35,8 @@ const Flashcard = (props: FlashcardProps) => {
   // predicates for valid flashcard entry
   const hasQuestion = flashcardSides.some((s) => s.isQuestion);
   const hasAnswer = flashcardSides.some((s) => s.isAnswer);
-  const isAssociatedDataPresent =
-    item.associatedBloomLevels.length > 0 && item.associatedSkills.length > 0;
-  const isFlashcardValid = hasQuestion && hasAnswer && isAssociatedDataPresent;
+  //const isAssociatedDataPresent = item.associatedBloomLevels.length > 0 && item.associatedSkills.length > 0;
+  const isFlashcardValid = hasQuestion && hasAnswer; //&& isAssociatedDataPresent;
 
   const errorMessage = !hasQuestion
     ? "At least one question side is required to save"

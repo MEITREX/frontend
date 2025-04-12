@@ -224,6 +224,12 @@ const ItemFormSectionNew = (props: ItemFormSectionProps) => {
           SKILL_CATEGORY_ABBREVIATION={SKILL_CATEGORY_ABBREVIATION}
         />
       )}
+      <div className="text-red-600 text-xs mr-3 mb-4">
+        {(item.associatedBloomLevels.length < 1 && skillsSelected.length < 1) 
+        ? (<div>Attention without Blooms Taxonomy and Skill, task can't be considered in the performance analysis</div>) 
+        : (item.associatedBloomLevels.length < 1 && (<div>Attention without Blooms Taxonomy, task can't be considered in the performance analysis</div>)) ||
+          (skillsSelected.length < 1 && (<div>Attention without Skill, task can't be considered in the performance analysis</div>))}
+      </div>
     </FormSection>
   );
 };
