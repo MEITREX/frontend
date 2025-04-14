@@ -195,6 +195,7 @@ export function ItemFormSection({
     bloomLevelsSelected,
     currentItemBloomAndSkillPresent,
     item?.id,
+    onChange,
     skillNewAdded,
     skillsSelected,
   ]);

@@ -12,10 +12,12 @@ import {
 
 const generateRelayStoreDataIdFCSet = (flashcardSetAssessmentId: string) =>
   `client:${flashcardSetAssessmentId}:flashcardSet`;
+
 const generateRelayStoreDataIdFC = (
   flashcardSetAssessmentId: string,
   number: number
 ) => `client:${flashcardSetAssessmentId}:flashcardSet:flashcards:${number}`;
+
 const generateRelayStoreDataIdFCSide = (
   flashcardSetAssessmentId: string,
   flashcardSetNumber: number,
@@ -114,9 +116,6 @@ export function flashcardUpdaterClosure(
   };
 }
 
-/**
- * To our luck relay seems to already interconnect entities that contain a prop named `id`
- */
 export const flashcardUpdaterDeleteClosure =
   (
     flashcardSetAssessmentId: string,

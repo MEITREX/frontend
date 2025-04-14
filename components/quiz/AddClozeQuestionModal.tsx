@@ -7,7 +7,7 @@ import { graphql, PreloadedQuery, useMutation } from "react-relay";
 import { useError } from "../ErrorContext";
 import { CreateItem } from "../form-sections/item/ItemFormSectionNew";
 import { ClozeQuestionData, ClozeQuestionModal } from "./ClozeQuestionModal";
-import { questionUpdaterClosure } from "@/src/relay-helpers/question";
+import { addClozeQuestionUpdaterClosure } from "@/src/relay-helpers/question";
 
 const ClozeQuestionMutation = graphql`
   mutation AddClozeQuestionModalMutation(
@@ -90,7 +90,7 @@ export function AddClozeQuestionModal({
   );
 
   const updater = useCallback(
-    () => questionUpdaterClosure("add", "ClozeQuestion", quizId, courseId),
+    () => addClozeQuestionUpdaterClosure(quizId, courseId),
     [courseId, quizId]
   );
 

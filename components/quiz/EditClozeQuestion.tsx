@@ -2,7 +2,7 @@ import { EditClozeQuestionFragment$key } from "@/__generated__/EditClozeQuestion
 import { EditClozeQuestionMutation } from "@/__generated__/EditClozeQuestionMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
-import { questionUpdaterClosure } from "@/src/relay-helpers/question";
+import { updateClozeQuestionUpdaterClosure } from "@/src/relay-helpers/question";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
@@ -138,7 +138,7 @@ export function EditClozeQuestion({
   );
 
   const updater = useCallback(
-    () => questionUpdaterClosure("update", "ClozeQuestion", quizId, courseId),
+    () => updateClozeQuestionUpdaterClosure(quizId, courseId),
     [courseId, quizId]
   );
 

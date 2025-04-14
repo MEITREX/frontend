@@ -1,7 +1,7 @@
 import { AddMultipleChoiceQuestionModalMutation } from "@/__generated__/AddMultipleChoiceQuestionModalMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
-import { questionUpdaterClosure } from "@/src/relay-helpers/question";
+import { addMCQuestionUpdaterClosure } from "@/src/relay-helpers/question";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useMutation } from "react-relay";
@@ -88,8 +88,7 @@ export function AddMultipleChoiceQuestionModal({
     );
 
   const updater = useCallback(
-    () =>
-      questionUpdaterClosure("add", "MultipleChoiceQuestion", quizId, courseId),
+    () => addMCQuestionUpdaterClosure(quizId, courseId),
     [courseId, quizId]
   );
 

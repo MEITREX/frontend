@@ -15,7 +15,7 @@ import {
   AssociationQuestionData,
   AssociationQuestionModal,
 } from "./AssociationQuestionModal";
-import { questionUpdaterClosure } from "@/src/relay-helpers/question";
+import { updateAssociationQuestionUpdaterClosure } from "@/src/relay-helpers/question";
 
 const AssociationQuestionMutation = graphql`
   mutation EditAssociationQuestionMutation(
@@ -120,8 +120,7 @@ export function EditAssociationQuestion({
     useMutation<EditAssociationQuestionMutation>(AssociationQuestionMutation);
 
   const updater = useCallback(
-    () =>
-      questionUpdaterClosure("update", "AssociationQuestion", quizId, courseId),
+    () => updateAssociationQuestionUpdaterClosure(quizId, courseId),
     [courseId, quizId]
   );
   const onSubmit = useCallback(() => {

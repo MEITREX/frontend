@@ -31,19 +31,15 @@ export function DeleteQuestionButton({
         deleteQuestion({
           variables: { assessmentId, number: num },
           updater(store) {
-            const assmnt = store.get(assessmentId);
-            const quiz = assmnt?.getLinkedRecord("quiz");
-            const allQuestions = quiz?.getLinkedRecords("questionPool") ?? [];
-
-            if (!quiz) {
-              console.error("not found");
-              return;
+            let quizRecord = store.get(`client:${assessmentId}:quiz`);
+            let questions = quizRecord?.getLinkedRecords("questionPool");
+            if (!questions || !quizRecord) {
+              throw new Error(
+                "Could not delete question in the relay store! Please refresh the page."
+              );
             }
-
-            quiz.setLinkedRecords(
-              allQuestions.filter((x) => x.getDataID() !== questionId),
-              "questionPool"
-            );
+            const questionDeleted = questions.splice(num - 1, 1)[0];
+            quizRecord.setLinkedRecords(questions, "questionPool");
           },
         });
       }}

@@ -1,7 +1,7 @@
 import { AddAssociationQuestionModalMutation } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
-import { questionUpdaterClosure } from "@/src/relay-helpers/question";
+import { addAssociationQuestionUpdaterClosure } from "@/src/relay-helpers/question";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useMutation } from "react-relay";
@@ -88,8 +88,7 @@ export function AddAssociationQuestionModal({
     );
 
   const updater = useCallback(
-    () =>
-      questionUpdaterClosure("add", "AssociationQuestion", quizId, courseId),
+    () => addAssociationQuestionUpdaterClosure(quizId, courseId),
     [courseId, quizId]
   );
   const onSubmit = useCallback(() => {
