@@ -187,7 +187,7 @@ export default function LecturerFlashcards() {
       <ErrorContext.Provider value={errorContext}>
         <LecturerFlashcardHeader
           content={content}
-          openEditFlashcardSetModal={() => setEditSetOpen(false)}
+          openEditFlashcardSetModal={() => setEditSetOpen(true)}
         />
 
         <div className="mt-8 flex flex-col gap-6">
