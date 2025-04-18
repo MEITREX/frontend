@@ -81,24 +81,30 @@ export function AddQuestionButton({
         </List>
       </Dialog>
 
-      <AddMultipleChoiceQuestionModal
-        _allRecords={_allRecords}
-        open={addMultipleChoice}
-        onClose={() => setAddMultipleChoice(false)}
-        allSkillsQueryRef={allSkillsQueryRef}
-      />
-      <AddClozeQuestionModal
-        _allRecords={_allRecords}
-        open={addCloze}
-        onClose={() => setAddCloze(false)}
-        allSkillsQueryRef={allSkillsQueryRef}
-      />
-      <AddAssociationQuestionModal
-        _allRecords={_allRecords}
-        open={addAssociation}
-        onClose={() => setAddAssociation(false)}
-        allSkillsQueryRef={allSkillsQueryRef}
-      />
+      {addMultipleChoice && (
+        <AddMultipleChoiceQuestionModal
+          _allRecords={_allRecords}
+          open={addMultipleChoice}
+          onClose={() => setAddMultipleChoice(false)}
+          allSkillsQueryRef={allSkillsQueryRef}
+        />
+      )}
+      {addCloze && (
+        <AddClozeQuestionModal
+          _allRecords={_allRecords}
+          open={addCloze}
+          onClose={() => setAddCloze(false)}
+          allSkillsQueryRef={allSkillsQueryRef}
+        />
+      )}
+      {addAssociation && (
+        <AddAssociationQuestionModal
+          _allRecords={_allRecords}
+          open={addAssociation}
+          onClose={() => setAddAssociation(false)}
+          allSkillsQueryRef={allSkillsQueryRef}
+        />
+      )}
     </>
   );
 }
