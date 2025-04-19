@@ -27,7 +27,7 @@ import { useEffect, useState } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
 import { MediaContentModal } from "./MediaContentModal";
 import { QuizModal } from "./QuizModal";
-import { CodeAssignmentModal } from "./CodeAssignmentModal";
+import { AddCodeAssignmentModal } from "./AddCodeAssignmentModal";
 
 export function EditContentModal({
   chapterId,
@@ -85,6 +85,12 @@ export function EditContentModal({
           }
           ... on QuizAssessment {
             __typename
+          }
+          ... on AssignmentAssessment {
+            __typename
+            assignment {
+              assignmentType
+            }
           }
         }
         contentsWithNoSection {
@@ -256,6 +262,10 @@ export function EditContentModal({
                               ? `/courses/${courseId}/media/${content.id}`
                               : content.__typename === "QuizAssessment"
                               ? `/courses/${courseId}/quiz/${content.id}`
+                              : content.__typename === "AssignmentAssessment" &&
+                                content.assignment?.assignmentType ===
+                                  "CODE_ASSIGNMENT"
+                              ? `/courses/${courseId}/assignment/${content.id}`
                               : ""
                           )
                         }
@@ -353,11 +363,12 @@ export function EditContentModal({
           _chapter={chapter}
         />
       )}
-      <CodeAssignmentModal
-        isOpen={openCodeAssignmentModal}
+      {openCodeAssignmentModal && (
+         <AddCodeAssignmentModal
         onClose={() => setOpenCodeAssignmentModal(false)}
         chapterId={chapterId}
       />
+      )}
     </>
   );
 }
