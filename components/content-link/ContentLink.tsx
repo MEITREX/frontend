@@ -8,6 +8,8 @@ import {
 import { PageView, usePageView } from "@/src/currentView";
 import {
   ArrowRight,
+  Assignment,
+  Code,
   Description,
   Earbuds,
   Image,
@@ -15,6 +17,7 @@ import {
   PersonalVideo,
   QuestionAnswerRounded,
   Quiz,
+  Terminal,
 } from "@mui/icons-material";
 import { Chip, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
@@ -27,6 +30,7 @@ export const ContentTypeToColor: Record<string, string> = {
   MediaContent: colors.violet[200],
   FlashcardSetAssessment: colors.emerald[200],
   QuizAssessment: colors.rose[200],
+  AssignmentAssessment: colors.blue[200],
 };
 
 export type ContentChip = { key: string; label: string; color?: string };
@@ -98,6 +102,12 @@ export function ContentLink({
           }
         }
 
+        ... on AssignmentAssessment {
+          assignment {
+            assignmentType
+          }
+        }
+
         __typename
       }
     `,
@@ -123,6 +133,8 @@ export function ContentLink({
       ? "Flashcard"
       : content.__typename === "QuizAssessment"
       ? "Quiz"
+      : content.__typename === "AssignmentAssessment" && content.assignment?.assignmentType === "CODE_ASSIGNMENT"
+      ? "Code Assignment"
       : "Unknown";
   const router = useRouter();
   const chips = [
@@ -178,6 +190,13 @@ export function ContentLink({
           color: disabled ? "text.disabled" : "text.secondary",
         }}
       />
+    ) : content.__typename === "AssignmentAssessment" ? (
+      <Terminal
+        className="!w-[47%] !h-[47%]"
+        sx={{
+          color: disabled ? "text.disabled" : "text.secondary",
+        }}
+      />
     ) : (
       <div>unknown</div>
     );
@@ -189,6 +208,9 @@ export function ContentLink({
       ? `/courses/${courseId}/flashcards/${content.id}`
       : content.__typename === "QuizAssessment"
       ? `/courses/${courseId}/quiz/${content.id}`
+      : content.__typename === "AssignmentAssessment" &&
+        content.assignment?.assignmentType === "CODE_ASSIGNMENT"
+      ? `/courses/${courseId}/assignment/${content.id}`
       : "-";
 
   const body = (
