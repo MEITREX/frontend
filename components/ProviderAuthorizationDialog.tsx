@@ -2,10 +2,8 @@ import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Alert } from
 import { codeAssessmentProvider, providerConfig } from "./ProviderConfig";
 
 export function ProviderAuthorizationDialog({
-  open,
   onClose,
 }: {
-  open: boolean;
   onClose: () => void;
 }) {
   const provider = providerConfig[codeAssessmentProvider]; 
@@ -22,7 +20,7 @@ export function ProviderAuthorizationDialog({
   
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={true} onClose={onClose}>
       <DialogTitle>{provider.name} Authorization Required</DialogTitle>
       <DialogContent>
         <Alert severity="warning">
