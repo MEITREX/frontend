@@ -50,13 +50,13 @@ export function EditAssignmentModal({
           initialLearningInterval
         }
         assignment {
-            assessmentId
-            courseId
-            assignmentType
-            readmeHtml
-            classroomLink
-            invitationLink
-            requiredPercentage
+          assessmentId
+          courseId
+          assignmentType
+          readmeHtml
+          classroomLink
+          invitationLink
+          requiredPercentage
         }
       }
     `,
@@ -64,19 +64,18 @@ export function EditAssignmentModal({
   );
 
   const [updateAssignment, isUpdatingAssignment] =
-      useMutation<EditAssignmentModalMutation>(graphql`
-        mutation EditAssignmentModalMutation(
-          $assessment: UpdateAssessmentInput!
-          $contentId: UUID!
-        ) {
-          mutateContent(contentId: $contentId) {
-            updateAssessment(input: $assessment) {
-              ... EditAssignmentModalFragment
-            }
+    useMutation<EditAssignmentModalMutation>(graphql`
+      mutation EditAssignmentModalMutation(
+        $assessment: UpdateAssessmentInput!
+        $contentId: UUID!
+      ) {
+        mutateContent(contentId: $contentId) {
+          updateAssessment(input: $assessment) {
+            ...EditAssignmentModalFragment
           }
         }
-      `);
-  
+      }
+    `);
 
   const [metadata, setMetadata] = useState<ContentMetadataPayload | null>(null);
   const [assessmentMetadata, setAssessmentMetadata] =
@@ -92,24 +91,24 @@ export function EditAssignmentModal({
     requiredPercentage >= 0 &&
     requiredPercentage <= 100;
 
-    const handleSubmit = () => {
-        if (!metadata || !assessmentMetadata) return;
-        
-        updateAssignment({
-          variables: {
-            assessment: {
-              metadata: {
-                ...metadata,
-                chapterId: content.metadata.chapterId,
-              },
-              assessmentMetadata,
-            },
-            contentId: content.id,
+  const handleSubmit = () => {
+    if (!metadata || !assessmentMetadata) return;
+
+    updateAssignment({
+      variables: {
+        assessment: {
+          metadata: {
+            ...metadata,
+            chapterId: content.metadata.chapterId,
           },
-          onError,
-          onCompleted: onClose,
-        });
-      };
+          assessmentMetadata,
+        },
+        contentId: content.id,
+      },
+      onError,
+      onCompleted: onClose,
+    });
+  };
 
   return (
     <Dialog maxWidth="md" open onClose={onClose}>
@@ -127,39 +126,40 @@ export function EditAssignmentModal({
             onChange={setAssessmentMetadata}
           />
           <FormSection title="Scoring">
-                  <TextField
-                    label="Required percentage"
-                    type="number"
-                    variant="outlined"
-                    className="w-96"
-                    value={requiredPercentage !== null ? requiredPercentage : ""}
-                    inputProps={{ min: 0, max: 100, step: 1 }}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value);
-                      if (isNaN(val)) {
-                        setRequiredPercentage(null);
-                      } else {
-                        setRequiredPercentage(val);
-                      }
-                    }}
-                    helperText={
-                      requiredPercentage === null
-                        ? null
-                        : requiredPercentage < 0 || requiredPercentage > 100
-                        ? "Must be between 0 and 100"
-                        : ""
-                    }
-                    error={
-                      requiredPercentage !== null &&
-                      (requiredPercentage < 0 || requiredPercentage > 100)
-                    }
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="start">%</InputAdornment>
-                      ),                    }}
-                    required
-                  />
-                </FormSection>
+            <TextField
+              label="Required percentage"
+              type="number"
+              variant="outlined"
+              className="w-96"
+              value={requiredPercentage !== null ? requiredPercentage : ""}
+              inputProps={{ min: 0, max: 100, step: 1 }}
+              onChange={(e) => {
+                const val = parseInt(e.target.value);
+                if (isNaN(val)) {
+                  setRequiredPercentage(null);
+                } else {
+                  setRequiredPercentage(val);
+                }
+              }}
+              helperText={
+                requiredPercentage === null
+                  ? null
+                  : requiredPercentage < 0 || requiredPercentage > 100
+                  ? "Must be between 0 and 100"
+                  : ""
+              }
+              error={
+                requiredPercentage !== null &&
+                (requiredPercentage < 0 || requiredPercentage > 100)
+              }
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="start">%</InputAdornment>
+                ),
+              }}
+              required
+            />
+          </FormSection>
         </Form>
       </DialogContent>
       <DialogActions>

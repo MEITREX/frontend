@@ -14,13 +14,14 @@ export function DeleteAssignmentButton({
   onError: (e: any) => void;
   onCompleted: () => void;
 }) {
-  const [deleteAssignment, isDeleting] = useMutation<DeleteAssignmentButtonMutation>(graphql`
-    mutation DeleteAssignmentButtonMutation($id: UUID!) {
-      mutateContent(contentId: $id) {
-        deleteContent
+  const [deleteAssignment, isDeleting] =
+    useMutation<DeleteAssignmentButtonMutation>(graphql`
+      mutation DeleteAssignmentButtonMutation($id: UUID!) {
+        mutateContent(contentId: $id) {
+          deleteContent
+        }
       }
-    }
-  `);
+    `);
 
   const handleDelete = () => {
     if (

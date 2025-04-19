@@ -335,7 +335,7 @@ export function EditContentModal({
             className="mt-4"
             startIcon={<Add />}
           >
-            Add Code Assignment 
+            Add Code Assignment
           </Button>
         </DialogContent>
         <DialogActions>
@@ -364,10 +364,10 @@ export function EditContentModal({
         />
       )}
       {openCodeAssignmentModal && (
-         <AddCodeAssignmentModal
-        onClose={() => setOpenCodeAssignmentModal(false)}
-        chapterId={chapterId}
-      />
+        <AddCodeAssignmentModal
+          onClose={() => setOpenCodeAssignmentModal(false)}
+          chapterId={chapterId}
+        />
       )}
     </>
   );

@@ -55,43 +55,46 @@ export function AddCodeAssignmentModal({
   const [metadata, setMetadata] = useState<ContentMetadataPayload | null>(null);
   const [assessmentMetadata, setAssessmentMetadata] =
     useState<AssessmentMetadataPayload | null>(null);
-  const [requiredPercentage, setRequiredPercentage] = useState<number | null>(null);
+  const [requiredPercentage, setRequiredPercentage] = useState<number | null>(
+    null
+  );
   const [error, setError] = useState<any>(null);
 
   const valid =
-  metadata != null &&
-  assessmentMetadata != null &&
-  requiredPercentage !== null &&
-  requiredPercentage >= 0 &&
-  requiredPercentage <= 100;
+    metadata != null &&
+    assessmentMetadata != null &&
+    requiredPercentage !== null &&
+    requiredPercentage >= 0 &&
+    requiredPercentage <= 100;
 
   const [createAssignment, isCreatingAssignment] =
-  useMutation<AddCodeAssignmentModalMutation>(graphql`
-    mutation AddCodeAssignmentModalMutation(
-      $assessmentInput: CreateAssessmentInput!
-      $assignmentInput: CreateAssignmentInput!
-    ) {
-      createAssignmentAssessment(
-        assessmentInput: $assessmentInput
-        assignmentInput: $assignmentInput
+    useMutation<AddCodeAssignmentModalMutation>(graphql`
+      mutation AddCodeAssignmentModalMutation(
+        $assessmentInput: CreateAssessmentInput!
+        $assignmentInput: CreateAssignmentInput!
       ) {
-        id
-        ...ContentLinkFragment
-        
-        userProgressData {
-          nextLearnDate
+        createAssignmentAssessment(
+          assessmentInput: $assessmentInput
+          assignmentInput: $assignmentInput
+        ) {
+          id
+          ...ContentLinkFragment
+
+          userProgressData {
+            nextLearnDate
+          }
         }
       }
-    }
-  `);
-
+    `);
 
   useEffect(() => {
     setIsLoading(true);
     fetchQuery<AddCodeAssignmentModalAccessTokenQuery>(
       env,
       graphql`
-        query AddCodeAssignmentModalAccessTokenQuery($provider: ExternalServiceProviderDto!) {
+        query AddCodeAssignmentModalAccessTokenQuery(
+          $provider: ExternalServiceProviderDto!
+        ) {
           isAccessTokenAvailable(provider: $provider)
         }
       `,
@@ -116,10 +119,10 @@ export function AddCodeAssignmentModal({
           assessmentMetadata: {
             ...assessmentMetadata!,
             skillTypes: assessmentMetadata!.skillTypes as SkillType[],
-            initialLearningInterval:
-              assessmentMetadata!.initialLearningInterval as number,
+            initialLearningInterval: assessmentMetadata!
+              .initialLearningInterval as number,
           },
-          items: []
+          items: [],
         },
         assignmentInput: {
           assignmentType: "CODE_ASSIGNMENT",
@@ -130,9 +133,7 @@ export function AddCodeAssignmentModal({
       updater(store, response) {
         // Get record of chapter and of the new assignment
         const chapterRecord = store.get(chapterId);
-        const newRecord = store.get(
-          response!.createAssignmentAssessment!.id
-        );
+        const newRecord = store.get(response!.createAssignmentAssessment!.id);
         if (!chapterRecord || !newRecord) return;
 
         // Update the linked records of the chapter contents
@@ -148,13 +149,11 @@ export function AddCodeAssignmentModal({
       },
     });
   };
-  
+
   return (
     <>
       {!isLoading && !isAccessTokenAvailable && (
-        <ProviderAuthorizationDialog
-          onClose={onClose}
-        />
+        <ProviderAuthorizationDialog onClose={onClose} />
       )}
 
       {!isLoading && isAccessTokenAvailable && (
@@ -162,10 +161,10 @@ export function AddCodeAssignmentModal({
           <Dialog maxWidth="md" open={true} onClose={onClose}>
             <DialogTitle>Add code assignment</DialogTitle>
             <DialogContent>
-            <Typography variant="body2" color="text.primary" sx={{ mb: 2 }}>
-              Make sure the course name corresponds to a GitHub Classroom
-            </Typography>
-              
+              <Typography variant="body2" color="text.primary" sx={{ mb: 2 }}>
+                Make sure the course name corresponds to a GitHub Classroom
+              </Typography>
+
               {error?.source?.errors?.map((err: any, i: number) => (
                 <Alert key={i} severity="error" onClose={() => setError(null)}>
                   {err.message}
@@ -185,7 +184,9 @@ export function AddCodeAssignmentModal({
                     type="number"
                     variant="outlined"
                     className="w-96"
-                    value={requiredPercentage !== null ? requiredPercentage : ""}
+                    value={
+                      requiredPercentage !== null ? requiredPercentage : ""
+                    }
                     inputProps={{ min: 0, max: 100, step: 1 }}
                     onChange={(e) => {
                       const val = parseInt(e.target.value);
@@ -209,22 +210,22 @@ export function AddCodeAssignmentModal({
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="start">%</InputAdornment>
-                      ),                    }}
+                      ),
+                    }}
                     required
                   />
                 </FormSection>
-
               </Form>
             </DialogContent>
             <DialogActions>
-            <Button onClick={onClose}>Cancel</Button>
-        <LoadingButton
-          loading={isCreatingAssignment}
-          disabled={!valid}
-          onClick={handleSubmit}
-        >
-          Save
-        </LoadingButton>
+              <Button onClick={onClose}>Cancel</Button>
+              <LoadingButton
+                loading={isCreatingAssignment}
+                disabled={!valid}
+                onClick={handleSubmit}
+              >
+                Save
+              </LoadingButton>
             </DialogActions>
           </Dialog>
         </>

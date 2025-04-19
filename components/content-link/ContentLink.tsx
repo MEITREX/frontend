@@ -133,7 +133,8 @@ export function ContentLink({
       ? "Flashcard"
       : content.__typename === "QuizAssessment"
       ? "Quiz"
-      : content.__typename === "AssignmentAssessment" && content.assignment?.assignmentType === "CODE_ASSIGNMENT"
+      : content.__typename === "AssignmentAssessment" &&
+        content.assignment?.assignmentType === "CODE_ASSIGNMENT"
       ? "Code Assignment"
       : "Unknown";
   const router = useRouter();

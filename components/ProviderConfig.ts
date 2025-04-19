@@ -1,5 +1,5 @@
 export enum ExternalServiceProvider {
-    Github = "GITHUB",
+  Github = "GITHUB",
 }
 
 type ProviderInfo = {
@@ -16,4 +16,5 @@ export const providerConfig: Record<ExternalServiceProvider, ProviderInfo> = {
   },
 };
 
-export const codeAssessmentProvider: ExternalServiceProvider = ExternalServiceProvider.Github;
+export const codeAssessmentProvider: ExternalServiceProvider =
+  ExternalServiceProvider.Github;

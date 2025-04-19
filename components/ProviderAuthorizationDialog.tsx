@@ -1,4 +1,11 @@
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Alert } from "@mui/material";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Button,
+  Alert,
+} from "@mui/material";
 import { codeAssessmentProvider, providerConfig } from "./ProviderConfig";
 
 export function ProviderAuthorizationDialog({
@@ -6,7 +13,7 @@ export function ProviderAuthorizationDialog({
 }: {
   onClose: () => void;
 }) {
-  const provider = providerConfig[codeAssessmentProvider]; 
+  const provider = providerConfig[codeAssessmentProvider];
 
   const handleAuthorization = () => {
     const returnTo = window.location.href;
@@ -17,7 +24,6 @@ export function ProviderAuthorizationDialog({
     const authLink = `${provider.authUrl}?client_id=${provider.clientId}`;
     window.location.href = authLink;
   };
-  
 
   return (
     <Dialog open={true} onClose={onClose}>

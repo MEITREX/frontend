@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSearchParams, usePathname } from "next/navigation";
 import { graphql, useMutation, useLazyLoadQuery } from "react-relay";
 
-import type {
-  pageGenerateAccessTokenMutation,
-} from "@/__generated__/pageGenerateAccessTokenMutation.graphql";
+import type { pageGenerateAccessTokenMutation } from "@/__generated__/pageGenerateAccessTokenMutation.graphql";
 import { codeAssessmentProvider } from "@/components/ProviderConfig";
 import toast from "react-hot-toast";
 
@@ -16,14 +14,17 @@ export default function OAuthCallback() {
 
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
-  
+
   const hasRun = useRef(false);
 
-  const [commitGenerateAccessToken] = useMutation<pageGenerateAccessTokenMutation>(graphql`
-    mutation pageGenerateAccessTokenMutation($input: GenerateAccessTokenInput!) {
-      generateAccessToken(input: $input)
-    }
-  `);
+  const [commitGenerateAccessToken] =
+    useMutation<pageGenerateAccessTokenMutation>(graphql`
+      mutation pageGenerateAccessTokenMutation(
+        $input: GenerateAccessTokenInput!
+      ) {
+        generateAccessToken(input: $input)
+      }
+    `);
 
   useEffect(() => {
     if (!code || hasRun.current) return;
