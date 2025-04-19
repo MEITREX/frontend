@@ -21,10 +21,12 @@ export function ContentMetadataFormSection({
   onChange,
   metadata,
   suggestedTags,
+  disableName = false,
 }: {
   onChange: (side: ContentMetadataPayload | null) => void;
   metadata?: ContentMetadataPayload | null;
   suggestedTags: string[];
+  disableName?: boolean;
 }) {
   const [name, setName] = useState(metadata?.name ?? "");
   const [suggestedDate, setSuggestedDate] = useState(
@@ -65,6 +67,7 @@ export function ContentMetadataFormSection({
         error={!!metadata && name.trim() == ""}
         onChange={(e) => setName(e.target.value)}
         required
+        disabled={disableName}
       />
       <DatePicker
         label="Suggested start date"
