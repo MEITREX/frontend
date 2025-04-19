@@ -169,7 +169,7 @@ export default function StudentCodeAssignment({
             <Typography variant="body2">
               {assignment.totalCredits !== -1
                 ? Math.round(
-                    assignment.requiredPercentage! * assignment.totalCredits
+                    assignment.requiredPercentage! * assignment.totalCredits!
                   )
                 : "N/A"}
             </Typography>
