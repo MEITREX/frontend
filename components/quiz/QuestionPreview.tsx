@@ -7,10 +7,9 @@ import {
 import { Edit } from "@mui/icons-material";
 import { IconButton } from "@mui/material";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PreloadedQuery, useFragment } from "react-relay";
 import { graphql } from "relay-runtime";
-import { useError } from "../ErrorContext";
 import ItemFormSectionNew, {
   Item,
 } from "../form-sections/item/ItemFormSectionNew";
@@ -104,18 +103,19 @@ const QuestionPreview = ({
   allSkillsQueryRef,
 }: Props) => {
   const { quizId } = useParams();
-  const { error, setError } = useError();
-
   const data = useFragment(QuestionFragment, question);
 
   // Destructuring necessary due to `readonly` types from relay
-  const [item, setItem] = useState<Item>({
-    id: data.itemId,
-    associatedSkills: data.item!.associatedSkills.map((skill) => ({
-      ...skill,
-    })),
-    associatedBloomLevels: data.item!.associatedBloomLevels as BloomLevel[],
-  });
+  const item = useMemo<Item>(
+    () => ({
+      id: data.itemId,
+      associatedSkills: data.item!.associatedSkills.map((skill) => ({
+        ...skill,
+      })),
+      associatedBloomLevels: data.item!.associatedBloomLevels as BloomLevel[],
+    }),
+    [data.item, data.itemId]
+  );
 
   const [openEditModal, setOpenEditModal] =
     useState<ImplementedQuestionTypes | null>(null);

@@ -6,18 +6,22 @@ export const generateRelayStoreDataIdCourseIdSkills = (courseId: string) =>
 
 type ItemPayload =
   AddFlashcardMutation$data["mutateFlashcardSet"]["createFlashcard"]["flashcard"]["item"];
+/**
+ * Newly crated skills are already present in the store & linked to its item - but not linked to the all skill query
+ * This function adds the new skills to the all skill query
+ *
+ * The all skill query is used in the AutoComplete part of the ItemFormSection
+ */
 export const createItemFromPayload = (
   store: RecordSourceSelectorProxy,
   payload: ItemPayload,
   courseId: string
 ) => {
-  // update skills in second query for ItemFormSection Autocompletes
-  // FIXME: might be null??
   const courseByIds = store.get(
     generateRelayStoreDataIdCourseIdSkills(courseId)
-  );
+  )!;
 
-  const allCourseSkills = courseByIds?.getLinkedRecords("skills")!;
+  const allCourseSkills = courseByIds.getLinkedRecords("skills")!;
   const knownSkills = new Set(
     allCourseSkills.map((skill) => skill.getValue("id") as string)
   );
@@ -30,7 +34,7 @@ export const createItemFromPayload = (
       allCourseSkills.push(skillRecord);
     }
   });
-  courseByIds?.setLinkedRecords(allCourseSkills, "skills");
+  courseByIds.setLinkedRecords(allCourseSkills, "skills");
 
   return store.get(payload.id)!;
 };
