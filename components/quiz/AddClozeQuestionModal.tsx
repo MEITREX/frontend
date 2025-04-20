@@ -1,13 +1,13 @@
 import { AddClozeQuestionModalMutation } from "@/__generated__/AddClozeQuestionModalMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
+import { questionUpdaterClosure } from "@/src/relay-helpers/question";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useMutation } from "react-relay";
 import { useError } from "../ErrorContext";
 import { CreateItem } from "../form-sections/item/ItemFormSectionNew";
 import { ClozeQuestionData, ClozeQuestionModal } from "./ClozeQuestionModal";
-import { addClozeQuestionUpdaterClosure } from "@/src/relay-helpers/question";
 
 const ClozeQuestionMutation = graphql`
   mutation AddClozeQuestionModalMutation(
@@ -22,7 +22,6 @@ const ClozeQuestionMutation = graphql`
         questionInput: $input
         item: $item
       ) {
-        assessmentId
         modifiedQuestion {
           number
           type
@@ -90,7 +89,7 @@ export function AddClozeQuestionModal({
   );
 
   const updater = useCallback(
-    () => addClozeQuestionUpdaterClosure(quizId, courseId),
+    () => questionUpdaterClosure("add", "ClozeQuestion", quizId, courseId),
     [courseId, quizId]
   );
 

@@ -2,6 +2,7 @@ import { EditAssociationQuestionFragment$key } from "@/__generated__/EditAssocia
 import { EditAssociationQuestionMutation } from "@/__generated__/EditAssociationQuestionMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
+import { questionUpdaterClosure } from "@/src/relay-helpers/question";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
@@ -15,7 +16,6 @@ import {
   AssociationQuestionData,
   AssociationQuestionModal,
 } from "./AssociationQuestionModal";
-import { updateAssociationQuestionUpdaterClosure } from "@/src/relay-helpers/question";
 
 const AssociationQuestionMutation = graphql`
   mutation EditAssociationQuestionMutation(
@@ -30,7 +30,6 @@ const AssociationQuestionMutation = graphql`
         assessmentId: $assessmentId
         item: $item
       ) {
-        assessmentId
         modifiedQuestion {
           number
           type
@@ -120,7 +119,8 @@ export function EditAssociationQuestion({
     useMutation<EditAssociationQuestionMutation>(AssociationQuestionMutation);
 
   const updater = useCallback(
-    () => updateAssociationQuestionUpdaterClosure(quizId, courseId),
+    () =>
+      questionUpdaterClosure("update", "AssociationQuestion", quizId, courseId),
     [courseId, quizId]
   );
   const onSubmit = useCallback(() => {

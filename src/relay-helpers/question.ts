@@ -5,467 +5,257 @@ import { EditAssociationQuestionMutation$data } from "@/__generated__/EditAssoci
 import { EditClozeQuestionMutation$data } from "@/__generated__/EditClozeQuestionMutation.graphql";
 import { EditMultipleChoiceQuestionMutation$data } from "@/__generated__/EditMultipleChoiceQuestionMutation.graphql";
 import _ from "lodash";
-import { RecordSourceSelectorProxy, RecordProxy } from "relay-runtime";
-import {
-  assertRecordExists,
-  createItemFromPayload,
-  generateRelayStoreDataIdCourseIdSkills,
-} from "./common";
-import { lecturerDeleteFlashcardMutation$data } from "@/__generated__/lecturerDeleteFlashcardMutation.graphql";
+import { RecordSourceSelectorProxy } from "relay-runtime";
+import { assertRecordExists, createItemFromPayload } from "./common";
 
-type Types =
-  | AddMultipleChoiceQuestionModalMutation$data
-  | EditMultipleChoiceQuestionMutation$data
-  | AddAssociationQuestionModalMutation$data
-  | EditAssociationQuestionMutation$data
-  | AddClozeQuestionModalMutation$data
-  | EditClozeQuestionMutation$data;
-
-export function updateMCQuestionUpdaterClosure(
+const generateRelayStoreDataIdQuiz = (quizAssessmentId: string) =>
+  `client:${quizAssessmentId}:quiz`;
+const generateRelayStoreDataIdQuestion = (
   quizAssessmentId: string,
-  courseId: string
-) {
-  return (store: RecordSourceSelectorProxy<Types>, data: Types) => {
-    // get payloadQuestion from the data
-    data = data as EditMultipleChoiceQuestionMutation$data;
-    let payloadQuestion =
-      data.mutateQuiz.updateMultipleChoiceQuestion.modifiedQuestion;
+  questionNumber: number
+) => `client:${quizAssessmentId}:quiz:questionPool:${questionNumber}`;
+const generateRelayStoreDataIdMCAnswer = (
+  quizAssessmentId: string,
+  questionNumber: number,
+  answerNumber: number
+) =>
+  `${generateRelayStoreDataIdQuestion(
+    quizAssessmentId,
+    questionNumber
+  )}:answers:${answerNumber}`;
+const generateRelayStoreDataIdCorrectAssociation = (
+  quizAssessmentId: string,
+  questionNumber: number,
+  associationNumber: number
+) =>
+  `${generateRelayStoreDataIdQuestion(
+    quizAssessmentId,
+    questionNumber
+  )}:correctAssociations:${associationNumber}`;
+const generateRelayStoreDataIdClozeElement = (
+  quizAssessmentId: string,
+  questionNumber: number,
+  associationNumber: number
+) =>
+  `${generateRelayStoreDataIdQuestion(
+    quizAssessmentId,
+    questionNumber
+  )}:clozeElements:${associationNumber}`;
 
-    // get the question record
-    let questionIndex = payloadQuestion.number - 1;
-    let questionRecord = store.get(
-      `client:${quizAssessmentId}:quiz:questionPool:${questionIndex}`
-    );
-    if (!questionRecord) {
-      throw new Error("Question record not found");
-    }
-
-    // update the question record's properties
-    // property: answers
-    if (payloadQuestion.answers) {
-      let answersRecord: RecordProxy[] = [];
-      payloadQuestion.answers.map((answer, i) => {
-        const dataId = `client:${quizAssessmentId}:quiz:questionPool:${questionIndex}:answer:${i}`;
-        const answerRecord =
-          store.get(dataId) ?? store.create(dataId, "MultipleChoiceAnswer");
-        answerRecord.setValue(answer.answerText, "answerText");
-        answerRecord.setValue(answer.correct, "correct");
-        if (answer.feedback) {
-          answerRecord.setValue(answer.feedback, "feedback");
-        }
-        answersRecord.push(answerRecord);
-      });
-      questionRecord.setLinkedRecords(answersRecord, "answers");
-    }
-
-    // property: hint
-    if (payloadQuestion.hint) {
-      questionRecord.setValue(payloadQuestion.hint, "hint");
-    }
-
-    // property: item
-    const questionItemNew = createItemFromPayload(
-      store,
-      payloadQuestion.item!,
-      courseId
-    );
-    questionItemNew.setValue(payloadQuestion.item!.id, "id");
-    questionRecord.setLinkedRecord(questionItemNew, "item");
-    questionRecord.setValue(payloadQuestion.item!.id, "itemId");
-
-    // property: text
-    if (payloadQuestion.text) {
-      questionRecord.setValue(payloadQuestion.text, "text");
-    }
-
-    // property: type
-    questionRecord.setValue("MULTIPLE_CHOICE", "type");
+type MutatorMap = {
+  readonly add: {
+    readonly MultipleChoiceQuestion: AddMultipleChoiceQuestionModalMutation$data;
+    readonly AssociationQuestion: AddAssociationQuestionModalMutation$data;
+    readonly ClozeQuestion: AddClozeQuestionModalMutation$data;
   };
-}
-
-export function addMCQuestionUpdaterClosure(
-  quizAssessmentId: string,
-  courseId: string
-) {
-  return (store: RecordSourceSelectorProxy<Types>, data: Types) => {
-    // get payloadQuestion from the data
-    data = data as AddMultipleChoiceQuestionModalMutation$data;
-    let payloadQuestion =
-      data.mutateQuiz.addMultipleChoiceQuestion.modifiedQuestion;
-
-    // create the question record
-    let questionIndex = getQuestionPoolSize(store, quizAssessmentId);
-    let questionRecord = store.create(
-      `client:${quizAssessmentId}:quiz:questionPool:${questionIndex}`,
-      "MultipleChoiceQuestion"
-    );
-    if (!questionRecord) {
-      throw new Error("Question record could not be created");
-    }
-
-    // update the question record's properties
-    // property: answers
-    if (payloadQuestion.answers) {
-      let answersRecord: RecordProxy[] = [];
-      payloadQuestion.answers.map((answer, i) => {
-        const dataId = `client:${quizAssessmentId}:quiz:questionPool:${questionIndex}:answer:${i}`;
-        const answerRecord =
-          store.get(dataId) ?? store.create(dataId, "MultipleChoiceAnswer");
-        answerRecord.setValue(answer.answerText, "answerText");
-        answerRecord.setValue(answer.correct, "correct");
-        if (answer.feedback) {
-          answerRecord.setValue(answer.feedback, "feedback");
-        }
-        answersRecord.push(answerRecord);
-      });
-      questionRecord.setLinkedRecords(answersRecord, "answers");
-    }
-
-    // property: hint
-    if (payloadQuestion.hint) {
-      questionRecord.setValue(payloadQuestion.hint, "hint");
-    }
-
-    // property: item
-    const questionItemNew = createItemFromPayload(
-      store,
-      payloadQuestion.item!,
-      courseId
-    );
-    questionItemNew.setValue(payloadQuestion.item!.id, "id");
-    questionRecord.setLinkedRecord(questionItemNew, "item");
-    questionRecord.setValue(payloadQuestion.item!.id, "itemId");
-
-    // property: text
-    if (payloadQuestion.text) {
-      questionRecord.setValue(payloadQuestion.text, "text");
-    }
-
-    // property: type
-    questionRecord.setValue("MULTIPLE_CHOICE", "type");
-
-    const quizRecord = store.get(`client:${quizAssessmentId}:quiz`)!;
-    let questionPool = quizRecord.getLinkedRecords("questionPool")!;
-    questionPool.push(questionRecord);
-    quizRecord.setLinkedRecords(questionPool, "questionPool");
+  readonly update: {
+    readonly MultipleChoiceQuestion: EditMultipleChoiceQuestionMutation$data;
+    readonly AssociationQuestion: EditAssociationQuestionMutation$data;
+    readonly ClozeQuestion: EditClozeQuestionMutation$data;
   };
-}
+};
+type Mode = keyof MutatorMap;
+type Variant = keyof MutatorMap[Mode];
+type MutationData<M extends Mode, V extends Variant> = MutatorMap[M][V];
 
-export function addAssociationQuestionUpdaterClosure(
+export function questionUpdaterClosure<M extends Mode, V extends Variant>(
+  mode: M,
+  variant: V,
   quizAssessmentId: string,
   courseId: string
 ) {
-  return (store: RecordSourceSelectorProxy<Types>, data: Types) => {
-    // get payloadQuestion from the data
-    data = data as AddAssociationQuestionModalMutation$data;
-    let payloadQuestion =
-      data.mutateQuiz.addAssociationQuestion.modifiedQuestion;
+  type D = MutationData<M, V>;
+  return (store: RecordSourceSelectorProxy<D>, data: D) => {
+    const { mutateQuiz } = data;
 
-    // create the question record
-    let questionIndex = getQuestionPoolSize(store, quizAssessmentId);
-    let questionRecord = store.create(
-      `client:${quizAssessmentId}:quiz:questionPool:${questionIndex}`,
-      "AssociationQuestion"
-    );
-    if (!questionRecord) {
-      throw new Error("Question record could not be created");
-    }
-
-    // update the question record's properties
-    // property: correctAssociations
-    let correctAssociationsRecords: RecordProxy[] = [];
-    payloadQuestion.correctAssociations!.map((association, i) => {
-      const dataId = `client:${quizAssessmentId}:quiz:questionPool:${questionIndex}:correctAssociations:${i}`;
-      const associationRecord =
-        store.get(dataId) ?? store.create(dataId, "SingleAssociation");
-      associationRecord.setValue(association.right, "right");
-      associationRecord.setValue(association.left, "left");
-      if (association.feedback) {
-        associationRecord.setValue(association.feedback, "feedback");
+    // TODO fix the typing
+    type OtherKeys = Exclude<typeof mutateQuiz, "assessmentId">;
+    const mutationResult = mutateQuiz[`${mode}${variant}` as keyof OtherKeys];
+    const payloadQuestion = (
+      mutationResult as unknown as {
+        modifiedQuestion: MCQuestion | ClozeQuestion | AssociationQuestion;
       }
-      correctAssociationsRecords.push(associationRecord);
-    });
-    questionRecord.setLinkedRecords(
-      correctAssociationsRecords,
-      "correctAssociations"
+    ).modifiedQuestion;
+
+    let question;
+    let questionIndex;
+    // questions are mapped via array index numbers, not via the number prop
+    const questionDataId = _.curry(generateRelayStoreDataIdQuestion)(
+      quizAssessmentId
     );
+    if (mode === "add") {
+      const questionPoolSize = store
+        .get(generateRelayStoreDataIdQuiz(quizAssessmentId))!
+        .getLinkedRecords("questionPool")!.length;
+      questionIndex = questionPoolSize;
 
-    // property: hint
-    if (payloadQuestion.hint) {
-      questionRecord.setValue(payloadQuestion.hint, "hint");
-    }
-
-    // property: item
-    const questionItemNew = createItemFromPayload(
-      store,
-      payloadQuestion.item!,
-      courseId
-    );
-    questionItemNew.setValue(payloadQuestion.item!.id, "id");
-    questionRecord.setLinkedRecord(questionItemNew, "item");
-    questionRecord.setValue(payloadQuestion.item!.id, "itemId");
-
-    // property: text
-    if (payloadQuestion.text) {
-      questionRecord.setValue(payloadQuestion.text, "text");
-    }
-
-    // property: type
-    questionRecord.setValue("ASSOCIATION", "type");
-
-    const quizRecord = store.get(`client:${quizAssessmentId}:quiz`)!;
-    let questionPool = quizRecord.getLinkedRecords("questionPool")!;
-    questionPool.push(questionRecord);
-    quizRecord.setLinkedRecords(questionPool, "questionPool");
-  };
-}
-
-export function updateAssociationQuestionUpdaterClosure(
-  quizAssessmentId: string,
-  courseId: string
-) {
-  return (store: RecordSourceSelectorProxy<Types>, data: Types) => {
-    // get payloadQuestion from the data
-    data = data as EditAssociationQuestionMutation$data;
-    let payloadQuestion =
-      data.mutateQuiz.updateAssociationQuestion.modifiedQuestion;
-
-    // get the question record
-    let questionIndex = payloadQuestion.number - 1;
-    let questionRecord = store.get(
-      `client:${quizAssessmentId}:quiz:questionPool:${questionIndex}`
-    );
-    if (!questionRecord) {
-      throw new Error("Question record not found");
-    }
-
-    // update the question record's properties
-    // property: correctAssociations
-    let correctAssociationsRecords: RecordProxy[] = [];
-    payloadQuestion.correctAssociations!.map((association, i) => {
-      const dataId = `client:${quizAssessmentId}:quiz:questionPool:${questionIndex}:correctAssociations:${i}`;
-      const associationRecord =
-        store.get(dataId) ?? store.create(dataId, "SingleAssociation");
-      associationRecord.setValue(association.right, "right");
-      associationRecord.setValue(association.left, "left");
-      if (association.feedback) {
-        associationRecord.setValue(association.feedback, "feedback");
-      }
-      correctAssociationsRecords.push(associationRecord);
-    });
-    questionRecord.setLinkedRecords(
-      correctAssociationsRecords,
-      "correctAssociations"
-    );
-
-    // property: hint
-    if (payloadQuestion.hint) {
-      questionRecord.setValue(payloadQuestion.hint, "hint");
-    }
-
-    // property: item
-    const questionItemNew = createItemFromPayload(
-      store,
-      payloadQuestion.item!,
-      courseId
-    );
-    questionItemNew.setValue(payloadQuestion.item!.id, "id");
-    questionRecord.setLinkedRecord(questionItemNew, "item");
-    questionRecord.setValue(payloadQuestion.item!.id, "itemId");
-
-    // property: text
-    if (payloadQuestion.text) {
-      questionRecord.setValue(payloadQuestion.text, "text");
-    }
-  };
-}
-
-export function addClozeQuestionUpdaterClosure(
-  quizAssessmentId: string,
-  courseId: string
-) {
-  return (store: RecordSourceSelectorProxy<Types>, data: Types) => {
-    // get payloadQuestion from the data
-    data = data as AddClozeQuestionModalMutation$data;
-    let payloadQuestion = data.mutateQuiz.addClozeQuestion.modifiedQuestion;
-
-    // create the question record
-    let questionIndex = getQuestionPoolSize(store, quizAssessmentId);
-    let questionRecord = store.create(
-      `client:${quizAssessmentId}:quiz:questionPool:${questionIndex}`,
-      "ClozeQuestion"
-    );
-    if (!questionRecord) {
-      throw new Error("Question record could not be created");
-    }
-
-    // set the question record's properties
-    // property: additional wrong answers
-    if (payloadQuestion.additionalWrongAnswers) {
-      let newAWAs: string[] = [];
-      payloadQuestion.additionalWrongAnswers.map((answer, i) => {
-        newAWAs.push(answer);
-      });
-      questionRecord.setValue(newAWAs, "additionalWrongAnswers");
-    }
-
-    // property: allBlanks
-    if (payloadQuestion.allBlanks) {
-      let newAllBlanks: string[] = [];
-      payloadQuestion.allBlanks.map((answer, i) => {
-        newAllBlanks.push(answer);
-      });
-      questionRecord.setValue(newAllBlanks, "allBlanks");
-    }
-
-    // property: clozeElements
-    let clozeElementsRecords: RecordProxy[] = [];
-    payloadQuestion.clozeElements!.map((clozeElement, i) => {
-      const dataId = `client:${quizAssessmentId}:quiz:questionPool:${questionIndex}:clozeElements:${i}`;
-      const clozeElementRecord =
-        store.get(dataId) ?? store.create(dataId, "ClozeElement");
-      clozeElementRecord.setValue(clozeElement.__typename, "__typename");
-      if (clozeElement.__typename === "ClozeTextElement") {
-        clozeElementRecord.setValue(clozeElement.text, "text");
-      } else if (clozeElement.__typename === "ClozeBlankElement") {
-        clozeElementRecord.setValue(
-          clozeElement.correctAnswer,
-          "correctAnswer"
+      question = store.create(questionDataId(questionPoolSize), variant);
+    } /* update */ else {
+      const indexInQuestionPool = store
+        .get(generateRelayStoreDataIdQuiz(quizAssessmentId))!
+        .getLinkedRecords("questionPool")!
+        .findIndex(
+          (question) => question.getValue("itemId") === payloadQuestion.item!.id
         );
-        if (clozeElement.feedback) {
-          clozeElementRecord.setValue(clozeElement.feedback, "feedback");
-        }
-      }
-      clozeElementsRecords.push(clozeElementRecord);
-    });
-    questionRecord.setLinkedRecords(clozeElementsRecords, "clozeElements");
+      questionIndex = indexInQuestionPool;
 
-    // property: hint
-    if (payloadQuestion.hint) {
-      questionRecord.setValue(payloadQuestion.hint, "hint");
+      question = assertRecordExists(
+        store.get(questionDataId(indexInQuestionPool)),
+        questionDataId(indexInQuestionPool)
+      );
     }
 
-    // property: item
-    const questionItemNew = createItemFromPayload(
+    if (variant === "MultipleChoiceQuestion") {
+      const mcQuestion = payloadQuestion as unknown as MCQuestion;
+      const questionAnswers = createMCAnswersFromPayload(
+        store,
+        mcQuestion,
+        _.curry(generateRelayStoreDataIdMCAnswer)(
+          quizAssessmentId,
+          questionIndex
+        )
+      );
+      question.setLinkedRecords(questionAnswers, "answers");
+
+      question.setValue(mcQuestion.text, "text");
+
+      // TODO fix schema
+      // question.setValue(
+      //   payloadQuestion.numberOfCorrectAnswers,
+      //   "numberOfCorrectAnswers"
+      // );
+    } else if (variant === "AssociationQuestion") {
+      const associationQuestion = payloadQuestion as AssociationQuestion;
+
+      const questionAssociations = createCorrectAssociationsFromPayload(
+        store,
+        associationQuestion,
+        _.curry(generateRelayStoreDataIdCorrectAssociation)(
+          quizAssessmentId,
+          questionIndex
+        )
+      );
+      question.setLinkedRecords(questionAssociations, "correctAssociations");
+
+      // TODO fix schema
+      // forgot what I commented out...
+      question.setValue(associationQuestion.text, "text");
+    } else if (variant === "ClozeQuestion") {
+      const clozeQuestion = payloadQuestion as ClozeQuestion;
+
+      const questionClozeElements = createClozeElementsFromPayload(
+        store,
+        clozeQuestion,
+        _.curry(generateRelayStoreDataIdClozeElement)(
+          quizAssessmentId,
+          questionIndex
+        )
+      );
+      question.setLinkedRecords(questionClozeElements, "clozeElements");
+
+      question.setValue(clozeQuestion.allBlanks as string[], "allBlanks");
+      question.setValue(clozeQuestion.showBlanksList, "showBlankList");
+      question.setValue(
+        clozeQuestion.additionalWrongAnswers as string[],
+        "additionalWrongAnswers"
+      );
+    }
+
+    question.setValue(payloadQuestion.number, "number");
+    question.setValue(payloadQuestion.type, "type");
+    if ("hint" in payloadQuestion)
+      question.setValue(payloadQuestion.hint, "hint");
+
+    const questionItem = createItemFromPayload(
       store,
       payloadQuestion.item!,
       courseId
     );
-    questionItemNew.setValue(payloadQuestion.item!.id, "id");
-    questionRecord.setLinkedRecord(questionItemNew, "item");
-    questionRecord.setValue(payloadQuestion.item!.id, "itemId");
+    question.setLinkedRecord(questionItem, "item");
+    question.setValue(payloadQuestion.item!.id, "itemId");
 
-    // property: show blanks list
-    if (payloadQuestion.showBlanksList) {
-      questionRecord.setValue(payloadQuestion.showBlanksList, "showBlanksList");
-    }
-
-    // property: type
-    questionRecord.setValue("CLOZE", "type");
-
-    const quizRecord = store.get(`client:${quizAssessmentId}:quiz`)!;
-    let questionPool = quizRecord.getLinkedRecords("questionPool")!;
-    questionPool.push(questionRecord);
-    quizRecord.setLinkedRecords(questionPool, "questionPool");
+    const questionQuiz = store.get(quizAssessmentId)!.getLinkedRecord("quiz")!;
+    let currentQuestionPool = questionQuiz.getLinkedRecords("questionPool")!;
+    currentQuestionPool =
+      mode === "add"
+        ? [...currentQuestionPool, question]
+        : [
+            ...currentQuestionPool.slice(0, questionIndex),
+            question,
+            ...currentQuestionPool.slice(questionIndex + 1),
+          ];
+    questionQuiz.setLinkedRecords(currentQuestionPool, "questionPool");
   };
 }
 
-export function updateClozeQuestionUpdaterClosure(
-  quizAssessmentId: string,
-  courseId: string
-) {
-  return (store: RecordSourceSelectorProxy<Types>, data: Types) => {
-    // get payloadQuestion from the data
-    data = data as EditClozeQuestionMutation$data;
-    let payloadQuestion = data.mutateQuiz.updateClozeQuestion.modifiedQuestion;
+type MCQuestion = Omit<
+  | AddMultipleChoiceQuestionModalMutation$data["mutateQuiz"]["addMultipleChoiceQuestion"]["modifiedQuestion"]
+  | EditMultipleChoiceQuestionMutation$data["mutateQuiz"]["updateMultipleChoiceQuestion"]["modifiedQuestion"],
+  " $fragmentSpreads"
+>;
+const createMCAnswersFromPayload = (
+  store: RecordSourceSelectorProxy,
+  payload: MCQuestion,
+  getMCAnswerDataId: (index: number) => string
+) =>
+  payload.answers!.map((answer, i) => {
+    const dataId = getMCAnswerDataId(i);
+    const answerRecord =
+      store.get(dataId) ?? store.create(dataId, "MultipleChoiceAnswer");
 
-    // get the question record
-    let questionIndex = payloadQuestion.number - 1;
-    let questionRecord = store.get(
-      `client:${quizAssessmentId}:quiz:questionPool:${questionIndex}`
-    );
-    if (!questionRecord) {
-      throw new Error("Question record not found");
+    answerRecord.setValue(answer.answerText, "answerText");
+    answerRecord.setValue(answer.correct, "correct");
+    answerRecord.setValue(answer.feedback, "feedback");
+
+    return answerRecord;
+  });
+
+type AssociationQuestion = Omit<
+  | AddAssociationQuestionModalMutation$data["mutateQuiz"]["addAssociationQuestion"]["modifiedQuestion"]
+  | EditAssociationQuestionMutation$data["mutateQuiz"]["updateAssociationQuestion"]["modifiedQuestion"],
+  " $fragmentSpreads"
+>;
+const createCorrectAssociationsFromPayload = (
+  store: RecordSourceSelectorProxy,
+  payload: AssociationQuestion,
+  getCorrectAssociationAnswerDataId: (index: number) => string
+) =>
+  payload.correctAssociations?.map((association, i) => {
+    const dataId = getCorrectAssociationAnswerDataId(i);
+    const assocRecord =
+      store.get(dataId) ?? store.create(dataId, "SingleAssociation");
+
+    assocRecord.setValue(association.right, "right");
+    assocRecord.setValue(association.left, "left");
+    if (association.feedback)
+      assocRecord.setValue(association.feedback, "feedback");
+
+    return assocRecord;
+  });
+
+type ClozeQuestion = Omit<
+  | AddClozeQuestionModalMutation$data["mutateQuiz"]["addClozeQuestion"]["modifiedQuestion"]
+  | EditClozeQuestionMutation$data["mutateQuiz"]["updateClozeQuestion"]["modifiedQuestion"],
+  " $fragmentSpreads"
+>;
+const createClozeElementsFromPayload = (
+  store: RecordSourceSelectorProxy,
+  payload: ClozeQuestion,
+  getClozeElementDataId: (index: number) => string
+) =>
+  payload.clozeElements!.map((clozeElement, i) => {
+    const dataId = getClozeElementDataId(i);
+    const clozeRecord =
+      store.get(dataId) ?? store.create(dataId, "MultipleChoiceAnswer");
+
+    clozeRecord.setValue(clozeElement.__typename, "__typename");
+    if (clozeElement.__typename === "ClozeTextElement") {
+      clozeRecord.setValue(clozeElement.text, "text");
+    } else if (clozeElement.__typename === "ClozeBlankElement") {
+      clozeRecord.setValue(clozeElement.correctAnswer, "correctAnswer");
+      if (clozeElement.feedback)
+        clozeRecord.setValue(clozeElement.feedback, "feedback");
     }
 
-    // update the question record's properties
-    // property: additional wrong answers
-    if (payloadQuestion.additionalWrongAnswers) {
-      let newAWAs: string[] = [];
-      payloadQuestion.additionalWrongAnswers.map((answer, i) => {
-        newAWAs.push(answer);
-      });
-      questionRecord.setValue(newAWAs, "additionalWrongAnswers");
-    }
-
-    // property: allBlanks
-    if (payloadQuestion.allBlanks) {
-      let newAllBlanks: string[] = [];
-      payloadQuestion.allBlanks.map((answer, i) => {
-        newAllBlanks.push(answer);
-      });
-      questionRecord.setValue(newAllBlanks, "allBlanks");
-    }
-
-    // property: clozeElements
-    let clozeElementsRecords: RecordProxy[] = [];
-    payloadQuestion.clozeElements!.map((clozeElement, i) => {
-      const dataId = `client:${quizAssessmentId}:quiz:questionPool:${questionIndex}:clozeElements:${i}`;
-      const clozeElementRecord =
-        store.get(dataId) ?? store.create(dataId, "ClozeElement");
-      clozeElementRecord.setValue(clozeElement.__typename, "__typename");
-      if (clozeElement.__typename === "ClozeTextElement") {
-        clozeElementRecord.setValue(clozeElement.text, "text");
-      } else if (clozeElement.__typename === "ClozeBlankElement") {
-        clozeElementRecord.setValue(
-          clozeElement.correctAnswer,
-          "correctAnswer"
-        );
-        if (clozeElement.feedback) {
-          clozeElementRecord.setValue(clozeElement.feedback, "feedback");
-        }
-      }
-      clozeElementsRecords.push(clozeElementRecord);
-    });
-    questionRecord.setLinkedRecords(clozeElementsRecords, "clozeElements");
-
-    // property: hint
-    if (payloadQuestion.hint) {
-      questionRecord.setValue(payloadQuestion.hint, "hint");
-    }
-
-    // property: item
-    const questionItemNew = createItemFromPayload(
-      store,
-      payloadQuestion.item!,
-      courseId
-    );
-    questionItemNew.setValue(payloadQuestion.item!.id, "id");
-    questionRecord.setLinkedRecord(questionItemNew, "item");
-    questionRecord.setValue(payloadQuestion.item!.id, "itemId");
-
-    // property: show blanks list
-    if (payloadQuestion.showBlanksList) {
-      questionRecord.setValue(payloadQuestion.showBlanksList, "showBlanksList");
-    }
-  };
-}
-
-function getQuestionPoolSize(
-  store: RecordSourceSelectorProxy<Types>,
-  quizAssessmentId: string
-) {
-  let size: number;
-  if (
-    store
-      .get(`client:${quizAssessmentId}:quiz`)
-      ?.getLinkedRecords("questionPool")
-  ) {
-    size = store
-      .get(`client:${quizAssessmentId}:quiz`)!
-      .getLinkedRecords("questionPool")!.length;
-  } else {
-    size = 0;
-  }
-  return size;
-}
+    return clozeRecord;
+  });

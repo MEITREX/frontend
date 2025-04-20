@@ -2,7 +2,7 @@ import { EditMultipleChoiceQuestionFragment$key } from "@/__generated__/EditMult
 import { EditMultipleChoiceQuestionMutation } from "@/__generated__/EditMultipleChoiceQuestionMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
-import { updateMCQuestionUpdaterClosure } from "@/src/relay-helpers/question";
+import { questionUpdaterClosure } from "@/src/relay-helpers/question";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
@@ -53,7 +53,6 @@ const MultipleChoiceQuestionMutation = graphql`
         assessmentId: $assessmentId
         item: $item
       ) {
-        assessmentId
         modifiedQuestion {
           number
           type
@@ -121,7 +120,13 @@ export function EditMultipleChoiceQuestion({
     );
 
   const updater = useCallback(
-    () => updateMCQuestionUpdaterClosure(quizId, courseId),
+    () =>
+      questionUpdaterClosure(
+        "update",
+        "MultipleChoiceQuestion",
+        quizId,
+        courseId
+      ),
     [courseId, quizId]
   );
 

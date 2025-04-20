@@ -174,7 +174,7 @@ export const flashcardSetUpdaterDelete =
         .getLinkedRecords("elements")!;
       for (const chapter of chapters) {
         const contents = chapter.getLinkedRecords("contents")!;
-        if (contents.length === 0) continue;
+        if (contents?.length === 0) continue;
 
         const newContents = contents.filter((content) => {
           const isNotDeleted = content.getDataID() !== deletedContent;

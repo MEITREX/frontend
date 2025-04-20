@@ -1,7 +1,7 @@
 import { AddMultipleChoiceQuestionModalMutation } from "@/__generated__/AddMultipleChoiceQuestionModalMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
-import { addMCQuestionUpdaterClosure } from "@/src/relay-helpers/question";
+import { questionUpdaterClosure } from "@/src/relay-helpers/question";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useMutation } from "react-relay";
@@ -25,7 +25,6 @@ const MultipleChoiceQuestionMutation = graphql`
         assessmentId: $assessmentId
         item: $item
       ) {
-        assessmentId
         modifiedQuestion {
           number
           type
@@ -88,7 +87,8 @@ export function AddMultipleChoiceQuestionModal({
     );
 
   const updater = useCallback(
-    () => addMCQuestionUpdaterClosure(quizId, courseId),
+    () =>
+      questionUpdaterClosure("add", "MultipleChoiceQuestion", quizId, courseId),
     [courseId, quizId]
   );
 
