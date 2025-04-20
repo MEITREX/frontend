@@ -89,12 +89,15 @@ export function questionUpdaterClosure<M extends Mode, V extends Variant>(
       quizAssessmentId
     );
     if (mode === "add") {
-      const questionPoolSize = store
+      questionIndex = store
         .get(generateRelayStoreDataIdQuiz(quizAssessmentId))!
         .getLinkedRecords("questionPool")!.length;
-      questionIndex = questionPoolSize;
-
-      question = store.create(questionDataId(questionPoolSize), variant);
+      // prevent index collisions when adding a question after deleting one
+      // this is probably a bit dirty
+      while (store.get(questionDataId(questionIndex))) {
+        ++questionIndex;
+      }
+      question = store.create(questionDataId(questionIndex), variant);
     } /* update */ else {
       const indexInQuestionPool = store
         .get(generateRelayStoreDataIdQuiz(quizAssessmentId))!
