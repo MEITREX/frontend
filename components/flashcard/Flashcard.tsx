@@ -1,10 +1,10 @@
 import { Add } from "@mui/icons-material";
 import { Button, IconButton, Tooltip, Typography } from "@mui/material";
 import { Dispatch, SetStateAction, useState } from "react";
-import ItemFormSectionNew, {
+import ItemFormSection, {
   isItemEditable,
   ItemFormSectionProps,
-} from "../form-sections/item/ItemFormSectionNew";
+} from "../form-sections/item/ItemFormSection";
 import { EditSideModal } from "./EditSideModal";
 import { FlashcardSide, FlashcardSideData } from "./FlashcardSide";
 
@@ -50,7 +50,7 @@ const Flashcard = (props: FlashcardProps) => {
         </Typography>
 
         {/* Prop destructuring is fix for type error */}
-        <ItemFormSectionNew {...(isItemEditable(props) ? props : props)} />
+        <ItemFormSection {...(isItemEditable(props) ? props : props)} />
         <div className="flex flex-wrap gap-2">
           {flashcardSides.map((currentSide, i) => (
             <FlashcardSide

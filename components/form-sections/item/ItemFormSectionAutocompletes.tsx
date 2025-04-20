@@ -27,7 +27,7 @@ import {
   Item,
   itemFormSectionFragment,
   ItemSkill,
-} from "./ItemFormSectionNew";
+} from "./ItemFormSection";
 import { MappedSkillType } from "./standardizedCompentencies";
 
 type SkillCategoryInAutocomplete = (

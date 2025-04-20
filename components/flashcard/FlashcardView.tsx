@@ -1,6 +1,6 @@
 import { EditFlashcardFragment$key } from "@/__generated__/EditFlashcardFragment.graphql";
 import { useFragment } from "react-relay";
-import { Item } from "../form-sections/item/ItemFormSectionNew";
+import { Item } from "../form-sections/item/ItemFormSection";
 import { FlashcardFragment } from "./EditFlashcard";
 import Flashcard from "./Flashcard";
 import { FlashcardSideData } from "./FlashcardSide";

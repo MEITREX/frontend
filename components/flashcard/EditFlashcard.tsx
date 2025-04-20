@@ -12,7 +12,7 @@ import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
 import { useError } from "../ErrorContext";
-import { CreateItem, Item } from "../form-sections/item/ItemFormSectionNew";
+import { CreateItem, Item } from "../form-sections/item/ItemFormSection";
 import Flashcard from "./Flashcard";
 import { FlashcardSideData } from "./FlashcardSide";
 

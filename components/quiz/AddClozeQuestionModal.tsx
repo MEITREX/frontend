@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useMutation } from "react-relay";
 import { useError } from "../ErrorContext";
-import { CreateItem } from "../form-sections/item/ItemFormSectionNew";
+import { CreateItem } from "../form-sections/item/ItemFormSection";
 import { ClozeQuestionData, ClozeQuestionModal } from "./ClozeQuestionModal";
 
 const ClozeQuestionMutation = graphql`

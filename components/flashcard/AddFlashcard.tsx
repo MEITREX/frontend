@@ -7,7 +7,7 @@ import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { PreloadedQuery, useFragment, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
 import { useError } from "../ErrorContext";
-import { CreateItem } from "../form-sections/item/ItemFormSectionNew";
+import { CreateItem } from "../form-sections/item/ItemFormSection";
 import Flashcard from "./Flashcard";
 import { FlashcardSideData } from "./FlashcardSide";
 

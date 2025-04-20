@@ -14,10 +14,10 @@ import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
 import { PreloadedQuery } from "react-relay";
 import { useError } from "../ErrorContext";
 import { Form, FormSection } from "../Form";
-import ItemFormSectionNew, {
+import ItemFormSection, {
   CreateItem,
   Item,
-} from "../form-sections/item/ItemFormSectionNew";
+} from "../form-sections/item/ItemFormSection";
 import { FormErrors } from "../FormErrors";
 import { RichTextEditor, serializeToText } from "../RichTextEditor";
 import { EditRichTextButton } from "./EditRichTextButton";
@@ -127,10 +127,7 @@ export function AssociationQuestionModal({
     [questionData.correctAssociations]
   );
 
-  const valid =
-    hasTitle &&
-    hatAtLeastTwoItems &&
-    allItemsFilled;
+  const valid = hasTitle && hatAtLeastTwoItems && allItemsFilled;
 
   return (
     <Dialog open={open} maxWidth="lg" onClose={onClose}>
@@ -138,7 +135,7 @@ export function AssociationQuestionModal({
       <DialogContent>
         <FormErrors error={error} />
         <Form>
-          <ItemFormSectionNew
+          <ItemFormSection
             operation="edit"
             item={item}
             setItem={setItem}

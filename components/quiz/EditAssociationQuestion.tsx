@@ -11,7 +11,7 @@ import {
   CreateItem,
   Item,
   mapRelayItemToItem,
-} from "../form-sections/item/ItemFormSectionNew";
+} from "../form-sections/item/ItemFormSection";
 import {
   AssociationQuestionData,
   AssociationQuestionModal,

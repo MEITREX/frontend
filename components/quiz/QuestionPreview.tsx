@@ -10,9 +10,7 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { PreloadedQuery, useFragment } from "react-relay";
 import { graphql } from "relay-runtime";
-import ItemFormSectionNew, {
-  Item,
-} from "../form-sections/item/ItemFormSectionNew";
+import ItemFormSection, { Item } from "../form-sections/item/ItemFormSection";
 import { RenderRichText } from "../RichTextEditor";
 import { AssociationQuestionPreview } from "./AssociationQuestionPreview";
 import { ClozeQuestionPreview } from "./ClozeQuestionPreview";
@@ -124,7 +122,7 @@ const QuestionPreview = ({
     <div className="flex flex-col gap-2">
       <RenderRichText value={data.text ?? "Cloze??"} />
 
-      <ItemFormSectionNew operation="view" item={item} />
+      <ItemFormSection operation="view" item={item} />
 
       <div className="flex flex-col gap-2">
         {data.type === "ASSOCIATION" ? (

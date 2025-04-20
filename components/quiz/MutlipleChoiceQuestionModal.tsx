@@ -16,10 +16,10 @@ import { Dispatch, SetStateAction, useCallback } from "react";
 import { PreloadedQuery } from "react-relay";
 import { useError } from "../ErrorContext";
 import { Form, FormSection } from "../Form";
-import ItemFormSectionNew, {
+import ItemFormSection, {
   CreateItem,
   Item,
-} from "../form-sections/item/ItemFormSectionNew";
+} from "../form-sections/item/ItemFormSection";
 import { FormErrors } from "../FormErrors";
 import { RichTextEditor, serializeToText } from "../RichTextEditor";
 
@@ -133,7 +133,7 @@ export function MultipleChoiceQuestionModal({
       <DialogContent>
         <FormErrors error={error} />
         <Form>
-          <ItemFormSectionNew
+          <ItemFormSection
             operation="edit"
             item={item}
             setItem={setItem}
