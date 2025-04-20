@@ -150,11 +150,7 @@ const QuestionPreview = ({
         />
       )}
 
-      <DeleteQuestionButton
-        num={data.number}
-        assessmentId={quizId}
-        questionId={data.itemId}
-      />
+      <DeleteQuestionButton num={data.number} assessmentId={quizId} />
       {openEditModal === "CLOZE" && (
         <EditClozeQuestion
           _allRecords={mediaRecords}

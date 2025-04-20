@@ -1,5 +1,5 @@
-import { LecturerQuizHeaderFragment$key } from "@/__generated__/LecturerQuizHeaderFragment.graphql";
 import { QuizHeaderDeleteQuizMutation } from "@/__generated__/QuizHeaderDeleteQuizMutation.graphql";
+import { QuizHeaderFragment$key } from "@/__generated__/QuizHeaderFragment.graphql";
 import { updaterSetDelete } from "@/src/relay-helpers/common";
 import { Delete, Edit } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
@@ -30,7 +30,7 @@ const metadataFragment = graphql`
 `;
 
 interface Props {
-  content: LecturerQuizHeaderFragment$key;
+  content: QuizHeaderFragment$key;
   openEditQuizModal: () => void;
 }
 

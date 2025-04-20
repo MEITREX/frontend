@@ -22,7 +22,6 @@ const RootQuery = graphql`
       metadata {
         name
         chapterId
-        ...ContentTags
       }
       ... on QuizAssessment {
         quiz {

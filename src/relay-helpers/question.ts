@@ -1,12 +1,17 @@
 import { AddAssociationQuestionModalMutation$data } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
 import { AddClozeQuestionModalMutation$data } from "@/__generated__/AddClozeQuestionModalMutation.graphql";
 import { AddMultipleChoiceQuestionModalMutation$data } from "@/__generated__/AddMultipleChoiceQuestionModalMutation.graphql";
+import { DeleteQuestionButtonMutation$data } from "@/__generated__/DeleteQuestionButtonMutation.graphql";
 import { EditAssociationQuestionMutation$data } from "@/__generated__/EditAssociationQuestionMutation.graphql";
 import { EditClozeQuestionMutation$data } from "@/__generated__/EditClozeQuestionMutation.graphql";
 import { EditMultipleChoiceQuestionMutation$data } from "@/__generated__/EditMultipleChoiceQuestionMutation.graphql";
 import _ from "lodash";
 import { RecordSourceSelectorProxy } from "relay-runtime";
-import { assertRecordExists, createItemFromPayload } from "./common";
+import {
+  assertRecordExists,
+  createItemFromPayload,
+  deleteDanglingItems,
+} from "./common";
 
 const generateRelayStoreDataIdQuiz = (quizAssessmentId: string) =>
   `client:${quizAssessmentId}:quiz`;
@@ -171,7 +176,7 @@ export function questionUpdaterClosure<M extends Mode, V extends Variant>(
       payloadQuestion.item!,
       courseId
     );
-    question.setLinkedRecord(questionItem, "item");
+    if (questionItem) question.setLinkedRecord(questionItem, "item");
     question.setValue(payloadQuestion.item!.id, "itemId");
 
     const questionQuiz = store.get(quizAssessmentId)!.getLinkedRecord("quiz")!;
@@ -259,3 +264,22 @@ const createClozeElementsFromPayload = (
 
     return clozeRecord;
   });
+
+export const questionUpdaterDeleteClosure =
+  (quizAssessmentId: string, questionNumber: number, courseId: string) =>
+  (
+    store: RecordSourceSelectorProxy<DeleteQuestionButtonMutation$data>,
+    data: DeleteQuestionButtonMutation$data
+  ) => {
+    const quiz = store.get(generateRelayStoreDataIdQuiz(quizAssessmentId))!;
+
+    const questionPool = quiz.getLinkedRecords("questionPool")!;
+    const questionDeleted = questionPool.splice(questionNumber - 1, 1)[0];
+    quiz.setLinkedRecords(questionPool, "questionPool");
+
+    deleteDanglingItems(
+      store,
+      questionDeleted.getLinkedRecord("item"),
+      courseId
+    );
+  };

@@ -73,6 +73,16 @@ const UpdateFlashcardSetMutation = graphql`
     }
   }
 `;
+const DeleteFlashcard = graphql`
+  mutation lecturerDeleteFlashcardMutation(
+    $flashcardId: UUID!
+    $assessmentId: UUID!
+  ) {
+    mutateFlashcardSet(assessmentId: $assessmentId) {
+      deleteFlashcard(id: $flashcardId)
+    }
+  }
+`;
 
 export const AllSkillQuery = graphql`
   query lecturerAllSkillsQuery($courseId: UUID!) {
@@ -116,16 +126,7 @@ export default function LecturerFlashcards() {
   }, [courseId, loadQuery, queryReference]);
 
   const [deleteFlashcard, isDeleting] =
-    useMutation<lecturerDeleteFlashcardMutation>(graphql`
-      mutation lecturerDeleteFlashcardMutation(
-        $flashcardId: UUID!
-        $assessmentId: UUID!
-      ) {
-        mutateFlashcardSet(assessmentId: $assessmentId) {
-          deleteFlashcard(id: $flashcardId)
-        }
-      }
-    `);
+    useMutation<lecturerDeleteFlashcardMutation>(DeleteFlashcard);
 
   const handleDeleteFlashcard = useCallback(
     (flashcardId: string, flashcardNumber: number) => {

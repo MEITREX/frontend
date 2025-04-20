@@ -6,7 +6,7 @@ import { RecordSourceSelectorProxy } from "relay-runtime";
 import {
   assertRecordExists,
   createItemFromPayload,
-  generateRelayStoreDataIdCourseIdSkills,
+  deleteDanglingItems,
 } from "./common";
 
 const generateRelayStoreDataIdFCSet = (flashcardSetAssessmentId: string) =>
@@ -96,7 +96,7 @@ export function flashcardUpdaterClosure(
       payloadFlashcard.item,
       courseId
     );
-    flashcard.setLinkedRecord(flashcardItem, "item");
+    if (flashcardItem) flashcard.setLinkedRecord(flashcardItem, "item");
     flashcard.setValue(payloadFlashcard.item.id, "itemId");
 
     const flashcardSet = store
@@ -132,27 +132,10 @@ export const flashcardUpdaterDeleteClosure =
     const flashcardDeleted = flashcards.splice(flashcardNumber, 1)[0];
     flashcardSet.setLinkedRecords(flashcards, "flashcards");
 
-    // removing the skills so that they won't appear in the Autocompletes
-    const coursesByIds = assertRecordExists(
-      store.get(generateRelayStoreDataIdCourseIdSkills(courseId)),
-      "coursesByIds"
-    );
-    const knownSkills = new Map(
-      coursesByIds
-        .getLinkedRecords("skills")!
-        .map((skill) => [skill.getValue("id") as string, skill])
-    );
-
-    const flashcardDeletedSkills = flashcardDeleted
-      .getLinkedRecord("item")!
-      .getLinkedRecords("associatedSkills")!;
-    flashcardDeletedSkills.forEach((skill: any) =>
-      knownSkills.delete(skill.getValue("id") as string)
-    );
-    coursesByIds.setLinkedRecords(Array.from(knownSkills.values()), "skills");
-
-    flashcardDeletedSkills.forEach((skill: any) =>
-      store.delete(skill.getDataID())
+    deleteDanglingItems(
+      store,
+      flashcardDeleted.getLinkedRecord("item"),
+      courseId
     );
   };
 

@@ -19,9 +19,11 @@ export const createItemFromPayload = (
   payload: ItemPayload,
   courseId: string
 ) => {
+  // since this is a prefetch query: just to make sure...
   const courseByIds = store.get(
     generateRelayStoreDataIdCourseIdSkills(courseId)
-  )!;
+  );
+  if (!courseByIds) return;
 
   const allCourseSkills = courseByIds.getLinkedRecords("skills")!;
   const knownSkills = new Set(
@@ -41,36 +43,67 @@ export const createItemFromPayload = (
   return store.get(payload.id)!;
 };
 
+export const deleteDanglingItems = (
+  store: RecordSourceSelectorProxy,
+  item: RecordProxy,
+  courseId: string
+) => {
+  // removing the skills so that they won't appear in the Autocompletes
+  const coursesByIds = assertRecordExists(
+    store.get(generateRelayStoreDataIdCourseIdSkills(courseId)),
+    "coursesByIds"
+  );
+
+  const knownSkills = new Map(
+    coursesByIds
+      .getLinkedRecords("skills")!
+      .map((skill) => [skill.getValue("id") as string, skill])
+  );
+
+  const flashcardDeletedSkills = item.getLinkedRecords("associatedSkills")!;
+  flashcardDeletedSkills.forEach((skill: any) =>
+    knownSkills.delete(skill.getValue("id") as string)
+  );
+  coursesByIds.setLinkedRecords(Array.from(knownSkills.values()), "skills");
+
+  flashcardDeletedSkills.forEach((skill: any) =>
+    store.delete(skill.getDataID())
+  );
+};
+
 type Data =
   | FlashcardHeaderDeleteFlashcardSetMutation$data
   | QuizHeaderDeleteQuizMutation$data;
 export const updaterSetDelete =
   (courseId: string) => (store: RecordSourceSelectorProxy<Data>, data: Data) =>
-    // avoiding null pointers
+    // avoiding null pointers on the deleted content before navigating in `onComplete`
     setTimeout(() => {
       const deletedContent = data.mutateContent.deleteContent;
       console.log("id:", deletedContent, store.get(deletedContent));
 
       const chapters = store
         .get(courseId)!
-        .getLinkedRecord("chapters")!
-        .getLinkedRecords("elements")!;
-      for (const chapter of chapters) {
-        const contents = chapter.getLinkedRecords("contents")!;
-        if (contents?.length === 0) continue;
+        .getLinkedRecord("chapters")
+        ?.getLinkedRecords("elements");
+      // `.getLinkedRecord("chapters")` rarely seems to return null for some reason
+      // since this is the behavior we actually want to archive here, I'm fine with it
+      if (chapters)
+        for (const chapter of chapters) {
+          const contents = chapter.getLinkedRecords("contents")!;
+          if (contents?.length === 0) continue;
 
-        const newContents = contents.filter((content) => {
-          const isNotDeleted = content.getDataID() !== deletedContent;
-          if (!isNotDeleted) {
-            store.delete(deletedContent);
-            // FIXME: deletion of content isn't propagated to the "other content" section, even though it should
-            // my guess is that something's not handled the right way in the course lecturer view
-          }
+          const newContents = contents.filter((content) => {
+            const isNotDeleted = content.getDataID() !== deletedContent;
+            if (!isNotDeleted) {
+              store.delete(deletedContent);
+              // FIXME: deletion of content isn't propagated to the "other content" section, even though it should
+              // my guess is that something's not handled the right way in the course lecturer view
+            }
 
-          return isNotDeleted;
-        });
-        chapter.setLinkedRecords(newContents, "contents");
-      }
+            return isNotDeleted;
+          });
+          chapter.setLinkedRecords(newContents, "contents");
+        }
 
       store.delete(data.mutateContent.deleteContent);
     }, 500);
