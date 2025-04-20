@@ -174,45 +174,55 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
         </Select>
       </FormControl>
 
-      <InputLabel htmlFor="skills-selected">Associated Skills:</InputLabel>
-      <Stack
-        id="skills-selected"
-        direction="row"
-        sx={{
-          marginBottom: "1.5rem",
-          flexWrap: "wrap",
-          gap: 1,
-        }}
-      >
-        {skillsSelected.map((skill, i) => (
-          <Chip
-            key={i}
+      {item.associatedSkills.length > 0 ? (
+        <>
+          <InputLabel htmlFor="skills-selected">Associated Skills:</InputLabel>
+          <Stack
+            id="skills-selected"
+            direction="row"
             sx={{
-              maxWidth: "250px",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
+              marginBottom: "1.5rem",
+              flexWrap: "wrap",
+              gap: 1,
             }}
-            title={skill.skillCategory + ": " + skill.skillName}
-            label={
-              (SKILL_CATEGORY_ABBREVIATION[skill.skillCategory] ||
-                skill.skillCategory) +
-              ": " +
-              skill.skillName
-            }
-            onDelete={
-              isItemEditable(props)
-                ? () =>
-                    props.setItem((prev) => {
-                      const newSelectedSkills = [...prev.associatedSkills];
-                      newSelectedSkills.splice(i, 1);
-                      return { ...prev, associatedSkills: newSelectedSkills };
-                    })
-                : undefined
-            }
-          />
-        ))}
-      </Stack>
+          >
+            {skillsSelected.map((skill, i) => (
+              <Chip
+                key={i}
+                sx={{
+                  maxWidth: "250px",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                }}
+                title={skill.skillCategory + ": " + skill.skillName}
+                label={
+                  (SKILL_CATEGORY_ABBREVIATION[skill.skillCategory] ||
+                    skill.skillCategory) +
+                  ": " +
+                  skill.skillName
+                }
+                onDelete={
+                  isItemEditable(props)
+                    ? () =>
+                        props.setItem((prev) => {
+                          const newSelectedSkills = [...prev.associatedSkills];
+                          newSelectedSkills.splice(i, 1);
+                          return {
+                            ...prev,
+                            associatedSkills: newSelectedSkills,
+                          };
+                        })
+                    : undefined
+                }
+              />
+            ))}
+          </Stack>
+        </>
+      ) : (
+        // for vertical spacing
+        <div className="my-[-6px]" />
+      )}
 
       {isEditable && props.allSkillsQueryRef && (
         <ItemFormSectionAutocompletes
