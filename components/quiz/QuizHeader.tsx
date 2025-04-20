@@ -1,9 +1,10 @@
-import { LecturerQuizHeaderDeleteQuizMutation } from "@/__generated__/LecturerQuizHeaderDeleteQuizMutation.graphql";
 import { LecturerQuizHeaderFragment$key } from "@/__generated__/LecturerQuizHeaderFragment.graphql";
+import { QuizHeaderDeleteQuizMutation } from "@/__generated__/QuizHeaderDeleteQuizMutation.graphql";
+import { updaterSetDelete } from "@/src/relay-helpers/common";
 import { Delete, Edit } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
-import { useParams } from "next/navigation";
-import router from "next/router";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback } from "react";
 import { useFragment, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
 import { ContentTags } from "../ContentTags";
@@ -12,7 +13,7 @@ import { FormErrors } from "../FormErrors";
 import { Heading } from "../Heading";
 
 const deleteQuizMutation = graphql`
-  mutation LecturerQuizHeaderDeleteQuizMutation($id: UUID!) {
+  mutation QuizHeaderDeleteQuizMutation($id: UUID!) {
     mutateContent(contentId: $id) {
       deleteContent
     }
@@ -20,8 +21,7 @@ const deleteQuizMutation = graphql`
 `;
 
 const metadataFragment = graphql`
-  fragment LecturerQuizHeaderFragment on Content {
-    id
+  fragment QuizHeaderFragment on Content {
     metadata {
       name
       ...ContentTags
@@ -34,15 +34,28 @@ interface Props {
   openEditQuizModal: () => void;
 }
 
-const LecturerQuizHeader = ({ content, openEditQuizModal }: Props) => {
-  const { courseId } = useParams();
-
-  const [commitDeleteQuiz, isDeleteCommitInFlight] =
-    useMutation<LecturerQuizHeaderDeleteQuizMutation>(deleteQuizMutation);
-
-  const { id, metadata } = useFragment(metadataFragment, content);
+const QuizHeader = ({ content, openEditQuizModal }: Props) => {
+  const { courseId, quizId } = useParams();
+  const router = useRouter();
 
   const { error, setError } = useError();
+
+  const [commitDeleteQuiz, isDeleteCommitInFlight] =
+    useMutation<QuizHeaderDeleteQuizMutation>(deleteQuizMutation);
+
+  const updater = useCallback(() => updaterSetDelete(courseId), [courseId]);
+  const deleteQuiz = useCallback(
+    () =>
+      commitDeleteQuiz({
+        variables: { id: quizId },
+        onCompleted: () => router.push(`/courses/${courseId}`),
+        onError: (error) => setError(error),
+        updater: updater(),
+      }),
+    [commitDeleteQuiz, courseId, quizId, router, setError, updater]
+  );
+
+  const { metadata } = useFragment(metadataFragment, content);
 
   return (
     <>
@@ -64,19 +77,8 @@ const LecturerQuizHeader = ({ content, openEditQuizModal }: Props) => {
                   confirm(
                     "Do you really want to delete this quiz? This can't be undone."
                   )
-                ) {
-                  commitDeleteQuiz({
-                    variables: { id: id },
-                    onCompleted: () => {
-                      router.push(`/courses/${courseId}`);
-                    },
-                    onError: (error) => setError(error),
-                    updater: (store) => {
-                      // store.get(id)?.invalidateRecord();
-                      store.delete(id);
-                    },
-                  });
-                }
+                )
+                  deleteQuiz();
               }}
             >
               Delete Quiz
@@ -87,7 +89,7 @@ const LecturerQuizHeader = ({ content, openEditQuizModal }: Props) => {
               startIcon={<Edit />}
               onClick={openEditQuizModal}
             >
-              Edit
+              Edit Quiz
             </Button>
           </div>
         }
@@ -101,4 +103,4 @@ const LecturerQuizHeader = ({ content, openEditQuizModal }: Props) => {
   );
 };
 
-export default LecturerQuizHeader;
+export default QuizHeader;

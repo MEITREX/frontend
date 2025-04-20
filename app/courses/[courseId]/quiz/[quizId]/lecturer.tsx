@@ -4,8 +4,8 @@ import { ErrorContext, ES2022Error } from "@/components/ErrorContext";
 import { PageError } from "@/components/PageError";
 import { QuizModal } from "@/components/QuizModal";
 import { AddQuestionButton } from "@/components/quiz/AddQuestionButton";
-import LecturerQuizHeader from "@/components/quiz/LecturerQuizHeader";
 import QuestionPreview from "@/components/quiz/QuestionPreview";
+import QuizHeader from "@/components/quiz/QuizHeader";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { graphql, useLazyLoadQuery, useQueryLoader } from "react-relay";
@@ -16,7 +16,7 @@ const RootQuery = graphql`
     ...MediaRecordSelector
 
     contentsByIds(ids: [$id]) {
-      ...LecturerQuizHeaderFragment
+      ...QuizHeaderFragment
 
       id
       metadata {
@@ -88,7 +88,7 @@ export default function LecturerQuiz() {
   return (
     <main>
       <ErrorContext.Provider value={errorContext}>
-        <LecturerQuizHeader
+        <QuizHeader
           openEditQuizModal={() => setEditSetModalOpen(true)}
           content={content}
         />

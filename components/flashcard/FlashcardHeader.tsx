@@ -1,6 +1,6 @@
 import { FlashcardHeaderDeleteFlashcardSetMutation } from "@/__generated__/FlashcardHeaderDeleteFlashcardSetMutation.graphql";
 import { FlashcardHeaderFragment$key } from "@/__generated__/FlashcardHeaderFragment.graphql";
-import { flashcardSetUpdaterDelete } from "@/src/relay-helpers/flashcard";
+import { updaterSetDelete } from "@/src/relay-helpers/common";
 import { Delete, Edit } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
@@ -47,10 +47,7 @@ const LecturerFlashcardHeader = ({
       deleteFlashcardMutation
     );
 
-  const updater = useCallback(
-    () => flashcardSetUpdaterDelete(courseId),
-    [courseId]
-  );
+  const updater = useCallback(() => updaterSetDelete(courseId), [courseId]);
   const deleteFlashcardSet = useCallback(
     () =>
       commitDeleteFlashcard({

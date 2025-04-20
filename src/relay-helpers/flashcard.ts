@@ -1,6 +1,5 @@
 import { AddFlashcardMutation$data } from "@/__generated__/AddFlashcardMutation.graphql";
 import { EditFlashcardMutation$data } from "@/__generated__/EditFlashcardMutation.graphql";
-import { FlashcardHeaderDeleteFlashcardSetMutation$data } from "@/__generated__/FlashcardHeaderDeleteFlashcardSetMutation.graphql";
 import { lecturerDeleteFlashcardMutation$data } from "@/__generated__/lecturerDeleteFlashcardMutation.graphql";
 import _ from "lodash";
 import { RecordSourceSelectorProxy } from "relay-runtime";
@@ -156,41 +155,6 @@ export const flashcardUpdaterDeleteClosure =
       store.delete(skill.getDataID())
     );
   };
-
-export const flashcardSetUpdaterDelete =
-  (courseId: string) =>
-  (
-    store: RecordSourceSelectorProxy<FlashcardHeaderDeleteFlashcardSetMutation$data>,
-    data: FlashcardHeaderDeleteFlashcardSetMutation$data
-  ) =>
-    // avoiding null pointers
-    setTimeout(() => {
-      const deletedContent = data.mutateContent.deleteContent;
-      console.log("id:", deletedContent, store.get(deletedContent));
-
-      const chapters = store
-        .get(courseId)!
-        .getLinkedRecord("chapters")!
-        .getLinkedRecords("elements")!;
-      for (const chapter of chapters) {
-        const contents = chapter.getLinkedRecords("contents")!;
-        if (contents?.length === 0) continue;
-
-        const newContents = contents.filter((content) => {
-          const isNotDeleted = content.getDataID() !== deletedContent;
-          if (!isNotDeleted) {
-            store.delete(deletedContent);
-            // FIXME: deletion of content isn't propagated to the "other content" section, even though it should
-            // my guess is that something's not handled the right way in the course lecturer view
-          }
-
-          return isNotDeleted;
-        });
-        chapter.setLinkedRecords(newContents, "contents");
-      }
-
-      store.delete(data.mutateContent.deleteContent);
-    }, 500);
 
 const createFlashcardSidesFromPayload = (
   store: RecordSourceSelectorProxy,

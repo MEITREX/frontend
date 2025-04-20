@@ -1,4 +1,6 @@
 import { AddFlashcardMutation$data } from "@/__generated__/AddFlashcardMutation.graphql";
+import { FlashcardHeaderDeleteFlashcardSetMutation$data } from "@/__generated__/FlashcardHeaderDeleteFlashcardSetMutation.graphql";
+import { QuizHeaderDeleteQuizMutation$data } from "@/__generated__/QuizHeaderDeleteQuizMutation.graphql";
 import { RecordProxy, RecordSourceSelectorProxy } from "relay-runtime";
 
 export const generateRelayStoreDataIdCourseIdSkills = (courseId: string) =>
@@ -38,6 +40,41 @@ export const createItemFromPayload = (
 
   return store.get(payload.id)!;
 };
+
+type Data =
+  | FlashcardHeaderDeleteFlashcardSetMutation$data
+  | QuizHeaderDeleteQuizMutation$data;
+export const updaterSetDelete =
+  (courseId: string) => (store: RecordSourceSelectorProxy<Data>, data: Data) =>
+    // avoiding null pointers
+    setTimeout(() => {
+      const deletedContent = data.mutateContent.deleteContent;
+      console.log("id:", deletedContent, store.get(deletedContent));
+
+      const chapters = store
+        .get(courseId)!
+        .getLinkedRecord("chapters")!
+        .getLinkedRecords("elements")!;
+      for (const chapter of chapters) {
+        const contents = chapter.getLinkedRecords("contents")!;
+        if (contents?.length === 0) continue;
+
+        const newContents = contents.filter((content) => {
+          const isNotDeleted = content.getDataID() !== deletedContent;
+          if (!isNotDeleted) {
+            store.delete(deletedContent);
+            // FIXME: deletion of content isn't propagated to the "other content" section, even though it should
+            // my guess is that something's not handled the right way in the course lecturer view
+          }
+
+          return isNotDeleted;
+        });
+        chapter.setLinkedRecords(newContents, "contents");
+      }
+
+      store.delete(data.mutateContent.deleteContent);
+    }, 500);
+
 
 /*
  * etc.
