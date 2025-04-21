@@ -1,3 +1,4 @@
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import {
   Add,
@@ -15,16 +16,19 @@ import {
   ListItemText,
 } from "@mui/material";
 import { useState } from "react";
+import { PreloadedQuery } from "react-relay";
+import { AddAssociationQuestionModal } from "./AddAssociationQuestionModal";
 import { AddClozeQuestionModal } from "./AddClozeQuestionModal";
 import { AddMultipleChoiceQuestionModal } from "./AddMultipleChoiceQuestionModal";
-import { AddAssociationQuestionModal } from "./AddAssociationQuestionModal";
 
 export function AddQuestionButton({
   _allRecords,
+  allSkillsQueryRef,
   assessmentId,
   courseId,
 }: {
   _allRecords: MediaRecordSelector$key;
+  allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
   assessmentId: string;
   courseId: string;
 }) {
@@ -76,27 +80,31 @@ export function AddQuestionButton({
           </ListItemButton>
         </List>
       </Dialog>
-      <AddMultipleChoiceQuestionModal
-        _allRecords={_allRecords}
-        assessmentId={assessmentId}
-        courseId={courseId}
-        open={addMultipleChoice}
-        onClose={() => setAddMultipleChoice(false)}
-      />
-      <AddClozeQuestionModal
-        _allRecords={_allRecords}
-        assessmentId={assessmentId}
-        courseId={courseId}
-        open={addCloze}
-        onClose={() => setAddCloze(false)}
-      />
-      <AddAssociationQuestionModal
-        _allRecords={_allRecords}
-        assessmentId={assessmentId}
-        courseId={courseId}
-        open={addAssociation}
-        onClose={() => setAddAssociation(false)}
-      />
+
+      {addMultipleChoice && (
+        <AddMultipleChoiceQuestionModal
+          _allRecords={_allRecords}
+          open={addMultipleChoice}
+          onClose={() => setAddMultipleChoice(false)}
+          allSkillsQueryRef={allSkillsQueryRef}
+        />
+      )}
+      {addCloze && (
+        <AddClozeQuestionModal
+          _allRecords={_allRecords}
+          open={addCloze}
+          onClose={() => setAddCloze(false)}
+          allSkillsQueryRef={allSkillsQueryRef}
+        />
+      )}
+      {addAssociation && (
+        <AddAssociationQuestionModal
+          _allRecords={_allRecords}
+          open={addAssociation}
+          onClose={() => setAddAssociation(false)}
+          allSkillsQueryRef={allSkillsQueryRef}
+        />
+      )}
     </>
   );
 }

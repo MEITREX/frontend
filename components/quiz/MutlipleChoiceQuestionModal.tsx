@@ -1,3 +1,4 @@
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { Add, Delete } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
@@ -11,11 +12,16 @@ import {
   FormControlLabel,
   IconButton,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useCallback } from "react";
+import { PreloadedQuery } from "react-relay";
+import { useError } from "../ErrorContext";
 import { Form, FormSection } from "../Form";
+import ItemFormSection, {
+  CreateItem,
+  Item,
+} from "../form-sections/item/ItemFormSection";
 import { FormErrors } from "../FormErrors";
 import { RichTextEditor, serializeToText } from "../RichTextEditor";
-import { ItemFormSection, ItemData } from "../ItemFormSection";
 
 export type MultipleChoiceQuestionData = {
   text: string;
@@ -28,97 +34,116 @@ export type MultipleChoiceAnswerData = {
   answerText: string;
 };
 
+type Props = {
+  _allRecords: MediaRecordSelector$key;
+  allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
+  title: string;
+  open: boolean;
+  isLoading: boolean;
+  item: Item | CreateItem;
+  setItem: Dispatch<SetStateAction<Item | CreateItem>>;
+  questionData: MultipleChoiceQuestionData;
+  setQuestionData: Dispatch<SetStateAction<MultipleChoiceQuestionData>>;
+  onSubmit: () => void;
+  onClose: () => void;
+};
+
 export function MultipleChoiceQuestionModal({
   _allRecords,
-  open,
+  allSkillsQueryRef,
   title,
-  error,
-  courseId,
-  item,
-  initialValue,
+  open,
   isLoading,
-  onSave,
+  item,
+  setItem,
+  questionData,
+  setQuestionData,
+  onSubmit,
   onClose,
-  clearError,
-}: {
-  _allRecords: MediaRecordSelector$key;
-  open: boolean;
-  title: string;
-  error: any;
-  courseId: string;
-  item: ItemData;
-  initialValue: MultipleChoiceQuestionData;
-  isLoading: boolean;
-  onSave: (
-    data: MultipleChoiceQuestionData,
-    item: ItemData,
-    newSkillAdded?: boolean
-  ) => void;
-  onClose: () => void;
-  clearError: () => void;
-}) {
-  const [data, setData] = useState(initialValue);
-  const [itemForQuestion, setItem] = useState(item);
-  const updateAnswer = (index: number, value: MultipleChoiceAnswerData) => {
-    setData((oldValue) => ({
-      ...oldValue,
-      answers: [
-        ...oldValue.answers.slice(0, index),
-        value,
-        ...oldValue.answers.slice(index + 1),
-      ],
-    }));
-  };
-  function handleItem(item: ItemData | null) {
-    if (item) {
-      setItem(item);
-    } else {
-      setItem({ associatedBloomLevels: [], associatedSkills: [] });
-    }
-  }
-  const oneAnswerCorrect = useMemo(
-    () => data.answers.some((x) => x.correct === true),
-    [data.answers]
+}: Readonly<Props>) {
+  const { error } = useError();
+
+  const updateQuestionData = useCallback(
+    <K extends keyof MultipleChoiceQuestionData>(
+      key: K,
+      value: MultipleChoiceQuestionData[K]
+    ) => {
+      setQuestionData((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
+    },
+    [setQuestionData]
   );
-  const atLeastTwoAnswers = data.answers.length >= 2;
-  const allAnswersFilled = useMemo(
-    () => data.answers.every((x) => !!serializeToText(x.answerText)),
-    [data.answers]
+  const updateQuestionAnswerAt = useCallback(
+    (index: number, answer: MultipleChoiceAnswerData) => {
+      setQuestionData((oldValue) => {
+        return {
+          ...oldValue,
+          answers: oldValue.answers.map((item, i) =>
+            i === index ? answer : item
+          ),
+        };
+      });
+    },
+    [setQuestionData]
+  );
+  const deleteQuestionAnswerAt = useCallback(
+    (index: number) => {
+      setQuestionData((oldValue) => ({
+        ...oldValue,
+        answers: oldValue.answers.filter((_, i) => i !== index),
+      }));
+    },
+    [setQuestionData]
   );
 
-  const valid =
-    oneAnswerCorrect &&
-    atLeastTwoAnswers &&
-    !!serializeToText(data.text) &&
-    allAnswersFilled &&
-    itemForQuestion.associatedBloomLevels.length > 0 &&
-    itemForQuestion.associatedSkills.length > 0;
+  const isOneAnswerCorrect = questionData.answers.some(
+    (x) => x.correct === true
+  );
+  const hasAtLeastTwoAnswers = questionData.answers.length >= 2;
+  const areAllAnswersFilled = questionData.answers.every(
+    (x) => !!serializeToText(x.answerText)
+  );
+  const isQuestionDataValid =
+    isOneAnswerCorrect &&
+    hasAtLeastTwoAnswers &&
+    !!serializeToText(questionData.text) &&
+    areAllAnswersFilled;
 
-  useEffect(() => {
-    if (!open) {
-      setData(initialValue);
-      setItem(item);
-    }
-  }, [open, initialValue, item]);
+  const addEmptyAnswer = useCallback(
+    () =>
+      setQuestionData((oldValue) => ({
+        ...oldValue,
+        answers: [
+          ...oldValue.answers,
+          {
+            correct: false,
+            answerText: "",
+            feedback: "",
+          },
+        ],
+      })),
+    [setQuestionData]
+  );
 
   return (
     <Dialog open={open} maxWidth="lg" onClose={onClose}>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
-        <FormErrors error={error} onClose={clearError} />
+        <FormErrors error={error} />
         <Form>
           <ItemFormSection
-            courseId={courseId}
-            item={itemForQuestion}
-            onChange={handleItem}
-          ></ItemFormSection>
+            operation="edit"
+            item={item}
+            setItem={setItem}
+            allSkillsQueryRef={allSkillsQueryRef}
+          />
           <FormSection title="Question">
             <RichTextEditor
               _allRecords={_allRecords}
-              initialValue={data.text}
-              onChange={(text) =>
-                setData((oldValue) => ({ ...oldValue, text }))
-              }
+              initialValue={questionData.text}
+              onChange={(text) => updateQuestionData("text", text)}
               className="w-[700px]"
               label="Title"
               required
@@ -126,21 +151,19 @@ export function MultipleChoiceQuestionModal({
 
             <RichTextEditor
               _allRecords={_allRecords}
-              initialValue={data.hint ?? ""}
-              onChange={(hint) =>
-                setData((oldValue) => ({ ...oldValue, hint }))
-              }
+              initialValue={questionData.hint ?? ""}
+              onChange={(hint) => updateQuestionData("hint", hint)}
               className="w-[700px]"
               label="Hint"
             />
           </FormSection>
-          {data.answers.map((answer, i) => (
+          {questionData.answers.map((answer, i) => (
             <FormSection title={`Answer ${i + 1}`} key={i}>
               <RichTextEditor
                 _allRecords={_allRecords}
-                initialValue={answer.answerText!}
+                initialValue={answer.answerText}
                 onChange={(answerText) =>
-                  updateAnswer(i, { ...answer, answerText })
+                  updateQuestionAnswerAt(i, { ...answer, answerText })
                 }
                 className="w-[700px]"
                 label="Text"
@@ -151,7 +174,7 @@ export function MultipleChoiceQuestionModal({
                 _allRecords={_allRecords}
                 initialValue={answer.feedback ?? ""}
                 onChange={(value) =>
-                  updateAnswer(i, {
+                  updateQuestionAnswerAt(i, {
                     ...answer,
                     feedback:
                       value !==
@@ -169,7 +192,7 @@ export function MultipleChoiceQuestionModal({
                     <Checkbox
                       checked={answer.correct}
                       onChange={(e) =>
-                        updateAnswer(i, {
+                        updateQuestionAnswerAt(i, {
                           ...answer,
                           correct: e.target.checked,
                         })
@@ -180,36 +203,16 @@ export function MultipleChoiceQuestionModal({
                 />
                 <IconButton
                   color="error"
-                  onClick={() => {
-                    setData((oldValue) => ({
-                      ...oldValue,
-                      answers: oldValue.answers.filter((_, idx) => idx !== i),
-                    }));
-                  }}
+                  onClick={() => deleteQuestionAnswerAt(i)}
                 >
-                  <Delete></Delete>
+                  <Delete />
                 </IconButton>
               </div>
             </FormSection>
           ))}
 
           <div className="flex w-full justify-end col-span-full">
-            <Button
-              onClick={() =>
-                setData((oldValue) => ({
-                  ...oldValue,
-                  answers: [
-                    ...oldValue.answers,
-                    {
-                      correct: false,
-                      answerText: "",
-                      feedback: "",
-                    },
-                  ],
-                }))
-              }
-              startIcon={<Add />}
-            >
+            <Button onClick={addEmptyAnswer} startIcon={<Add />}>
               Add Answer
             </Button>
           </div>
@@ -217,15 +220,17 @@ export function MultipleChoiceQuestionModal({
       </DialogContent>
       <DialogActions>
         <div className="text-red-600 text-xs mr-3">
-          {!oneAnswerCorrect && (
+          {!isOneAnswerCorrect && (
             <div>At least one answer has to be correct</div>
           )}
-          {!atLeastTwoAnswers && <div>At least two answers are required</div>}
+          {!hasAtLeastTwoAnswers && (
+            <div>At least two answers are required</div>
+          )}
 
-          {atLeastTwoAnswers && !allAnswersFilled && (
+          {hasAtLeastTwoAnswers && !areAllAnswersFilled && (
             <div>All answers need a text</div>
           )}
-          {!serializeToText(data.text) && (
+          {!serializeToText(questionData.text) && (
             <div>A Question title is required</div>
           )}
         </div>
@@ -233,9 +238,9 @@ export function MultipleChoiceQuestionModal({
           Cancel
         </Button>
         <LoadingButton
-          disabled={!valid}
+          disabled={!isQuestionDataValid}
           loading={isLoading}
-          onClick={() => onSave(data, itemForQuestion)}
+          onClick={onSubmit}
         >
           Save
         </LoadingButton>

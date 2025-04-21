@@ -1,27 +1,32 @@
-import { AddAssociationQuestionModalMutation } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
+import { EditAssociationQuestionFragment$key } from "@/__generated__/EditAssociationQuestionFragment.graphql";
+import { EditAssociationQuestionMutation } from "@/__generated__/EditAssociationQuestionMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { questionUpdaterClosure } from "@/src/relay-helpers/question";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
-import { graphql, PreloadedQuery, useMutation } from "react-relay";
+import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
 import { useError } from "../ErrorContext";
-import { CreateItem } from "../form-sections/item/ItemFormSection";
+import {
+  CreateItem,
+  Item,
+  mapRelayItemToItem,
+} from "../form-sections/item/ItemFormSection";
 import {
   AssociationQuestionData,
   AssociationQuestionModal,
 } from "./AssociationQuestionModal";
 
 const AssociationQuestionMutation = graphql`
-  mutation AddAssociationQuestionModalMutation(
-    $input: CreateAssociationQuestionInputWithoutItem!
+  mutation EditAssociationQuestionMutation(
     $assessmentId: UUID!
-    $item: CreateItemInput!
+    $questionInput: UpdateAssociationQuestionInput!
+    $item: ItemInput!
   ) {
     mutateQuiz(assessmentId: $assessmentId) {
       assessmentId
-      addAssociationQuestion(
-        questionInput: $input
+      updateAssociationQuestion(
+        questionInput: $questionInput
         assessmentId: $assessmentId
         item: $item
       ) {
@@ -56,62 +61,100 @@ const AssociationQuestionMutation = graphql`
   }
 `;
 
+const AssociationQuestionFragment = graphql`
+  fragment EditAssociationQuestionFragment on AssociationQuestion {
+    itemId
+    item {
+      associatedBloomLevels
+      associatedSkills {
+        id
+        skillName
+        skillCategory
+        isCustomSkill
+      }
+    }
+
+    text
+    hint
+    correctAssociations {
+      left
+      right
+      feedback
+    }
+  }
+`;
+
 type Props = {
   _allRecords: MediaRecordSelector$key;
   allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
+  question: EditAssociationQuestionFragment$key;
   onClose: () => void;
   open: boolean;
 };
 
-export function AddAssociationQuestionModal({
+export function EditAssociationQuestion({
   _allRecords,
   allSkillsQueryRef,
-  open,
+  question,
   onClose,
+  open,
 }: Readonly<Props>) {
   const { quizId, courseId } = useParams();
   const { setError } = useError();
 
-  const [item, setItem] = useState<CreateItem>({
-    associatedSkills: [],
-    associatedBloomLevels: [],
-  });
+  const data = useFragment(AssociationQuestionFragment, question);
+
+  const [item, setItem] = useState<Item | CreateItem>(mapRelayItemToItem(data));
   const [questionData, setQuestionData] = useState<AssociationQuestionData>({
-    text: "",
-    hint: "",
-    correctAssociations: [],
+    text: data.text,
+    hint: data.hint,
+    correctAssociations: data.correctAssociations.map((elem) => ({
+      left: elem.left,
+      right: elem.right,
+      feedback: elem.feedback,
+    })),
   });
 
-  const [addQuestion, isUpdating] =
-    useMutation<AddAssociationQuestionModalMutation>(
-      AssociationQuestionMutation
-    );
+  const [updateQuestion, isUpdating] =
+    useMutation<EditAssociationQuestionMutation>(AssociationQuestionMutation);
 
   const updater = useCallback(
     () =>
-      questionUpdaterClosure("add", "AssociationQuestion", quizId, courseId),
+      questionUpdaterClosure("update", "AssociationQuestion", quizId, courseId),
     [courseId, quizId]
   );
   const onSubmit = useCallback(() => {
     const questionUpdate = {
       assessmentId: quizId,
-      input: questionData,
+      questionInput: {
+        ...questionData,
+        itemId: data.itemId,
+      },
       item: item,
     };
 
-    addQuestion({
+    updateQuestion({
       variables: questionUpdate,
-      onError: setError,
       updater: updater(),
+      onError: setError,
       onCompleted: onClose,
     });
-  }, [addQuestion, item, onClose, questionData, quizId, setError, updater]);
+  }, [
+    data.itemId,
+    item,
+    onClose,
+    questionData,
+    quizId,
+    setError,
+    updateQuestion,
+    updater,
+  ]);
 
   return (
     <AssociationQuestionModal
-      title="Add association question"
       _allRecords={_allRecords}
       allSkillsQueryRef={allSkillsQueryRef}
+      title="Edit association question"
       open={open}
       isLoading={isUpdating}
       item={item}

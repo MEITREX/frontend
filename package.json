@@ -43,6 +43,7 @@
     "eslint-config-next": "13.3.0",
     "formik": "^2.4.5",
     "framer-motion": "^10.18.0",
+    "immutable": "^5.0.3",
     "is-hotkey": "^0.2.0",
     "lodash": "^4.17.21",
     "next": "13.4.7",

@@ -1,27 +1,55 @@
-import { AddMultipleChoiceQuestionModalMutation } from "@/__generated__/AddMultipleChoiceQuestionModalMutation.graphql";
+import { EditMultipleChoiceQuestionFragment$key } from "@/__generated__/EditMultipleChoiceQuestionFragment.graphql";
+import { EditMultipleChoiceQuestionMutation } from "@/__generated__/EditMultipleChoiceQuestionMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { questionUpdaterClosure } from "@/src/relay-helpers/question";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
-import { graphql, PreloadedQuery, useMutation } from "react-relay";
+import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
 import { useError } from "../ErrorContext";
-import { CreateItem } from "../form-sections/item/ItemFormSection";
+import {
+  CreateItem,
+  Item,
+  mapRelayItemToItem,
+} from "../form-sections/item/ItemFormSection";
 import {
   MultipleChoiceQuestionData,
   MultipleChoiceQuestionModal,
 } from "./MutlipleChoiceQuestionModal";
 
+const MultipleChoiceQuestionFragment = graphql`
+  fragment EditMultipleChoiceQuestionFragment on MultipleChoiceQuestion {
+    itemId
+    item {
+      associatedBloomLevels
+      associatedSkills {
+        id
+        skillName
+        skillCategory
+        isCustomSkill
+      }
+    }
+
+    text
+    hint
+    answers {
+      answerText
+      correct
+      feedback
+    }
+  }
+`;
+
 const MultipleChoiceQuestionMutation = graphql`
-  mutation AddMultipleChoiceQuestionModalMutation(
+  mutation EditMultipleChoiceQuestionMutation(
     $assessmentId: UUID!
-    $input: CreateMultipleChoiceQuestionInputWithoutItem!
-    $item: CreateItemInput!
+    $questionInput: UpdateMultipleChoiceQuestionInput!
+    $item: ItemInput!
   ) {
     mutateQuiz(assessmentId: $assessmentId) {
       assessmentId
-      addMultipleChoiceQuestion(
-        questionInput: $input
+      updateMultipleChoiceQuestion(
+        questionInput: $questionInput
         assessmentId: $assessmentId
         item: $item
       ) {
@@ -58,60 +86,82 @@ const MultipleChoiceQuestionMutation = graphql`
 type Props = {
   _allRecords: MediaRecordSelector$key;
   allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
+  question: EditMultipleChoiceQuestionFragment$key;
   onClose: () => void;
   open: boolean;
 };
 
-export function AddMultipleChoiceQuestionModal({
+export function EditMultipleChoiceQuestion({
   _allRecords,
   allSkillsQueryRef,
-  open,
+  question,
   onClose,
+  open,
 }: Readonly<Props>) {
   const { quizId, courseId } = useParams();
   const { setError } = useError();
 
-  const [item, setItem] = useState<CreateItem>({
-    associatedSkills: [],
-    associatedBloomLevels: [],
-  });
+  const data = useFragment(MultipleChoiceQuestionFragment, question);
+
+  const [item, setItem] = useState<Item | CreateItem>(mapRelayItemToItem(data));
   const [questionData, setQuestionData] = useState<MultipleChoiceQuestionData>({
-    text: "",
-    hint: "",
-    answers: [],
+    text: data.text,
+    hint: data.hint,
+    answers: data.answers.map((answer) => ({
+      answerText: answer.answerText,
+      correct: answer.correct,
+      feedback: answer.feedback,
+    })),
   });
 
-  const [addQuestion, isUpdating] =
-    useMutation<AddMultipleChoiceQuestionModalMutation>(
+  const [updateQuestion, isUpdating] =
+    useMutation<EditMultipleChoiceQuestionMutation>(
       MultipleChoiceQuestionMutation
     );
 
   const updater = useCallback(
     () =>
-      questionUpdaterClosure("add", "MultipleChoiceQuestion", quizId, courseId),
+      questionUpdaterClosure(
+        "update",
+        "MultipleChoiceQuestion",
+        quizId,
+        courseId
+      ),
     [courseId, quizId]
   );
 
   const onSubmit = useCallback(() => {
     const questionUpdate = {
       assessmentId: quizId,
-      input: questionData,
+      questionInput: {
+        ...questionData,
+        itemId: data.itemId,
+      },
       item: item,
     };
 
-    addQuestion({
+    updateQuestion({
       variables: questionUpdate,
       updater: updater(),
       onError: setError,
       onCompleted: () => onClose(),
     });
-  }, [addQuestion, item, onClose, questionData, quizId, setError, updater]);
+  }, [
+    quizId,
+    questionData,
+    data.itemId,
+    item,
+    updateQuestion,
+    updater,
+    setError,
+    onClose,
+  ]);
 
   return (
     <MultipleChoiceQuestionModal
       _allRecords={_allRecords}
       allSkillsQueryRef={allSkillsQueryRef}
-      title="Add multiple choice question"
+      title="Edit multiple choice question"
       open={open}
       isLoading={isUpdating}
       item={item}

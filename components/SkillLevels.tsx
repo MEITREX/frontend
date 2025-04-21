@@ -1,10 +1,9 @@
+import { BloomLevel } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
 import { SkillLevelsFragment$key } from "@/__generated__/SkillLevelsFragment.graphql";
-import { BloomLevel } from "@/__generated__/LecturerEditFlashcardMutation.graphql";
-import { Box, CircularProgress, Tooltip } from "@mui/material";
-import { ReactNode, Suspense, useEffect, useRef, useState } from "react";
-import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
+import { Box } from "@mui/material";
+import { ReactNode } from "react";
+import { graphql, useFragment } from "react-relay";
 import colors from "tailwindcss/colors";
-import { Suggestion } from "./Suggestion";
 
 export function SkillLevels({
   className = "",
