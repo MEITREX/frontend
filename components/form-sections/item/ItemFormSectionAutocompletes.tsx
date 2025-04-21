@@ -120,7 +120,7 @@ const ItemFormSectionAutocompletes = ({
   );
 
   const { allSkillCategoriesSorted, allSkillCategoriesUsed } = useMemo(() => {
-    // selected skills take precedence in sorting over ones available in the course
+    // selected skills take precedence in sorting over ones available in course
     const occurrenceReducer = (
       acc: Map<string, number>,
       skill: ItemSkill | CreateItemSkill
@@ -137,7 +137,7 @@ const ItemFormSectionAutocompletes = ({
       new Map<string, number>()
     );
 
-    // using immutable records to easily enable structural comparison between objects
+    // using immutable records to easily enable structural comparison
     const allCategoriesSorted = [
       ...SetIm([
         ...skillsSelected.map(
@@ -179,7 +179,8 @@ const ItemFormSectionAutocompletes = ({
       else return a.skillCategory.localeCompare(b.skillCategory);
     });
 
-    // IEEE skill categories that are not used in course or selected sorted alphabetically to be appended after used ones
+    // IEEE skill categories that are not used in course or selected sorted
+    // alphabetically to be appended after used ones
     const skillCategoriesIEEESansAvailable = Object.keys(SKILL_CATALOGUE)
       .filter((category) => !occurrencesSelected.has(category))
       .map((category) => ({
@@ -326,7 +327,8 @@ const ItemFormSectionAutocompletes = ({
     skillsSelected,
   ]);
 
-  // used for conditionally rendering the ruler of skill categories used in the  course in Autocomplete
+  // used for conditionally rendering the ruler of skill categories used in the
+  // course in Autocomplete
   const [isCategoryInputEmpty, setIsCategoryInputEmpty] =
     useState<boolean>(true);
   const handleInputChange = (
@@ -359,7 +361,8 @@ const ItemFormSectionAutocompletes = ({
         onInputChange={handleInputChange}
         getOptionLabel={(option) => option.skillCategory}
         onChange={(_, newValue) =>
-          // if a new skill category is selected, reset the skill since one skill shouldn't be present in multiple categories
+          // if a new skill category is selected, reset the skill since one
+          // skill shouldn't be present in multiple categories
           setNewSkillCategory((prev) => {
             if (newValue && newValue.skillCategory !== prev?.skillCategory)
               setNewSkill([]);
@@ -549,7 +552,8 @@ const ItemFormSectionAutocompletes = ({
             isSkillAlreadySelected<SkillAndCategoryInAutocomplete>
           }
           getOptionLabel={(option) =>
-            // avoids duplication of option labels; return of this function is used for comparison in `filterOptions`
+            // avoids duplication of option labels; return of this function is
+            // used for comparison in `filterOptions`
             `${option.skillName} [${option.skillCategory}]`
           }
           filterOptions={(options, inputState) => {
@@ -598,10 +602,14 @@ const ItemFormSectionAutocompletes = ({
           }}
           // render data stuff
           renderOption={(props, option: SkillAndCategoryInAutocomplete) => {
-            const { key, ...optionProps } = props;
+            const { key, ...optionProps } =
+              props as React.HTMLAttributes<HTMLLIElement> & {
+                key: string;
+              } & Record<string, unknown>;
+
             return (
               <Box
-                key={key || option.skillName}
+                key={key ?? option.skillName}
                 {...optionProps}
                 component="li"
               >

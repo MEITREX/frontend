@@ -9,7 +9,8 @@ export const generateRelayStoreDataIdCourseIdSkills = (courseId: string) =>
 type ItemPayload =
   AddFlashcardMutation$data["mutateFlashcardSet"]["createFlashcard"]["flashcard"]["item"];
 /**
- * Newly crated skills are already present in the store & linked to its item - but not linked to the all skill query
+ * Newly crated skills are already present in the store & linked to its item -
+ * but not linked to the all skill query
  * This function adds the new skills to the all skill query
  *
  * The all skill query is used in the AutoComplete part of the ItemFormSection
@@ -76,7 +77,8 @@ type Data =
   | QuizHeaderDeleteQuizMutation$data;
 export const updaterSetDelete =
   (courseId: string) => (store: RecordSourceSelectorProxy<Data>, data: Data) =>
-    // avoiding null pointers on the deleted content before navigating in `onComplete`
+    // avoiding null pointers on the deleted content before navigating in
+    // `onComplete`
     setTimeout(() => {
       const deletedContent = data.mutateContent.deleteContent;
       console.log("id:", deletedContent, store.get(deletedContent));
@@ -85,8 +87,9 @@ export const updaterSetDelete =
         .get(courseId)!
         .getLinkedRecord("chapters")
         ?.getLinkedRecords("elements");
-      // `.getLinkedRecord("chapters")` rarely seems to return null for some reason
-      // since this is the behavior we actually want to archive here, I'm fine with it
+      // `.getLinkedRecord("chapters")` rarely seems to return null for
+      // some reason since this is the behavior we actually want to archive
+      // here, I'm fine with it
       if (chapters)
         for (const chapter of chapters) {
           const contents = chapter.getLinkedRecords("contents")!;
@@ -96,8 +99,10 @@ export const updaterSetDelete =
             const isNotDeleted = content.getDataID() !== deletedContent;
             if (!isNotDeleted) {
               store.delete(deletedContent);
-              // FIXME: deletion of content isn't propagated to the "other content" section, even though it should
-              // my guess is that something's not handled the right way in the course lecturer view
+              // FIXME: deletion of content isn't propagated to the "other
+              // content" section, even though it should my guess is that
+              // something's not handled the right way in the course lecturer
+              // view
             }
 
             return isNotDeleted;
@@ -107,7 +112,6 @@ export const updaterSetDelete =
 
       store.delete(data.mutateContent.deleteContent);
     }, 500);
-
 
 /*
  * etc.

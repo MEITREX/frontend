@@ -1,6 +1,6 @@
-import React from 'react';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
+import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
+import React from "react";
 
 interface SuccessSnackbarProps {
   visible: boolean;
@@ -8,10 +8,14 @@ interface SuccessSnackbarProps {
   message: string;
 }
 
-const SuccessSnackbar: React.FC<SuccessSnackbarProps> = ({ visible, onClose, message }) => {
+const SuccessSnackbar: React.FC<SuccessSnackbarProps> = ({
+  visible,
+  onClose,
+  message,
+}) => {
   return (
     <Snackbar open={visible} autoHideDuration={3000} onClose={onClose}>
-      <Alert onClose={onClose} severity="success" sx={{ width: '100%' }}>
+      <Alert onClose={onClose} severity="success" sx={{ width: "100%" }}>
         {message}
       </Alert>
     </Snackbar>
