@@ -18,7 +18,7 @@ const CompetencyProgressbar: React.FC<CompetencyProgressbarProps> = ({
   progressValue,
   barSections,
 }) => {
-  const clampedProgress = Math.min(Math.max(progressValue, 0), 100); // sicherstellen, dass 0–100
+  const clampedProgress = Math.min(Math.max(progressValue, 0), 100); 
 
   return (
     <div className="mb-1">
@@ -29,7 +29,7 @@ const CompetencyProgressbar: React.FC<CompetencyProgressbarProps> = ({
         className="w-full rounded-full overflow-hidden flex"
         style={{ height: `${heightValue}px` }}
       >
-        {/* Dynamische Balken Sektionen */}
+        {/* dynamic bar sections */}
         {barSections.map((section, idx) => (
           <div
             key={idx}
@@ -41,11 +41,11 @@ const CompetencyProgressbar: React.FC<CompetencyProgressbarProps> = ({
           />
         ))}
 
-        {/* Wenn noch Platz übrig ist (grau) */}
+        {/* if not a 100%, fill up with grey */}
         {clampedProgress < 100 && (
           <div
             style={{
-              backgroundColor: "#E5E7EB", // basic grey
+              backgroundColor: "#E5E7EB",
               width: `${100 - clampedProgress}%`,
               transition: "width 0.3s ease-in-out",
             }}
