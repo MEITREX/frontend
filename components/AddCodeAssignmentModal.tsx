@@ -21,8 +21,7 @@ import {
   Typography,
 } from "@mui/material";
 
-import { codeAssessmentProvider } from "./ProviderConfig";
-import { AddCodeAssignmentModalAccessTokenQuery } from "@/__generated__/AddCodeAssignmentModalAccessTokenQuery.graphql";
+import { codeAssessmentProvider, providerConfig } from "./ProviderConfig";
 import {
   AssessmentMetadataFormSection,
   AssessmentMetadataPayload,
@@ -41,6 +40,7 @@ import {
 import { set } from "lodash";
 import { LoadingButton } from "@mui/lab";
 import toast from "react-hot-toast";
+import { useAccessTokenCheck } from "./useAccessTokenCheck";
 
 export function AddCodeAssignmentModal({
   onClose,
@@ -49,7 +49,8 @@ export function AddCodeAssignmentModal({
   onClose: () => void;
   chapterId: string;
 }) {
-  const env = useRelayEnvironment();
+  const checkAccessToken = useAccessTokenCheck();
+  const provider = providerConfig[codeAssessmentProvider];
   const [isAccessTokenAvailable, setIsAccessTokenAvailable] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [metadata, setMetadata] = useState<ContentMetadataPayload | null>(null);
@@ -89,23 +90,11 @@ export function AddCodeAssignmentModal({
 
   useEffect(() => {
     setIsLoading(true);
-    fetchQuery<AddCodeAssignmentModalAccessTokenQuery>(
-      env,
-      graphql`
-        query AddCodeAssignmentModalAccessTokenQuery(
-          $provider: ExternalServiceProviderDto!
-        ) {
-          isAccessTokenAvailable(provider: $provider)
-        }
-      `,
-      { provider: codeAssessmentProvider }
-    )
-      .toPromise()
-      .then((res) => {
-        setIsAccessTokenAvailable(res?.isAccessTokenAvailable ?? false);
-        setIsLoading(false);
-      });
-  }, [env]);
+    checkAccessToken().then((isAvailable) => {
+      setIsAccessTokenAvailable(isAvailable);
+      setIsLoading(false);
+    });
+  }, [checkAccessToken]);
 
   const handleSubmit = () => {
     createAssignment({
@@ -153,7 +142,10 @@ export function AddCodeAssignmentModal({
   return (
     <>
       {!isLoading && !isAccessTokenAvailable && (
-        <ProviderAuthorizationDialog onClose={onClose} />
+        <ProviderAuthorizationDialog
+          onClose={onClose}
+          alertMessage={`You must authorize via ${provider.name} to add a code assignment.`}
+        />
       )}
 
       {!isLoading && isAccessTokenAvailable && (
