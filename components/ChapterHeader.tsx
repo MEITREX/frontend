@@ -38,13 +38,14 @@ export function ChapterHeader({
         description
         skills {
           ...SkillFragment
-          ...SkillLevelsFragment
+          skillName
+          skillCategory
         }
       }
     `,
     _chapter
   );
-
+  const uniqueSkillsSet = new Set<string>();
   return (
     <div
       className="flex items-center py-4 pl-8 pr-12 -mx-8 mb-8 bg-gradient-to-r from-slate-100 to-slate-50"
@@ -80,9 +81,12 @@ export function ChapterHeader({
           </Typography>
         </div>
           <div style={{display: "flex", flexDirection: "row", gap: "4px"}}>
-            {chapter.skills.map(
-              (c, index) => c !== null && <Skill key={index} _skill={c} />
-            )}
+            {chapter.skills.map((c, index) => {
+              if(c !== null && !uniqueSkillsSet.has(c.skillCategory+c.skillName)) {
+                uniqueSkillsSet.add(c.skillCategory+c.skillName);
+                return <Skill key={index} _skill={c}/>;
+              }
+          })}
           </div>
       </div>
     </div>
