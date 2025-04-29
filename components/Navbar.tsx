@@ -34,6 +34,7 @@ import {
   Paper,
   TextField,
   Tooltip,
+  Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { chain, debounce } from "lodash";
@@ -256,9 +257,21 @@ function NavbarBase({
 
   return (
     <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
-      <div className="text-center my-16 text-3xl font-medium tracking-wider sticky">
+      <div className="text-center mt-8 text-3xl font-medium tracking-wider sticky">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logo.src} alt="GITS logo" className="w-24 m-auto" />
+        <Typography
+          sx={{
+            fontFamily: "'Quicksand', sans-serif",
+            fontSize: "2.5rem",
+            fontWeight: "bold",
+            color: "#089CDC",
+            marginTop: "4px",
+            textAlign: "center",
+          }}
+        >
+          MEITREX
+        </Typography>
       </div>
 
       <NavbarSection>
