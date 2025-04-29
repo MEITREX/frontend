@@ -1,5 +1,5 @@
 import { SkillFragment$key } from "@/__generated__/SkillFragment.graphql";
-import { Box, CircularProgress, Tooltip } from "@mui/material";
+import { Box, CircularProgress, Tooltip, Typography } from "@mui/material";
 import { ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
 import colors from "tailwindcss/colors";
@@ -25,10 +25,11 @@ export function stringToColor(string: String): string {
   return color;
 }
 export function Skill({ _skill }: { _skill: SkillFragment$key }) {
-  const { skillName, skillLevels } = useFragment(
+  const { skillName, skillCategory, skillLevels } = useFragment(
     graphql`
       fragment SkillFragment on Skill {
         skillName
+        skillCategory
         skillLevels {
           remember {
             value
@@ -80,30 +81,47 @@ export function Skill({ _skill }: { _skill: SkillFragment$key }) {
         )}{" "}
       </Suspense>
     );
-    interface HexagonProps {
-      color: string;
-      name: string;
-    }
-    const Hexagon: React.FC<HexagonProps> = ({ color, name }) => {
-      return (
-        <svg
-          viewBox="0 0 100 100"
-          width="100"
-          height="100"
-          style={{ margin: "10" }}
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <polygon points="50 1 95 25 95 75 50 99 5 75 5 25" fill={color} />
-          <text x="50" y="50" textAnchor="middle" dy=".3em" fill="white">
-            {name}
-          </text>
-        </svg>
-      );
-    };
+    const HexBadge = ({ skillName, skillCategory }: { skillName: string; skillCategory: string }) => (
+      <LightTooltip
+        title={
+        <>
+          <p><strong> {skillCategory + ": "} </strong></p>
+          <p><strong> {skillName} </strong></p>
+        </>
+        }
+        placement="top"
+      >        
+      <Box
+        title={skillName}
+        sx={{
+          width: 75,
+          height: 80,
+          backgroundColor: stringToColor(skillName + skillCategory),
+          clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          mx: "auto",
+          my: "auto",
+          padding: "1px",
+        }}
+      >
+        <Typography variant="body2" sx={{
+          color: "#fff",
+          fontSize: 12,
+          textOverflow: "ellipsis",
+          overflow: "hidden",
+        }}>
+          {skillName}
+        </Typography>
+      </Box>
+    </LightTooltip>
+    );
     return (
       <Tooltip title={levels} placement="bottom">
         <span>
-          <Hexagon color={stringToColor(skillName)} name={skillName} />
+          <HexBadge skillName={skillName} skillCategory={skillCategory} />
         </span>
       </Tooltip>
     );

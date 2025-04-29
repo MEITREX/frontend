@@ -80,11 +80,11 @@ export function ChapterHeader({
           </Typography>
         </div>
         {student && (
-          <span>
+          <div style={{display: "flex", flexDirection: "row", gap: "4px"}}>
             {chapter.skills.map(
               (c, index) => c !== null && <Skill key={index} _skill={c} />
             )}
-          </span>
+          </div>
         )}
       </div>
     </div>
