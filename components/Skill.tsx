@@ -92,7 +92,6 @@ export function Skill({ _skill }: { _skill: SkillFragment$key }) {
         placement="top"
       >        
       <Box
-        title={skillName}
         sx={{
           width: 75,
           height: 80,
