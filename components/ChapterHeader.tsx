@@ -81,8 +81,14 @@ export function ChapterHeader({
           </Typography>
         </div>
           <div style={{display: "flex", flexDirection: "row", gap: "4px"}}>
-            {chapter.skills.map((c, index) => {
-              if(c !== null && !uniqueSkillsSet.has(c.skillCategory+c.skillName)) {
+            {chapter.skills.filter((c) => c !== null).toSorted((a,b) => {
+              if(a.skillCategory.match(b.skillCategory)) {
+                return a.skillName.localeCompare(b.skillName);
+              } else {
+                return a.skillCategory.localeCompare(b.skillCategory);
+              }
+            }).map((c, index) => {
+              if(!uniqueSkillsSet.has(c.skillCategory+c.skillName)) {
                 uniqueSkillsSet.add(c.skillCategory+c.skillName);
                 return <Skill key={index} _skill={c}/>;
               }
