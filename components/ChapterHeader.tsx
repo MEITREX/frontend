@@ -5,7 +5,6 @@ import { CircularProgress, IconButton, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { ReactNode } from "react";
 import { graphql, useFragment } from "react-relay";
-import { SkillLevels } from "./SkillLevels";
 import { Skill } from "./Skill";
 
 export function ChapterHeader({

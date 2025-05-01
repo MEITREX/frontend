@@ -1,9 +1,7 @@
 import { SkillFragment$key } from "@/__generated__/SkillFragment.graphql";
 import { Box, CircularProgress, Tooltip, Typography } from "@mui/material";
-import { ReactNode, Suspense, useEffect, useRef, useState } from "react";
-import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
-import colors from "tailwindcss/colors";
-import { Suggestion } from "./Suggestion";
+import { Suspense, } from "react";
+import { graphql, useFragment, } from "react-relay";
 import { LightTooltip } from "./LightTooltip";
 function stringToColor(string: String) {
   let hash = 0;
@@ -24,6 +22,17 @@ function stringToColor(string: String) {
 
   return color;
 }
+function getReadableTextColor(backgroundColor: String) {
+  const hex = backgroundColor.replace("#", "");
+
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 125 ? "#000000" : "#FFFFFF";
+}
+
 export function Skill({ _skill }: { _skill: SkillFragment$key }) {
   const { skillName, skillCategory, skillLevels } = useFragment(
     graphql`
@@ -93,8 +102,8 @@ export function Skill({ _skill }: { _skill: SkillFragment$key }) {
       >        
       <Box
         sx={{
-          width: 75,
-          height: 80,
+          width: 85,
+          height: 90,
           backgroundColor: stringToColor(skillName + skillCategory),
           clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
           display: "flex",
@@ -107,8 +116,9 @@ export function Skill({ _skill }: { _skill: SkillFragment$key }) {
         }}
       >
         <Typography variant="body2" sx={{
-          color: "#fff",
-          fontSize: 12,
+          color: getReadableTextColor(stringToColor(skillName + skillCategory)),
+          fontSize: 13,
+          fontWeight: "450",
           textOverflow: "ellipsis",
           overflow: "hidden",
         }}>
