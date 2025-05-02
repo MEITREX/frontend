@@ -16,6 +16,7 @@ import Link from "next/link";
 import { Fragment, useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
+import SurveyPopup from "@/components/PlayerTypeSurvey"
 
 export default function StudentPage() {
   const { currentUserInfo } = useLazyLoadQuery<studentStudentQuery>(
@@ -127,6 +128,7 @@ export default function StudentPage() {
   return (
     <main>
       <div className="flex flex-wrap justify-between mb-10">
+        {true && <SurveyPopup/>} {/*Hier muss dann der bool aus der abfrage statt dem false*/}
         <Typography variant="h1" gutterBottom>
           Dashboard
         </Typography>
