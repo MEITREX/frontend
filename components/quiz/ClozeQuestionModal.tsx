@@ -1,3 +1,4 @@
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { Add, Clear, Feedback } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
@@ -14,13 +15,18 @@ import {
   IconButton,
   TextField,
 } from "@mui/material";
-import { use, useEffect, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
+import { PreloadedQuery } from "react-relay";
+import { useError } from "../ErrorContext";
 import { Form, FormSection } from "../Form";
+import ItemFormSection, {
+  CreateItem,
+  Item,
+} from "../form-sections/item/ItemFormSection";
 import { FormErrors } from "../FormErrors";
 import { RichTextEditor, serializeToText } from "../RichTextEditor";
 import { EditRichTextButton } from "./EditRichTextButton";
 import { HintFormSection } from "./HintFormSection";
-import { ItemFormSection, ItemData } from "../ItemFormSection";
 
 export type ClozeQuestionData = {
   hint: string | null;
@@ -30,122 +36,129 @@ export type ClozeQuestionData = {
 };
 export type ClozeElementData =
   | {
-      type: "text";
+      type: "TEXT";
       text: string;
     }
   | {
-      type: "blank";
+      type: "BLANK";
       correctAnswer: string;
       feedback: string;
     };
 
+type Props = {
+  _allRecords: MediaRecordSelector$key;
+  allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
+  title: string;
+  open: boolean;
+  isLoading: boolean;
+  item: Item | CreateItem;
+  setItem: Dispatch<SetStateAction<Item | CreateItem>>;
+  questionData: ClozeQuestionData;
+  setQuestionData: Dispatch<SetStateAction<ClozeQuestionData>>;
+  onSubmit: () => void;
+  onClose: () => void;
+};
+
 export function ClozeQuestionModal({
   _allRecords,
-  open,
+  allSkillsQueryRef,
   title,
-  error,
-  courseId,
-  item,
-  initialValue,
+  open,
   isLoading,
-  onSave,
+  item,
+  setItem,
+  questionData,
+  setQuestionData,
   onClose,
-  clearError,
-}: {
-  _allRecords: MediaRecordSelector$key;
-  open: boolean;
-  title: string;
-  error: any;
-  courseId: string;
-  item: ItemData;
-  initialValue: ClozeQuestionData;
-  isLoading: boolean;
-  onSave: (
-    data: ClozeQuestionData,
-    item: ItemData,
-    newSkillAdded?: boolean
-  ) => void;
-  onClose: () => void;
-  clearError: () => void;
-}) {
-  const [data, setData] = useState(initialValue);
-  const [itemForQuestion, setItem] = useState(item);
-  const updateElement = (index: number, value: ClozeElementData) => {
-    setData((oldValue) => ({
-      ...oldValue,
-      clozeElements: [
-        ...oldValue.clozeElements.slice(0, index),
-        value,
-        ...oldValue.clozeElements.slice(index + 1),
-      ],
-    }));
-  };
-  const addElement = (value: ClozeElementData) => {
-    setData((oldValue) => ({
-      ...oldValue,
-      clozeElements: [...oldValue.clozeElements, value],
-    }));
-  };
-  const deleteElement = (index: number) => {
-    setData((oldValue) => ({
-      ...oldValue,
-      clozeElements: [
-        ...oldValue.clozeElements.slice(0, index),
-        ...oldValue.clozeElements.slice(index + 1),
-      ],
-    }));
-  };
-  function handleItem(item: ItemData | null) {
-    if (item) {
-      setItem(item);
-    } else {
-      setItem({ associatedBloomLevels: [], associatedSkills: [] });
-    }
-  }
-  const atLeastOneTextElement = useMemo(
-    () => data.clozeElements.filter((e) => e.type === "text").length > 0,
-    [data.clozeElements]
-  );
-  const atLeastOneBlankElement = useMemo(
-    () => data.clozeElements.filter((e) => e.type === "blank").length > 0,
-    [data.clozeElements]
+  onSubmit,
+}: Readonly<Props>) {
+  const { error } = useError();
+
+  const updateQuestionData = useCallback(
+    <K extends keyof ClozeQuestionData>(
+      key: K,
+      value: ClozeQuestionData[K]
+    ) => {
+      setQuestionData((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
+    },
+    [setQuestionData]
   );
 
-  const allElementsFilled = useMemo(
+  const updateClozeElementAt = useCallback(
+    (index: number, value: ClozeElementData) => {
+      setQuestionData((prev) => ({
+        ...prev,
+        clozeElements: [
+          ...prev.clozeElements.slice(0, index),
+          value,
+          ...prev.clozeElements.slice(index + 1),
+        ],
+      }));
+    },
+    [setQuestionData]
+  );
+  const addClozeElementAt = useCallback(
+    (value: ClozeElementData) => {
+      setQuestionData((prev) => ({
+        ...prev,
+        clozeElements: [...prev.clozeElements, value],
+      }));
+    },
+    [setQuestionData]
+  );
+  const deleteClozeElementAt = useCallback(
+    (index: number) => {
+      setQuestionData((oldValue) => ({
+        ...oldValue,
+        clozeElements: [
+          ...oldValue.clozeElements.slice(0, index),
+          ...oldValue.clozeElements.slice(index + 1),
+        ],
+      }));
+    },
+    [setQuestionData]
+  );
+
+  const hasAtLeastOneTextElement = useMemo(
     () =>
-      data.clozeElements.every((x) =>
-        x.type == "blank" ? x.correctAnswer : serializeToText(x.text)
+      questionData.clozeElements.filter((e) => e.type === "TEXT").length > 0,
+    [questionData.clozeElements]
+  );
+  const hasAtLeastOneBlankElement = useMemo(
+    () =>
+      questionData.clozeElements.filter((e) => e.type === "BLANK").length > 0,
+    [questionData.clozeElements]
+  );
+  const allElementsAreFilled = useMemo(
+    () =>
+      questionData.clozeElements.every((x) =>
+        x.type == "BLANK" ? x.correctAnswer : serializeToText(x.text)
       ),
-    [data.clozeElements]
+    [questionData.clozeElements]
   );
   const valid =
-    atLeastOneTextElement &&
-    atLeastOneBlankElement &&
-    allElementsFilled &&
-    itemForQuestion.associatedBloomLevels.length > 0 &&
-    itemForQuestion.associatedSkills.length > 0;
-
-  useEffect(() => {
-    if (!open) {
-      setData(initialValue);
-      setItem(item);
-    }
-  }, [open, initialValue, item]);
+    hasAtLeastOneTextElement &&
+    hasAtLeastOneBlankElement &&
+    allElementsAreFilled;
 
   return (
     <Dialog open={open} maxWidth="lg" onClose={onClose}>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
-        <FormErrors error={error} onClose={clearError} />
+        <FormErrors error={error} />
         <Form>
           <ItemFormSection
-            onChange={handleItem}
-            courseId={courseId}
+            operation="edit"
             item={item}
-          ></ItemFormSection>
+            setItem={setItem}
+            allSkillsQueryRef={allSkillsQueryRef}
+          />
           <FormSection title="Cloze text">
-            {data.clozeElements.map((elem, i) =>
-              elem.type === "text" ? (
+            {questionData.clozeElements.map((elem, i) =>
+              elem.type === "TEXT" ? (
                 <div key={i} className="flex items-center">
                   <RichTextEditor
                     className="w-[700px]"
@@ -154,12 +167,12 @@ export function ClozeQuestionModal({
                     initialValue={elem.text}
                     required
                     onChange={(text) =>
-                      updateElement(i, { type: "text", text })
+                      updateClozeElementAt(i, { type: "TEXT", text })
                     }
                   />
                   <IconButton
                     className="!mt-2"
-                    onClick={() => deleteElement(i)}
+                    onClick={() => deleteClozeElementAt(i)}
                   >
                     <Clear />
                   </IconButton>
@@ -173,8 +186,8 @@ export function ClozeQuestionModal({
                     label="Blank"
                     value={elem.correctAnswer}
                     onChange={(e) =>
-                      updateElement(i, {
-                        type: "blank",
+                      updateClozeElementAt(i, {
+                        type: "BLANK",
                         correctAnswer: e.target.value,
                         feedback: elem.feedback,
                       })
@@ -186,14 +199,14 @@ export function ClozeQuestionModal({
                     icon={<Feedback />}
                     initialValue={elem.feedback}
                     onSave={(value) =>
-                      updateElement(i, {
-                        type: "blank",
+                      updateClozeElementAt(i, {
+                        type: "BLANK",
                         correctAnswer: elem.correctAnswer,
                         feedback: value,
                       })
                     }
                   />
-                  <IconButton onClick={() => deleteElement(i)}>
+                  <IconButton onClick={() => deleteClozeElementAt(i)}>
                     <Clear />
                   </IconButton>
                 </div>
@@ -202,14 +215,18 @@ export function ClozeQuestionModal({
             <div className="flex gap-2 mt-2">
               <Button
                 startIcon={<Add />}
-                onClick={() => addElement({ type: "text", text: "" })}
+                onClick={() => addClozeElementAt({ type: "TEXT", text: "" })}
               >
                 Add text
               </Button>
               <Button
                 startIcon={<Add />}
                 onClick={() =>
-                  addElement({ type: "blank", correctAnswer: "", feedback: "" })
+                  addClozeElementAt({
+                    type: "BLANK",
+                    correctAnswer: "",
+                    feedback: "",
+                  })
                 }
               >
                 Add blank
@@ -218,42 +235,34 @@ export function ClozeQuestionModal({
           </FormSection>
           <HintFormSection
             _allRecords={_allRecords}
-            initialValue={data.hint}
-            onChange={(hint) => {
-              setData((oldData) => ({ ...oldData, hint }));
-            }}
+            initialValue={questionData.hint}
+            onChange={(hint) => updateQuestionData("hint", hint)}
           />
           <FormSection title="Options">
             <FormControlLabel
               label="Freetext blanks"
               control={
                 <Checkbox
-                  checked={!data.showBlanksList}
+                  checked={!questionData.showBlanksList}
                   onChange={(e) =>
-                    setData((oldValue) => ({
-                      ...oldValue,
-                      showBlanksList: !e.target.checked,
-                    }))
+                    updateQuestionData("showBlanksList", !e.target.checked)
                   }
                 />
               }
             />
           </FormSection>
-          {data.showBlanksList && (
+          {questionData.showBlanksList && (
             <FormSection title="Additional wrong answers">
               <Autocomplete
                 multiple
                 options={[]}
                 defaultValue={[]}
                 freeSolo
-                value={data.additionalWrongAnswers}
+                value={questionData.additionalWrongAnswers}
                 className="w-96"
-                onChange={(_, newValue: string[]) => {
-                  setData((oldValue) => ({
-                    ...oldValue,
-                    additionalWrongAnswers: newValue,
-                  }));
-                }}
+                onChange={(_, newValue: string[]) =>
+                  updateQuestionData("additionalWrongAnswers", newValue)
+                }
                 renderTags={(value: readonly string[], getTagProps) =>
                   value.map((option: string, index: number) => (
                     // the key gets set by "getTagProps"
@@ -279,20 +288,20 @@ export function ClozeQuestionModal({
       </DialogContent>
       <DialogActions>
         <div className="text-red-600 text-xs mr-3">
-          {!atLeastOneTextElement && <div>Add at least one text element</div>}
-          {!atLeastOneBlankElement && <div>Add at least one blank element</div>}
-          {atLeastOneTextElement && !allElementsFilled && (
+          {!hasAtLeastOneTextElement && (
+            <div>Add at least one text element</div>
+          )}
+          {!hasAtLeastOneBlankElement && (
+            <div>Add at least one blank element</div>
+          )}
+          {hasAtLeastOneTextElement && !allElementsAreFilled && (
             <div>All elements have to be filled</div>
           )}
         </div>
         <Button disabled={isLoading} onClick={onClose}>
           Cancel
         </Button>
-        <LoadingButton
-          disabled={!valid}
-          loading={isLoading}
-          onClick={() => onSave(data, itemForQuestion)}
-        >
+        <LoadingButton disabled={!valid} loading={isLoading} onClick={onSubmit}>
           Save
         </LoadingButton>
       </DialogActions>

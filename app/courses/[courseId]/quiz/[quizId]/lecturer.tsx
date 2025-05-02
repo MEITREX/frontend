@@ -1,205 +1,123 @@
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { lecturerEditQuizQuery } from "@/__generated__/lecturerEditQuizQuery.graphql";
-import { ContentTags } from "@/components/ContentTags";
-import { FormErrors } from "@/components/FormErrors";
-import { Heading } from "@/components/Heading";
+import { ErrorContext, ES2022Error } from "@/components/ErrorContext";
 import { PageError } from "@/components/PageError";
 import { QuizModal } from "@/components/QuizModal";
 import { AddQuestionButton } from "@/components/quiz/AddQuestionButton";
-import { AssociationQuestionPreview } from "@/components/quiz/AssociationQuestionPreview";
-import { ClozeQuestionPreview } from "@/components/quiz/ClozeQuestionPreview";
-import { DeleteQuestionButton } from "@/components/quiz/DeleteQuestionButton";
-import { DeleteQuizButton } from "@/components/quiz/DeleteQuizButton";
-import { EditAssociationQuestionButton } from "@/components/quiz/EditAssociationQuestionButton";
-import { EditClozeQuestionButton } from "@/components/quiz/EditClozeQuestionButton";
-import { EditMultipleChoiceQuestionButton } from "@/components/quiz/EditMultipleChoiceQuestionButton";
-import { MultipleChoiceQuestionPreview } from "@/components/quiz/MultipleChoiceQuestionPreview";
-import { Edit } from "@mui/icons-material";
-import { Button } from "@mui/material";
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import { graphql, useLazyLoadQuery } from "react-relay";
-import { ItemData } from "@/components/ItemFormSection";
-export default function LecturerQuiz() {
-  const { quizId, courseId } = useParams();
-  const router = useRouter();
-  const [error, setError] = useState<any>(null);
+import QuestionPreview from "@/components/quiz/QuestionPreview";
+import QuizHeader from "@/components/quiz/QuizHeader";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { graphql, useLazyLoadQuery, useQueryLoader } from "react-relay";
+import { AllSkillQuery } from "../../flashcards/[flashcardSetId]/lecturer";
 
-  const { contentsByIds, ...query } = useLazyLoadQuery<lecturerEditQuizQuery>(
-    graphql`
-      query lecturerEditQuizQuery($id: UUID!, $courseId: UUID!) {
-        ...MediaRecordSelector
-        contentsByIds(ids: [$id]) {
+const RootQuery = graphql`
+  query lecturerEditQuizQuery($id: UUID!, $courseId: UUID!) {
+    ...MediaRecordSelector
+
+    contentsByIds(ids: [$id]) {
+      ...QuizHeaderFragment
+
+      id
+      metadata {
+        name
+        chapterId
+      }
+      ... on QuizAssessment {
+        quiz {
+          assessmentId
+          questionPool {
+            ...QuestionPreviewFragment
+
+            itemId
+            type
+            number
+            ...MultipleChoiceQuestionPreviewFragment
+            ...ClozeQuestionPreviewFragment
+            ...AssociationQuestionPreviewFragment
+          }
+          ...QuizModalFragment
+        }
+        items {
           id
-          metadata {
-            name
-            chapterId
-            ...ContentTags
+          associatedSkills {
+            id
+            skillName
+            skillCategory
+            isCustomSkill
           }
-          ... on QuizAssessment {
-            quiz {
-              assessmentId
-              questionPool {
-                itemId
-                type
-                number
-                ...MultipleChoiceQuestionPreviewFragment
-                ...ClozeQuestionPreviewFragment
-                ...EditMultipleChoiceQuestionButtonFragment
-                ...AssociationQuestionPreviewFragment
-                ...EditClozeQuestionButtonFragment
-                ...EditAssociationQuestionButtonFragment
-              }
-              ...QuizModalFragment
-            }
-            items {
-              id
-              associatedSkills {
-                id
-                skillName
-              }
-              associatedBloomLevels
-            }
-          }
+          associatedBloomLevels
         }
       }
-    `,
-    { id: quizId, courseId }
-  );
-  const [isEditSetOpen, setEditSetOpen] = useState(false);
+    }
+  }
+`;
+
+export default function LecturerQuiz() {
+  const { quizId, courseId } = useParams();
+  const [error, setError] = useState<ES2022Error | null>(null);
+  const errorContext = useMemo(() => ({ error, setError }), [error, setError]);
+
+  const { contentsByIds, ...mediaSelectorQuery } =
+    useLazyLoadQuery<lecturerEditQuizQuery>(RootQuery, {
+      id: quizId,
+      courseId,
+    });
+  const [queryReference, loadQuery] =
+    useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
+  useEffect(() => {
+    if (!queryReference) {
+      loadQuery({ courseId });
+    }
+  }, [courseId, loadQuery, queryReference]);
+
+  const [isEditSetModalOpen, setEditSetModalOpen] = useState(false);
 
   const content = contentsByIds[0];
-  if (!content) {
-    return <PageError message="No quiz found with given id." />;
-  }
-
   const quiz = content.quiz;
+
   if (!quiz) {
     return (
       <PageError
-        title={contentsByIds[0].metadata.name}
+        title={content.metadata.name}
         message="Content not of type quiz."
       />
     );
   }
-  function getItem(itemId: string): ItemData {
-    if (content && content.items) {
-      for (let i = 0; i < content.items.length; i++) {
-        if (content.items[i].id === itemId) {
-          return {
-            associatedBloomLevels: [...content.items[i].associatedBloomLevels],
-            associatedSkills: [...content.items[i].associatedSkills],
-            id: itemId,
-          };
-        }
-      }
-    }
-    return { associatedBloomLevels: [], associatedSkills: [] };
-  }
-
   return (
     <main>
-      <FormErrors error={error} onClose={() => setError(null)} />
-      <Heading
-        title={content.metadata.name}
-        action={
-          <div className="flex gap-2">
-            <DeleteQuizButton
-              chapterId={content.metadata.chapterId}
-              contentId={content.id}
-              onCompleted={() => router.push(`/courses/${courseId}`)}
-              onError={setError}
-            />
-            <Button
-              sx={{ color: "text.secondary" }}
-              startIcon={<Edit />}
-              onClick={() => setEditSetOpen(true)}
-            >
-              Edit
-            </Button>
-          </div>
-        }
-        backButton
-      />
-      <ContentTags metadata={content.metadata} />
-
-      {quiz.questionPool.map((question, index) => (
-        <div
-          key={question.itemId}
-          className="my-3 py-3 border-b flex justify-between items-start"
-        >
-          {question.type === "MULTIPLE_CHOICE" && (
-            <>
-              <MultipleChoiceQuestionPreview _question={question} />
-              <div className="flex">
-                <EditMultipleChoiceQuestionButton
-                  _allRecords={query}
-                  _question={question}
-                  assessmentId={content.id!}
-                  courseId={courseId}
-                  item={getItem(question.itemId)}
-                />
-                <DeleteQuestionButton
-                  assessmentId={content.id!}
-                  questionId={question.itemId}
-                  num={question.number}
-                />
-              </div>
-            </>
-          )}
-          {question.type === "CLOZE" && (
-            <>
-              <ClozeQuestionPreview _question={question} />
-              <div className="flex">
-                <EditClozeQuestionButton
-                  _allRecords={query}
-                  _question={question}
-                  assessmentId={content.id}
-                  courseId={courseId}
-                  item={getItem(question.itemId)}
-                />
-                <DeleteQuestionButton
-                  assessmentId={content.id}
-                  questionId={question.itemId}
-                  num={question.number}
-                />
-              </div>
-            </>
-          )}
-          {question.type === "ASSOCIATION" && (
-            <>
-              <AssociationQuestionPreview _question={question} />
-              <div className="flex">
-                <EditAssociationQuestionButton
-                  _allRecords={query}
-                  _question={question}
-                  assessmentId={content.id}
-                  courseId={courseId}
-                  item={getItem(question.itemId)}
-                />
-                <DeleteQuestionButton
-                  assessmentId={content.id}
-                  questionId={question.itemId}
-                  num={question.number}
-                />
-              </div>
-            </>
-          )}
-        </div>
-      ))}
-      <div className="mt-8 flex flex-col items-start">
-        <AddQuestionButton
-          _allRecords={query}
-          assessmentId={content.id}
-          courseId={courseId}
+      <ErrorContext.Provider value={errorContext}>
+        <QuizHeader
+          openEditQuizModal={() => setEditSetModalOpen(true)}
+          content={content}
         />
-      </div>
 
-      <QuizModal
-        onClose={() => setEditSetOpen(false)}
-        isOpen={isEditSetOpen}
-        _existingQuiz={quiz}
-        chapterId={content.metadata.chapterId}
-      />
+        {quiz.questionPool.map((question, i) => (
+          <div key={i}>
+            <QuestionPreview
+              mediaRecords={mediaSelectorQuery}
+              allSkillsQueryRef={queryReference}
+              question={question}
+            />
+          </div>
+        ))}
+
+        <div className="mt-8 flex flex-col items-start">
+          <AddQuestionButton
+            _allRecords={mediaSelectorQuery}
+            allSkillsQueryRef={queryReference}
+            assessmentId={content.id}
+            courseId={courseId}
+          />
+        </div>
+
+        <QuizModal
+          onClose={() => setEditSetModalOpen(false)}
+          isOpen={isEditSetModalOpen}
+          _existingQuiz={quiz}
+          chapterId={content.metadata.chapterId}
+        />
+      </ErrorContext.Provider>
     </main>
   );
 }

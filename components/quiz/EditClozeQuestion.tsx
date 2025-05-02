@@ -1,25 +1,59 @@
-import { AddClozeQuestionModalMutation } from "@/__generated__/AddClozeQuestionModalMutation.graphql";
+import { EditClozeQuestionFragment$key } from "@/__generated__/EditClozeQuestionFragment.graphql";
+import { EditClozeQuestionMutation } from "@/__generated__/EditClozeQuestionMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { questionUpdaterClosure } from "@/src/relay-helpers/question";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
-import { graphql, PreloadedQuery, useMutation } from "react-relay";
+import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
 import { useError } from "../ErrorContext";
-import { CreateItem } from "../form-sections/item/ItemFormSection";
+import {
+  CreateItem,
+  Item,
+  mapRelayItemToItem,
+} from "../form-sections/item/ItemFormSection";
 import { ClozeQuestionData, ClozeQuestionModal } from "./ClozeQuestionModal";
 
+const ClozeQuestionFragment = graphql`
+  fragment EditClozeQuestionFragment on ClozeQuestion {
+    itemId
+    item {
+      associatedBloomLevels
+      associatedSkills {
+        id
+        skillName
+        skillCategory
+        isCustomSkill
+      }
+    }
+
+    showBlanksList
+    additionalWrongAnswers
+    hint
+    clozeElements {
+      __typename
+      ... on ClozeTextElement {
+        text
+      }
+      ... on ClozeBlankElement {
+        correctAnswer
+        feedback
+      }
+    }
+  }
+`;
+
 const ClozeQuestionMutation = graphql`
-  mutation AddClozeQuestionModalMutation(
+  mutation EditClozeQuestionMutation(
     $assessmentId: UUID!
-    $input: CreateClozeQuestionInputWithoutItem!
-    $item: CreateItemInput!
+    $questionInput: UpdateClozeQuestionInput!
+    $item: ItemInput!
   ) {
     mutateQuiz(assessmentId: $assessmentId) {
       assessmentId
-      addClozeQuestion(
+      updateClozeQuestion(
+        questionInput: $questionInput
         assessmentId: $assessmentId
-        questionInput: $input
         item: $item
       ) {
         modifiedQuestion {
@@ -60,53 +94,79 @@ const ClozeQuestionMutation = graphql`
 type Props = {
   _allRecords: MediaRecordSelector$key;
   allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
+  question: EditClozeQuestionFragment$key;
   onClose: () => void;
   open: boolean;
 };
 
-export function AddClozeQuestionModal({
+export function EditClozeQuestion({
   _allRecords,
-  open,
-  onClose,
   allSkillsQueryRef,
+  question,
+  onClose,
+  open,
 }: Readonly<Props>) {
   const { quizId, courseId } = useParams();
   const { setError } = useError();
 
-  const [item, setItem] = useState<CreateItem>({
-    associatedSkills: [],
-    associatedBloomLevels: [],
-  });
+  const data = useFragment(ClozeQuestionFragment, question);
+
+  const [item, setItem] = useState<Item | CreateItem>(mapRelayItemToItem(data));
   const [questionData, setQuestionData] = useState<ClozeQuestionData>({
-    showBlanksList: true,
-    clozeElements: [],
-    additionalWrongAnswers: [],
-    hint: null,
+    showBlanksList: data.showBlanksList,
+    additionalWrongAnswers: data.additionalWrongAnswers.map((e) => e),
+    hint: data.hint,
+    clozeElements: data.clozeElements.map((e) =>
+      e.__typename === "ClozeTextElement"
+        ? { type: "TEXT", text: e.text }
+        : e.__typename === "ClozeBlankElement"
+        ? {
+            type: "BLANK",
+            correctAnswer: e.correctAnswer,
+            feedback: e.feedback ?? "",
+          }
+        : {
+            type: "TEXT",
+            text: "Type of cloze element is '%other'; this shouldn't happen",
+          }
+    ),
   });
 
-  const [addQuestion, isUpdating] = useMutation<AddClozeQuestionModalMutation>(
+  const [updateQuestion, isUpdating] = useMutation<EditClozeQuestionMutation>(
     ClozeQuestionMutation
   );
 
   const updater = useCallback(
-    () => questionUpdaterClosure("add", "ClozeQuestion", quizId, courseId),
+    () => questionUpdaterClosure("update", "ClozeQuestion", quizId, courseId),
     [courseId, quizId]
   );
 
   const onSubmit = useCallback(() => {
     const questionUpdate = {
       assessmentId: quizId,
-      input: questionData,
+      questionInput: {
+        ...questionData,
+        itemId: data.itemId,
+      },
       item: item,
     };
 
-    addQuestion({
+    updateQuestion({
       variables: questionUpdate,
-      onError: setError,
       updater: updater(),
-      onCompleted: () => onClose(),
+      onCompleted: onClose,
+      onError: setError,
     });
-  }, [addQuestion, item, onClose, questionData, quizId, setError, updater]);
+  }, [
+    data.itemId,
+    item,
+    onClose,
+    questionData,
+    quizId,
+    setError,
+    updateQuestion,
+    updater,
+  ]);
 
   return (
     <ClozeQuestionModal
