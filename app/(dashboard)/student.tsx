@@ -86,8 +86,8 @@ export default function StudentPage() {
       } else {
         return x.course.yearDivision
           ? yearDivisionToStringShort[x.course.yearDivision] +
-              " " +
-              dayjs(x.course.startDate).year()
+          " " +
+          dayjs(x.course.startDate).year()
           : dayjs(x.course.startDate).year();
       }
     })
@@ -95,9 +95,9 @@ export default function StudentPage() {
     .orderBy(
       sortby === "yearDivision"
         ? [
-            ([key, courses]) => courses[0].course.startYear,
-            ([key, courses]) => courses[0].course.yearDivision,
-          ]
+          ([key, courses]) => courses[0].course.startYear,
+          ([key, courses]) => courses[0].course.yearDivision,
+        ]
         : ([key, _]) => key,
 
       sortby === "title" ? "asc" : "desc"
@@ -128,7 +128,7 @@ export default function StudentPage() {
   return (
     <main>
       <div className="flex flex-wrap justify-between mb-10">
-        {true && <SurveyPopup/>} {/*Hier muss dann der bool aus der abfrage statt dem false*/}
+        {true && <SurveyPopup />} {/*Hier muss dann der bool aus der abfrage statt dem false*/}
         <Typography variant="h1" gutterBottom>
           Dashboard
         </Typography>
