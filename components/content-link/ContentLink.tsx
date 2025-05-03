@@ -225,72 +225,76 @@ export function ContentLink({
 
   const body = (
     <>
-    {showProviderDialog && (
-      <ProviderAuthorizationDialog
-        onClose={() => setShowProviderDialog(false)}
-        alertMessage={`You must authorize via ${provider.name} to access this code assignment.`}
-        _provider={codeAssessmentProvider}
-      />
-    )}
-
-    <button
-      disabled={disabled}
-      className={`group flex items-center text-left ${gap} pr-3 bg-transparent hover:disabled:bg-gray-50 ${cursor} rounded-full`}
-      onClick={async () => {
-        if (
-          content.__typename === "AssignmentAssessment" &&
-          content.assignment?.assignmentType === "CODE_ASSIGNMENT"
-        ) {
-          const hasToken = await checkAccessToken();
-          if (!hasToken) {
-            setShowProviderDialog(true);
-            return;
-          }
-        }
-
-        router.push(link);
-      }}
-    >
-      <div
-        className={`${frameSize} relative flex justify-center items-center group-hover:group-enabled:scale-105`}
-      >
-        <ProgressFrame
-          color={
-            disabled ? colors.gray[100] : ContentTypeToColor[content.__typename]
-          }
-          _progress={content.userProgressData}
+      {showProviderDialog && (
+        <ProviderAuthorizationDialog
+          onClose={() => setShowProviderDialog(false)}
+          alertMessage={`You must authorize via ${provider.name} to access this code assignment.`}
+          _provider={codeAssessmentProvider}
         />
+      )}
 
-        <div className="absolute flex justify-center items-center">{icon}</div>
-      </div>
-      <div className="group-hover:group-enabled:translate-x-0.5">
+      <button
+        disabled={disabled}
+        className={`group flex items-center text-left ${gap} pr-3 bg-transparent hover:disabled:bg-gray-50 ${cursor} rounded-full`}
+        onClick={async () => {
+          if (
+            content.__typename === "AssignmentAssessment" &&
+            content.assignment?.assignmentType === "CODE_ASSIGNMENT"
+          ) {
+            const hasToken = await checkAccessToken();
+            if (!hasToken) {
+              setShowProviderDialog(true);
+              return;
+            }
+          }
+
+          router.push(link);
+        }}
+      >
         <div
-          className={`flex items-center ${
-            size == "small" ? "gap-1 -ml-0.5" : "gap-1.5 -ml-1"
-          }`}
+          className={`${frameSize} relative flex justify-center items-center group-hover:group-enabled:scale-105`}
         >
-          {chips.map((chip) => (
-            <Chip
-              key={chip.key}
-              className={"!h-4 px-0 !text-[0.6rem]"}
-              label={chip.label}
-              sx={{ backgroundColor: chip.color }}
-              classes={{ label: size == "small" ? "!px-2 mt-[0.1rem]" : "" }}
-            />
-          ))}
+          <ProgressFrame
+            color={
+              disabled
+                ? colors.gray[100]
+                : ContentTypeToColor[content.__typename]
+            }
+            _progress={content.userProgressData}
+          />
+
+          <div className="absolute flex justify-center items-center">
+            {icon}
+          </div>
         </div>
-        <Typography
-          variant="subtitle1"
-          fontSize={size == "small" ? "0.8rem" : "1.25rem"}
-          fontWeight="500"
-          color={disabled ? "text.disabled" : ""}
-          sx={size == "small" ? { lineHeight: 1.5 } : { marginBottom: -0.5 }}
-        >
-          {content.metadata.name}
-        </Typography>
-      </div>
-      <div className="flex-1"></div>
-    </button>
+        <div className="group-hover:group-enabled:translate-x-0.5">
+          <div
+            className={`flex items-center ${
+              size == "small" ? "gap-1 -ml-0.5" : "gap-1.5 -ml-1"
+            }`}
+          >
+            {chips.map((chip) => (
+              <Chip
+                key={chip.key}
+                className={"!h-4 px-0 !text-[0.6rem]"}
+                label={chip.label}
+                sx={{ backgroundColor: chip.color }}
+                classes={{ label: size == "small" ? "!px-2 mt-[0.1rem]" : "" }}
+              />
+            ))}
+          </div>
+          <Typography
+            variant="subtitle1"
+            fontSize={size == "small" ? "0.8rem" : "1.25rem"}
+            fontWeight="500"
+            color={disabled ? "text.disabled" : ""}
+            sx={size == "small" ? { lineHeight: 1.5 } : { marginBottom: -0.5 }}
+          >
+            {content.metadata.name}
+          </Typography>
+        </div>
+        <div className="flex-1"></div>
+      </button>
     </>
   );
 
