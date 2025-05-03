@@ -4,7 +4,7 @@ import { ContentTags } from "./ContentTags";
 import { FormErrors } from "./FormErrors";
 import { Heading } from "./Heading";
 import { PageError } from "./PageError";
-import { QuizModal } from "./QuizModal";
+import { LecturerCodeAssignmentGradingQuery } from "@/__generated__/LecturerCodeAssignmentGradingQuery.graphql";
 import { Edit, GitHub } from "@mui/icons-material";
 import {
   Box,
@@ -60,7 +60,7 @@ export default function LecturerCodeAssignment({
         query LecturerCodeAssignmentQuery($assessmentId: UUID!) {
           findAssignmentsByAssessmentIds(assessmentIds: [$assessmentId]) {
             assessmentId
-            classroomLink
+            assignmentLink
             date
             totalCredits
             requiredPercentage
@@ -71,10 +71,33 @@ export default function LecturerCodeAssignment({
       { assessmentId: assignmentId }
     );
 
+  // const { getGradingsForAssignment } =
+  //   useLazyLoadQuery<LecturerCodeAssignmentGradingQuery>(
+  //     graphql`
+  //       query LecturerCodeAssignmentGradingQuery($assessmentId: UUID!) {
+  //         getGradingsForAssignment(assessmentId: $assessmentId) {
+  //           studentId
+  //           achievedCredits
+  //           codeAssignmentGradingMetadata {
+  //             repoLink
+  //             status
+  //             feedbackTableHtml
+  //           }
+  //         }
+  //       }
+  //     `,
+  //     { assessmentId: assignmentId }
+  //   );
+
   const assignment = findAssignmentsByAssessmentIds[0];
   if (!assignment) {
     return <PageError message="No assignment found with given id." />;
   }
+
+  // const studentGrades = getGradingsForAssignment.map((grading) => ({
+  //   studentId: grading.studentId,
+  //   achievedCredits: grading.achievedCredits,
+  // }));
 
   return (
     <main>
@@ -101,11 +124,11 @@ export default function LecturerCodeAssignment({
               </Button>
             )}
 
-            {assignment.classroomLink && (
+            {assignment.assignmentLink && (
               <Button
                 sx={{ color: "text.secondary" }}
                 startIcon={<GitHub />}
-                href={assignment.classroomLink}
+                href={assignment.assignmentLink}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -241,10 +264,14 @@ export default function LecturerCodeAssignment({
               </TableRow>
             </TableHead>
             <TableBody>
-              {/* {studentGrades.map(({ student, grade }) => (
-                <TableRow key={student.userName}>
-                  <TableCell>{student.userName}</TableCell>
-                  <TableCell>{grade != null ? `${Math.round(grade * 100)}%` : "-"}</TableCell>
+              {/* {studentGrades.map(({ studentId, achievedCredits }) => (
+                <TableRow key={studentId}>
+                  <TableCell>{studentId}</TableCell>
+                  <TableCell>
+                    {achievedCredits != null
+                      ? achievedCredits
+                      : "-"}
+                  </TableCell>
                 </TableRow>
               ))} */}
             </TableBody>
