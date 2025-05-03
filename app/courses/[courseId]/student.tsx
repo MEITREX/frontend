@@ -298,6 +298,18 @@ export default function StudentCoursePage() {
           </div>
         </Button>
         <Typography variant="h2">Skill progress</Typography>
+        <LightTooltip
+          title={
+            <>
+              <p className="text-slate-600 mb-1">Information Skillprogress</p>
+              <p>{"Here you can see your personal progress for this course, splitted up in every skill category that is assigned to this course.\nEvery skill categories consists of unique skills. These skills are assigned to the different exercises. If you complete an exercise your skill progress will increase."}</p>
+            </>
+          }
+        >
+          <IconButton>
+            <Info />
+          </IconButton>
+        </LightTooltip>
       </div>
       <div>  
         {showProgressbars && (
