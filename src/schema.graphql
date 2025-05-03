@@ -1530,6 +1530,9 @@ type Mutation {
   # Delete a quiz.
   deleteQuiz(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the quiz and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
 
+  # Delete a flashcard set.
+  deleteFlashcardSet(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the flashcardset and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
+
   # Log that a multiple choice quiz is completed.
   # 🔒 The user must be enrolled in the course the quiz is in to perform this action.
   logQuizCompleted(input: QuizCompletedInput!): QuizCompletionFeedback!
