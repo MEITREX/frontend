@@ -182,6 +182,7 @@ export function AddCodeAssignmentModal({
         <ProviderAuthorizationDialog
           onClose={onClose}
           alertMessage={`You must authorize via ${provider.name} to add a code assignment.`}
+          _provider={codeAssessmentProvider}
         />
       )}
 
@@ -231,17 +232,17 @@ export function AddCodeAssignmentModal({
                 ))}
 
                 <Form>
-                <ContentMetadataFormSection
-                  suggestedTags={[]}
-                  metadata={{
-                    name: selectedAssignmentName ?? "",
-                    suggestedDate: new Date().toISOString(),
-                    rewardPoints: 0,
-                    tagNames: [],
-                  }}
-                  onChange={setMetadata}
-                  disableName={true}
-                />
+                  <ContentMetadataFormSection
+                    suggestedTags={[]}
+                    metadata={{
+                      name: selectedAssignmentName ?? "",
+                      suggestedDate: new Date().toISOString(),
+                      rewardPoints: 0,
+                      tagNames: [],
+                    }}
+                    onChange={setMetadata}
+                    disableName={true}
+                  />
 
                   <AssessmentMetadataFormSection
                     onChange={setAssessmentMetadata}

@@ -6,16 +6,18 @@ import {
   Button,
   Alert,
 } from "@mui/material";
-import { codeAssessmentProvider, providerConfig } from "./ProviderConfig";
+import {ExternalServiceProvider, providerConfig } from "./ProviderConfig";
 
 export function ProviderAuthorizationDialog({
   onClose,
   alertMessage,
+  _provider
 }: {
   onClose: () => void;
   alertMessage: string;
+  _provider: ExternalServiceProvider;
 }) {
-  const provider = providerConfig[codeAssessmentProvider];
+  const provider = providerConfig[_provider];
 
   const handleAuthorization = () => {
     const returnTo = window.location.href;
