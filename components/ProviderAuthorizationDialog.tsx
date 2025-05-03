@@ -10,8 +10,10 @@ import { codeAssessmentProvider, providerConfig } from "./ProviderConfig";
 
 export function ProviderAuthorizationDialog({
   onClose,
+  alertMessage,
 }: {
   onClose: () => void;
+  alertMessage: string;
 }) {
   const provider = providerConfig[codeAssessmentProvider];
 
@@ -29,9 +31,7 @@ export function ProviderAuthorizationDialog({
     <Dialog open={true} onClose={onClose}>
       <DialogTitle>{provider.name} Authorization Required</DialogTitle>
       <DialogContent>
-        <Alert severity="warning">
-          You must authorize via {provider.name} to add a code assignment.
-        </Alert>
+        <Alert severity="warning">{alertMessage}</Alert>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">
