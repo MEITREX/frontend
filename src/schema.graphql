@@ -5,78 +5,35 @@ directive @specifiedBy(
 ) on SCALAR
 
 #  see also https://github.com/graphql-java/graphql-java-extended-validation/blob/master/README.md
-directive @DecimalMax(
-  value: String!
-  inclusive: Boolean! = true
-  message: String = "graphql.validation.DecimalMax.message"
-) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @DecimalMax(value: String!, inclusive: Boolean! = true, message: String = "graphql.validation.DecimalMax.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @DecimalMin(
-  value: String!
-  inclusive: Boolean! = true
-  message: String = "graphql.validation.DecimalMin.message"
-) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @DecimalMin(value: String!, inclusive: Boolean! = true, message: String = "graphql.validation.DecimalMin.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @Max(
-  value: Int! = 2147483647
-  message: String = "graphql.validation.Max.message"
-) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @Max(value: Int! = 2147483647, message: String = "graphql.validation.Max.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @Min(
-  value: Int! = 0
-  message: String = "graphql.validation.Min.message"
-) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @Min(value: Int! = 0, message: String = "graphql.validation.Min.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @Negative(
-  message: String = "graphql.validation.Negative.message"
-) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @Negative(message: String = "graphql.validation.Negative.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @NegativeOrZero(
-  message: String = "graphql.validation.NegativeOrZero.message"
-) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @NegativeOrZero(message: String = "graphql.validation.NegativeOrZero.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @NotBlank(
-  message: String = "graphql.validation.NotBlank.message"
-) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @NotBlank(message: String = "graphql.validation.NotBlank.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @NotEmpty(
-  message: String = "graphql.validation.NotEmpty.message"
-) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @NotEmpty(message: String = "graphql.validation.NotEmpty.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @ContainerNotEmpty(
-  message: String = "graphql.validation.ContainerNotEmpty.message"
-) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @ContainerNotEmpty(message: String = "graphql.validation.ContainerNotEmpty.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @Pattern(
-  regexp: String! = ".*"
-  message: String = "graphql.validation.Pattern.message"
-) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @Pattern(regexp: String! = ".*", message: String = "graphql.validation.Pattern.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @Positive(
-  message: String = "graphql.validation.Positive.message"
-) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @Positive(message: String = "graphql.validation.Positive.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @PositiveOrZero(
-  message: String = "graphql.validation.PositiveOrZero.message"
-) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @PositiveOrZero(message: String = "graphql.validation.PositiveOrZero.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @Range(
-  min: Int = 0
-  max: Int = 2147483647
-  message: String = "graphql.validation.Range.message"
-) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @Range(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Range.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @Size(
-  min: Int = 0
-  max: Int = 2147483647
-  message: String = "graphql.validation.Size.message"
-) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @Size(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Size.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @ContainerSize(
-  min: Int = 0
-  max: Int = 2147483647
-  message: String = "graphql.validation.ContainerSize.message"
-) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @ContainerSize(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.ContainerSize.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 # The @OnDemand directive is used to mark fields that are only internally resolved when requested.
 # Implementation Note: This will cause the code generator to omit the field from the generated DTOs.
@@ -85,21 +42,7 @@ directive @OnDemand on FIELD_DEFINITION
 # Indicates an Input Object is a OneOf Input Object.
 directive @oneOf on INPUT_OBJECT
 
-directive @resolveTo(
-  requiredSelectionSet: String
-  sourceName: String!
-  sourceTypeName: String!
-  sourceFieldName: String!
-  sourceSelectionSet: String
-  sourceArgs: ResolveToSourceArgs
-  keyField: String
-  keysArg: String
-  pubsubTopic: String
-  filterBy: String
-  additionalArgs: ResolveToSourceArgs
-  result: String
-  resultType: String
-) on FIELD_DEFINITION
+directive @resolveTo(requiredSelectionSet: String, sourceName: String!, sourceTypeName: String!, sourceFieldName: String!, sourceSelectionSet: String, sourceArgs: ResolveToSourceArgs, keyField: String, keysArg: String, pubsubTopic: String, filterBy: String, additionalArgs: ResolveToSourceArgs, result: String, resultType: String) on FIELD_DEFINITION
 
 type AiEntityProcessingProgress {
   entityId: UUID!
@@ -223,6 +166,7 @@ type AssociationQuestion implements Question {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+  item: Item!
 }
 
 # Level of Blooms Taxonomy
@@ -314,9 +258,6 @@ type ClozeBlankElement {
 union ClozeElement = ClozeTextElement | ClozeBlankElement
 
 input ClozeElementInput {
-  # id of the corresponding item
-  itemId: UUID
-
   # Type of the element.
   type: ClozeElementType!
 
@@ -360,6 +301,7 @@ type ClozeQuestion implements Question {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+  item: Item!
 }
 
 type ClozeTextElement {
@@ -594,12 +536,23 @@ input CreateAssessmentInput {
   assessmentMetadata: AssessmentMetadataInput!
 
   # items of the new assessments
-  items: [ItemInput!]
+  items: [CreateItemInput!]
+}
+
+input CreateAssociationInput {
+  # Text of the left side of the association, in SlateJS JSON format.
+  left: String!
+
+  # Text of the right side of the association, in SlateJS JSON format.
+  right: String!
+
+  # Feedback for the association when the user selects a wrong answer, in SlateJS JSON format.
+  feedback: JSON
 }
 
 input CreateAssociationQuestionInput {
   # id of the corresponding item
-  itemId: UUID
+  itemId: UUID!
 
   # Number of the question, used for ordering.
   # This can be omitted, in which case a number, one higher than the highest number of the existing questions, will be used.
@@ -612,6 +565,13 @@ input CreateAssociationQuestionInput {
   correctAssociations: [AssociationInput!]!
 
   # Optional hint for the question, in SlateJS JSON format.
+  hint: JSON
+}
+
+input CreateAssociationQuestionInputWithoutItem {
+  number: Int
+  text: JSON!
+  correctAssociations: [CreateAssociationInput!]!
   hint: JSON
 }
 
@@ -647,9 +607,23 @@ input CreateChapterInput {
   courseId: UUID!
 }
 
+input CreateClozeElementInput {
+  # Type of the element.
+  type: ClozeElementType!
+
+  # Text of the element. Only used for TEXT type.
+  text: JSON
+
+  # The correct answer for the blank. Only used for BLANK type.
+  correctAnswer: String
+
+  # Feedback for the blank when the user selects a wrong answer, in SlateJS JSON format. Only used for BLANK type.
+  feedback: JSON
+}
+
 input CreateClozeQuestionInput {
   # id of the corresponding item
-  itemId: UUID
+  itemId: UUID!
 
   # Number of the question, used for ordering.
   # This can be omitted, in which case a number, one higher than the highest number of the existing questions, will be used.
@@ -665,6 +639,14 @@ input CreateClozeQuestionInput {
   showBlanksList: Boolean! = true
 
   # Optional hint for the question, in SlateJS JSON format.
+  hint: JSON
+}
+
+input CreateClozeQuestionInputWithoutItem {
+  number: Int
+  clozeElements: [CreateClozeElementInput!]!
+  additionalWrongAnswers: [String!]! = []
+  showBlanksList: Boolean! = true
   hint: JSON
 }
 
@@ -738,6 +720,15 @@ input CreateExactAnswerQuestionInput {
   hint: JSON
 }
 
+input CreateExactAnswerQuestionInputWithoutItem {
+  number: Int
+  text: JSON!
+  caseSensitive: Boolean! = false
+  correctAnswers: [String!]!
+  feedback: JSON
+  hint: JSON
+}
+
 input CreateFlashcardInput {
   # id of the item the flashcard belongs to
   itemId: UUID
@@ -746,9 +737,21 @@ input CreateFlashcardInput {
   sides: [FlashcardSideInput!]!
 }
 
+# Input to create a new flashcard without an item.
+# This is supposed to be consumed by the frontend to create a new flashcard after the associated item has been created.
+input CreateFlashcardInputWithoutItem {
+  # List of sides of this flashcard. Must be at least two sides.
+  sides: [FlashcardSideInput!]!
+}
+
 input CreateFlashcardSetInput {
   # List of flashcards in this set.
   flashcards: [CreateFlashcardInput!]!
+}
+
+input CreateItemInput {
+  associatedSkills: [CreateSkillInput!]!
+  associatedBloomLevels: [BloomLevel!]!
 }
 
 # Input for creating new media content. Media specific fields are stored in the Media Service.
@@ -770,7 +773,7 @@ input CreateMediaRecordInput {
 
 input CreateMultipleChoiceQuestionInput {
   # UUID of the question to update and the id of the corresponding item.
-  itemId: UUID
+  itemId: UUID!
 
   # Number of the question, used for ordering.
   # This can be omitted, in which case a number, one higher than the highest number of the existing questions, will be used.
@@ -786,9 +789,16 @@ input CreateMultipleChoiceQuestionInput {
   hint: JSON
 }
 
+input CreateMultipleChoiceQuestionInputWithoutItem {
+  number: Int
+  text: JSON!
+  answers: [MultipleChoiceAnswerInput!]!
+  hint: JSON
+}
+
 input CreateNumericQuestionInput {
   # id of the corresponding item
-  itemId: UUID
+  itemId: UUID!
 
   # Number of the question, used for ordering.
   # This can be omitted, in which case a number, one higher than the highest number of the existing questions, will be used.
@@ -808,6 +818,15 @@ input CreateNumericQuestionInput {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+}
+
+input CreateNumericQuestionInputWithoutItem {
+  number: Int
+  text: JSON!
+  hint: JSON
+  correctAnswer: Float!
+  tolerance: Float!
+  feedback: JSON
 }
 
 input CreateQuizInput {
@@ -840,7 +859,7 @@ input CreateSectionInput {
 
 input CreateSelfAssessmentQuestionInput {
   # id of the corresponding item
-  itemId: UUID
+  itemId: UUID!
 
   # Number of the question, used for ordering.
   # This can be omitted, in which case a number, one higher than the highest number of the existing questions, will be used.
@@ -854,6 +873,19 @@ input CreateSelfAssessmentQuestionInput {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+}
+
+input CreateSelfAssessmentQuestionInputWithoutItem {
+  number: Int
+  text: JSON!
+  solutionSuggestion: JSON!
+  hint: JSON
+}
+
+input CreateSkillInput {
+  skillName: String!
+  skillCategory: String!
+  isCustomSkill: Boolean
 }
 
 input CreateStageInput {
@@ -931,6 +963,7 @@ type ExactAnswerQuestion implements Question {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+  item: Item!
 }
 
 # A flashcard is a set of two or more sides. Each side has a label and a text.
@@ -946,6 +979,7 @@ type Flashcard {
   # Progress data of the flashcard, specific to given users.
   # If userId is not provided, the progress data of the current user is returned.
   userProgressData: FlashcardProgressData!
+  item: Item!
 }
 
 # Feedback for the logFlashcardLearned mutation.
@@ -960,11 +994,8 @@ type FlashcardLearnedFeedback {
   flashcardSetProgress: FlashcardSetProgress!
 }
 
-# #when a flashcard is created or changed, also the item information are changed,
-# these type combines the flashcard and the changed information
 type FlashcardOutput {
   flashcard: Flashcard!
-  item: Item!
 }
 
 type FlashcardProgressData {
@@ -1039,38 +1070,24 @@ type FlashcardSetAssessment implements Assessment & Content {
   # The progress of processing the assessment. In particular when processing is done,
   # the assessment's task contents will have been indexed for search.
   aiProcessingProgress: AiEntityProcessingProgress!
+
+  # Tags suggested for this assessment by the AI system.
+  suggestedTags: [String!]!
 }
 
 type FlashcardSetMutation {
   # ID of the flashcard set that is being modified.
   assessmentId: UUID!
 
-  # Creates a new flashcard. Throws an error if the flashcard set does not exist.
-  # ⚠️ This mutation is only accessible internally in the system and allows the caller to create Flashcards without
-  # any permissions check and should not be called without any validation of the caller's permissions. ⚠️
-  _internal_noauth_createFlashcard(input: CreateFlashcardInput!): Flashcard!
-
-  # Updates a flashcard. Throws an error if the flashcard does not exist.
-  # ⚠️ This mutation is only accessible internally in the system and allows the caller to update Flashcards without
-  # any permissions check and should not be called without any validation of the caller's permissions. ⚠️
-  _internal_noauth_updateFlashcard(input: UpdateFlashcardInput!): Flashcard!
-
   # Deletes the flashcard with the specified ID. Throws an error if the flashcard does not exist.
   deleteFlashcard(id: UUID!): UUID!
 
-  # Creates a new flashcard and the linked item
-  createFlashcard(
-    item: ItemInput!
-    assessmentId: UUID!
-    flashcardInput: CreateFlashcardInput!
-  ): FlashcardOutput!
+  # Creates a new flashcard and its associated item by internally fetching and mutating the assessment with the new
+  # item provided. The created item's id is then used to create the flashcard.
+  createFlashcard(item: CreateItemInput!, assessmentId: UUID!, flashcardInput: CreateFlashcardInputWithoutItem!): FlashcardOutput!
 
-  # Creates a new flashcard and the linked item
-  updateFlashcard(
-    item: ItemInput!
-    assessmentId: UUID!
-    flashcardInput: UpdateFlashcardInput!
-  ): FlashcardOutput!
+  # Updates a flashcard by updating the associated item and the flashcard itself.
+  updateFlashcard(item: ItemInput!, assessmentId: UUID!, flashcardInput: UpdateFlashcardInput!): FlashcardOutput!
 }
 
 type FlashcardSetProgress {
@@ -1153,7 +1170,7 @@ type Item {
 }
 
 input ItemInput {
-  # the id of the item
+  # might be empty if a new item is created
   id: UUID
 
   # The skills or the competencies the item belongs to.
@@ -1258,14 +1275,12 @@ type MediaRecord {
   # Temporary download url for the media record
   downloadUrl: String!
 
-  """
-  Temporary download url for the media record where, if the media record is uploaded in a non-standardized format, a
-  converted version of that file is served.
-
-  For documents, this is a PDF version of the document.
-
-  May be NULL if no standardized version is available.
-  """
+  # Temporary download url for the media record where, if the media record is uploaded in a non-standardized format, a
+  # converted version of that file is served.
+  #
+  # For documents, this is a PDF version of the document.
+  #
+  # May be NULL if no standardized version is available.
   standardizedDownloadUrl: String
 
   # Temporary upload url for the media record which can only be used from within the system.
@@ -1395,18 +1410,43 @@ type MultipleChoiceQuestion implements Question {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+  item: Item!
 }
 
 type Mutation {
+  # ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
+  #
+  # Triggers the recalculation of the reward score of the user.
+  # This is done automatically at some time in the night.
+  #
+  # The purpose of this mutation is to allow testing of the reward score and demonstrate the functionality.
+  # 🔒 The user be an admin in the course with the given courseId to perform this action.
+  recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
+
+  # ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
+  #
+  # Triggers the recalculation of the skill level of the user.
+  # This is done automatically at some time in the night.
+  #
+  # The purpose of this mutation is to allow testing of the skill level score and demonstrate the functionality.
+  # 🔒 The user must be a super-user, otherwise an exception is thrown.
+  recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
+
+  # Modify Content
+  # 🔒 The user must have admin access to the course containing the section to perform this action.
+  mutateContent(contentId: UUID!): ContentMutation!
+
+  # Modify the section with the given id.
+  # 🔒 The user must have admin access to the course containing the section to perform this action.
+  mutateSection(sectionId: UUID!): SectionMutation!
+
   # Modify a flashcard set.
   # 🔒 The user must be an admin the course the flashcard set is in to perform this action.
   mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
 
   # Logs that a user has learned a flashcard.
   # 🔒 The user must be enrolled in the course the flashcard set is in to perform this action.
-  logFlashcardLearned(
-    input: LogFlashcardLearnedInput!
-  ): FlashcardLearnedFeedback!
+  logFlashcardLearned(input: LogFlashcardLearnedInput!): FlashcardLearnedFeedback!
 
   # Creates a new course with the given input and returns the created course.
   createCourse(input: CreateCourseInput!): Course!
@@ -1452,40 +1492,6 @@ type Mutation {
   # 🔒 The calling user must be an admin in this course to perform this action.
   deleteMembership(input: CourseMembershipInput!): CourseMembership!
 
-  # ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
-  #
-  # Triggers the recalculation of the skill level of the user.
-  # This is done automatically at some time in the night.
-  #
-  # The purpose of this mutation is to allow testing of the skill level score and demonstrate the functionality.
-  # 🔒 The user must be a super-user, otherwise an exception is thrown.
-  recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels!
-    @deprecated(reason: "Only for testing purposes. Will be removed.")
-
-  # ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
-  #
-  # Triggers the recalculation of the reward score of the user.
-  # This is done automatically at some time in the night.
-  #
-  # The purpose of this mutation is to allow testing of the reward score and demonstrate the functionality.
-  # 🔒 The user be an admin in the course with the given courseId to perform this action.
-  recalculateScores(courseId: UUID!, userId: UUID!): RewardScores!
-    @deprecated(reason: "Only for testing purposes. Will be removed.")
-
-  # Modify a quiz.
-  # 🔒 The user must be an admin the course the quiz is in to perform this action.
-  mutateQuiz(assessmentId: UUID!): QuizMutation!
-
-  # Delete a quiz.
-  deleteQuiz(assessmentId: UUID!): UUID!
-    @deprecated(
-      reason: "Only use if you specifically only want to delete the quiz and not the whole assessment. Otherwise, use deleteAssessment in contents service instead."
-    )
-
-  # Log that a multiple choice quiz is completed.
-  # 🔒 The user must be enrolled in the course the quiz is in to perform this action.
-  logQuizCompleted(input: QuizCompletedInput!): QuizCompletionFeedback!
-
   # Creates a new media record
   # 🔒 The user must have the "course-creator" role to perform this action.
   # 🔒 If the mediaRecord is associated with courses the user must be an administrator of all courses or a super-user.
@@ -1502,10 +1508,7 @@ type Mutation {
   # For a given MediaContent, sets the linked media records of it to the ones with the given UUIDs.
   # This means that for the content, all already linked media records are removed and replaced by the given ones.
   # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
-  setLinkedMediaRecordsForContent(
-    contentId: UUID!
-    mediaRecordIds: [UUID!]!
-  ): [MediaRecord!]!
+  setLinkedMediaRecordsForContent(contentId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
 
   # Logs that a media has been worked on by the current user.
   # See https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/userProgress.html
@@ -1518,36 +1521,30 @@ type Mutation {
 
   # Add the MediaRecords with the given UUIDS to the Course with the given UUID.
   # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
-  setMediaRecordsForCourse(
-    courseId: UUID!
-    mediaRecordIds: [UUID!]!
-  ): [MediaRecord!]!
+  setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
 
-  # Modify Content
-  # 🔒 The user must have admin access to the course containing the section to perform this action.
-  mutateContent(contentId: UUID!): ContentMutation!
+  # Modify a quiz.
+  # 🔒 The user must be an admin the course the quiz is in to perform this action.
+  mutateQuiz(assessmentId: UUID!): QuizMutation!
 
-  # Modify the section with the given id.
-  # 🔒 The user must have admin access to the course containing the section to perform this action.
-  mutateSection(sectionId: UUID!): SectionMutation!
+  # Delete a quiz.
+  deleteQuiz(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the quiz and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
+
+  # Delete a flashcard set.
+  deleteFlashcardSet(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the flashcardset and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
+
+  # Log that a multiple choice quiz is completed.
+  # 🔒 The user must be enrolled in the course the quiz is in to perform this action.
+  logQuizCompleted(input: QuizCompletedInput!): QuizCompletionFeedback!
 
   # Creates a new media content and links the given media records to it.
-  createMediaContentAndLinkRecords(
-    contentInput: CreateMediaContentInput!
-    mediaRecordIds: [UUID!]!
-  ): MediaContent!
+  createMediaContentAndLinkRecords(contentInput: CreateMediaContentInput!, mediaRecordIds: [UUID!]!): MediaContent!
 
   # Creates a new quiz assessment and a new, linked quiz with the given properties.
-  createQuizAssessment(
-    assessmentInput: CreateAssessmentInput!
-    quizInput: CreateQuizInput!
-  ): QuizAssessment!
+  createQuizAssessment(assessmentInput: CreateAssessmentInput!, quizInput: CreateQuizInput!): QuizAssessment!
 
   # Creates a new flashcard set assessment and a new, linked flashcard set with the given properties.
-  createFlashcardSetAssessment(
-    assessmentInput: CreateAssessmentInput!
-    flashcardSetInput: CreateFlashcardSetInput!
-  ): FlashcardSetAssessment
+  createFlashcardSetAssessment(assessmentInput: CreateAssessmentInput!, flashcardSetInput: CreateFlashcardSetInput!): FlashcardSetAssessment
 
   # Creates a new section in a chapter.
   createSection(input: CreateSectionInput!): Section!
@@ -1578,6 +1575,7 @@ type NumericQuestion implements Question {
 
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+  item: Item!
 }
 
 # Specifies the page size and page number for paginated results.
@@ -1652,38 +1650,6 @@ type Query {
   # If a user does not exist, null is returned for that user.
   findUserInfos(ids: [UUID!]!): [UserInfo]!
 
-  # Get flashcards by their ids.
-  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
-  flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
-
-  # Get flashcard sets by their assessment ids.
-  # Returns a list of flashcard sets in the same order as the provided ids.
-  # Each element is null if the corresponding id is not found.
-  # 🔒 The user must be enrolled in the course the flashcard sets belong to. Otherwise for that element null is returned.
-  findFlashcardSetsByAssessmentIds(assessmentIds: [UUID!]!): [FlashcardSet]!
-
-  # Get flashcards of a course that are due to be reviewed.
-  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
-  dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
-
-  # Get a list of courses. Can be filtered, sorted and paginated.
-  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
-  courses(
-    filter: CourseFilter
-
-    # The fields to sort by.
-    # Throws an error if no field with the given name exists.
-    sortBy: [String!]
-
-    # The sort direction for each field. If not specified, defaults to ASC.
-    sortDirection: [SortDirection!]! = [ASC]
-    pagination: Pagination
-  ): CoursePayload!
-
-  # Returns the courses with the given ids.
-  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
-  coursesByIds(ids: [UUID!]!): [Course!]!
-
   # Get the reward score of the current user for the specified course.
   # 🔒 The user must have access to the course with the given id to access their scores, otherwise an error is thrown.
   userCourseRewardScores(courseId: UUID!): RewardScores!
@@ -1695,51 +1661,6 @@ type Query {
   # Gets the power scores for each user in the course, ordered by power score descending.
   # 🔒 The user must have access to the course with the given id to access the scoreboard, otherwise an error is thrown.
   scoreboard(courseId: UUID!): [ScoreboardItem!]!
-
-  # Get quiz by assessment ID.
-  # If any of the assessment IDs are not found, the corresponding quiz will be null.
-  # 🔒 The user must be enrolled in the course the quizzes belong to to access them. Otherwise null is returned for
-  # an quiz if the user has no access to it.
-  findQuizzesByAssessmentIds(assessmentIds: [UUID!]!): [Quiz]!
-
-  # Returns the media records with the given IDs. Throws an error if a MediaRecord corresponding to a given ID
-  # cannot be found.
-  #
-  # 🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
-  mediaRecordsByIds(ids: [UUID!]!): [MediaRecord!]!
-
-  # Like mediaRecordsByIds() returns the media records with the given IDs, but instead of throwing an error if an ID
-  # cannot be found, it instead returns NULL for that media record.
-  #
-  # 🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
-  findMediaRecordsByIds(ids: [UUID!]!): [MediaRecord]!
-
-  # Returns all media records of the system.
-  #
-  # 🔒 The user must be a super-user, otherwise an exception is thrown.
-  mediaRecords: [MediaRecord!]!
-    @deprecated(
-      reason: "In production there should probably be no way to get all media records of the system."
-    )
-
-  # Returns all media records which the current user created.
-  #
-  # 🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
-  userMediaRecords: [MediaRecord!]!
-
-  # Returns the media records associated the given content IDs as a list of lists where each sublist contains
-  # the media records associated with the content ID at the same index in the input list
-  #
-  # 🔒 If the mediaRecord is associated with courses the user must be a member of at least one of the courses.
-  mediaRecordsByContentIds(contentIds: [UUID!]!): [[MediaRecord!]!]!
-
-  # Returns all media records for the given CourseIds
-  #
-  # 🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
-  mediaRecordsForCourses(courseIds: [UUID!]!): [[MediaRecord!]!]!
-
-  # Returns all media records which were created by the users.
-  mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
 
   # Retrieves all existing contents for a given course.
   # 🔒 The user must have access to the courses with the given ids to access their contents, otherwise an error is thrown.
@@ -1778,24 +1699,90 @@ type Query {
     # also containing suggestions for media content (which do not have a skill type).
     skillTypes: [SkillType!]! = []
   ): [Suggestion!]!
+  items(ids: [UUID!]!): [Item!]!
 
-  # Performs a semantic search with the specified search term. Returns at most `count` results. If a courseWhitelist is
+  # Get flashcards by their ids.
+  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
+  flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
+
+  # Get flashcard sets by their assessment ids.
+  # Returns a list of flashcard sets in the same order as the provided ids.
+  # Each element is null if the corresponding id is not found.
+  # 🔒 The user must be enrolled in the course the flashcard sets belong to. Otherwise for that element null is returned.
+  findFlashcardSetsByAssessmentIds(assessmentIds: [UUID!]!): [FlashcardSet]!
+
+  # Get flashcards of a course that are due to be reviewed.
+  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
+  dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
+
+  # Get a list of courses. Can be filtered, sorted and paginated.
+  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
+  courses(
+    filter: CourseFilter
+
+    # The fields to sort by.
+    # Throws an error if no field with the given name exists.
+    sortBy: [String!]
+
+    # The sort direction for each field. If not specified, defaults to ASC.
+    sortDirection: [SortDirection!]! = [ASC]
+    pagination: Pagination
+  ): CoursePayload!
+
+  # Returns the courses with the given ids.
+  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
+  coursesByIds(ids: [UUID!]!): [Course!]!
+
+  # Returns the media records with the given IDs. Throws an error if a MediaRecord corresponding to a given ID
+  # cannot be found.
+  #
+  # 🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
+  mediaRecordsByIds(ids: [UUID!]!): [MediaRecord!]!
+
+  # Like mediaRecordsByIds() returns the media records with the given IDs, but instead of throwing an error if an ID
+  # cannot be found, it instead returns NULL for that media record.
+  #
+  # 🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
+  findMediaRecordsByIds(ids: [UUID!]!): [MediaRecord]!
+
+  # Returns all media records of the system.
+  #
+  # 🔒 The user must be a super-user, otherwise an exception is thrown.
+  mediaRecords: [MediaRecord!]! @deprecated(reason: "In production there should probably be no way to get all media records of the system.")
+
+  # Returns all media records which the current user created.
+  #
+  # 🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
+  userMediaRecords: [MediaRecord!]!
+
+  # Returns the media records associated the given content IDs as a list of lists where each sublist contains
+  # the media records associated with the content ID at the same index in the input list
+  #
+  # 🔒 If the mediaRecord is associated with courses the user must be a member of at least one of the courses.
+  mediaRecordsByContentIds(contentIds: [UUID!]!): [[MediaRecord!]!]!
+
+  # Returns all media records for the given CourseIds
+  #
+  # 🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
+  mediaRecordsForCourses(courseIds: [UUID!]!): [[MediaRecord!]!]!
+
+  # Returns all media records which were created by the users.
+  mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
+
+  # Get quiz by assessment ID.
+  # If any of the assessment IDs are not found, the corresponding quiz will be null.
+  # 🔒 The user must be enrolled in the course the quizzes belong to to access them. Otherwise null is returned for
+  # an quiz if the user has no access to it.
+  findQuizzesByAssessmentIds(assessmentIds: [UUID!]!): [Quiz]!
+
+  # Performs a semantic search with the specified search term. Returns at most `count` results. If a courseWhitelist is 
   # provided, only results from the specified courses will be returned.
-  semanticSearch(
-    queryText: String!
-    count: Int! = 10
-    courseWhitelist: [UUID!]
-  ): [SemanticSearchResult!]!
+  semanticSearch(queryText: String!, count: Int! = 10, courseWhitelist: [UUID!]): [SemanticSearchResult!]!
 
   # Returns semantic search results of entities that are semantically similar to the entity with the specified ID.
   # Returns at most `count` results. If `excludeEntitiesWithSameParent` is true, segments from the same entity as the
   # specified segment will be excluded from the results.
-  getSemanticallySimilarEntities(
-    segmentId: UUID!
-    count: Int! = 10
-    excludeEntitiesWithSameParent: Boolean
-    courseWhitelist: [UUID!]
-  ): [SemanticSearchResult!]!
+  getSemanticallySimilarEntities(segmentId: UUID!, count: Int! = 10, excludeEntitiesWithSameParent: Boolean, courseWhitelist: [UUID!]): [SemanticSearchResult!]!
 }
 
 # Generic question interface.
@@ -1912,6 +1899,9 @@ type QuizAssessment implements Assessment & Content {
   # The progress of processing the assessment. In particular when processing is done,
   # the assessment's task contents will have been indexed for search.
   aiProcessingProgress: AiEntityProcessingProgress!
+
+  # Tags suggested for this assessment by the AI system.
+  suggestedTags: [String!]!
 }
 
 input QuizCompletedInput {
@@ -1938,84 +1928,6 @@ type QuizMutation {
   # Id of the quiz to modify.
   assessmentId: UUID!
 
-  # Add a multiple choice question to the quiz questions, at the end of the list.
-  # ️⚠️  This query is only accessible internally in the system and allows the caller to create a Question without
-  # any permissions check and should not be called without any validation of the caller's permissions. ⚠️
-  _internal_noauth_addMultipleChoiceQuestion(
-    input: CreateMultipleChoiceQuestionInput!
-  ): Quiz!
-
-  # Update a multiple choice question in the quiz questions.
-  # ️⚠️  This query is only accessible internally in the system and allows the caller to update a Question without
-  # any permissions check and should not be called without any validation of the caller's permissions. ⚠️
-  _internal_noauth_updateMultipleChoiceQuestion(
-    input: UpdateMultipleChoiceQuestionInput!
-  ): Quiz!
-
-  # Add a cloze question to the quiz questions, at the end of the list.
-  # ️⚠️  This query is only accessible internally in the system and allows the caller to create a Question without
-  # any permissions check and should not be called without any validation of the caller's permissions. ⚠️
-  _internal_noauth_addClozeQuestion(input: CreateClozeQuestionInput!): Quiz!
-
-  # Update a cloze question in the quiz questions.
-  # ️⚠️  This query is only accessible internally in the system and allows the caller to update a Question without
-  # any permissions check and should not be called without any validation of the caller's permissions. ⚠️
-  _internal_noauth_updateClozeQuestion(input: UpdateClozeQuestionInput!): Quiz!
-
-  # Add an association question to the quiz questions, at the end of the list.
-  # ️⚠️  This query is only accessible internally in the system and allows the caller to create a Question without
-  # any permissions check and should not be called without any validation of the caller's permissions. ⚠️
-  _internal_noauth_addAssociationQuestion(
-    input: CreateAssociationQuestionInput!
-  ): Quiz!
-
-  # Update an association question in the quiz questions.
-  # ️⚠️  This query is only accessible internally in the system and allows the caller to update a Question without
-  # any permissions check and should not be called without any validation of the caller's permissions. ⚠️
-  _internal_noauth_updateAssociationQuestion(
-    input: UpdateAssociationQuestionInput!
-  ): Quiz!
-
-  # Add an free text question with exact answer to the quiz questions, at the end of the list.
-  # ️⚠️  This query is only accessible internally in the system and allows the caller to create a Question without
-  # any permissions check and should not be called without any validation of the caller's permissions. ⚠️
-  _internal_noauth_addExactAnswerQuestion(
-    input: CreateExactAnswerQuestionInput!
-  ): Quiz!
-
-  # Update an free text question with exact answer in the quiz questions.
-  # ️⚠️  This query is only accessible internally in the system and allows the caller to update a Question without
-  # any permissions check and should not be called without any validation of the caller's permissions. ⚠️
-  _internal_noauth_updateExactAnswerQuestion(
-    input: UpdateExactAnswerQuestionInput!
-  ): Quiz!
-
-  # Add a numeric question to the quiz questions, at the end of the list.
-  # ️⚠️  This query is only accessible internally in the system and allows the caller to create a Question without
-  # any permissions check and should not be called without any validation of the caller's permissions. ⚠️
-  _internal_noauth_addNumericQuestion(input: CreateNumericQuestionInput!): Quiz!
-
-  # Update a numeric question in the quiz questions.
-  # ️⚠️  This query is only accessible internally in the system and allows the caller to update a Question without
-  # any permissions check and should not be called without any validation of the caller's permissions. ⚠️
-  _internal_noauth_updateNumericQuestion(
-    input: UpdateNumericQuestionInput!
-  ): Quiz!
-
-  # Add a self assessment question to the quiz questions, at the end of the list.
-  # ️⚠️  This query is only accessible internally in the system and allows the caller to create a Question without
-  # any permissions check and should not be called without any validation of the caller's permissions. ⚠️
-  _internal_noauth_addSelfAssessmentQuestion(
-    input: CreateSelfAssessmentQuestionInput!
-  ): Quiz!
-
-  # Update a self assessment question in the quiz questions.
-  # ️⚠️  This query is only accessible internally in the system and allows the caller to update a Question without
-  # any permissions check and should not be called without any validation of the caller's permissions. ⚠️
-  _internal_noauth_updateSelfAssessmentQuestion(
-    input: UpdateSelfAssessmentQuestionInput!
-  ): Quiz!
-
   # Removes the question with the given number from the quiz.
   # This will also update the numbers of the following questions.
   removeQuestion(number: Int!): Quiz!
@@ -2031,99 +1943,49 @@ type QuizMutation {
 
   # Set the number of questions that are randomly selected from the list of questions.
   # Will only be considered if questionPoolingMode is RANDOM.
-  setNumberOfRandomlySelectedQuestions(
-    numberOfRandomlySelectedQuestions: Int!
-  ): Quiz!
+  setNumberOfRandomlySelectedQuestions(numberOfRandomlySelectedQuestions: Int!): Quiz!
 
   # Add a multiple choice question to the quiz questions, at the end of the list.
-  addMultipleChoiceQuestion(
-    questionInput: CreateMultipleChoiceQuestionInput!
-    assessmentId: UUID!
-    item: ItemInput!
-  ): QuizOutput!
+  addMultipleChoiceQuestion(questionInput: CreateMultipleChoiceQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
 
   # Update a multiple choice question in the quiz questions.
-  updateMultipleChoiceQuestion(
-    questionInput: UpdateMultipleChoiceQuestionInput!
-    assessmentId: UUID!
-    item: ItemInput!
-  ): QuizOutput!
+  updateMultipleChoiceQuestion(questionInput: UpdateMultipleChoiceQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
 
   # Add a cloze question to the quiz questions, at the end of the list.
-  addClozeQuestion(
-    questionInput: CreateClozeQuestionInput!
-    assessmentId: UUID!
-    item: ItemInput!
-  ): QuizOutput!
+  addClozeQuestion(questionInput: CreateClozeQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
 
   # Update a cloze question in the quiz questions.
-  updateClozeQuestion(
-    questionInput: UpdateClozeQuestionInput!
-    assessmentId: UUID!
-    item: ItemInput!
-  ): QuizOutput!
+  updateClozeQuestion(questionInput: UpdateClozeQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
 
   # Add an association question to the quiz questions, at the end of the list.
-  addAssociationQuestion(
-    questionInput: CreateAssociationQuestionInput!
-    assessmentId: UUID!
-    item: ItemInput!
-  ): QuizOutput!
+  addAssociationQuestion(questionInput: CreateAssociationQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
 
   # Update an association question in the quiz questions.
-  updateAssociationQuestion(
-    questionInput: UpdateAssociationQuestionInput!
-    assessmentId: UUID!
-    item: ItemInput!
-  ): QuizOutput!
+  updateAssociationQuestion(questionInput: UpdateAssociationQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
 
   # Add an free text question with exact answer to the quiz questions, at the end of the list.
-  addExactAnswerQuestion(
-    questionInput: CreateExactAnswerQuestionInput!
-    assessmentId: UUID!
-    item: ItemInput!
-  ): QuizOutput!
+  addExactAnswerQuestion(questionInput: CreateExactAnswerQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
 
   # Update an free text question with exact answer in the quiz questions.
-  updateExactAnswerQuestion(
-    questionInput: UpdateExactAnswerQuestionInput!
-    assessmentId: UUID!
-    item: ItemInput!
-  ): QuizOutput!
+  updateExactAnswerQuestion(questionInput: UpdateExactAnswerQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
 
   # Add a numeric question to the quiz questions, at the end of the list.
-  addNumericQuestion(
-    questionInput: CreateNumericQuestionInput!
-    assessmentId: UUID!
-    item: ItemInput!
-  ): QuizOutput!
+  addNumericQuestion(questionInput: CreateNumericQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
 
   # Update a numeric question in the quiz questions.
-  updateNumericQuestion(
-    questionInput: UpdateNumericQuestionInput!
-    assessmentId: UUID!
-    item: ItemInput!
-  ): QuizOutput!
+  updateNumericQuestion(questionInput: UpdateNumericQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
 
   # Add a self assessment question to the quiz questions, at the end of the list.
-  addSelfAssessmentQuestion(
-    questionInput: CreateSelfAssessmentQuestionInput!
-    assessmentId: UUID!
-    item: ItemInput!
-  ): QuizOutput!
+  addSelfAssessmentQuestion(questionInput: CreateSelfAssessmentQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
 
   # Update a self assessment question in the quiz questions.
-  updateSelfAssessmentQuestion(
-    questionInput: UpdateSelfAssessmentQuestionInput!
-    assessmentId: UUID!
-    item: ItemInput!
-  ): QuizOutput!
+  updateSelfAssessmentQuestion(questionInput: UpdateSelfAssessmentQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
 }
 
 type QuizOutput {
   assessmentId: UUID!
   questionPool: [Question!]!
-  item: Item!
+  modifiedQuestion: Question!
 }
 
 scalar ResolveToSourceArgs
@@ -2310,6 +2172,12 @@ type Skill {
   # the name of the skill
   skillName: String!
 
+  # the category of the skill
+  skillCategory: String!
+
+  # whether the skill is a custom-created by the user and no IEEE skill
+  isCustomSkill: Boolean!
+
   # The skill levels of the current user in this chapter.
   skillLevels: SkillLevels
 }
@@ -2322,6 +2190,12 @@ input SkillInput {
 
   # the name of the skill
   skillName: String!
+
+  # the category of the skill
+  skillCategory: String!
+
+  # whether the skill is a custom-created by the user and no IEEE skill
+  isCustomSkill: Boolean!
 }
 
 # The skill level of a user.
