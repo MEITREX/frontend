@@ -6,12 +6,12 @@ import {
   Button,
   Alert,
 } from "@mui/material";
-import {ExternalServiceProvider, providerConfig } from "./ProviderConfig";
+import { ExternalServiceProvider, providerConfig } from "./ProviderConfig";
 
 export function ProviderAuthorizationDialog({
   onClose,
   alertMessage,
-  _provider
+  _provider,
 }: {
   onClose: () => void;
   alertMessage: string;
