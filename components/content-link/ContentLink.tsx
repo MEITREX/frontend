@@ -25,6 +25,10 @@ import { graphql, useFragment } from "react-relay";
 import colors from "tailwindcss/colors";
 import { NoMaxWidthTooltip } from "../search/SearchResultItem";
 import { ProgressFrame } from "./ProgressFrame";
+import { useAccessTokenCheck } from "../useAccessTokenCheck";
+import { useEffect, useState } from "react";
+import { ProviderAuthorizationDialog } from "../ProviderAuthorizationDialog";
+import { codeAssessmentProvider, providerConfig } from "../ProviderConfig";
 
 export const ContentTypeToColor: Record<string, string> = {
   MediaContent: colors.violet[200],
@@ -113,6 +117,11 @@ export function ContentLink({
     `,
     _content
   );
+
+  const [showProviderDialog, setShowProviderDialog] = useState(false);
+  const checkAccessToken = useAccessTokenCheck();
+  const provider = providerConfig[codeAssessmentProvider];
+
   const isProcessing =
     content.aiProcessingProgress?.state === "PROCESSING" ||
     content.aiProcessingProgress?.state === "ENQUEUED" ||
@@ -215,10 +224,32 @@ export function ContentLink({
       : "-";
 
   const body = (
+    <>
+    {showProviderDialog && (
+      <ProviderAuthorizationDialog
+        onClose={() => setShowProviderDialog(false)}
+        alertMessage={`You must authorize via ${provider.name} to access this code assignment.`}
+        _provider={codeAssessmentProvider}
+      />
+    )}
+
     <button
       disabled={disabled}
       className={`group flex items-center text-left ${gap} pr-3 bg-transparent hover:disabled:bg-gray-50 ${cursor} rounded-full`}
-      onClick={() => router.push(link)}
+      onClick={async () => {
+        if (
+          content.__typename === "AssignmentAssessment" &&
+          content.assignment?.assignmentType === "CODE_ASSIGNMENT"
+        ) {
+          const hasToken = await checkAccessToken();
+          if (!hasToken) {
+            setShowProviderDialog(true);
+            return;
+          }
+        }
+
+        router.push(link);
+      }}
     >
       <div
         className={`${frameSize} relative flex justify-center items-center group-hover:group-enabled:scale-105`}
@@ -260,6 +291,7 @@ export function ContentLink({
       </div>
       <div className="flex-1"></div>
     </button>
+    </>
   );
 
   if (content.mediaRecords?.some((x) => true)) {
