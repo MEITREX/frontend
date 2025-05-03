@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import {
   fetchQuery,
   graphql,
+  useLazyLoadQuery,
   useMutation,
   useRelayEnvironment,
 } from "react-relay";
@@ -19,6 +20,9 @@ import {
   TextField,
   InputAdornment,
   Typography,
+  List,
+  ListItemButton,
+  ListItemText,
 } from "@mui/material";
 
 import { codeAssessmentProvider, providerConfig } from "./ProviderConfig";
@@ -41,18 +45,31 @@ import { set } from "lodash";
 import { LoadingButton } from "@mui/lab";
 import toast from "react-hot-toast";
 import { useAccessTokenCheck } from "./useAccessTokenCheck";
+import { AddCodeAssignmentModalExternalAssignmentsQuery } from "@/__generated__/AddCodeAssignmentModalExternalAssignmentsQuery.graphql";
+
+const GetExternalAssignmentsQuery = graphql`
+  query AddCodeAssignmentModalExternalAssignmentsQuery($courseId: UUID!) {
+    getExternalCodeAssignments(courseId: $courseId)
+  }
+`;
 
 export function AddCodeAssignmentModal({
   onClose,
   chapterId,
+  courseId,
 }: {
   onClose: () => void;
   chapterId: string;
+  courseId: string;
 }) {
   const checkAccessToken = useAccessTokenCheck();
   const provider = providerConfig[codeAssessmentProvider];
   const [isAccessTokenAvailable, setIsAccessTokenAvailable] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [step, setStep] = useState<"select" | "form">("select");
+  const [selectedAssignmentName, setSelectedAssignmentName] = useState<
+    string | null
+  >(null);
   const [metadata, setMetadata] = useState<ContentMetadataPayload | null>(null);
   const [assessmentMetadata, setAssessmentMetadata] =
     useState<AssessmentMetadataPayload | null>(null);
@@ -61,10 +78,39 @@ export function AddCodeAssignmentModal({
   );
   const [error, setError] = useState<any>(null);
 
+  const env = useRelayEnvironment();
+  const [assignmentNames, setAssignments] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!courseId) {
+      return;
+    }
+  
+    fetchQuery<AddCodeAssignmentModalExternalAssignmentsQuery>(
+      env,
+      GetExternalAssignmentsQuery,
+      { courseId }
+    )
+      .toPromise()
+      .then((data) => {
+        if (data?.getExternalCodeAssignments) {
+          setAssignments([...data.getExternalCodeAssignments]);
+        }
+      });
+  }, [courseId, env]);
+  
+
+  useEffect(() => {
+    setIsLoading(true);
+    checkAccessToken()
+      .then(setIsAccessTokenAvailable)
+      .finally(() => setIsLoading(false));
+  }, [checkAccessToken]);
+
   const valid =
-    metadata != null &&
-    assessmentMetadata != null &&
-    requiredPercentage !== null &&
+    metadata &&
+    assessmentMetadata &&
+    requiredPercentage &&
     requiredPercentage >= 0 &&
     requiredPercentage <= 100;
 
@@ -80,7 +126,6 @@ export function AddCodeAssignmentModal({
         ) {
           id
           ...ContentLinkFragment
-
           userProgressData {
             nextLearnDate
           }
@@ -88,20 +133,13 @@ export function AddCodeAssignmentModal({
       }
     `);
 
-  useEffect(() => {
-    setIsLoading(true);
-    checkAccessToken().then((isAvailable) => {
-      setIsAccessTokenAvailable(isAvailable);
-      setIsLoading(false);
-    });
-  }, [checkAccessToken]);
-
   const handleSubmit = () => {
     createAssignment({
       variables: {
         assessmentInput: {
           metadata: {
             ...metadata!,
+            name: selectedAssignmentName!,
             chapterId,
             type: "ASSIGNMENT" as ContentType,
           },
@@ -120,17 +158,16 @@ export function AddCodeAssignmentModal({
       },
       onError: setError,
       updater(store, response) {
-        // Get record of chapter and of the new assignment
         const chapterRecord = store.get(chapterId);
         const newRecord = store.get(response!.createAssignmentAssessment!.id);
-        if (!chapterRecord || !newRecord) return;
-
-        // Update the linked records of the chapter contents
-        const contentRecords = chapterRecord.getLinkedRecords("contents") ?? [];
-        chapterRecord.setLinkedRecords(
-          [...contentRecords, newRecord],
-          "contents"
-        );
+        if (chapterRecord && newRecord) {
+          const contentRecords =
+            chapterRecord.getLinkedRecords("contents") ?? [];
+          chapterRecord.setLinkedRecords(
+            [...contentRecords, newRecord],
+            "contents"
+          );
+        }
       },
       onCompleted() {
         toast.success("Code assignment created successfully.");
@@ -148,79 +185,111 @@ export function AddCodeAssignmentModal({
         />
       )}
 
-      {!isLoading && isAccessTokenAvailable && (
-        <>
-          <Dialog maxWidth="md" open={true} onClose={onClose}>
-            <DialogTitle>Add code assignment</DialogTitle>
-            <DialogContent>
-              <Typography variant="body2" color="text.primary" sx={{ mb: 2 }}>
-                Make sure the course name corresponds to a GitHub Classroom
-              </Typography>
+      {isAccessTokenAvailable && (
+        <Dialog open onClose={onClose} maxWidth="md">
+          <DialogTitle>
+            {step === "select"
+              ? `Select ${provider.name}  Assignment`
+              : "Add Code Assignment"}
+          </DialogTitle>
 
-              {error?.source?.errors?.map((err: any, i: number) => (
-                <Alert key={i} severity="error" onClose={() => setError(null)}>
-                  {err.message}
-                </Alert>
-              ))}
-              <Form>
-                <ContentMetadataFormSection
-                  suggestedTags={[]}
-                  onChange={setMetadata}
-                />
-                <AssessmentMetadataFormSection
-                  onChange={setAssessmentMetadata}
-                />
-                <FormSection title="Scoring">
-                  <TextField
-                    label="Required percentage"
-                    type="number"
-                    variant="outlined"
-                    className="w-96"
-                    value={
-                      requiredPercentage !== null ? requiredPercentage : ""
-                    }
-                    inputProps={{ min: 0, max: 100, step: 1 }}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value);
-                      if (isNaN(val)) {
-                        setRequiredPercentage(null);
-                      } else {
-                        setRequiredPercentage(val);
-                      }
+          <DialogContent>
+            {step === "select" ? (
+              <>
+                {assignmentNames.length === 0 ? (
+                  <Alert severity="info">
+                    No assignments found from {provider.name}.
+                  </Alert>
+                ) : (
+                  <List>
+                    {assignmentNames.sort().map((name) => (
+                      <ListItemButton
+                        key={name}
+                        onClick={() => {
+                          setSelectedAssignmentName(name);
+                          setStep("form");
+                        }}
+                      >
+                        <ListItemText primary={name} />
+                      </ListItemButton>
+                    ))}
+                  </List>
+                )}
+              </>
+            ) : (
+              <>
+                {error?.source?.errors?.map((err: any, i: number) => (
+                  <Alert
+                    key={i}
+                    severity="error"
+                    onClose={() => setError(null)}
+                  >
+                    {err.message}
+                  </Alert>
+                ))}
+
+                <Form>
+                  <ContentMetadataFormSection
+                    suggestedTags={[]}
+                    onChange={setMetadata}
+                    disableName={true}
+                    createCodeAssignment={{
+                      name: selectedAssignmentName ?? "",
+                      disableName: true,
                     }}
-                    helperText={
-                      requiredPercentage === null
-                        ? null
-                        : requiredPercentage < 0 || requiredPercentage > 100
-                        ? "Must be between 0 and 100"
-                        : ""
-                    }
-                    error={
-                      requiredPercentage !== null &&
-                      (requiredPercentage < 0 || requiredPercentage > 100)
-                    }
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="start">%</InputAdornment>
-                      ),
-                    }}
-                    required
                   />
-                </FormSection>
-              </Form>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={onClose}>Cancel</Button>
+                  <AssessmentMetadataFormSection
+                    onChange={setAssessmentMetadata}
+                  />
+                  <FormSection title="Scoring">
+                    <TextField
+                      label="Required percentage"
+                      type="number"
+                      value={requiredPercentage ?? ""}
+                      onChange={(e) =>
+                        setRequiredPercentage(parseInt(e.target.value) || null)
+                      }
+                      inputProps={{ min: 0, max: 100, step: 1 }}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="start">%</InputAdornment>
+                        ),
+                      }}
+                      error={
+                        requiredPercentage !== null &&
+                        (requiredPercentage < 0 || requiredPercentage > 100)
+                      }
+                      helperText={
+                        requiredPercentage !== null &&
+                        (requiredPercentage < 0 || requiredPercentage > 100)
+                          ? "Must be between 0 and 100"
+                          : ""
+                      }
+                      fullWidth
+                      required
+                    />
+                  </FormSection>
+                </Form>
+              </>
+            )}
+          </DialogContent>
+
+          <DialogActions>
+            {step === "form" && (
+              <Button onClick={() => setStep("select")}>Back</Button>
+            )}
+            <Button onClick={onClose}>Cancel</Button>
+            {step === "form" && (
               <LoadingButton
-                loading={isCreatingAssignment}
-                disabled={!valid}
                 onClick={handleSubmit}
+                disabled={!valid}
+                loading={isCreatingAssignment}
               >
                 Save
               </LoadingButton>
-            </DialogActions>
-          </Dialog>
-        </>
+            )}
+          </DialogActions>
+        </Dialog>
       )}
     </>
   );
