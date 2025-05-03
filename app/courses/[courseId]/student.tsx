@@ -166,7 +166,7 @@ export default function StudentCoursePage() {
   };
 
   const [showProgressbars, setShowProgressbars] = useState(true);
-
+  
   // Colors for Progressbar
   function getColorByIndex(index: number): string {
     const colors = [
@@ -348,13 +348,21 @@ export default function StudentCoursePage() {
 
             return (
               <div key={uniqueSkill.skillCategory} className="mb-4">
-                <div onClick={() => toggleProgressbar(uniqueSkill.skillCategory)}>
-                  <CompetencyProgressbar
-                    competencyName={uniqueSkill.skillCategory + " - " + Math.floor(categoryProgressValue) + "%"}
-                    heightValue={15}
-                    progressValue={categoryProgressValue}
-                    barSections={barSections}
-                  />
+                <div className="flex items-center gap-2 w-full">
+                  <Button
+                    onClick={() => toggleProgressbar(uniqueSkill.skillCategory)}
+                    className="w-6 h-6 min-w-0 p-0 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-600 transition-colors duration-200"
+                  >
+                    {expandedBars[uniqueSkill.skillCategory] ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                  </Button>
+                  <div className="flex-1"> {/* sorgt dafür, dass die Progressbar den restlichen Platz nutzt */}
+                    <CompetencyProgressbar
+                      competencyName={`${uniqueSkill.skillCategory} - ${Math.floor(categoryProgressValue)}%`}
+                      heightValue={15}
+                      progressValue={categoryProgressValue}
+                      barSections={barSections}
+                    />
+                  </div>
                 </div>
                 {expandedBars[uniqueSkill.skillCategory] && (
                   <div className="ml-4">
@@ -369,18 +377,20 @@ export default function StudentCoursePage() {
                       const skillProgressPercent = Math.floor(clamped * 100);
 
                       return (
-                        <CompetencyProgressbar
-                          key={skill.skillName}
-                          competencyName={skill.skillName  + " - " + Math.floor(skillProgressPercent) + "%"}
-                          heightValue={10}
-                          progressValue={skillProgressPercent}
-                          barSections={[
-                            {
-                              color: getColorByIndex(index), // Color based on Index of the skill in the array
-                              widthPercent: skillProgressPercent
-                            }
-                          ]}
-                        />
+                        <div className="pl-8">
+                          <CompetencyProgressbar
+                            key={skill.skillName}
+                            competencyName={skill.skillName  + " - " + Math.floor(skillProgressPercent) + "%"}
+                            heightValue={10}
+                            progressValue={skillProgressPercent}
+                            barSections={[
+                              {
+                                color: getColorByIndex(index), // Color based on Index of the skill in the array
+                                widthPercent: skillProgressPercent
+                              }
+                            ]}
+                          />
+                        </div>
                       );
                     })}
                   </div>
