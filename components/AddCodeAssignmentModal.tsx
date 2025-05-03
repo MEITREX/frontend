@@ -80,12 +80,12 @@ export function AddCodeAssignmentModal({
 
   const env = useRelayEnvironment();
   const [assignmentNames, setAssignments] = useState<string[]>([]);
+  const [loadingAssignments, setLoadingAssignments] = useState(true);
 
   useEffect(() => {
-    if (!courseId) {
-      return;
-    }
-  
+    if (!courseId) return;
+
+    setLoadingAssignments(true);
     fetchQuery<AddCodeAssignmentModalExternalAssignmentsQuery>(
       env,
       GetExternalAssignmentsQuery,
@@ -96,9 +96,9 @@ export function AddCodeAssignmentModal({
         if (data?.getExternalCodeAssignments) {
           setAssignments([...data.getExternalCodeAssignments]);
         }
-      });
+      })
+      .finally(() => setLoadingAssignments(false));
   }, [courseId, env]);
-  
 
   useEffect(() => {
     setIsLoading(true);
@@ -196,7 +196,9 @@ export function AddCodeAssignmentModal({
           <DialogContent>
             {step === "select" ? (
               <>
-                {assignmentNames.length === 0 ? (
+                {loadingAssignments ? (
+                  <CircularProgress />
+                ) : assignmentNames.length === 0 ? (
                   <Alert severity="info">
                     No assignments found from {provider.name}.
                   </Alert>
@@ -229,15 +231,18 @@ export function AddCodeAssignmentModal({
                 ))}
 
                 <Form>
-                  <ContentMetadataFormSection
-                    suggestedTags={[]}
-                    onChange={setMetadata}
-                    disableName={true}
-                    createCodeAssignment={{
-                      name: selectedAssignmentName ?? "",
-                      disableName: true,
-                    }}
-                  />
+                <ContentMetadataFormSection
+                  suggestedTags={[]}
+                  metadata={{
+                    name: selectedAssignmentName ?? "",
+                    suggestedDate: new Date().toISOString(),
+                    rewardPoints: 0,
+                    tagNames: [],
+                  }}
+                  onChange={setMetadata}
+                  disableName={true}
+                />
+
                   <AssessmentMetadataFormSection
                     onChange={setAssessmentMetadata}
                   />

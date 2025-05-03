@@ -367,6 +367,7 @@ export function EditContentModal({
         <AddCodeAssignmentModal
           onClose={() => setOpenCodeAssignmentModal(false)}
           chapterId={chapterId}
+          courseId={courseId}
         />
       )}
     </>
