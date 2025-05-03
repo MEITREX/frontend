@@ -1,11 +1,16 @@
 "use client";
 import { ChapterHeaderFragment$key } from "@/__generated__/ChapterHeaderFragment.graphql";
 import { Done, ExpandLess, ExpandMore } from "@mui/icons-material";
-import { CircularProgress, IconButton, Typography } from "@mui/material";
+import {
+  Chip,
+  CircularProgress,
+  IconButton,
+  Stack,
+  Typography,
+} from "@mui/material";
 import dayjs from "dayjs";
 import { ReactNode } from "react";
 import { graphql, useFragment } from "react-relay";
-import { Skill } from "./Skill";
 
 export function ChapterHeader({
   _chapter,
@@ -44,7 +49,33 @@ export function ChapterHeader({
     `,
     _chapter
   );
-  const uniqueSkillsSet = new Set<string>();
+  const skillCategoryMap = new Map<string, string[]>();
+
+  chapter.skills
+    .filter((c) => c !== null)
+    .forEach((c) => {
+      if (!skillCategoryMap.has(c.skillCategory)) {
+        skillCategoryMap.set(c.skillCategory, []);
+      }
+      skillCategoryMap.get(c.skillCategory)!.push(c.skillName);
+    });
+
+  const skillChips = Array.from(skillCategoryMap.entries()).map(
+    ([category, skillNames], index) => (
+      <Chip
+        key={index}
+        sx={{
+          maxWidth: "250px",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+        }}
+        title={skillNames.join(", ")}
+        label={category}
+      />
+    )
+  );
+
   return (
     <div
       className="flex items-center py-4 pl-8 pr-12 -mx-8 mb-8 bg-gradient-to-r from-slate-100 to-slate-50"
@@ -79,20 +110,9 @@ export function ChapterHeader({
             {chapter.description}
           </Typography>
         </div>
-          <div style={{display: "flex", flexDirection: "row", gap: "4px"}}>
-            {chapter.skills.filter((c) => c !== null).toSorted((a,b) => {
-              if(a.skillCategory.match(b.skillCategory)) {
-                return a.skillName.localeCompare(b.skillName);
-              } else {
-                return a.skillCategory.localeCompare(b.skillCategory);
-              }
-            }).map((c, index) => {
-              if(!uniqueSkillsSet.has(c.skillCategory+c.skillName)) {
-                uniqueSkillsSet.add(c.skillCategory+c.skillName);
-                return <Skill key={index} _skill={c}/>;
-              }
-          })}
-          </div>
+        <div className="flex justify-end flex-wrap gap-1 mb-6">
+          {skillChips}
+        </div>
       </div>
     </div>
   );
