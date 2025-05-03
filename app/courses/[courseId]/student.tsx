@@ -30,6 +30,7 @@ import CompetencyProgressbar from "@/components/CompetencyProgressbar";
 import { Skill } from "@/components/Skill";
 import { SkillLevels } from "@/components/SkillLevels";
 import { progress } from "framer-motion";
+import { stringToColor } from "@/components/Skill";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
@@ -176,6 +177,7 @@ export default function StudentCoursePage() {
       "#EC4899", "#F43F5E", "#78716C", "#64748B", "#475569",
       "#334155", "#0F172A", "#172554", "#1E3A8A", "#312E81"
     ];
+
     return colors[index % colors.length];
   }
 
@@ -350,7 +352,7 @@ export default function StudentCoursePage() {
 
               if (widthPercent > 0) {
                 barSections.push({
-                  color: getColorByIndex(index),
+                  color: stringToColor(skill.skillName),
                   widthPercent,
                 });
               }
@@ -397,7 +399,8 @@ export default function StudentCoursePage() {
                             progressValue={skillProgressPercent}
                             barSections={[
                               {
-                                color: getColorByIndex(index), // Color based on Index of the skill in the array
+                                //color: getColorByIndex(index), // Color based on Index of the skill in the array
+                                color: stringToColor(skill.skillName),
                                 widthPercent: skillProgressPercent
                               }
                             ]}

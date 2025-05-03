@@ -4,7 +4,8 @@ import { ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
 import colors from "tailwindcss/colors";
 import { Suggestion } from "./Suggestion";
-function stringToColor(string: String) {
+
+export function stringToColor(string: String): string {
   let hash = 0;
   let i;
 
