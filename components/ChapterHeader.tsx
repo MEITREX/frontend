@@ -1,13 +1,7 @@
 "use client";
 import { ChapterHeaderFragment$key } from "@/__generated__/ChapterHeaderFragment.graphql";
 import { Done, ExpandLess, ExpandMore } from "@mui/icons-material";
-import {
-  Chip,
-  CircularProgress,
-  IconButton,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Chip, CircularProgress, IconButton, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { ReactNode } from "react";
 import { graphql, useFragment } from "react-relay";
