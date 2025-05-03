@@ -4,16 +4,25 @@ import { lecturerLecturerCourseIdQuery } from "@/__generated__/lecturerLecturerC
 import { Button, IconButton, Typography } from "@mui/material";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
-
+import { lecturerSyncAssignmentsMutation } from "@/__generated__/lecturerSyncAssignmentsMutation.graphql";
 import { AddChapterModal } from "@/components/AddChapterModal";
 import { EditCourseModal } from "@/components/EditCourseModal";
 import { Heading } from "@/components/Heading";
 import { PageError } from "@/components/PageError";
-import { Add, People, Settings } from "@mui/icons-material";
+import { Add, People, Settings, Sync } from "@mui/icons-material";
 import { orderBy } from "lodash";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LecturerChapter } from "./LecturerChapter";
+import toast from "react-hot-toast";
+import { useEffect } from "react";
+import { useRelayEnvironment, fetchQuery } from "react-relay";
+import { ProviderAuthorizationDialog } from "@/components/ProviderAuthorizationDialog";
+import {
+  codeAssessmentProvider,
+  providerConfig,
+} from "@/components/ProviderConfig";
+import { useAccessTokenCheck } from "@/components/useAccessTokenCheck";
 
 graphql`
   fragment lecturerCourseFragment on Course {
@@ -35,7 +44,10 @@ graphql`
 
 export default function LecturerCoursePage() {
   const router = useRouter();
-  const pathname = usePathname();
+  const checkAccessToken = useAccessTokenCheck();
+  const [showProviderDialog, setShowProviderDialog] = useState(false);
+
+  const provider = providerConfig[codeAssessmentProvider];
 
   // Get course id from url
   const { courseId } = useParams();
@@ -67,6 +79,13 @@ export default function LecturerCoursePage() {
       { courseId }
     );
 
+  const [syncAssignments, isSyncing] =
+    useMutation<lecturerSyncAssignmentsMutation>(graphql`
+      mutation lecturerSyncAssignmentsMutation($courseTitle: String!) {
+        syncAssignmentsForCourse(courseTitle: $courseTitle)
+      }
+    `);
+
   const [openModal, setOpenModal] = useState(false);
 
   // Show 404 error page if id was not found
@@ -84,16 +103,54 @@ export default function LecturerCoursePage() {
     setOpenModal(false);
   };
 
+  const handleSync = async () => {
+    const isAvailable = await checkAccessToken();
+
+    if (!isAvailable) {
+      setShowProviderDialog(true);
+      return;
+    }
+
+    syncAssignments({
+      variables: { courseTitle: course.title },
+      onCompleted: (res) => {
+        if (!res.syncAssignmentsForCourse) {
+          toast.error(`${provider.name} sync failed.`);
+          return;
+        }
+        toast.success(`${provider.name}  synced successfully.`);
+      },
+      onError: (err) => {
+        console.error(err);
+        toast.error("Sync failed.");
+      },
+    });
+  };
+
   return (
     <main>
       {openModal && (
         <AddChapterModal open _course={course} onClose={handleCloseModal} />
       )}
 
+      {showProviderDialog && (
+        <ProviderAuthorizationDialog
+          onClose={() => setShowProviderDialog(false)}
+          alertMessage={`You must authorize via ${provider.name} to sync.`}
+        />
+      )}
+
       <Heading
         title={course.title}
         action={
           <div className="flex gap-4 items-center">
+            <Button
+              startIcon={<Sync />}
+              onClick={handleSync}
+              disabled={isSyncing}
+            >
+              Sync {provider.name}
+            </Button>
             <Button startIcon={<Add />} onClick={() => setOpenModal(true)}>
               Add chapter
             </Button>
