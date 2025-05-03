@@ -314,28 +314,21 @@ export default function StudentCoursePage() {
         </LightTooltip>
       </div>
       <div>  
-        {showProgressbars && (
-        <div className="competency-progressbars" >
-          {/* Remove duplicate Competencies (skillCategories) */}
+      {showProgressbars && (
+        <div className="competency-progressbars grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from(new Map(course.skills.map((skill) => [skill.skillCategory, skill])).values()).map((uniqueSkill) => {
             const skillsInCategory = course.skills.filter(skill => skill.skillCategory === uniqueSkill.skillCategory);
-
-            // Remove duplicates in skills, based on skillName
             const uniqueSkillsInCategory = Array.from(
               new Map(skillsInCategory.map(skill => [skill.skillName, skill])).values()
             );
 
-            // Calculate Progress for competency by adding all skillValues of all skills together
             const totalCategoryProgress = uniqueSkillsInCategory.reduce((acc, skill) =>
               acc + Object.values(skill.skillLevels || {}).reduce((sum, level) => sum + (level?.value || 0), 0),
               0
             );
             const categoryProgressValue = Math.floor(Math.min(totalCategoryProgress * 100 / uniqueSkillsInCategory.length, 100));
 
-            // Generate bar sections with individual skill colors and progress values
-            // Generate bar sections (normalized to 100%)
             const barSections: { color: string; widthPercent: number }[] = [];
-
             const totalSkills = uniqueSkillsInCategory.length;
 
             uniqueSkillsInCategory.forEach((skill, index) => {
@@ -343,13 +336,8 @@ export default function StudentCoursePage() {
                 (sum, level) => sum + (level?.value || 0),
                 0
               );
-
-              // clamp to value between 0 and 1
               const clamped = Math.min(skillProgressValue, 1);
-
-              // every skill accumulated is max 100
               const widthPercent = Math.floor((clamped * 100) / totalSkills);
-
               if (widthPercent > 0) {
                 barSections.push({
                   color: stringToColor(skill.skillName),
@@ -358,10 +346,8 @@ export default function StudentCoursePage() {
               }
             });
 
-
-
             return (
-              <div key={uniqueSkill.skillCategory} className="mb-4">
+              <div key={uniqueSkill.skillCategory} className="mb-4 w-full">
                 <div className="flex items-center gap-2 w-full">
                   <Button
                     onClick={() => toggleProgressbar(uniqueSkill.skillCategory)}
@@ -369,7 +355,7 @@ export default function StudentCoursePage() {
                   >
                     {expandedBars[uniqueSkill.skillCategory] ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
                   </Button>
-                  <div className="flex-1"> {/* sorgt dafür, dass die Progressbar den restlichen Platz nutzt */}
+                  <div className="flex-1">
                     <CompetencyProgressbar
                       competencyName={`${uniqueSkill.skillCategory} - ${Math.floor(categoryProgressValue)}%`}
                       heightValue={15}
@@ -385,21 +371,17 @@ export default function StudentCoursePage() {
                         (sum, level) => sum + (level?.value || 0),
                         0
                       );
-
-                      // Clamp to max. 1
                       const clamped = Math.min(rawValue, 1);
                       const skillProgressPercent = Math.floor(clamped * 100);
 
                       return (
-                        <div className="pl-8">
+                        <div key={skill.skillName} className="pl-8 w-full">
                           <CompetencyProgressbar
-                            key={skill.skillName}
-                            competencyName={skill.skillName  + " - " + Math.floor(skillProgressPercent) + "%"}
+                            competencyName={skill.skillName + " - " + Math.floor(skillProgressPercent) + "%"}
                             heightValue={10}
                             progressValue={skillProgressPercent}
                             barSections={[
                               {
-                                //color: getColorByIndex(index), // Color based on Index of the skill in the array
                                 color: stringToColor(skill.skillName),
                                 widthPercent: skillProgressPercent
                               }
@@ -414,7 +396,8 @@ export default function StudentCoursePage() {
             );
           })}
         </div>
-        )}
+      )}
+
       </div>
 
       <section className="mt-8 mb-20">
