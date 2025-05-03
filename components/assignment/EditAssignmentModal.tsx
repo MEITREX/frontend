@@ -54,7 +54,7 @@ export function EditAssignmentModal({
           courseId
           assignmentType
           readmeHtml
-          classroomLink
+          assignmentLink
           invitationLink
           requiredPercentage
         }
@@ -117,10 +117,14 @@ export function EditAssignmentModal({
         <Form>
           <ContentMetadataFormSection
             suggestedTags={[]}
-            metadata={content.metadata}
+            metadata={{
+              ...content.metadata,
+              name: content.metadata.name,
+            }}
             onChange={setMetadata}
-            disableName
+            disableName={true}
           />
+
           <AssessmentMetadataFormSection
             metadata={content.assessmentMetadata}
             onChange={setAssessmentMetadata}
