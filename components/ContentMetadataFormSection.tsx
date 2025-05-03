@@ -113,15 +113,12 @@ export function ContentMetadataFormSection({
           setTags(newValue);
         }}
         renderTags={(value: readonly string[], getTagProps) =>
-          value.map((option: string, index: number) => (
-            // the key gets set by "getTagProps"
-            // eslint-disable-next-line react/jsx-key
-            <Chip
-              variant="outlined"
-              label={option}
-              {...getTagProps({ index })}
-            />
-          ))
+          value.map((option: string, index: number) => {
+            const { key, ...tagProps } = getTagProps({ index });
+            return (
+              <Chip key={key} variant="outlined" label={option} {...tagProps} />
+            );
+          })
         }
         renderInput={(params) => <TextField {...params} label="Tags" />}
       />
