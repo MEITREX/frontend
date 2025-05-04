@@ -1,12 +1,18 @@
 import { useLazyLoadQuery, graphql } from "react-relay";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 import { lecturerFindAssignmentQuery } from "@/__generated__/lecturerFindAssignmentQuery.graphql";
 import { PageError } from "@/components/PageError";
 import CodeAssignment from "@/components/LecturerCodeAssignment";
+import { useAccessTokenCheck } from "@/components/useAccessTokenCheck";
+import {
+  codeAssessmentProvider,
+  providerConfig,
+} from "@/components/ProviderConfig";
+import { CodeAssignmentAccessGuard } from "@/components/CodeAssignmentAccessGuard";
 
 export default function LecturerAssignment() {
-  const { assignmentId } = useParams();
-
+  const { assignmentId, courseId } = useParams();
   const { contentsByIds } = useLazyLoadQuery<lecturerFindAssignmentQuery>(
     graphql`
       query lecturerFindAssignmentQuery($id: UUID!) {
@@ -24,14 +30,19 @@ export default function LecturerAssignment() {
   );
 
   const content = contentsByIds[0];
-  if (!content) {
-    return <PageError message="No quiz found with given id." />;
+  const isCodeAssignment =
+    content?.assignment?.assignmentType === "CODE_ASSIGNMENT";
+
+  if (!content)
+    return <PageError message="No assignment found with given id." />;
+
+  if (isCodeAssignment) {
+    return (
+      <CodeAssignmentAccessGuard courseId={courseId}>
+        <CodeAssignment contentRef={content} />
+      </CodeAssignmentAccessGuard>
+    );
   }
 
-  if (content.assignment?.assignmentType === "CODE_ASSIGNMENT") {
-    content;
-    return <CodeAssignment contentRef={content} />;
-  }
-
-  return <div>unknown</div>;
+  return null;
 }

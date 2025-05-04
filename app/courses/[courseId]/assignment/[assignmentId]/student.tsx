@@ -3,10 +3,10 @@ import { useParams } from "next/navigation";
 import { studentFindAssignmentQuery } from "@/__generated__/studentFindAssignmentQuery.graphql";
 import { PageError } from "@/components/PageError";
 import CodeAssignment from "@/components/StudentCodeAssignment";
+import { CodeAssignmentAccessGuard } from "@/components/CodeAssignmentAccessGuard";
 
 export default function StudentAssignment() {
-  const { assignmentId } = useParams();
-
+  const { assignmentId, courseId } = useParams();
   const { contentsByIds } = useLazyLoadQuery<studentFindAssignmentQuery>(
     graphql`
       query studentFindAssignmentQuery($id: UUID!) {
@@ -24,14 +24,20 @@ export default function StudentAssignment() {
   );
 
   const content = contentsByIds[0];
+  const isCodeAssignment =
+    content?.assignment?.assignmentType === "CODE_ASSIGNMENT";
+
   if (!content) {
-    return <PageError message="No quiz found with given id." />;
+    return <PageError message="No assignment found with given id." />;
   }
 
-  if (content.assignment?.assignmentType === "CODE_ASSIGNMENT") {
-    content;
-    return <CodeAssignment contentRef={content} />;
+  if (isCodeAssignment) {
+    return (
+      <CodeAssignmentAccessGuard courseId={courseId}>
+        <CodeAssignment contentRef={content} />
+      </CodeAssignmentAccessGuard>
+    );
   }
 
-  return <div>unknown</div>;
+  return null;
 }
