@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, Box, Typography, LinearProgress
@@ -224,6 +224,11 @@ const SurveyPopup = () => {
   const [selected, setSelected] = useState<any>(null);
   const [confirmSkipOpen, setConfirmSkipOpen] = useState(false);
 
+  useEffect(() => {
+    const savedAnswer = answers[currentQuestionIndex];
+    setSelected(savedAnswer ?? null);
+  }, [currentQuestionIndex, answers]);
+
 
   const handleSelect = (answer: any, types: any, question: any, non_types: any ,i: number) => {
     setSelected({'question': question, 'answer': answer, 'types': types, 'non_types': non_types,  'index': i});
@@ -257,6 +262,16 @@ const SurveyPopup = () => {
       setOpen(false);
       console.log("Antworten:", updatedAnswers);
     }
+  };
+
+  const handleBack = () => {
+    const prevIndex = currentQuestionIndex - 1;
+  
+    // Wiederherstellen der vorherigen Antwort (falls vorhanden)
+    const previousAnswerIndex = answers[prevIndex];
+  
+    setCurrentQuestionIndex(prevIndex);
+    setSelected(previousAnswerIndex ?? null);
   };
 
   const current = questions[currentQuestionIndex];
@@ -347,13 +362,20 @@ const SurveyPopup = () => {
         <Button variant="contained" color="info" onClick={handleSkip}>
           Skip
         </Button>
-        <Button
-          variant="contained"
-          onClick={handleNext}
-          disabled={selected === null}
-        >
-          {currentQuestionIndex === questions.length - 1 ? 'Finish' : 'Next'}
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+            {currentQuestionIndex > 0 && (
+            <Button variant="outlined" onClick={handleBack}>
+                Zurück
+            </Button>
+            )}
+            <Button
+            variant="contained"
+            onClick={handleNext}
+            disabled={selected === null}
+            >
+            {currentQuestionIndex === questions.length - 1 ? 'Finish' : 'Next'}
+            </Button>
+        </Box>
       </DialogActions>
     </Dialog>
     <Dialog open={confirmSkipOpen} onClose={() => setConfirmSkipOpen(false)}>
