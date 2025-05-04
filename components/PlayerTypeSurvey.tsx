@@ -1,200 +1,365 @@
-"use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-    Dialog, DialogTitle, DialogContent, DialogActions,
-    Button, RadioGroup, FormControlLabel, Radio, Typography, Box, LinearProgress
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  Button, Box, Typography, LinearProgress
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
+import test from '../assets/test1.jpg'
+import test2 from "../assets/test3.png"
+import logo from "@/assets/logo.svg";
+
+const questions = [
+  {
+    question: "In team activities, you tend to",
+    options: [
+      {
+        label: "actively assist teammates, share resources, and coordinate teamwork.",
+        image: test,
+        types: ["Philanthropist", "Socialiser", "Free Spirit"]
+      },
+      {
+        label: "focus on personal goals and optimize strategies for rewards.",
+        image: test2,
+        types: ["Achiever", "Player", "Disruptor"]
+      }
+    ]
+  },
+  {
+    question: "When exploring new features, you typically",
+    options: [
+      {
+        label: "experiment freely, ignoring rule limitations.",
+        image: test,
+        types: ["Free Spirit", "Disruptor", "Player"]
+      },
+      {
+        label: "follow tutorials step-by-step to unlock achievements.",
+        image: test2,
+        types: ["Achiever", "Socialiser", "Philanthropist"]
+      }
+    ]
+  },
+  {
+    question: "Your view on competition is",
+    options: [
+      {
+        label: "improve team rankings through collaboration.",
+        image: test,
+        types: ["Socialiser", "Philanthropist", "Achiever"]
+      },
+      {
+        label: "break rules or exploit loopholes to outperform others.",
+        image: test2,
+        types: ["Disruptor", "Player", "Free Spirit"]
+      }
+    ]
+  },
+  {
+    question: "After completing a task, your satisfaction comes from",
+    options: [
+      {
+        label: "helping others or contributing to the community.",
+        image: test,
+        types: ["Philanthropist", "Socialiser", "Achiever"]
+      },
+      {
+        label: "earning unique rewards or pushing system boundaries.",
+        image: test2,
+        types: ["Disruptor", "Player", "Free Spirit"]
+      }
+    ]
+  },
+  {
+    question: "When encountering a system bug, you",
+    options: [
+      {
+        label: "report it to improve the system.",
+        image: test,
+        types: ["Philanthropist", "Achiever", "Socialiser"]
+      },
+      {
+        label: "exploit it to create new play styles.",
+        image: test2,
+        types: ["Disruptor", "Free Spirit", "Player"]
+      }
+    ]
+  },
+  {
+    question: "Your preferred learning style is",
+    options: [
+      {
+        label: "collaborating with others to solve tasks.",
+        image: test,
+        types: ["Socialiser", "Philanthropist", "Achiever"]
+      },
+      {
+        label: "exploring independently with unconventional methods.",
+        image: test2,
+        types: ["Free Spirit", "Disruptor", "Player"]
+      }
+    ]
+  },
+  {
+    question: "When designing a new feature, you prioritize",
+    options: [
+      {
+        label: "user freedom for creative expression.",
+        image: test,
+        types: ["Free Spirit", "Disruptor", "Player"]
+      },
+      {
+        label: "clear progress tracking and reward systems.",
+        image: test2,
+        types: ["Achiever",  "Philanthropist", "Socialiser"]
+      }
+    ]
+  },
+  {
+    question: "Your main criteria for choosing tasks are",
+    options: [
+      {
+        label: "open-ended creativity and flexibility.",
+        image: test,
+        types: ["Free Spirit", "Disruptor", "Player"]
+      },
+      {
+        label: "achievement-driven goals or social opportunities.",
+        image: test2,
+        types: ["Achiever", "Socialiser",  "Philanthropist"]
+      }
+    ]
+  },
+  {
+    question: "When earning rewards, you care most about",
+    options: [
+      {
+        label: "their uniqueness or community impact.",
+        image: test,
+        types: ["Philanthropist", "Free Spirit", "Socialiser"]
+      },
+      {
+        label: "their practical value or competitive advantage.",
+        image: test2,
+        types: ["Player", "Achiever", "Disruptor"]
+      }
+    ]
+  },
+  {
+    question: "When others make mistakes, you usually",
+    options: [
+      {
+        label: "offer guidance and support.",
+        image: test,
+        types: ["Philanthropist", "Socialiser", "Achiever"] 
+      },
+      {
+        label: "optimize your own strategy based on their errors.",
+        image: test2,
+        types: ["Player", "Disruptor", "Free Spirit"]
+      }
+    ]
+  },
+  {
+    question: "Your attitude toward rules is",
+    options: [
+      {
+        label: "follow them and find optimal solutions.",
+        image: test,
+        types: ["Achiever", "Philanthropist", "Socialiser"] 
+      },
+      {
+        label: "test their limits to innovate.",
+        image: test2,
+        types: ["Disruptor", "Free Spirit", "Player"]
+      }
+    ]
+  },
+  {
+    question: "You prefer participating in",
+    options: [
+      {
+        label: "community-building or charity projects.",
+        image: test,
+        types: ["Philanthropist", "Socialiser", "Achiever"] 
+      },
+      {
+        label: "time-limited competitions or experimental challenges.",
+        image: test2,
+        types: ["Player", "Disruptor", "Free Spirit"]
+      }
+    ]
+  },
+  // Weitere Fragen ...
+];
 
 const SurveyPopup = () => {
-    const questions = [{
-        question: 'In team activities, you tend to',
-        options: ['actively assist teammates, share resources, and coordinate teamwork.',
-            'focus on personal goals and optimize strategies for rewards.']
-    }, {
-        question: 'When exploring new features, you typically',
-        options: ['experiment freely, ignoring rule limitations.',
-            'follow tutorials step-by-step to unlock achievements.']
-    }, {
-        question: 'Your view on competition is',
-        options: ['improve team rankings through collaboration.',
-            'break rules or exploit loopholes to outperform others.']
-    }, {
-        question: 'After completing a task, your satisfaction comes from',
-        options: ['helping others or contributing to the community.',
-            'earning unique rewards or pushing system boundaries.']
-    }, {
-        question: 'When encountering a system bug, you',
-        options: ['report it to improve the system.',
-            'exploit it to create new play styles.']
-    }, {
-        question: 'Your preferred learning style is',
-        options: ['collaborating with others to solve tasks.',
-            'exploring independently with unconventional methods.']
-    }, {
-        question: 'When designing a new feature, you prioritize',
-        options: ['user freedom for creative expression.',
-            'clear progress tracking and reward systems.']
-    }, {
-        question: 'Your main criteria for choosing tasks are',
-        options: ['open-ended creativity and flexibility.',
-            'achievement-driven goals or social opportunities.']
-    }, {
-        question: 'When earning rewards, you care most about',
-        options: ['their uniqueness or community impact.',
-            'their practical value or competitive advantage.']
-    }, {
-        question: 'When others make mistakes, you usually',
-        options: ['offer guidance and support.',
-            'optimize your own strategy based on their errors.']
-    }, {
-        question: 'Your attitude toward rules is',
-        options: ['follow them and find optimal solutions.',
-            'test their limits to innovate.']
-    }, {
-        question: 'You prefer participating in',
-        options: ['community-building or charity projects.',
-            'time-limited competitions or experimental challenges.']
-    }]
-
-    const [open, setOpen] = useState(true);
-    const [confirmSkipOpen, setConfirmSkipOpen] = useState(false);
-    const [answers, setAnswers] = useState<any>({});
-
-    const handleAnswerChange = (index: number, value: string) => {
-        setAnswers((prev: any) => ({
-            ...prev,
-            [index]: value
-        }));
-    };
-
-    const handleFinish = () => {
-        console.log('Antworten:', answers);
-        setOpen(false);
-    };
-
-    const handleSkip = () => {
-        console.log('Umfrage übersprungen');
-        setOpen(false);
-    };
-
-    const totalQuestions = questions.length;
-    const answeredCount = Object.keys(answers).filter(
-        (key) => answers[key] !== ''
-    ).length;
-    const progress = (answeredCount / totalQuestions) * 100;
+  const [open, setOpen] = useState(true);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<{ [key: number]: number | null }>({});
+  const [selected, setSelected] = useState<any>(null);
+  const [confirmSkipOpen, setConfirmSkipOpen] = useState(false);
 
 
+  const handleSelect = (answer: any, types: any, question: any, i: number) => {
+    setSelected({'question': question, 'answer': answer, 'types': types, 'index': i});
+  };
 
-    return (
-        <>
-            <Dialog open={open} maxWidth="md" fullWidth>
-                <DialogTitle>Player Type Questionaire</DialogTitle>
-                <Box sx={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'white' }}>
-                    <LinearProgress variant="determinate"
-                        value={progress}
-                        sx={{
-                            height: 6,
-                            borderRadius: 4,
-                            backgroundColor: '#ccebf8', // Hintergrund (nicht gefüllter Teil)
-                            '& .MuiLinearProgress-bar': {
-                                backgroundColor: '#009bde', // gefüllter Teil (hier: grün)
-                            }
-                        }}
-                    />
-                </Box>
-                <DialogContent>
-                    <Typography variant="body2" sx={{ mb: 2 }}>
-                        This is to find out which kind of person you are, to adjust the gamification for you
-                    </Typography>
+  const handleNext = () => {
+    const updatedAnswers = {
+        ...answers,
+        [currentQuestionIndex]: selected
+      };
+    setAnswers(updatedAnswers)
+    setSelected(null);
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      setOpen(false);
+      console.log("Antworten:", updatedAnswers);
+    }
+  };
 
-                    {questions.map((q, index) => (
-                        <Box key={index} sx={{ mb: 2 }}>
-                            <Typography sx={{ mb: 1, fontSize: '1.1rem', fontWeight: 'bold' }}>{q.question}</Typography>
-                            <RadioGroup
-                                value={answers[index] || ''}
-                                onChange={(e) => handleAnswerChange(index, e.target.value)}
-                            >
-                                {q.options.map((opt: any, i: any) => (
-                                    <FormControlLabel
-                                        key={i}
-                                        value={opt}
-                                        control={<Radio size="small" />}
-                                        label={opt}
-                                    />
-                                ))}
-                            </RadioGroup>
-                        </Box>
-                    ))}
-                </DialogContent>
-                <DialogActions>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            width: '100%',
-                            px: 3, // horizontaler Padding, wie in MUI default Content
-                        }}
-                    >
-                        <Button variant="contained"
-                            sx={{
-                                backgroundColor: '#3369ad',  // Lila Hex-Wert
-                                color: '#fff',               // weiße Schrift
-                                '&:hover': {
-                                    backgroundColor: '#2e5f9c', // dunkleres Lila beim Hover
-                                }
-                            }}
-                            onClick={() => setConfirmSkipOpen(true)}>
-                            Skip
-                        </Button>
-                        <Button variant="contained"
-                            sx={{
-                                backgroundColor: '#009bde',  // Lila Hex-Wert
-                                color: '#fff',               // weiße Schrift
-                                '&:hover': {
-                                    backgroundColor: '#1aa5e1', // dunkleres Lila beim Hover
-                                }
-                            }}
-                            onClick={handleFinish}>
-                            Finish
-                        </Button>
-                    </Box>
-                </DialogActions>
+  const handleSkip = async () => {
+    const updatedAnswers = {
+        ...answers,
+        [currentQuestionIndex]: null
+      };
+    setAnswers(updatedAnswers)
+    setSelected(null);
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      setOpen(false);
+      console.log("Antworten:", updatedAnswers);
+    }
+  };
 
-            </Dialog>
+  const current = questions[currentQuestionIndex];
 
-            <Dialog open={confirmSkipOpen} onClose={() => setConfirmSkipOpen(false)}>
-                <DialogTitle>Skip survey?</DialogTitle>
-                <DialogContent>
-                    <Typography>
-                        Are sure you want skip the survey? This will lead to non-personalized default values in your
-                        player type analysis.
-                    </Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setConfirmSkipOpen(false)}>
-                        Back to survey
-                    </Button>
-                    <Button
-                        onClick={() => {
-                            setConfirmSkipOpen(false);
-                            setOpen(false);  // schließt das Haupt-Survey-Popup
-                        }}
-                        sx={{
-                            backgroundColor: '#3369ad',  // Lila Hex-Wert
-                            color: '#fff',               // weiße Schrift
-                            '&:hover': {
-                                backgroundColor: '#2e5f9c', // dunkleres Lila beim Hover
-                            }
-                        }}
-                        variant="contained"
-                    >
-                        Skip
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </>
-    );
+  const totalQuestions = questions.length;
+  const answeredCount = Object.keys(answers).length;
+  const progress = (answeredCount / totalQuestions) * 100;
+
+  return (
+    <>
+   
+    <Dialog open={open} maxWidth="md" fullWidth>
+      <Box sx={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'white' }}>
+        <LinearProgress
+          variant="determinate"
+          value={progress}
+          sx={{
+            height: 6,
+            borderRadius: 2,
+            backgroundColor: '#eee',
+            '& .MuiLinearProgress-bar': {
+                backgroundColor: '#2196f3',
+            }
+          }}
+        />
+      </Box>
+      <DialogTitle>
+        Question {currentQuestionIndex + 1}
+        <Button
+          onClick={() => setConfirmSkipOpen(true)}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            minWidth: 'auto',
+            padding: 1,
+            color: 'grey.600'
+          }}
+        >
+          <CloseIcon />
+        </Button>
+      </DialogTitle>
+      <DialogContent>
+        <Typography variant="h6" fontWeight="bold" mb={2}>
+          {current.question}
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+          {current.options.map((opt, i) => (
+            <Box
+              key={i}
+              onClick={() => handleSelect(opt.label, opt.types, current.question, i)}
+              sx={{
+                position: 'relative',
+                width: '50%',
+                height: 200,
+                borderRadius: 2,
+                overflow: 'hidden',
+                cursor: 'pointer',
+                border: selected?.index === i ? '4px solid #2196f3' : '4px solid transparent',
+                transition: 'border 0.2s ease-in-out',
+                backgroundImage: `url(${opt.image.src})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'center'
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  color: 'white',
+                  fontWeight: 'bold',
+                  textShadow: '0 0 6px rgba(0,0,0,0.7)',
+                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  width: '100%',
+                  textAlign: 'center',
+                  py: 1
+                }}
+              >
+                {opt.label}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+      </DialogContent>
+      <DialogActions sx={{ justifyContent: 'space-between', px: 3 }}>
+        <Button variant="contained" color="info" onClick={handleSkip}>
+          Skip
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleNext}
+          disabled={selected === null}
+        >
+          {currentQuestionIndex === questions.length - 1 ? 'Finish' : 'Next'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+    <Dialog open={confirmSkipOpen} onClose={() => setConfirmSkipOpen(false)}>
+      <DialogTitle>Are you sure you want to quit the survey?</DialogTitle>
+      <DialogContent>
+          <Typography>
+            All your answers will be lost and there will be no chance to re-do the survey
+          </Typography>
+      </DialogContent>
+      <DialogActions>
+          <Button onClick={() => {
+              setConfirmSkipOpen(false);
+              setOpen(false); // schließt die Umfrage
+            }}>
+            Quit and skip survey
+          </Button>
+          <Button
+            onClick={() => {
+             
+              setConfirmSkipOpen(false)
+            }}
+            color="info"
+            variant="contained"
+          >
+            Back to survey
+          </Button>
+      </DialogActions>
+    </Dialog>
+    </>
+  );
 };
 
 export default SurveyPopup;
