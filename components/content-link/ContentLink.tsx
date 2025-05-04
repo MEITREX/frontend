@@ -228,6 +228,9 @@ export function ContentLink({
       {showProviderDialog && (
         <ProviderAuthorizationDialog
           onClose={() => setShowProviderDialog(false)}
+          onAuthorize={() => {
+            setShowProviderDialog(false);
+          }}
           alertMessage={`You must authorize via ${provider.name} to access this code assignment.`}
           _provider={codeAssessmentProvider}
         />

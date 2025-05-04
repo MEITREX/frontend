@@ -136,6 +136,9 @@ export default function LecturerCoursePage() {
       {showProviderDialog && (
         <ProviderAuthorizationDialog
           onClose={() => setShowProviderDialog(false)}
+          onAuthorize={() => {
+            setShowProviderDialog(false);
+          }}
           alertMessage={`You must authorize via ${provider.name} to sync.`}
           _provider={codeAssessmentProvider}
         />

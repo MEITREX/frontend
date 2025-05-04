@@ -181,6 +181,7 @@ export function AddCodeAssignmentModal({
       {!isLoading && !isAccessTokenAvailable && (
         <ProviderAuthorizationDialog
           onClose={onClose}
+          onAuthorize={onClose}
           alertMessage={`You must authorize via ${provider.name} to add a code assignment.`}
           _provider={codeAssessmentProvider}
         />

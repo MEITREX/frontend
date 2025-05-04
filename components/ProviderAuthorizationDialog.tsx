@@ -10,10 +10,12 @@ import { ExternalServiceProvider, providerConfig } from "./ProviderConfig";
 
 export function ProviderAuthorizationDialog({
   onClose,
+  onAuthorize,
   alertMessage,
   _provider,
 }: {
   onClose: () => void;
+  onAuthorize: () => void;
   alertMessage: string;
   _provider: ExternalServiceProvider;
 }) {
@@ -23,7 +25,7 @@ export function ProviderAuthorizationDialog({
     const returnTo = window.location.href;
     localStorage.setItem("returnTo", returnTo);
 
-    onClose();
+    onAuthorize();
 
     const authLink = `${provider.authUrl}?client_id=${provider.clientId}`;
     window.location.href = authLink;
