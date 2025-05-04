@@ -16,12 +16,14 @@ const questions = [
       {
         label: "actively assist teammates, share resources, and coordinate teamwork.",
         image: test,
-        types: ["Philanthropist", "Socialiser", "Free Spirit"]
+        types: ["PHILANTHROPIST", "SOCIALISER", "FREE_SPIRIT"],
+        non_types: ["ACHIEVER", "PLAYER", "DISRUPTOR"]
       },
       {
         label: "focus on personal goals and optimize strategies for rewards.",
         image: test2,
-        types: ["Achiever", "Player", "Disruptor"]
+        types: ["ACHIEVER", "PLAYER", "DISRUPTOR"],
+        non_types: ["PHILANTHROPIST", "SOCIALISER", "FREE_SPIRIT"]
       }
     ]
   },
@@ -31,12 +33,14 @@ const questions = [
       {
         label: "experiment freely, ignoring rule limitations.",
         image: test,
-        types: ["Free Spirit", "Disruptor", "Player"]
+        types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"],
+        non_types: ["ACHIEVER", "SOCIALISER", "PHILANTHROPIST"]
       },
       {
         label: "follow tutorials step-by-step to unlock achievements.",
         image: test2,
-        types: ["Achiever", "Socialiser", "Philanthropist"]
+        types: ["ACHIEVER", "SOCIALISER", "PHILANTHROPIST"],
+        non_types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"]
       }
     ]
   },
@@ -46,12 +50,14 @@ const questions = [
       {
         label: "improve team rankings through collaboration.",
         image: test,
-        types: ["Socialiser", "Philanthropist", "Achiever"]
+        types: ["SOCIALISER", "PHILANTHROPIST", "ACHIEVER"],
+        non_types: ["DISRUPTOR", "PLAYER", "FREE_SPIRIT"]
       },
       {
         label: "break rules or exploit loopholes to outperform others.",
         image: test2,
-        types: ["Disruptor", "Player", "Free Spirit"]
+        types: ["DISRUPTOR", "PLAYER", "FREE_SPIRIT"],
+        non_types: ["SOCIALISER", "PHILANTHROPIST", "ACHIEVER"],
       }
     ]
   },
@@ -61,12 +67,14 @@ const questions = [
       {
         label: "helping others or contributing to the community.",
         image: test,
-        types: ["Philanthropist", "Socialiser", "Achiever"]
+        types: ["PHILANTHROPIST", "SOCIALISER", "ACHIEVER"],
+        non_types: ["DISRUPTOR", "PLAYER", "FREE_SPIRIT"]
       },
       {
         label: "earning unique rewards or pushing system boundaries.",
         image: test2,
-        types: ["Disruptor", "Player", "Free Spirit"]
+        types: ["DISRUPTOR", "PLAYER", "FREE_SPIRIT"],
+        non_types: ["PHILANTHROPIST", "SOCIALISER", "ACHIEVER"]
       }
     ]
   },
@@ -76,12 +84,14 @@ const questions = [
       {
         label: "report it to improve the system.",
         image: test,
-        types: ["Philanthropist", "Achiever", "Socialiser"]
+        types: ["PHILANTHROPIST", "ACHIEVER", "SOCIALISER"],
+        non_types: ["DISRUPTOR", "FREE_SPIRIT", "PLAYER"]
       },
       {
         label: "exploit it to create new play styles.",
         image: test2,
-        types: ["Disruptor", "Free Spirit", "Player"]
+        types: ["DISRUPTOR", "FREE_SPIRIT", "PLAYER"],
+        non_types: ["PHILANTHROPIST", "ACHIEVER", "SOCIALISER"]
       }
     ]
   },
@@ -91,12 +101,14 @@ const questions = [
       {
         label: "collaborating with others to solve tasks.",
         image: test,
-        types: ["Socialiser", "Philanthropist", "Achiever"]
+        types: ["SOCIALISER", "PHILANTHROPIST", "ACHIEVER"],
+        non_types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"]
       },
       {
         label: "exploring independently with unconventional methods.",
         image: test2,
-        types: ["Free Spirit", "Disruptor", "Player"]
+        types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"],
+        non_types: ["SOCIALISER", "PHILANTHROPIST", "ACHIEVER"]
       }
     ]
   },
@@ -106,12 +118,14 @@ const questions = [
       {
         label: "user freedom for creative expression.",
         image: test,
-        types: ["Free Spirit", "Disruptor", "Player"]
+        types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"],
+        non_types: ["ACHIEVER",  "PHILANTHROPIST", "SOCIALISER"]
       },
       {
         label: "clear progress tracking and reward systems.",
         image: test2,
-        types: ["Achiever",  "Philanthropist", "Socialiser"]
+        types: ["ACHIEVER",  "PHILANTHROPIST", "SOCIALISER"],
+        non_types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"]
       }
     ]
   },
@@ -121,12 +135,14 @@ const questions = [
       {
         label: "open-ended creativity and flexibility.",
         image: test,
-        types: ["Free Spirit", "Disruptor", "Player"]
+        types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"],
+        non_types: ["ACHIEVER", "SOCIALISER",  "PHILANTHROPIST"]
       },
       {
         label: "achievement-driven goals or social opportunities.",
         image: test2,
-        types: ["Achiever", "Socialiser",  "Philanthropist"]
+        types: ["ACHIEVER", "SOCIALISER",  "PHILANTHROPIST"],
+        non_types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"]
       }
     ]
   },
@@ -136,12 +152,14 @@ const questions = [
       {
         label: "their uniqueness or community impact.",
         image: test,
-        types: ["Philanthropist", "Free Spirit", "Socialiser"]
+        types: ["PHILANTHROPIST", "FREE_SPIRIT", "SOCIALISER"],
+        non_types: ["PLAYER", "ACHIEVER", "DISRUPTOR"]
       },
       {
         label: "their practical value or competitive advantage.",
         image: test2,
-        types: ["Player", "Achiever", "Disruptor"]
+        types: ["PLAYER", "ACHIEVER", "DISRUPTOR"],
+        non_types: ["PHILANTHROPIST", "FREE_SPIRIT", "SOCIALISER"]
       }
     ]
   },
@@ -151,12 +169,14 @@ const questions = [
       {
         label: "offer guidance and support.",
         image: test,
-        types: ["Philanthropist", "Socialiser", "Achiever"] 
+        types: ["PHILANTHROPIST", "SOCIALISER", "ACHIEVER"],
+        non_types: ["PLAYER", "DISRUPTOR", "FREE_SPIRIT"]
       },
       {
         label: "optimize your own strategy based on their errors.",
         image: test2,
-        types: ["Player", "Disruptor", "Free Spirit"]
+        types: ["PLAYER", "DISRUPTOR", "FREE_SPIRIT"],
+        non_types: ["PHILANTHROPIST", "SOCIALISER", "ACHIEVER"]
       }
     ]
   },
@@ -166,12 +186,14 @@ const questions = [
       {
         label: "follow them and find optimal solutions.",
         image: test,
-        types: ["Achiever", "Philanthropist", "Socialiser"] 
+        types: ["ACHIEVER", "PHILANTHROPIST", "SOCIALISER"],
+        non_types: ["DISRUPTOR", "FREE_SPIRIT", "PLAYER"]
       },
       {
         label: "test their limits to innovate.",
         image: test2,
-        types: ["Disruptor", "Free Spirit", "Player"]
+        types: ["DISRUPTOR", "FREE_SPIRIT", "PLAYER"],
+        non_types: ["ACHIEVER", "PHILANTHROPIST", "SOCIALISER"]
       }
     ]
   },
@@ -181,12 +203,14 @@ const questions = [
       {
         label: "community-building or charity projects.",
         image: test,
-        types: ["Philanthropist", "Socialiser", "Achiever"] 
+        types: ["PHILANTHROPIST", "SOCIALISER", "ACHIEVER"],
+        non_types: ["PLAYER", "DISRUPTOR", "FREE_SPIRIT"]
       },
       {
         label: "time-limited competitions or experimental challenges.",
         image: test2,
-        types: ["Player", "Disruptor", "Free Spirit"]
+        types: ["PLAYER", "DISRUPTOR", "FREE_SPIRIT"],
+        non_types: ["PHILANTHROPIST", "SOCIALISER", "ACHIEVER"]
       }
     ]
   },
@@ -201,8 +225,8 @@ const SurveyPopup = () => {
   const [confirmSkipOpen, setConfirmSkipOpen] = useState(false);
 
 
-  const handleSelect = (answer: any, types: any, question: any, i: number) => {
-    setSelected({'question': question, 'answer': answer, 'types': types, 'index': i});
+  const handleSelect = (answer: any, types: any, question: any, non_types: any ,i: number) => {
+    setSelected({'question': question, 'answer': answer, 'types': types, 'non_types': non_types,  'index': i});
   };
 
   const handleNext = () => {
@@ -283,7 +307,7 @@ const SurveyPopup = () => {
           {current.options.map((opt, i) => (
             <Box
               key={i}
-              onClick={() => handleSelect(opt.label, opt.types, current.question, i)}
+              onClick={() => handleSelect(opt.label, opt.types, current.question,  opt.non_types, i)}
               sx={{
                 position: 'relative',
                 width: '50%',
