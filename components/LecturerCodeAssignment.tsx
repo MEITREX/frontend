@@ -4,13 +4,15 @@ import { ContentTags } from "./ContentTags";
 import { FormErrors } from "./FormErrors";
 import { Heading } from "./Heading";
 import { PageError } from "./PageError";
-import { LecturerCodeAssignmentGradingQuery } from "@/__generated__/LecturerCodeAssignmentGradingQuery.graphql";
+// import { LecturerCodeAssignmentGradingQuery } from "@/__generated__/LecturerCodeAssignmentGradingQuery.graphql";
 import { Edit, GitHub } from "@mui/icons-material";
 import {
   Box,
   Button,
   Divider,
   Link,
+  Menu,
+  MenuItem,
   Paper,
   Table,
   TableBody,
@@ -23,7 +25,6 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
-import { ItemData } from "./ItemFormSection";
 import { DeleteAssignmentButton } from "./assignment/DeleteAssignmentButton";
 import { EditAssignmentModal } from "./assignment/EditAssignmentModal";
 import toast from "react-hot-toast";
@@ -37,6 +38,15 @@ export default function LecturerCodeAssignment({
   const router = useRouter();
   const [isEditSetOpen, setEditSetOpen] = useState(false);
   const [error, setError] = useState<any>(null);
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   const content = useFragment(
     graphql`
@@ -125,15 +135,46 @@ export default function LecturerCodeAssignment({
             )}
 
             {assignment.assignmentLink && (
-              <Button
-                sx={{ color: "text.secondary" }}
-                startIcon={<GitHub />}
-                href={assignment.assignmentLink}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                GitHub Classroom
-              </Button>
+              <>
+                <Button
+                  sx={{ color: "text.secondary" }}
+                  startIcon={<GitHub />}
+                  onClick={handleClick}
+                >
+                  GitHub Classroom
+                </Button>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={open}
+                  onClose={handleClose}
+                  MenuListProps={{
+                    "aria-labelledby": "github-classroom-button",
+                  }}
+                >
+                  <MenuItem
+                    onClick={() => {
+                      if (assignment.assignmentLink) {
+                        window.open(assignment.assignmentLink, "_blank");
+                      }
+                      handleClose();
+                    }}
+                  >
+                    Assignment page
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      const baseLink = assignment.assignmentLink?.replace(
+                        /\/assignments\//,
+                        "/new_assignments/"
+                      );
+                      window.open(`${baseLink}/settings`, "_blank");
+                      handleClose();
+                    }}
+                  >
+                    Edit assignment
+                  </MenuItem>
+                </Menu>
+              </>
             )}
 
             <DeleteAssignmentButton
