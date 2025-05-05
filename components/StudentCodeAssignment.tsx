@@ -1,5 +1,6 @@
 import { StudentCodeAssignment$key } from "@/__generated__/StudentCodeAssignment.graphql";
 import { StudentCodeAssignmentQuery } from "@/__generated__/StudentCodeAssignmentQuery.graphql";
+import { StudentCodeAssignmentGradingQuery } from "@/__generated__/StudentCodeAssignmentGradingQuery.graphql";
 import { ContentTags } from "./ContentTags";
 import { FormErrors } from "./FormErrors";
 import { Heading } from "./Heading";
@@ -23,6 +24,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
+import toast from "react-hot-toast";
 
 export default function StudentCodeAssignment({
   contentRef,
@@ -61,10 +63,31 @@ export default function StudentCodeAssignment({
       { assessmentId: assignmentId }
     );
 
+  const { getGradingsForAssignment } =
+    useLazyLoadQuery<StudentCodeAssignmentGradingQuery>(
+      graphql`
+        query StudentCodeAssignmentGradingQuery($assessmentId: UUID!) {
+          getGradingsForAssignment(assessmentId: $assessmentId) {
+            date
+            achievedCredits
+            codeAssignmentGradingMetadata {
+              repoLink
+              status
+              feedbackTableHtml
+            }
+          }
+        }
+      `,
+      { assessmentId: assignmentId }
+    );
+
   const assignment = findAssignmentsByAssessmentIds[0];
   if (!assignment) {
     return <PageError message="No assignment found with given id." />;
   }
+
+  const grading = getGradingsForAssignment[0];
+  const repoLink = grading?.codeAssignmentGradingMetadata?.repoLink;
 
   return (
     <main>
@@ -95,11 +118,16 @@ export default function StudentCodeAssignment({
               <Button
                 sx={{ color: "text.secondary" }}
                 startIcon={<GitHub />}
-                href={assignment.invitationLink!}
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={() => {
+                  if (repoLink) {
+                    navigator.clipboard.writeText(repoLink);
+                    toast.success("Repo link copied to clipboard!");
+                  } else {
+                    window.open(assignment.invitationLink!, "_blank");
+                  }
+                }}
               >
-                GitHub Classroom
+                CLONE REPO
               </Button>
             )}
           </Box>
@@ -150,6 +178,32 @@ export default function StudentCodeAssignment({
 
       <Divider sx={{ my: 4 }} />
 
+      <Box mt={4}>
+        <Typography variant="h6" gutterBottom>
+          Automated Tests
+        </Typography>
+        <Typography>
+          <strong>Status:</strong>{" "}
+          {grading?.codeAssignmentGradingMetadata?.status?.replace("_", " ") ?? "N/A"}
+        </Typography>
+        {grading?.codeAssignmentGradingMetadata?.status == "completed" && grading?.codeAssignmentGradingMetadata?.feedbackTableHtml && (
+          <Box
+            mt={2}
+            sx={{
+              overflowX: "auto",
+              border: "1px solid #e0e0e0",
+              borderRadius: 1,
+              padding: 2,
+            }}
+            dangerouslySetInnerHTML={{
+              __html: grading.codeAssignmentGradingMetadata.feedbackTableHtml,
+            }}
+          />
+        )}
+      </Box>
+
+      <Divider sx={{ my: 4 }} />
+
       <Box mt={4} sx={{ "& > *:not(:last-child)": { mb: 2 } }}>
         <Box
           mt={4}
@@ -188,7 +242,9 @@ export default function StudentCodeAssignment({
             <Typography variant="subtitle2" gutterBottom>
               Achieved
             </Typography>
-            <Typography variant="body2">N/A</Typography>
+            <Typography variant="body2">
+              {grading.achievedCredits && grading.achievedCredits != -1 ? grading.achievedCredits : "N/A"}
+            </Typography>
           </Box>
         </Box>
       </Box>
