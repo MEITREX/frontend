@@ -12,7 +12,8 @@ import {
 import { useState } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
 import { EditAssignmentModalFragment$key } from "@/__generated__/EditAssignmentModalFragment.graphql";
-import { EditAssignmentModalMutation } from "@/__generated__/EditAssignmentModalMutation.graphql";
+import { EditAssignmentModalGradingMutation } from "@/__generated__/EditAssignmentModalGradingMutation.graphql";
+import { EditAssignmentModalAssessmentMutation } from "@/__generated__/EditAssignmentModalAssessmentMutation.graphql";
 import {
   AssessmentMetadataFormSection,
   AssessmentMetadataPayload,
@@ -53,29 +54,42 @@ export function EditAssignmentModal({
           assessmentId
           courseId
           assignmentType
-          readmeHtml
-          assignmentLink
-          invitationLink
           requiredPercentage
+          codeAssignmentMetadata {
+            readmeHtml
+            assignmentLink
+            invitationLink
+          }
         }
       }
     `,
     contentRef
   );
 
-  const [updateAssignment, isUpdatingAssignment] =
-    useMutation<EditAssignmentModalMutation>(graphql`
-      mutation EditAssignmentModalMutation(
-        $assessment: UpdateAssessmentInput!
-        $contentId: UUID!
-      ) {
-        mutateContent(contentId: $contentId) {
-          updateAssessment(input: $assessment) {
-            ...EditAssignmentModalFragment
-          }
+  const [updateAssessment, isUpdatingAssessment] = useMutation(graphql`
+    mutation EditAssignmentModalAssessmentMutation(
+      $assessment: UpdateAssessmentInput!
+      $contentId: UUID!
+    ) {
+      mutateContent(contentId: $contentId) {
+        updateAssessment(input: $assessment) {
+          id
         }
       }
-    `);
+    }
+  `);
+
+  const [updateAssignment, isUpdatingAssignment] = useMutation(graphql`
+    mutation EditAssignmentModalGradingMutation(
+      $assessmentId: UUID!
+      $input: UpdateAssignmentInput!
+    ) {
+      updateAssignment(assessmentId: $assessmentId, input: $input) {
+        assessmentId
+        requiredPercentage
+      }
+    }
+  `);
 
   const [metadata, setMetadata] = useState<ContentMetadataPayload | null>(null);
   const [assessmentMetadata, setAssessmentMetadata] =
@@ -92,9 +106,9 @@ export function EditAssignmentModal({
     requiredPercentage <= 100;
 
   const handleSubmit = () => {
-    if (!metadata || !assessmentMetadata) return;
+    if (!metadata || !assessmentMetadata || requiredPercentage === null) return;
 
-    updateAssignment({
+    updateAssessment({
       variables: {
         assessment: {
           metadata: {
@@ -106,7 +120,18 @@ export function EditAssignmentModal({
         contentId: content.id,
       },
       onError,
-      onCompleted: onClose,
+      onCompleted: () => {
+        updateAssignment({
+          variables: {
+            assessmentId: content.assignment!.assessmentId,
+            input: {
+              requiredPercentage: requiredPercentage / 100,
+            },
+          },
+          onError,
+          onCompleted: onClose,
+        });
+      },
     });
   };
 
