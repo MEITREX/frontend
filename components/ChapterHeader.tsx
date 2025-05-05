@@ -64,7 +64,7 @@ export function ChapterHeader({
           whiteSpace: "nowrap",
           overflow: "hidden",
         }}
-        title={skillNames.join(", ")}
+        //title={skillNames.join(", ")}
         label={category}
       />
     )
@@ -104,9 +104,7 @@ export function ChapterHeader({
             {chapter.description}
           </Typography>
         </div>
-        <div className="flex justify-end flex-wrap gap-1 mb-6">
-          {skillChips}
-        </div>
+        <div className="flex justify-end flex-wrap gap-2">{skillChips}</div>
       </div>
     </div>
   );
