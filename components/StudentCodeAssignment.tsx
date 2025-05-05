@@ -183,23 +183,25 @@ export default function StudentCodeAssignment({
           Automated Tests
         </Typography>
         <Typography>
-          <strong>Status:</strong>{" "}
-          {grading?.codeAssignmentGradingMetadata?.status?.replace("_", " ") ?? "N/A"}
+          <strong>Status:</strong> {/* in_progress to in progress */}
+          {grading?.codeAssignmentGradingMetadata?.status?.replace("_", " ") ??
+            "N/A"}
         </Typography>
-        {grading?.codeAssignmentGradingMetadata?.status == "completed" && grading?.codeAssignmentGradingMetadata?.feedbackTableHtml && (
-          <Box
-            mt={2}
-            sx={{
-              overflowX: "auto",
-              border: "1px solid #e0e0e0",
-              borderRadius: 1,
-              padding: 2,
-            }}
-            dangerouslySetInnerHTML={{
-              __html: grading.codeAssignmentGradingMetadata.feedbackTableHtml,
-            }}
-          />
-        )}
+        {grading?.codeAssignmentGradingMetadata?.status == "completed" &&
+          grading?.codeAssignmentGradingMetadata?.feedbackTableHtml && (
+            <Box
+              mt={2}
+              sx={{
+                overflowX: "auto",
+                border: "1px solid #e0e0e0",
+                borderRadius: 1,
+                padding: 2,
+              }}
+              dangerouslySetInnerHTML={{
+                __html: grading.codeAssignmentGradingMetadata.feedbackTableHtml,
+              }}
+            />
+          )}
       </Box>
 
       <Divider sx={{ my: 4 }} />
@@ -243,7 +245,9 @@ export default function StudentCodeAssignment({
               Achieved
             </Typography>
             <Typography variant="body2">
-              {grading.achievedCredits && grading.achievedCredits != -1 ? grading.achievedCredits : "N/A"}
+              {grading.achievedCredits && grading.achievedCredits != -1
+                ? grading.achievedCredits
+                : "N/A"}
             </Typography>
           </Box>
         </Box>
