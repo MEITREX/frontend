@@ -4,7 +4,7 @@ import { ContentTags } from "./ContentTags";
 import { FormErrors } from "./FormErrors";
 import { Heading } from "./Heading";
 import { PageError } from "./PageError";
-// import { LecturerCodeAssignmentGradingQuery } from "@/__generated__/LecturerCodeAssignmentGradingQuery.graphql";
+import { LecturerCodeAssignmentGradingQuery } from "@/__generated__/LecturerCodeAssignmentGradingQuery.graphql";
 import { Edit, GitHub } from "@mui/icons-material";
 import {
   Box,
@@ -28,6 +28,7 @@ import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
 import { DeleteAssignmentButton } from "./assignment/DeleteAssignmentButton";
 import { EditAssignmentModal } from "./assignment/EditAssignmentModal";
 import toast from "react-hot-toast";
+import { UUID } from "crypto";
 
 export default function LecturerCodeAssignment({
   contentRef,
@@ -70,44 +71,52 @@ export default function LecturerCodeAssignment({
         query LecturerCodeAssignmentQuery($assessmentId: UUID!) {
           findAssignmentsByAssessmentIds(assessmentIds: [$assessmentId]) {
             assessmentId
-            assignmentLink
             date
             totalCredits
             requiredPercentage
-            readmeHtml
+            codeAssignmentMetadata {
+              assignmentLink
+              readmeHtml
+            }
           }
         }
       `,
       { assessmentId: assignmentId }
     );
 
-  // const { getGradingsForAssignment } =
-  //   useLazyLoadQuery<LecturerCodeAssignmentGradingQuery>(
-  //     graphql`
-  //       query LecturerCodeAssignmentGradingQuery($assessmentId: UUID!) {
-  //         getGradingsForAssignment(assessmentId: $assessmentId) {
-  //           studentId
-  //           achievedCredits
-  //           codeAssignmentGradingMetadata {
-  //             repoLink
-  //             status
-  //             feedbackTableHtml
-  //           }
-  //         }
-  //       }
-  //     `,
-  //     { assessmentId: assignmentId }
-  //   );
+  const { getGradingsForAssignment } =
+    useLazyLoadQuery<LecturerCodeAssignmentGradingQuery>(
+      graphql`
+        query LecturerCodeAssignmentGradingQuery($assessmentId: UUID!) {
+          getGradingsForAssignment(assessmentId: $assessmentId) {
+            studentId
+            achievedCredits
+            student {
+              id
+              userName
+            }
+          }
+        }
+      `,
+      { assessmentId: assignmentId }
+    );
 
   const assignment = findAssignmentsByAssessmentIds[0];
   if (!assignment) {
     return <PageError message="No assignment found with given id." />;
   }
 
-  // const studentGrades = getGradingsForAssignment.map((grading) => ({
-  //   studentId: grading.studentId,
-  //   achievedCredits: grading.achievedCredits,
-  // }));
+  const studentGrades = getGradingsForAssignment;
+  const requiredPoints =
+    assignment.totalCredits !== null && assignment.requiredPercentage != null
+      ? Math.round(assignment.totalCredits * assignment.requiredPercentage)
+      : null;
+
+  const passedCount =
+    requiredPoints != null
+      ? studentGrades.filter((g) => (g.achievedCredits ?? -1) >= requiredPoints)
+          .length
+      : null;
 
   return (
     <main>
@@ -134,7 +143,7 @@ export default function LecturerCodeAssignment({
               </Button>
             )}
 
-            {assignment.assignmentLink && (
+            {assignment.codeAssignmentMetadata?.assignmentLink && (
               <>
                 <Button
                   sx={{ color: "text.secondary" }}
@@ -153,8 +162,11 @@ export default function LecturerCodeAssignment({
                 >
                   <MenuItem
                     onClick={() => {
-                      if (assignment.assignmentLink) {
-                        window.open(assignment.assignmentLink, "_blank");
+                      if (assignment.codeAssignmentMetadata!.assignmentLink) {
+                        window.open(
+                          assignment.codeAssignmentMetadata!.assignmentLink,
+                          "_blank"
+                        );
                       }
                       handleClose();
                     }}
@@ -163,10 +175,11 @@ export default function LecturerCodeAssignment({
                   </MenuItem>
                   <MenuItem
                     onClick={() => {
-                      const baseLink = assignment.assignmentLink?.replace(
-                        /\/assignments\//,
-                        "/new_assignments/"
-                      );
+                      const baseLink =
+                        assignment.codeAssignmentMetadata!.assignmentLink?.replace(
+                          /\/assignments\//,
+                          "/new_assignments/"
+                        );
                       window.open(`${baseLink}/settings`, "_blank");
                       handleClose();
                     }}
@@ -213,7 +226,7 @@ export default function LecturerCodeAssignment({
         <Typography variant="h6" gutterBottom>
           README
         </Typography>
-        {assignment.readmeHtml ? (
+        {assignment.codeAssignmentMetadata?.readmeHtml ? (
           <Box
             className="prose prose-sm max-w-none"
             sx={{
@@ -239,7 +252,9 @@ export default function LecturerCodeAssignment({
                 textDecoration: "underline",
               },
             }}
-            dangerouslySetInnerHTML={{ __html: assignment.readmeHtml }}
+            dangerouslySetInnerHTML={{
+              __html: assignment.codeAssignmentMetadata.readmeHtml,
+            }}
           />
         ) : (
           <Typography variant="body2" color="text.secondary" fontStyle="italic">
@@ -267,7 +282,7 @@ export default function LecturerCodeAssignment({
               Required Credits
             </Typography>
             <Typography variant="body2">
-              {assignment.totalCredits !== -1
+              {assignment.totalCredits !== null
                 ? Math.round(
                     assignment.requiredPercentage! * assignment.totalCredits!
                   )
@@ -280,7 +295,9 @@ export default function LecturerCodeAssignment({
               Total Credits
             </Typography>
             <Typography variant="body2">
-              {assignment.totalCredits !== -1 ? assignment.totalCredits : "N/A"}
+              {assignment.totalCredits !== null
+                ? assignment.totalCredits
+                : "N/A"}
             </Typography>
           </Box>
 
@@ -288,14 +305,16 @@ export default function LecturerCodeAssignment({
             <Typography variant="subtitle2" gutterBottom>
               Students Passed
             </Typography>
-            <Typography variant="body2">N/A</Typography>
+            <Typography variant="body2">
+              {passedCount != null ? passedCount : "N/A"}
+            </Typography>
           </Box>
         </Box>
       </Box>
       <Box mt={6}>
-        {/* <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" gutterBottom>
           Grades
-        </Typography> */}
+        </Typography>
         <TableContainer component={Paper}>
           <Table size="small">
             <TableHead>
@@ -305,16 +324,14 @@ export default function LecturerCodeAssignment({
               </TableRow>
             </TableHead>
             <TableBody>
-              {/* {studentGrades.map(({ studentId, achievedCredits }) => (
+              {studentGrades.map(({ studentId, achievedCredits, student }) => (
                 <TableRow key={studentId}>
-                  <TableCell>{studentId}</TableCell>
+                  <TableCell>{student?.userName ?? "Unknown"}</TableCell>
                   <TableCell>
-                    {achievedCredits != null
-                      ? achievedCredits
-                      : "-"}
+                    {achievedCredits != null ? achievedCredits : "-"}
                   </TableCell>
                 </TableRow>
-              ))} */}
+              ))}
             </TableBody>
           </Table>
         </TableContainer>

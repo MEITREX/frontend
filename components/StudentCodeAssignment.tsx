@@ -52,11 +52,14 @@ export default function StudentCodeAssignment({
         query StudentCodeAssignmentQuery($assessmentId: UUID!) {
           findAssignmentsByAssessmentIds(assessmentIds: [$assessmentId]) {
             assessmentId
-            invitationLink
             date
             totalCredits
             requiredPercentage
-            readmeHtml
+            codeAssignmentMetadata {
+              readmeHtml
+              assignmentLink
+              invitationLink
+            }
           }
         }
       `,
@@ -114,7 +117,7 @@ export default function StudentCodeAssignment({
               </Button>
             )}
 
-            {assignment.invitationLink && (
+            {assignment.codeAssignmentMetadata?.invitationLink && (
               <Button
                 sx={{ color: "text.secondary" }}
                 startIcon={<GitHub />}
@@ -123,7 +126,10 @@ export default function StudentCodeAssignment({
                     navigator.clipboard.writeText(repoLink);
                     toast.success("Repo link copied to clipboard!");
                   } else {
-                    window.open(assignment.invitationLink!, "_blank");
+                    window.open(
+                      assignment.codeAssignmentMetadata!.invitationLink!,
+                      "_blank"
+                    );
                   }
                 }}
               >
@@ -141,7 +147,7 @@ export default function StudentCodeAssignment({
         <Typography variant="h6" gutterBottom>
           README
         </Typography>
-        {assignment.readmeHtml ? (
+        {assignment.codeAssignmentMetadata?.readmeHtml ? (
           <Box
             className="prose prose-sm max-w-none"
             sx={{
@@ -167,7 +173,9 @@ export default function StudentCodeAssignment({
                 textDecoration: "underline",
               },
             }}
-            dangerouslySetInnerHTML={{ __html: assignment.readmeHtml }}
+            dangerouslySetInnerHTML={{
+              __html: assignment.codeAssignmentMetadata.readmeHtml,
+            }}
           />
         ) : (
           <Typography variant="body2" color="text.secondary" fontStyle="italic">
