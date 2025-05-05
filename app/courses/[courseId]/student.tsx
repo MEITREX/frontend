@@ -190,7 +190,7 @@ export default function StudentCoursePage() {
     new Map(course.skills.map((skill) => [skill.skillCategory, skill])).values()
   );
   
-  // Sortiere die Kategorien: zuerst mit Fortschritt > 0, dann 0
+  // Sort the categories by value. Categories with skillValue 0 will be displayed last.
   const sortedSkillCategories = [...uniqueSkillCategories].sort((a, b) => {
     const getTotalProgress = (category: typeof a) => {
       const skillsInCategory = course.skills.filter(skill => skill.skillCategory === category.skillCategory);
@@ -221,8 +221,6 @@ export default function StudentCoursePage() {
       setCurrentPage(currentPage + 1);
     }
   };
-
-  
 
   return (
     <main>
@@ -365,7 +363,7 @@ export default function StudentCoursePage() {
               <ArrowBackIosNewIcon />
             </IconButton>
             <span>
-              Page {currentPage + 1} / {totalPages}
+              {currentPage + 1} / {totalPages}
             </span>
             <IconButton onClick={handleNextPage} disabled={currentPage >= totalPages - 1}>
               <ArrowForwardIosIcon />
@@ -382,8 +380,6 @@ export default function StudentCoursePage() {
             
             
             {currentCategorySlice.map((uniqueSkill) => {
-
-              //oben neu
 
               const skillsInCategory = course.skills.filter(skill => skill.skillCategory === uniqueSkill.skillCategory);
               const uniqueSkillsInCategory = Array.from(
@@ -415,7 +411,7 @@ export default function StudentCoursePage() {
               });
 
               return (
-                <div key={uniqueSkill.skillCategory} className="mb-4 w-full">
+                <div key={uniqueSkill.skillCategory} className="mb-4 w-full pl-10">
                   <div className="flex items-center gap-2 w-full">
                     <Button
                       onClick={() => toggleProgressbar(uniqueSkill.skillCategory)}
@@ -464,9 +460,6 @@ export default function StudentCoursePage() {
               );
             })}
         </div>
-        
-        
-
       )}
 
       </div>
