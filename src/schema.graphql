@@ -1466,6 +1466,16 @@ type ExternalAssignment {
   sheetNo: Float!
 }
 
+type ExternalCourse {
+  # 
+  # The name of the course.
+  courseTitle: String!
+
+  # 
+  # The url to the course.
+  url: String!
+}
+
 enum ExternalServiceProviderDto {
   GITHUB
 }
@@ -2072,6 +2082,8 @@ type MultipleChoiceQuestion implements Question {
   item: Item!
 }
 
+# 
+# Mutations for the assignment service. Provides mutations for creating, updating, and deleting assignments.
 type Mutation {
   # 
   # Generates an access token for the given provider using an authorization code obtained from the OAuth flow.
@@ -2080,63 +2092,14 @@ type Mutation {
   generateAccessToken(input: GenerateAccessTokenInput!): Boolean!
 
   # 
-  # Modify an assignment.
-  # 🔒 The user must be an admin in the course the assignment is in to perform this action.
-  mutateAssignment(assessmentId: UUID!): AssignmentMutation!
+  # Modify Content
+  # 🔒 The user must have admin access to the course containing the section to perform this action.
+  mutateContent(contentId: UUID!): ContentMutation!
 
   # 
-  # Logs that a user's assignment score has been imported, i.e. the user has completed the assignment.
-  # 🔒 The user must be a tutor in the course the assignment is in to perform this action.
-  logAssignmentCompleted(input: LogAssignmentCompletedInput!): AssignmentCompletedFeedback!
-
-  # 
-  # Saves mappings of meitrex users to external students.
-  # Used to deal with ManualMappingInstances.
-  # Returns list of all deleted ManualMappingInstance ids.
-  # Returns null if connection to UserService failed.
-  # 🔒 The user must be an admin in the course to perform this action.
-  saveStudentMappings(courseId: UUID!, studentMappingInputs: [StudentMappingInput!]!): [String]!
-
-  # 
-  # Fetches assignment info from external code assessment provider for the given course
-  syncAssignmentsForCourse(courseTitle: String!): Boolean!
-
-  # 
-  # Creates a new media record
-  # 🔒 The user must have the "course-creator" role to perform this action.
-  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of all courses or a super-user.
-  createMediaRecord(input: CreateMediaRecordInput!): MediaRecord!
-
-  # 
-  # Updates an existing media record with the given UUID
-  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
-  updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
-
-  # 
-  # Deletes the media record with the given UUID
-  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
-  deleteMediaRecord(id: UUID!): UUID!
-
-  # 
-  # For a given MediaContent, sets the linked media records of it to the ones with the given UUIDs.
-  # This means that for the content, all already linked media records are removed and replaced by the given ones.
-  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
-  setLinkedMediaRecordsForContent(contentId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
-
-  # 
-  #     Logs that a media has been worked on by the current user.
-  #     See https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/userProgress.html
-  # 
-  #     Possible side effects:
-  #     When all media records of a content have been worked on by a user,
-  #     a user-progress event is emitted for the content.
-  #     🔒 If the mediaRecord is associated with courses the user must be a member of at least one of the courses.
-  logMediaRecordWorkedOn(mediaRecordId: UUID!): MediaRecord!
-
-  # 
-  # Add the MediaRecords with the given UUIDS to the Course with the given UUID.
-  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
-  setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
+  # Modify the section with the given id.
+  # 🔒 The user must have admin access to the course containing the section to perform this action.
+  mutateSection(sectionId: UUID!): SectionMutation!
 
   # 
   # Creates a new course with the given input and returns the created course.
@@ -2194,14 +2157,14 @@ type Mutation {
   deleteMembership(input: CourseMembershipInput!): CourseMembership!
 
   # 
-  # Modify a flashcard set.
-  # 🔒 The user must be an admin the course the flashcard set is in to perform this action.
-  mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
-
+  #   ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
   # 
-  # Logs that a user has learned a flashcard.
-  # 🔒 The user must be enrolled in the course the flashcard set is in to perform this action.
-  logFlashcardLearned(input: LogFlashcardLearnedInput!): FlashcardLearnedFeedback!
+  #   Triggers the recalculation of the skill level of the user.
+  #   This is done automatically at some time in the night.
+  # 
+  #   The purpose of this mutation is to allow testing of the skill level score and demonstrate the functionality.
+  #   🔒 The user must be a super-user, otherwise an exception is thrown.
+  recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
 
   # 
   #     ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
@@ -2214,24 +2177,51 @@ type Mutation {
   recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
 
   # 
-  # Modify Content
-  # 🔒 The user must have admin access to the course containing the section to perform this action.
-  mutateContent(contentId: UUID!): ContentMutation!
+  # Modify a flashcard set.
+  # 🔒 The user must be an admin the course the flashcard set is in to perform this action.
+  mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
 
   # 
-  # Modify the section with the given id.
-  # 🔒 The user must have admin access to the course containing the section to perform this action.
-  mutateSection(sectionId: UUID!): SectionMutation!
+  # Logs that a user has learned a flashcard.
+  # 🔒 The user must be enrolled in the course the flashcard set is in to perform this action.
+  logFlashcardLearned(input: LogFlashcardLearnedInput!): FlashcardLearnedFeedback!
 
   # 
-  #   ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
+  # Creates a new media record
+  # 🔒 The user must have the "course-creator" role to perform this action.
+  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of all courses or a super-user.
+  createMediaRecord(input: CreateMediaRecordInput!): MediaRecord!
+
   # 
-  #   Triggers the recalculation of the skill level of the user.
-  #   This is done automatically at some time in the night.
+  # Updates an existing media record with the given UUID
+  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
+  updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
+
   # 
-  #   The purpose of this mutation is to allow testing of the skill level score and demonstrate the functionality.
-  #   🔒 The user must be a super-user, otherwise an exception is thrown.
-  recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
+  # Deletes the media record with the given UUID
+  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
+  deleteMediaRecord(id: UUID!): UUID!
+
+  # 
+  # For a given MediaContent, sets the linked media records of it to the ones with the given UUIDs.
+  # This means that for the content, all already linked media records are removed and replaced by the given ones.
+  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
+  setLinkedMediaRecordsForContent(contentId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
+
+  # 
+  #     Logs that a media has been worked on by the current user.
+  #     See https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/userProgress.html
+  # 
+  #     Possible side effects:
+  #     When all media records of a content have been worked on by a user,
+  #     a user-progress event is emitted for the content.
+  #     🔒 If the mediaRecord is associated with courses the user must be a member of at least one of the courses.
+  logMediaRecordWorkedOn(mediaRecordId: UUID!): MediaRecord!
+
+  # 
+  # Add the MediaRecords with the given UUIDS to the Course with the given UUID.
+  # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
+  setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
 
   # 
   # Modify a quiz.
@@ -2246,6 +2236,28 @@ type Mutation {
   # Log that a multiple choice quiz is completed.
   # 🔒 The user must be enrolled in the course the quiz is in to perform this action.
   logQuizCompleted(input: QuizCompletedInput!): QuizCompletionFeedback!
+
+  # 
+  # Modify an assignment.
+  # 🔒 The user must be an admin in the course the assignment is in to perform this action.
+  mutateAssignment(assessmentId: UUID!): AssignmentMutation!
+
+  # 
+  # Logs that a user's assignment score has been imported, i.e. the user has completed the assignment.
+  # 🔒 The user must be a tutor in the course the assignment is in to perform this action.
+  logAssignmentCompleted(input: LogAssignmentCompletedInput!): AssignmentCompletedFeedback!
+
+  # 
+  # Saves mappings of meitrex users to external students.
+  # Used to deal with ManualMappingInstances.
+  # Returns list of all deleted ManualMappingInstance ids.
+  # Returns null if connection to UserService failed.
+  # 🔒 The user must be an admin in the course to perform this action.
+  saveStudentMappings(courseId: UUID!, studentMappingInputs: [StudentMappingInput!]!): [String]!
+
+  # 
+  # Fetches assignment info from external code assessment provider for the given course
+  syncAssignmentsForCourse(courseTitle: String!): Boolean!
 
   # Creates a new media content and links the given media records to it.
   createMediaContentAndLinkRecords(contentInput: CreateMediaContentInput!, mediaRecordIds: [UUID!]!): MediaContent!
@@ -2398,139 +2410,6 @@ type Query {
   isAccessTokenAvailable(provider: ExternalServiceProviderDto!): Boolean!
 
   # 
-  # Get assignment by assessment ID.
-  # If any of the assessment IDs are not found, the corresponding assignment will be null.
-  # 🔒 The user must be enrolled in the course the assignments belong to to access them. Otherwise null is returned for
-  # an assignment if the user has no access to it.
-  findAssignmentsByAssessmentIds(assessmentIds: [UUID!]!): [Assignment]!
-
-  # 
-  # Get a grading for one assignment for one student
-  # 🔒 The user must be enrolled in the course the assignment belong to to access them. Otherwise null is returned for
-  # an assignment if the user has no access to it.
-  getGradingForAssignmentForStudent(assessmentId: UUID!, studentId: UUID!): Grading!
-
-  # 
-  # Get all gradings for one assignment
-  # 🔒 The user must be an admin in the course the assignment belongs to to access them. Otherwise null is returned for
-  # an assignment if the user has no access to it.
-  getGradingsForAssignment(assessmentId: UUID!): [Grading!]!
-
-  # 
-  # Gets all the available external exercises.
-  # CourseId is the id of the course the user is currently working is.
-  # 🔒 The user must be an admin in the course. Otherwise null is returned.
-  getExternalAssignments(courseId: UUID!): [ExternalAssignment!]!
-
-  # 
-  # Gets all the available external code exercises.
-  # CourseId is the id of the course the user is currently working is.
-  # 🔒 The user must be an admin in the course. Otherwise null is returned.
-  getExternalCodeAssignments(courseId: UUID!): [String!]!
-
-  # 
-  # Gets all manual student mappings, i.e. all students where the backend could not map to a meitrex user.
-  # 🔒 The user must be an admin in the course. Otherwise null is returned.
-  getManualMappingInstances(courseId: UUID!): [ManualMappingInstance]!
-
-  # 
-  #     Returns the media records with the given IDs. Throws an error if a MediaRecord corresponding to a given ID
-  #     cannot be found.
-  # 
-  #     🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
-  mediaRecordsByIds(ids: [UUID!]!): [MediaRecord!]!
-
-  # 
-  #     Like mediaRecordsByIds() returns the media records with the given IDs, but instead of throwing an error if an ID
-  #     cannot be found, it instead returns NULL for that media record.
-  # 
-  #     🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
-  findMediaRecordsByIds(ids: [UUID!]!): [MediaRecord]!
-
-  # 
-  #     Returns all media records of the system.
-  # 
-  #     🔒 The user must be a super-user, otherwise an exception is thrown.
-  mediaRecords: [MediaRecord!]! @deprecated(reason: "In production there should probably be no way to get all media records of the system.")
-
-  # 
-  #     Returns all media records which the current user created.
-  # 
-  #     🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
-  userMediaRecords: [MediaRecord!]!
-
-  # 
-  #     Returns the media records associated the given content IDs as a list of lists where each sublist contains
-  #     the media records associated with the content ID at the same index in the input list
-  # 
-  #     🔒 If the mediaRecord is associated with courses the user must be a member of at least one of the courses.
-  mediaRecordsByContentIds(contentIds: [UUID!]!): [[MediaRecord!]!]!
-
-  # 
-  #     Returns all media records for the given CourseIds
-  # 
-  #     🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
-  mediaRecordsForCourses(courseIds: [UUID!]!): [[MediaRecord!]!]!
-
-  # 
-  # Returns all media records which were created by the users.
-  mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
-
-  # 
-  # Get a list of courses. Can be filtered, sorted and paginated.
-  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
-  courses(
-    filter: CourseFilter
-
-    # 
-    # The fields to sort by.
-    # Throws an error if no field with the given name exists.
-    sortBy: [String!]
-
-    # 
-    # The sort direction for each field. If not specified, defaults to ASC.
-    sortDirection: [SortDirection!]! = [ASC]
-    pagination: Pagination
-  ): CoursePayload!
-
-  # 
-  # Returns the courses with the given ids.
-  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
-  coursesByIds(ids: [UUID!]!): [Course!]!
-
-  # 
-  # Get flashcards by their ids.
-  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
-  flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
-
-  # 
-  # Get flashcard sets by their assessment ids.
-  # Returns a list of flashcard sets in the same order as the provided ids.
-  # Each element is null if the corresponding id is not found.
-  # 🔒 The user must be enrolled in the course the flashcard sets belong to. Otherwise for that element null is returned.
-  findFlashcardSetsByAssessmentIds(assessmentIds: [UUID!]!): [FlashcardSet]!
-
-  # 
-  # Get flashcards of a course that are due to be reviewed.
-  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
-  dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
-
-  # 
-  # Get the reward score of the current user for the specified course.
-  # 🔒 The user must have access to the course with the given id to access their scores, otherwise an error is thrown.
-  userCourseRewardScores(courseId: UUID!): RewardScores!
-
-  # 
-  # Get the reward score of the specified user for the specified course.
-  # 🔒 The user be an admin in the course with the given courseId to perform this action.
-  courseRewardScoresForUser(courseId: UUID!, userId: UUID!): RewardScores!
-
-  # 
-  # Gets the power scores for each user in the course, ordered by power score descending.
-  # 🔒 The user must have access to the course with the given id to access the scoreboard, otherwise an error is thrown.
-  scoreboard(courseId: UUID!): [ScoreboardItem!]!
-
-  # 
   # Retrieves all existing contents for a given course.
   # 🔒 The user must have access to the courses with the given ids to access their contents, otherwise an error is thrown.
   contentsByCourseIds(courseIds: [UUID!]!): [[Content!]!]
@@ -2577,11 +2456,150 @@ type Query {
   ): [Suggestion!]!
 
   # 
+  # Get a list of courses. Can be filtered, sorted and paginated.
+  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
+  courses(
+    filter: CourseFilter
+
+    # 
+    # The fields to sort by.
+    # Throws an error if no field with the given name exists.
+    sortBy: [String!]
+
+    # 
+    # The sort direction for each field. If not specified, defaults to ASC.
+    sortDirection: [SortDirection!]! = [ASC]
+    pagination: Pagination
+  ): CoursePayload!
+
+  # 
+  # Returns the courses with the given ids.
+  # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
+  coursesByIds(ids: [UUID!]!): [Course!]!
+
+  # 
+  # Get the reward score of the current user for the specified course.
+  # 🔒 The user must have access to the course with the given id to access their scores, otherwise an error is thrown.
+  userCourseRewardScores(courseId: UUID!): RewardScores!
+
+  # 
+  # Get the reward score of the specified user for the specified course.
+  # 🔒 The user be an admin in the course with the given courseId to perform this action.
+  courseRewardScoresForUser(courseId: UUID!, userId: UUID!): RewardScores!
+
+  # 
+  # Gets the power scores for each user in the course, ordered by power score descending.
+  # 🔒 The user must have access to the course with the given id to access the scoreboard, otherwise an error is thrown.
+  scoreboard(courseId: UUID!): [ScoreboardItem!]!
+
+  # 
+  # Get flashcards by their ids.
+  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
+  flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
+
+  # 
+  # Get flashcard sets by their assessment ids.
+  # Returns a list of flashcard sets in the same order as the provided ids.
+  # Each element is null if the corresponding id is not found.
+  # 🔒 The user must be enrolled in the course the flashcard sets belong to. Otherwise for that element null is returned.
+  findFlashcardSetsByAssessmentIds(assessmentIds: [UUID!]!): [FlashcardSet]!
+
+  # 
+  # Get flashcards of a course that are due to be reviewed.
+  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
+  dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
+
+  # 
+  #     Returns the media records with the given IDs. Throws an error if a MediaRecord corresponding to a given ID
+  #     cannot be found.
+  # 
+  #     🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
+  mediaRecordsByIds(ids: [UUID!]!): [MediaRecord!]!
+
+  # 
+  #     Like mediaRecordsByIds() returns the media records with the given IDs, but instead of throwing an error if an ID
+  #     cannot be found, it instead returns NULL for that media record.
+  # 
+  #     🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
+  findMediaRecordsByIds(ids: [UUID!]!): [MediaRecord]!
+
+  # 
+  #     Returns all media records of the system.
+  # 
+  #     🔒 The user must be a super-user, otherwise an exception is thrown.
+  mediaRecords: [MediaRecord!]! @deprecated(reason: "In production there should probably be no way to get all media records of the system.")
+
+  # 
+  #     Returns all media records which the current user created.
+  # 
+  #     🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
+  userMediaRecords: [MediaRecord!]!
+
+  # 
+  #     Returns the media records associated the given content IDs as a list of lists where each sublist contains
+  #     the media records associated with the content ID at the same index in the input list
+  # 
+  #     🔒 If the mediaRecord is associated with courses the user must be a member of at least one of the courses.
+  mediaRecordsByContentIds(contentIds: [UUID!]!): [[MediaRecord!]!]!
+
+  # 
+  #     Returns all media records for the given CourseIds
+  # 
+  #     🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
+  mediaRecordsForCourses(courseIds: [UUID!]!): [[MediaRecord!]!]!
+
+  # 
+  # Returns all media records which were created by the users.
+  mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
+
+  # 
   # Get quiz by assessment ID.
   # If any of the assessment IDs are not found, the corresponding quiz will be null.
   # 🔒 The user must be enrolled in the course the quizzes belong to to access them. Otherwise null is returned for
   # an quiz if the user has no access to it.
   findQuizzesByAssessmentIds(assessmentIds: [UUID!]!): [Quiz]!
+
+  # 
+  # Get assignment by assessment ID.
+  # If any of the assessment IDs are not found, the corresponding assignment will be null.
+  # 🔒 The user must be enrolled in the course the assignments belong to to access them. Otherwise null is returned for
+  # an assignment if the user has no access to it.
+  findAssignmentsByAssessmentIds(assessmentIds: [UUID!]!): [Assignment]!
+
+  # 
+  # Get a grading for one assignment for one student
+  # 🔒 The user must be enrolled in the course the assignment belong to to access them. Otherwise null is returned for
+  # an assignment if the user has no access to it.
+  getGradingForAssignmentForStudent(assessmentId: UUID!, studentId: UUID!): Grading!
+
+  # 
+  # Get all gradings for one assignment
+  # 🔒 The user must be an admin in the course the assignment belongs to to access them. Otherwise null is returned for
+  # an assignment if the user has no access to it.
+  getGradingsForAssignment(assessmentId: UUID!): [Grading!]!
+
+  # 
+  # Gets all the available external exercises.
+  # CourseId is the id of the course the user is currently working in.
+  # 🔒 The user must be an admin in the course. Otherwise null is returned.
+  getExternalAssignments(courseId: UUID!): [ExternalAssignment!]!
+
+  # 
+  # Gets all the available external code exercises.
+  # CourseId is the id of the course the user is currently working in.
+  # 🔒 The user must be an admin in the course. Otherwise null is returned.
+  getExternalCodeAssignments(courseId: UUID!): [String!]!
+
+  # 
+  # Get the corresponding external course for the given courseId.
+  # CourseId is the id of the course the user is currently working in.
+  # 🔒 The user must be an admin in the course. Otherwise null is returned.
+  getExternalCourse(courseId: UUID!): ExternalCourse
+
+  # 
+  # Gets all manual student mappings, i.e. all students where the backend could not map to a meitrex user.
+  # 🔒 The user must be an admin in the course. Otherwise null is returned.
+  getManualMappingInstances(courseId: UUID!): [ManualMappingInstance]!
 
   # Performs a semantic search with the specified search term. Returns at most `count` results. If a courseWhitelist is 
   # provided, only results from the specified courses will be returned.
