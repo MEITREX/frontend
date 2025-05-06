@@ -15,7 +15,7 @@ export function FormSection({
   subtitle?: string;
   children?: ReactNode;
 }) {
-   return (
+  return (
     <>
       <FormDivider />
       <div>
@@ -23,10 +23,10 @@ export function FormSection({
         <div className="pl-4 pt-2 !max-w-[200px] w-max break-words text-[10px] text-gray-500">
           {subtitle}
         </div>
-       </div>
-       <div className="flex flex-col gap-3 items-start pr-4">{children}</div>
+      </div>
+      <div className="flex flex-col gap-3 items-start pr-4">{children}</div>
     </>
-   );
+  );
 }
 
 export function FormActions({
