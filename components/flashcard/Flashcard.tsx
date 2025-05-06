@@ -40,7 +40,7 @@ const Flashcard = (props: FlashcardProps) => {
 
   return (
     <>
-      <div className="pt-4 pb-6 -mx-8 px-8 bg-gray-50">
+      <div className="pt-4 pb-6 -mx-8 px-8 bg-gray-50 flex flex-col gap-y-2">
         <Typography variant="overline" color="textSecondary">
           {props.title}
         </Typography>
