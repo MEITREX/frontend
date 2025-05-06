@@ -69,6 +69,14 @@ const LecturerFlashcardHeader = ({
           <div className="flex gap-2">
             <Button
               sx={{ color: "text.secondary" }}
+              startIcon={<Edit />}
+              onClick={openEditFlashcardSetModal}
+            >
+              Edit Set
+            </Button>
+
+            <Button
+              sx={{ color: "text.secondary" }}
               startIcon={
                 isDeleteCommitInFlight ? (
                   <CircularProgress size={16} />
@@ -85,15 +93,7 @@ const LecturerFlashcardHeader = ({
                   deleteFlashcardSet();
               }}
             >
-              Delete Flashcard Set
-            </Button>
-
-            <Button
-              sx={{ color: "text.secondary" }}
-              startIcon={<Edit />}
-              onClick={openEditFlashcardSetModal}
-            >
-              Edit
+              Delete Set
             </Button>
           </div>
         }

@@ -1,0 +1,77 @@
+import { Chip, Divider, Stack } from "@mui/material";
+import { CreateItem, getStandardizedCompetencies } from "./ItemFormSection";
+import { BloomLevel } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
+
+export type ItemFormSectionPreviewProps = {
+  item: CreateItem;
+};
+
+const ItemFormSectionPreview = ({ item }: ItemFormSectionPreviewProps) => {
+  const skillsSelected = item.associatedSkills;
+
+  const {
+    staticSkillCategorySkillMap: SKILL_CATALOGUE,
+    staticSkillCategoryTitleShortNameMap: SKILL_CATEGORY_ABBREVIATION,
+  } = getStandardizedCompetencies();
+
+  return (
+    <Stack
+      id="skills-selected"
+      direction="row"
+      alignItems="center"
+      minWidth="250px"
+      sx={{
+        alignItems: "start",
+        flexWrap: "wrap",
+        gap: 1,
+      }}
+    >
+      {item.associatedBloomLevels.map((level) => (
+        <Chip
+          key={level}
+          sx={{
+            backgroundColor: BLOOM_TAXONOMY_COLORS[level] + "45",
+            border: `solid 1px ${BLOOM_TAXONOMY_COLORS[level] + "48"}`,
+          }}
+          label={level[0].toUpperCase() + level.slice(1).toLowerCase()}
+          title="Bloom Taxonomy"
+        />
+      ))}
+      <Divider
+        flexItem
+        orientation="vertical"
+        sx={{ margin: "0 4px", height: "32px" }}
+      />
+      {skillsSelected.map((skill) => (
+        <Chip
+          key={`${skill.skillCategory}-${skill.skillName}`}
+          sx={{
+            maxWidth: "200px",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+          }}
+          title={skill.skillCategory + ": " + skill.skillName}
+          label={
+            (SKILL_CATEGORY_ABBREVIATION[skill.skillCategory] ||
+              skill.skillCategory) +
+            ": " +
+            skill.skillName
+          }
+        />
+      ))}
+    </Stack>
+  );
+};
+
+export default ItemFormSectionPreview;
+
+const BLOOM_TAXONOMY_COLORS: Record<BloomLevel, string> = {
+  REMEMBER: "#FF0000",
+  UNDERSTAND: "#FF7F00",
+  APPLY: "#FFFF00",
+  ANALYZE: "#7FFF00",
+  EVALUATE: "#00FF00",
+  CREATE: "#00FF7F",
+  "%future added value": "#FFFFFF",
+} as const;
