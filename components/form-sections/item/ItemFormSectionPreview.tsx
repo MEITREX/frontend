@@ -1,6 +1,6 @@
+import { BloomLevel } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
 import { Chip, Divider, Stack } from "@mui/material";
 import { CreateItem, getStandardizedCompetencies } from "./ItemFormSection";
-import { BloomLevel } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
 
 export type ItemFormSectionPreviewProps = {
   item: CreateItem;
