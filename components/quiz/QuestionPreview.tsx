@@ -69,6 +69,9 @@ const QuestionFragment = graphql`
         ... on ClozeBlankElement {
           correctAnswer
         }
+        ... on ClozeTextElement {
+          text
+        }
       }
 
       item {
@@ -159,8 +162,14 @@ const QuestionPreview = ({
                 className="text-xl font-bold self-start mr-4"
               />
             ) : (
-              <span className="text-xl font-bold mr-4">
-                Clozure: {data.clozeElements![1].correctAnswer}
+              <span className="text-xl font-bold flex flex-row mr-4">
+                {data.clozeElements![0].correctAnswer ?? (
+                  <RenderRichText
+                    value={data.clozeElements![0].text}
+                    className="text-xl font-bold self-start"
+                  />
+                )}
+                ...
               </span>
             )}
           </div>
