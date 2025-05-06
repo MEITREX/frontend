@@ -54,20 +54,6 @@ export function ClozeQuestionPreview({ question }: Props) {
           <RenderRichText value={data.hint} />
         </div>
       )}
-
-      {data.showBlanksList && (
-        <div className="max-w-sm flex justify-start gap-2 flex-wrap mt-2">
-          Blanks:
-          {data.allBlanks.map((value, i) => (
-            <span
-              key={i}
-              className="border border-gray-300 rounded-sm px-2 min-h-[1rem]"
-            >
-              {value}
-            </span>
-          ))}
-        </div>
-      )}
     </>
   );
 }
