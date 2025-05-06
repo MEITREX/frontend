@@ -5,7 +5,7 @@ import {
   QuestionPreviewFragment$key,
 } from "@/__generated__/QuestionPreviewFragment.graphql";
 import { Edit } from "@mui/icons-material";
-import { Button } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PreloadedQuery, useFragment } from "react-relay";
@@ -196,6 +196,17 @@ const QuestionPreview = ({
             <ClozeQuestionPreview question={data} />
           ) : null}
         </div>
+
+        <Box
+          key="ruler"
+          sx={{
+            height: "2px",
+            backgroundColor: "divider",
+            margin: "0.5rem 0",
+            width: "100%",
+          }}
+        />
+      </div>
 
       {openEditModal === "MULTIPLE_CHOICE" && (
         <EditMultipleChoiceQuestion
