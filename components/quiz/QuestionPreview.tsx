@@ -7,10 +7,9 @@ import {
 import { Edit } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PreloadedQuery, useFragment } from "react-relay";
 import { graphql } from "relay-runtime";
-import ItemFormSection, { Item } from "../form-sections/item/ItemFormSection";
 import { RenderRichText } from "../RichTextEditor";
 import { AssociationQuestionPreview } from "./AssociationQuestionPreview";
 import { ClozeQuestionPreview } from "./ClozeQuestionPreview";
@@ -19,6 +18,8 @@ import { EditAssociationQuestion } from "./EditAssociationQuestion";
 import { EditClozeQuestion } from "./EditClozeQuestion";
 import { EditMultipleChoiceQuestion } from "./EditMultipleChoiceQuestion";
 import { MultipleChoiceQuestionPreview } from "./MultipleChoiceQuestionPreview";
+import ItemFormSectionPreview from "../form-sections/item/ItemFormSectionPreview";
+import { Item } from "../form-sections/item/ItemFormSection";
 
 const QuestionFragment = graphql`
   fragment QuestionPreviewFragment on Question {
@@ -118,11 +119,40 @@ const QuestionPreview = ({
   const [openEditModal, setOpenEditModal] =
     useState<ImplementedQuestionTypes | null>(null);
 
+  // logic to render ItemFormSectionPreview besides the heading if enough space is available
+  const sectionInHeading = useRef<HTMLDivElement>(null);
+  const sectionBelowHeading = useRef<HTMLDivElement>(null);
+
+  const toggleInlineItemFormSection = useCallback(() => {
+    if (sectionInHeading.current && sectionInHeading.current) {
+      const test = sectionInHeading.current.getBoundingClientRect();
+      // should roughly fit one BloomLevel & one skill
+      if (test.width > 350) {
+        sectionInHeading.current.style.contentVisibility = "visible";
+        sectionBelowHeading.current!.style.contentVisibility = "hidden";
+        sectionBelowHeading.current!.style.marginBottom = "-.75rem";
+      } else {
+        sectionInHeading.current.style.contentVisibility = "hidden";
+        sectionBelowHeading.current!.style.contentVisibility = "visible";
+        sectionBelowHeading.current!.style.marginBottom = "0rem";
+      }
+    }
+  }, []);
+  toggleInlineItemFormSection();
+
+  useEffect(() => {
+    window.addEventListener("resize", toggleInlineItemFormSection);
+
+    return () => {
+      window.removeEventListener("resize", toggleInlineItemFormSection);
+    };
+  }, [toggleInlineItemFormSection]);
+
   return (
     <>
-      <div className="flex flex-col gap-2 mb-8">
+      <div className="flex flex-col gap-3 mb-8">
         <div className="flex justify-between">
-          <div className="flex flex-col gap-2 xl:flex-row max-lg:pr-4">
+          <div className="mt-1">
             {data.text ? (
               <RenderRichText
                 value={data.text}
@@ -133,18 +163,31 @@ const QuestionPreview = ({
                 Clozure: {data.clozeElements![1].correctAnswer}
               </span>
             )}
-            <ItemFormSection operation="view" item={item} />
+          </div>
+
+          <div ref={sectionInHeading} style={{ flex: 1 }}>
+            <ItemFormSectionPreview item={item} />
           </div>
 
           <div className="flex flex-row justify-between gap-x-2 self-start min-w-fit">
-            <Button startIcon={<Edit />} sx={{ minWidth: "fit-content" }}>
+            <Button
+              startIcon={<Edit />}
+              sx={{ minWidth: "fit-content" }}
+              onClick={() =>
+                setOpenEditModal(data.type as ImplementedQuestionTypes)
+              }
+            >
               <span className="max-lg:hidden">Edit</span>
             </Button>
             <DeleteQuestionButton num={data.number} assessmentId={quizId} />
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 items-start ml-2">
+        <div ref={sectionBelowHeading}>
+          <ItemFormSectionPreview item={item} />
+        </div>
+
+        <div className="flex flex-col gap-2 items-start ml-2 mt-2">
           {data.type === "ASSOCIATION" ? (
             <AssociationQuestionPreview question={data} />
           ) : data.type === "MULTIPLE_CHOICE" ? (
@@ -153,7 +196,6 @@ const QuestionPreview = ({
             <ClozeQuestionPreview question={data} />
           ) : null}
         </div>
-      </div>
 
       {openEditModal === "MULTIPLE_CHOICE" && (
         <EditMultipleChoiceQuestion

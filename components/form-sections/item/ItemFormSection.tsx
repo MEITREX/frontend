@@ -4,7 +4,6 @@ import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.g
 import {
   Checkbox,
   Chip,
-  Divider,
   FormControl,
   InputLabel,
   ListItemText,
@@ -19,7 +18,7 @@ import standardizedCompetencies from "../data/standardized-competency-catalog.js
 import ItemFormSectionAutocompletes from "./ItemFormSectionAutocompletes";
 import { processStandardizedCompetencies } from "./standardizedCompentencies";
 
-const getStandardizedCompetencies = cache(() =>
+export const getStandardizedCompetencies = cache(() =>
   processStandardizedCompetencies(standardizedCompetencies)
 );
 
@@ -67,16 +66,6 @@ export const mapRelayItemToItem = (
   })),
   associatedBloomLevels: relayItem.item.associatedBloomLevels as BloomLevel[],
 });
-
-const BLOOM_TAXONOMY_COLORS: Record<BloomLevel, string> = {
-  REMEMBER: "#FF0000",
-  UNDERSTAND: "#FF7F00",
-  APPLY: "#FFFF00",
-  ANALYZE: "#7FFF00",
-  EVALUATE: "#00FF00",
-  CREATE: "#00FF7F",
-  "%future added value": "#FFFFFF",
-} as const;
 
 export const itemFormSectionFragment = graphql`
   fragment ItemFormSectionNewAllSkillsFragment on Course {
@@ -132,54 +121,7 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
 
   const skillsSelected = item.associatedSkills;
 
-  return operation === "view" ? (
-    <Stack
-      id="skills-selected"
-      direction="row"
-      alignItems="center"
-      minWidth="250px"
-      sx={{
-        alignItems: "start",
-        flexWrap: "wrap",
-        gap: 1,
-      }}
-    >
-      {item.associatedBloomLevels.map((level, i) => (
-        <Chip
-          key={level}
-          sx={{
-            backgroundColor: BLOOM_TAXONOMY_COLORS[level] + "45",
-            border: `solid 1px ${BLOOM_TAXONOMY_COLORS[level] + "48"}`,
-          }}
-          label={level[0].toUpperCase() + level.slice(1).toLowerCase()}
-          title="Bloom Taxonomy"
-        />
-      ))}
-      <Divider
-        flexItem
-        orientation="vertical"
-        sx={{ margin: "0 4px", height: "32px" }}
-      />
-      {skillsSelected.map((skill, i) => (
-        <Chip
-          key={`${skill.skillCategory}-${skill.skillName}`}
-          sx={{
-            maxWidth: "200px",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-          }}
-          title={skill.skillCategory + ": " + skill.skillName}
-          label={
-            (SKILL_CATEGORY_ABBREVIATION[skill.skillCategory] ||
-              skill.skillCategory) +
-            ": " +
-            skill.skillName
-          }
-        />
-      ))}
-    </Stack>
-  ) : (
+  return (
     <FormSection title="Item Information">
       <FormControl variant="outlined">
         <InputLabel htmlFor="assessmentBloomLevelsInput">
@@ -197,16 +139,14 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
           label="Bloom Level"
           labelId="assessmentBloomLevelsLabel"
           value={item.associatedBloomLevels}
-          onChange={({ target: { value } }) => {
-            if (isItemEditable(props)) {
-              props.setItem((prev) => ({
-                ...prev,
-                associatedBloomLevels: (typeof value === "string"
-                  ? value.split(",")
-                  : value) as BloomLevel[],
-              }));
-            }
-          }}
+          onChange={({ target: { value } }) =>
+            props.setItem((prev) => ({
+              ...prev,
+              associatedBloomLevels: (typeof value === "string"
+                ? value.split(",")
+                : value) as BloomLevel[],
+            }))
+          }
           renderValue={(selectedLevels) =>
             selectedLevels
               .map(
@@ -218,7 +158,7 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
           required
           multiple
         >
-          {BLOOM_LEVELS.map((level, i) => (
+          {BLOOM_LEVELS.map((level) => (
             <MenuItem value={level} key={level}>
               <Checkbox
                 checked={item.associatedBloomLevels.indexOf(level) !== -1}
@@ -259,18 +199,15 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
                   ": " +
                   skill.skillName
                 }
-                onDelete={
-                  isItemEditable(props)
-                    ? () =>
-                        props.setItem((prev) => {
-                          const newSelectedSkills = [...prev.associatedSkills];
-                          newSelectedSkills.splice(i, 1);
-                          return {
-                            ...prev,
-                            associatedSkills: newSelectedSkills,
-                          };
-                        })
-                    : undefined
+                onDelete={() =>
+                  props.setItem((prev) => {
+                    const newSelectedSkills = [...prev.associatedSkills];
+                    newSelectedSkills.splice(i, 1);
+                    return {
+                      ...prev,
+                      associatedSkills: newSelectedSkills,
+                    };
+                  })
                 }
               />
             ))}
@@ -281,7 +218,7 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
         <div className="my-[-6px]" />
       )}
 
-      {isEditable && props.allSkillsQueryRef && (
+      {props.allSkillsQueryRef && (
         <ItemFormSectionAutocompletes
           skillsSelected={skillsSelected}
           setItem={props.setItem}
