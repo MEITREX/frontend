@@ -127,7 +127,7 @@ const QuestionPreview = ({
   const sectionBelowHeading = useRef<HTMLDivElement>(null);
 
   const toggleInlineItemFormSection = useCallback(() => {
-    if (sectionInHeading.current && sectionInHeading.current) {
+    if (sectionInHeading.current) {
       const test = sectionInHeading.current.getBoundingClientRect();
       // should roughly fit one BloomLevel & one skill
       if (test.width > 350) {
@@ -141,11 +141,10 @@ const QuestionPreview = ({
       }
     }
   }, []);
-  toggleInlineItemFormSection();
 
   useEffect(() => {
+    toggleInlineItemFormSection();
     window.addEventListener("resize", toggleInlineItemFormSection);
-
     return () => {
       window.removeEventListener("resize", toggleInlineItemFormSection);
     };
