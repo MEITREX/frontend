@@ -48,29 +48,29 @@ export function ChapterHeader({
   function stringToColor(string: String) {
     let hash = 0;
     let i;
-  
+
     /* eslint-disable no-bitwise */
     for (i = 0; i < string.length; i += 1) {
       hash = string.charCodeAt(i) + ((hash << 5) - hash);
     }
-  
+
     let color = "#";
-  
+
     for (i = 0; i < 3; i += 1) {
       const value = (hash >> (i * 8)) & 0xff;
       color += `00${value.toString(16)}`.slice(-2);
     }
     /* eslint-enable no-bitwise */
-  
+
     return color;
   }
   function getReadableTextColor(backgroundColor: String) {
     const hex = backgroundColor.replace("#", "");
-  
+
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
-  
+
     const brightness = (r * 299 + g * 587 + b * 114) / 1000;
     return brightness > 125 ? "#000000" : "#FFFFFF";
   }
@@ -85,41 +85,42 @@ export function ChapterHeader({
       }
       skillCategoryMap.get(c.skillCategory)!.push(c.skillName);
     });
-  
-    skillCategoryMap.keys().forEach((key) => {
-      skillCategoryMap.get(key)!.sort();
-    });
 
-  const skillChips = Array.from(skillCategoryMap.entries()).sort().map(
-    ([category, skillNames], index) => (
+  skillCategoryMap.keys().forEach((key) => {
+    skillCategoryMap.get(key)!.sort();
+  });
+
+  const skillChips = Array.from(skillCategoryMap.entries())
+    .sort()
+    .map(([category, skillNames], index) => (
       <LightTooltip
         title={
-        <>
-          <p><strong>{category + ":"}</strong></p>
-          <ul className="list-disc pl-6">
-            {[...new Set(skillNames)].map((skillName, index) => (
-              <li key={index}>{skillName}</li>
-            ))}
-          </ul>
-        </>
+          <>
+            <p>
+              <strong>{category + ":"}</strong>
+            </p>
+            <ul className="list-disc pl-6">
+              {[...new Set(skillNames)].map((skillName, index) => (
+                <li key={index}>{skillName}</li>
+              ))}
+            </ul>
+          </>
         }
-        placement="top"
       >
-      <Chip
-        key={index}
-        sx={{
-          maxWidth: "250px",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          backgroundColor: stringToColor(category),
-          color: getReadableTextColor(stringToColor(category)),
-        }}
-        label={category}
-      />
+        <Chip
+          key={index}
+          sx={{
+            maxWidth: "250px",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            backgroundColor: stringToColor(category),
+            color: getReadableTextColor(stringToColor(category)),
+          }}
+          label={category}
+        />
       </LightTooltip>
-    )
-  );
+    ));
 
   return (
     <div
@@ -136,7 +137,7 @@ export function ChapterHeader({
       </div>
       <div className="flex justify-between items-center flex-grow">
         <div className="pr-8 flex flex-col items-start">
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 whitespace-nowrap items-center">
             <Typography variant="h2" onClick={(e) => e.stopPropagation()}>
               {chapter.title}
             </Typography>
