@@ -85,8 +85,12 @@ export function ChapterHeader({
       }
       skillCategoryMap.get(c.skillCategory)!.push(c.skillName);
     });
+  
+    skillCategoryMap.keys().forEach((key) => {
+      skillCategoryMap.get(key)!.sort();
+    });
 
-  const skillChips = Array.from(skillCategoryMap.entries()).map(
+  const skillChips = Array.from(skillCategoryMap.entries()).sort().map(
     ([category, skillNames], index) => (
       <LightTooltip
         title={
