@@ -5,6 +5,7 @@ import { Chip, CircularProgress, IconButton, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { ReactNode } from "react";
 import { graphql, useFragment } from "react-relay";
+import { LightTooltip } from "./LightTooltip";
 
 export function ChapterHeader({
   _chapter,
@@ -43,6 +44,37 @@ export function ChapterHeader({
     `,
     _chapter
   );
+
+  function stringToColor(string: String) {
+    let hash = 0;
+    let i;
+  
+    /* eslint-disable no-bitwise */
+    for (i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash);
+    }
+  
+    let color = "#";
+  
+    for (i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff;
+      color += `00${value.toString(16)}`.slice(-2);
+    }
+    /* eslint-enable no-bitwise */
+  
+    return color;
+  }
+  function getReadableTextColor(backgroundColor: String) {
+    const hex = backgroundColor.replace("#", "");
+  
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+  
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 125 ? "#000000" : "#FFFFFF";
+  }
+
   const skillCategoryMap = new Map<string, string[]>();
 
   chapter.skills
@@ -56,6 +88,19 @@ export function ChapterHeader({
 
   const skillChips = Array.from(skillCategoryMap.entries()).map(
     ([category, skillNames], index) => (
+      <LightTooltip
+        title={
+        <>
+          <p><strong>{category + ":"}</strong></p>
+          <ul className="list-disc pl-6">
+            {[...new Set(skillNames)].map((skillName, index) => (
+              <li key={index}>{skillName}</li>
+            ))}
+          </ul>
+        </>
+        }
+        placement="top"
+      >
       <Chip
         key={index}
         sx={{
@@ -63,10 +108,12 @@ export function ChapterHeader({
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
           overflow: "hidden",
+          backgroundColor: stringToColor(category),
+          color: getReadableTextColor(stringToColor(category)),
         }}
-        //title={skillNames.join(", ")}
         label={category}
       />
+      </LightTooltip>
     )
   );
 
