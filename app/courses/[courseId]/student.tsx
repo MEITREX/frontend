@@ -170,6 +170,7 @@ export default function StudentCoursePage() {
   };
 
   const [showProgressbars, setShowProgressbars] = useState(true);
+  const [showUpNext, setShowUpNext] = useState(true);
   
   // Colors for Progressbar
   function getColorByIndex(index: number): string {
@@ -466,7 +467,17 @@ export default function StudentCoursePage() {
 
       <section className="mt-8 mb-20">
         <div className="flex justify-between items-center">
-          <Typography variant="h2">Up next</Typography>
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={() => setShowUpNext((prev) => !prev)}
+              className="w-8 h-8 min-w-0 p-0 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-600 transition-colors duration-200"
+            >
+              <div className="flex items-center justify-center">
+                {showUpNext ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </div>
+            </Button>
+            <Typography variant="h2">Up next</Typography>
+          </div>
           <Button
             startIcon={<Repeat />}
             onClick={() => router.push(`/courses/${id}/flashcards/due`)}
@@ -474,15 +485,17 @@ export default function StudentCoursePage() {
             Repeat learned flashcards
           </Button>
         </div>
-        <div className="mt-8 gap-8 flex flex-wrap">
-          {course.suggestions.map((x) => (
-            <Suggestion
-              courseId={course.id}
-              key={x.content.id}
-              _suggestion={x}
-            />
-          ))}
-        </div>
+        {showUpNext && (
+          <div className="mt-8 gap-8 flex flex-wrap">
+            {course.suggestions.map((x) => (
+              <Suggestion
+                courseId={course.id}
+                key={x.content.id}
+                _suggestion={x}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {orderBy(course.chapters.elements, [
