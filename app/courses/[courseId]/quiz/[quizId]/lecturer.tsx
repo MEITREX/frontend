@@ -3,6 +3,7 @@ import { lecturerEditQuizQuery } from "@/__generated__/lecturerEditQuizQuery.gra
 import { ErrorContext, ES2022Error } from "@/components/ErrorContext";
 import { PageError } from "@/components/PageError";
 import { QuizModal } from "@/components/QuizModal";
+import { GenerateQuizModal } from "@/components/GenerateQuizModal";
 import { AddQuestionButton } from "@/components/quiz/AddQuestionButton";
 import QuestionPreview from "@/components/quiz/QuestionPreview";
 import QuizHeader from "@/components/quiz/QuizHeader";
@@ -72,6 +73,7 @@ export default function LecturerQuiz() {
   }, [courseId, loadQuery, queryReference]);
 
   const [isEditSetModalOpen, setEditSetModalOpen] = useState(false);
+  const [isGenerateSetModalOpen, setGenerateSetModalOpen] = useState(false);
 
   const content = contentsByIds[0];
   const quiz = content.quiz;
@@ -89,6 +91,7 @@ export default function LecturerQuiz() {
       <ErrorContext.Provider value={errorContext}>
         <QuizHeader
           openEditQuizModal={() => setEditSetModalOpen(true)}
+          openGenerateQuizModal={() => setGenerateSetModalOpen(true)}
           content={content}
         />
 
@@ -115,6 +118,12 @@ export default function LecturerQuiz() {
           onClose={() => setEditSetModalOpen(false)}
           isOpen={isEditSetModalOpen}
           _existingQuiz={quiz}
+          chapterId={content.metadata.chapterId}
+        />
+
+        <GenerateQuizModal
+          onClose={() => setGenerateSetModalOpen(false)}
+          isOpen={isGenerateSetModalOpen}
           chapterId={content.metadata.chapterId}
         />
       </ErrorContext.Provider>

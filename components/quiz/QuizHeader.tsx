@@ -1,7 +1,7 @@
 import { QuizHeaderDeleteQuizMutation } from "@/__generated__/QuizHeaderDeleteQuizMutation.graphql";
 import { QuizHeaderFragment$key } from "@/__generated__/QuizHeaderFragment.graphql";
 import { updaterSetDelete } from "@/src/relay-helpers/common";
-import { Delete, Edit } from "@mui/icons-material";
+import { Delete, Edit, AutoAwesome } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback } from "react";
@@ -32,9 +32,14 @@ const metadataFragment = graphql`
 interface Props {
   content: QuizHeaderFragment$key;
   openEditQuizModal: () => void;
+  openGenerateQuizModal: () => void;
 }
 
-const QuizHeader = ({ content, openEditQuizModal }: Props) => {
+const QuizHeader = ({
+  content,
+  openEditQuizModal,
+  openGenerateQuizModal,
+}: Props) => {
   const { courseId, quizId } = useParams();
   const router = useRouter();
 
@@ -63,6 +68,13 @@ const QuizHeader = ({ content, openEditQuizModal }: Props) => {
         title={metadata.name}
         action={
           <div className="flex gap-2">
+            <Button
+              sx={{ color: "text.secondary" }}
+              startIcon={<AutoAwesome color="info" />}
+              onClick={openGenerateQuizModal}
+            >
+              AI Generate
+            </Button>
             <Button
               sx={{ color: "text.secondary" }}
               startIcon={
