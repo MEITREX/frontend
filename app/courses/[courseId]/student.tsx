@@ -228,19 +228,20 @@ export default function StudentCoursePage() {
       <FormErrors error={error} onClose={() => setError(null)} />
       <div className="flex gap-4 items-center">
         <Typography variant="h1">{course.title}</Typography>
-        <LightTooltip
-          title={
-            <>
-              <p className="text-slate-600 mb-1">Beschreibung</p>
-              <p>{course.description}</p>
-            </>
-          }
-        >
-          <IconButton>
-            <Info />
-          </IconButton>
-        </LightTooltip>
-
+        {course.description && (
+          <LightTooltip
+            title={
+              <>
+                <p className="text-slate-600 mb-1">Beschreibung</p>
+                <p>{course.description}</p>
+              </>
+            }
+          >
+            <IconButton>
+              <Info />
+            </IconButton>
+          </LightTooltip>
+        )}  
         <div className="flex-1"></div>
 
         <Button
@@ -486,7 +487,7 @@ export default function StudentCoursePage() {
           </Button>
         </div>
         {showUpNext && (
-          <div className="mt-8 gap-8 flex flex-wrap">
+          <div className="mt-4 gap-8 flex flex-wrap pl-8">
             {course.suggestions.map((x) => (
               <Suggestion
                 courseId={course.id}
