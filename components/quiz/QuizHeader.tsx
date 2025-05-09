@@ -65,6 +65,14 @@ const QuizHeader = ({ content, openEditQuizModal }: Props) => {
           <div className="flex gap-2">
             <Button
               sx={{ color: "text.secondary" }}
+              startIcon={<Edit />}
+              onClick={openEditQuizModal}
+            >
+              Edit Quiz
+            </Button>
+
+            <Button
+              sx={{ color: "text.secondary" }}
               startIcon={
                 isDeleteCommitInFlight ? (
                   <CircularProgress size={16} />
@@ -82,14 +90,6 @@ const QuizHeader = ({ content, openEditQuizModal }: Props) => {
               }}
             >
               Delete Quiz
-            </Button>
-
-            <Button
-              sx={{ color: "text.secondary" }}
-              startIcon={<Edit />}
-              onClick={openEditQuizModal}
-            >
-              Edit Quiz
             </Button>
           </div>
         }
