@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { PlayerTypeSurveyQuery } from "@/__generated__/PlayerTypeSurveyQuery.graphql"
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, Box, Typography, LinearProgress
@@ -8,6 +9,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import test from '../assets/test1.jpg'
 import test2 from "../assets/test3.png"
 import logo from "@/assets/logo.svg";
+import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
 const questions = [
   {
@@ -407,5 +409,49 @@ const SurveyPopup = () => {
     </>
   );
 };
+
+function GetPlayerHexadScore({ id }: { id: string }) {
+  const { getPlayerHexadScoreById } =
+  useLazyLoadQuery<PlayerTypeSurveyQuery>(
+    graphql`
+        query PlayerTypeSurveyQuery($id: UUID!) {
+            getPlayerHexadScoreById(userId: $id) {
+                scores {
+                    type
+                    value
+                }
+            }
+        }
+    `,
+    { id }
+  );
+}
+
+function EvaluateHexadType({input} :{input:Array<String>}, { id}:  {id: string}){
+  const [commitMutation, isMutationInFlight] = useMutation(PlayerTypeSurveyCalcScoresMuataion);
+  commitMutation({
+    variables: {
+      userId: id,
+      input: input
+    }
+  })
+}
+
+const PlayerTypeSurveyCalcScoresMuataion = graphql`
+    mutation PlayerTypeSurveyEvaluateHexadTypeMutation(
+        $id: UUID!,
+        $input: PlayerAnswerInput!,
+    ) {
+        evaluatePlayerHexadScore(
+            userId: $id,
+            input: $input
+        ) {
+            scores {
+                type
+                value
+            }
+        }
+    }
+`;
 
 export default SurveyPopup;
