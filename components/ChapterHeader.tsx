@@ -36,7 +36,6 @@ export function ChapterHeader({
         }
         description
         skills {
-          ...SkillFragment
           skillName
           skillCategory
         }
