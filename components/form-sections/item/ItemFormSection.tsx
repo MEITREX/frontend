@@ -110,14 +110,14 @@ export const isItemEditable = (
 ): props is Extract<ItemFormSectionProps, { operation: "create" | "edit" }> =>
   props.operation !== "view";
 
+export const {
+  staticSkillCategorySkillMap: SKILL_CATALOGUE,
+  staticSkillCategoryTitleShortNameMap: SKILL_CATEGORY_ABBREVIATION,
+} = getStandardizedCompetencies();
+
 const ItemFormSection = (props: ItemFormSectionProps) => {
   const { item, operation } = props;
   const isEditable = operation !== "view";
-
-  const {
-    staticSkillCategorySkillMap: SKILL_CATALOGUE,
-    staticSkillCategoryTitleShortNameMap: SKILL_CATEGORY_ABBREVIATION,
-  } = getStandardizedCompetencies();
 
   const skillsSelected = item.associatedSkills;
 
