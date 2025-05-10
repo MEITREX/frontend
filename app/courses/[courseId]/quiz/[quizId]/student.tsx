@@ -17,11 +17,13 @@ import { MultipleChoiceQuestion } from "@/components/quiz/MultipleChoiceQuestion
 import { Check, Close, Search } from "@mui/icons-material";
 import {
   Button,
+  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Stack,
   Typography,
 } from "@mui/material";
 import useResizeObserver from "@react-hook/resize-observer";
@@ -36,6 +38,8 @@ import {
 } from "react-relay";
 import { dispatch } from "use-bus";
 import { SimilarSegments } from "../../media/[mediaId]/SimilarSegments";
+import { SKILL_CATEGORY_ABBREVIATION } from "@/components/form-sections/item/ItemFormSection";
+import { LightTooltip } from "@/components/LightTooltip";
 
 export default function StudentQuiz() {
   // Get course id from url
@@ -92,6 +96,13 @@ export default function StudentQuiz() {
               selectedQuestions {
                 itemId
                 ...studentQuestionFragment
+              }
+            }
+            items {
+              id
+              associatedSkills {
+                skillName
+                skillCategory
               }
             }
           }
@@ -156,6 +167,18 @@ export default function StudentQuiz() {
     }
   };
 
+  const currentItem = contentsByIds[0].items?.find((item) => item.id === currentQuestion.itemId);
+
+  const currentSkills = new Map<string, string[]>();
+  currentItem?.associatedSkills.forEach((skill) => {
+    if(currentSkills.has(skill.skillCategory)) {
+      currentSkills.get(skill.skillCategory)!.push(skill.skillName);
+    }
+    else {
+      currentSkills.set(skill.skillCategory, [skill.skillName]);
+    }
+  });
+
   return (
     <main>
       <SimilarSegments />
@@ -172,6 +195,46 @@ export default function StudentQuiz() {
         </div>
         <div className="border-b border-b-gray-300 grow"></div>
       </div>
+
+      <Stack
+        id="skills-selected"
+        direction="row"
+        sx={{
+          marginBottom: "1.5rem",
+          flexWrap: "wrap",
+          gap: 1,
+          justifyContent: "center",
+        }}
+      >
+        {Array.from(currentSkills.entries()).map(([category, skills]) =>
+          skills.map((skill, i) => (
+            <LightTooltip
+              title={
+              <>
+                <p><strong>{category + ":"}</strong></p>
+                <p><strong>{skill}</strong></p>
+              </>
+              }
+              placement="top"
+            >
+              <Chip
+                key={`${skill}-${i}`}
+                size="small"
+                sx={{
+                  maxWidth: "250px",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                }}
+                title={`${category}: ${skill}`}
+                label={(SKILL_CATEGORY_ABBREVIATION[category] ||category) +
+                  ": " + skill
+                }
+              />
+            </LightTooltip>
+          ))
+        )}
+      </Stack>
 
       <Question
         _question={currentQuestion}
