@@ -3,6 +3,9 @@ import { sample } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 import { graphql, useFragment } from "react-relay";
 import { StudentFlashcardSide } from "./StudentFlashcardSide";
+import { Chip, Stack } from "@mui/material";
+import {SKILL_CATEGORY_ABBREVIATION} from "@/components/form-sections/item/ItemFormSection";
+import { LightTooltip } from "./LightTooltip";
 
 export function StudentFlashcard({
   _flashcard,
@@ -24,6 +27,12 @@ export function StudentFlashcard({
           label
           text
         }
+        item {
+          associatedSkills {
+            skillName
+            skillCategory
+      }
+    }
       }
     `,
     _flashcard
@@ -52,13 +61,66 @@ export function StudentFlashcard({
     onChange(numCorrect / answers.length);
   }, [answers, question, knew, onChange]);
 
+  const currentItem = flashcard.item;
+  const currentSkills = new Map<string, string[]>();
+  currentItem.associatedSkills.forEach((skill) => {
+    if(currentSkills.has(skill.skillCategory)) {
+      currentSkills.get(skill.skillCategory)!.push(skill.skillName);
+    }
+    else {
+      currentSkills.set(skill.skillCategory, [skill.skillName]);
+    }
+  });
+
   return (
     <div>
-      <div className="w-full border-b border-b-gray-300 mt-6 flex justify-center">
-        <div className="bg-white -mb-[9px] px-3 text-xs text-gray-600">
+      <div className="w-full my-6 flex items-center">
+        <div className="border-b border-b-gray-300 grow"></div>
+        <div className="px-3 text-xs text-gray-600">
           {label}
         </div>
+        <div className="border-b border-b-gray-300 grow"></div>
       </div>
+
+      <Stack
+        id="skills-selected"
+        direction="row"
+        sx={{
+          marginBottom: "1.5rem",
+          flexWrap: "wrap",
+          gap: 1,
+          justifyContent: "center",
+        }}
+      >
+        {Array.from(currentSkills.entries()).map(([category, skills]) =>
+          skills.map((skill, i) => (
+            <LightTooltip
+              title={
+              <>
+                <p><strong>{category + ":"}</strong></p>
+                <p><strong>{skill}</strong></p>
+              </>
+              }
+              placement="top"
+            >
+              <Chip
+                key={`${skill}-${i}`}
+                size="small"
+                sx={{
+                  maxWidth: "250px",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                }}
+                title={`${category}: ${skill}`}
+                label={(SKILL_CATEGORY_ABBREVIATION[category] ||category) +
+                  ": " + skill
+                }
+              />
+            </LightTooltip>
+          ))
+        )}
+      </Stack>
 
       <div className="mt-6 text-center text-gray-600">
         {question?.text ?? "This flashcard does not have any questions."}
