@@ -17,6 +17,8 @@ import { Fragment, useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import SurveyPopup from "@/components/PlayerTypeSurvey"
+import { PlayerTypeSurveyUserQuery } from "@/__generated__/PlayerTypeSurveyUserQuery.graphql";
+import { PlayerTypeSurveyQuery } from "@/__generated__/PlayerTypeSurveyQuery.graphql";
 
 export default function StudentPage() {
   const { currentUserInfo } = useLazyLoadQuery<studentStudentQuery>(
@@ -125,10 +127,48 @@ export default function StudentPage() {
 
     .value();
 
+  var showSurvey = false
+
+  function GetPlayerHexadScore() {
+
+    const userID = currentUserInfo.id
+    console.log(userID)
+
+    try{
+      const { getPlayerHexadScoreById } =
+      useLazyLoadQuery<PlayerTypeSurveyQuery>(
+        graphql`
+            query PlayerTypeSurveyQuery($id: UUID!) {
+                getPlayerHexadScoreById(userId: $id) {
+                    scores {
+                        type
+                        value
+                    }
+                }
+            }
+        `,
+        { id: userID }
+      );
+      console.log(getPlayerHexadScoreById.scores)
+
+      showSurvey = false
+      return <div></div>
+    } catch(err) {
+      console.log('err')
+      showSurvey = true
+      return <SurveyPopup id={userID} />
+    }
+
+    
+    
+
+    
+  }
+
   return (
     <main>
       <div className="flex flex-wrap justify-between mb-10">
-        {true && <SurveyPopup />} {/*Hier muss dann der bool aus der abfrage statt dem false*/}
+        <GetPlayerHexadScore></GetPlayerHexadScore>
         <Typography variant="h1" gutterBottom>
           Dashboard
         </Typography>

@@ -9,7 +9,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import test from '../assets/test1.jpg'
 import test2 from "../assets/test3.png"
 import logo from "@/assets/logo.svg";
-import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
+import { commitMutation, graphql, useFragment, useLazyLoadQuery, useMutation } from "react-relay";
+import { PlayerTypeSurveyUserQuery } from '@/__generated__/PlayerTypeSurveyUserQuery.graphql';
+import { PlayerTypeSurveyEvaluateHexadTypeMutation, QuestionInput } from '@/__generated__/PlayerTypeSurveyEvaluateHexadTypeMutation.graphql';
 
 const questions = [
   {
@@ -219,19 +221,90 @@ const questions = [
   // Weitere Fragen ...
 ];
 
-const SurveyPopup = () => {
+const SurveyPopup = ({ id }: { id: string }) => {
   const [open, setOpen] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<{ [key: number]: number | null }>({});
+  const [answers, setAnswers] = useState<{ [key: number]: any | null }>({});
   const [selected, setSelected] = useState<any>(null);
   const [confirmSkipOpen, setConfirmSkipOpen] = useState(false);
+  var showSurvey = false
 
   useEffect(() => {
     const savedAnswer = answers[currentQuestionIndex];
     setSelected(savedAnswer ?? null);
+
   }, [currentQuestionIndex, answers]);
 
+  useEffect(() => {
+    
+    
+  }, [])
 
+  const [PlayerTypeSurveyCalcScoresMutation] = useMutation<PlayerTypeSurveyEvaluateHexadTypeMutation>(graphql`
+      mutation PlayerTypeSurveyEvaluateHexadTypeMutation(
+          $id: UUID!,
+          $input: PlayerAnswerInput!,
+      ) {
+          evaluatePlayerHexadScore(
+              userId: $id,
+              input: $input
+          ) {
+              scores {
+                  type
+                  value
+              }
+          }
+      }
+  `);
+
+  const handleFinishSurvey = () => {
+    const input = Object.entries(answers).map(([index, option]) => ({
+      text: questions[Number(index)].question,
+      selectedAnswer: {
+        text: option?.answer,
+        playerTypes: option?.types
+      },
+      possibleAnswers: [
+        {
+          text: "",
+          playerTypes: option?.non_types
+        }
+      ]
+    }));
+
+    if (!id || typeof id !== 'string') {
+      console.error("Ungültige oder fehlende userId:", id);
+      return;
+    }
+
+    console.log(input, 'TEST')
+
+    if(!id) return
+  
+    PlayerTypeSurveyCalcScoresMutation({
+      variables:{
+        id: id,
+        input: {questions: input}
+      },
+      onCompleted(){
+        console.log('Pushed')
+      },
+      onError(error){
+        console.log('Err', error)
+      }
+
+    })
+    
+  };
+  
+  
+  
+  
+  
+  
+   
+
+  
   const handleSelect = (answer: any, types: any, question: any, non_types: any ,i: number) => {
     setSelected({'question': question, 'answer': answer, 'types': types, 'non_types': non_types,  'index': i});
   };
@@ -247,7 +320,9 @@ const SurveyPopup = () => {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
       setOpen(false);
-      console.log("Antworten:", updatedAnswers);
+      console.log("Antworten:", updatedAnswers, id);
+
+      handleFinishSurvey()
     }
   };
 
@@ -282,9 +357,12 @@ const SurveyPopup = () => {
   const answeredCount = Object.keys(answers).length;
   const progress = (answeredCount / totalQuestions) * 100;
 
+  
+  
+
   return (
     <>
-   
+
     <Dialog open={open} maxWidth="md" fullWidth>
       <Box sx={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'white' }}>
         <LinearProgress
@@ -410,48 +488,6 @@ const SurveyPopup = () => {
   );
 };
 
-function GetPlayerHexadScore({ id }: { id: string }) {
-  const { getPlayerHexadScoreById } =
-  useLazyLoadQuery<PlayerTypeSurveyQuery>(
-    graphql`
-        query PlayerTypeSurveyQuery($id: UUID!) {
-            getPlayerHexadScoreById(userId: $id) {
-                scores {
-                    type
-                    value
-                }
-            }
-        }
-    `,
-    { id }
-  );
-}
 
-function EvaluateHexadType({input} :{input:Array<String>}, { id}:  {id: string}){
-  const [commitMutation, isMutationInFlight] = useMutation(PlayerTypeSurveyCalcScoresMuataion);
-  commitMutation({
-    variables: {
-      userId: id,
-      input: input
-    }
-  })
-}
-
-const PlayerTypeSurveyCalcScoresMuataion = graphql`
-    mutation PlayerTypeSurveyEvaluateHexadTypeMutation(
-        $id: UUID!,
-        $input: PlayerAnswerInput!,
-    ) {
-        evaluatePlayerHexadScore(
-            userId: $id,
-            input: $input
-        ) {
-            scores {
-                type
-                value
-            }
-        }
-    }
-`;
 
 export default SurveyPopup;
