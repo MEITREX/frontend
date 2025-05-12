@@ -422,7 +422,7 @@ export default function StudentCoursePage() {
                         competencyName={`${uniqueSkill.skillCategory} - ${Math.floor(categoryProgressValue)}%`}
                         heightValue={15}
                         progressValue={categoryProgressValue}
-                        barSections={barSections}
+                        color={stringToColor(uniqueSkill.skillCategory)}
                       />
                     </div>
                   </div>
@@ -442,12 +442,7 @@ export default function StudentCoursePage() {
                               competencyName={skill.skillName + " - " + Math.floor(skillProgressPercent) + "%"}
                               heightValue={10}
                               progressValue={skillProgressPercent}
-                              barSections={[
-                                {
-                                  color: stringToColor(skill.skillName),
-                                  widthPercent: skillProgressPercent
-                                }
-                              ]}
+                              color={stringToColor(uniqueSkill.skillCategory)}
                             />
                           </div>
                         );
