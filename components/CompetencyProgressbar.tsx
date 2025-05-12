@@ -1,59 +1,36 @@
-import React from "react";
+import * as React from 'react';
+import Box from '@mui/material/Box';
+import LinearProgress from '@mui/material/LinearProgress';
+import { progress } from 'framer-motion';
 
-interface ProgressSection {
-  color: string;
-  widthPercent: number;
-}
+type CompetencyProgressbarProps = {
+    competencyName: string;
+    progressValue: number;
+    heightValue: number;
+    color: string;
+  };
 
-interface CompetencyProgressbarProps {
-  competencyName: string;
-  heightValue?: number;
-  progressValue: number; // between 0 and 100
-  barSections: ProgressSection[]; // bar sections for each skill
-}
+  export default function CompetencyProgressbar(props: CompetencyProgressbarProps) {
 
-const CompetencyProgressbar: React.FC<CompetencyProgressbarProps> = ({
-  competencyName,
-  heightValue = 10,
-  progressValue,
-  barSections,
-}) => {
-  const clampedProgress = Math.min(Math.max(progressValue, 0), 100); 
+  const { competencyName } = props;
+  const { progressValue } = props;
+  const { heightValue } = props;
+  const { color } = props;
 
   return (
-    <div className="mb-1">
-      <div className="text-sm font-medium text-slate-700 mb-1">
-        {competencyName}
-      </div>
-      <div
-        className="w-full rounded-full overflow-hidden flex"
-        style={{ height: `${heightValue}px` }}
-      >
-        {/* dynamic bar sections */}
-        {barSections.map((section, idx) => (
-          <div
-            key={idx}
-            style={{
-              backgroundColor: section.color,
-              width: `${section.widthPercent}%`,
-              transition: "width 0.3s ease-in-out",
-            }}
-          />
-        ))}
-
-        {/* if not a 100%, fill up with grey */}
-        {clampedProgress < 100 && (
-          <div
-            style={{
-              backgroundColor: "#E5E7EB",
-              width: `${100 - clampedProgress}%`,
-              transition: "width 0.3s ease-in-out",
-            }}
-          />
-        )}
-      </div>
-    </div>
+    <Box sx={{ width: '100%' }}>
+      <label>{ competencyName}</label>
+      <LinearProgress 
+        variant="determinate"
+        value={progressValue}
+        sx={{
+          height: heightValue,
+          borderRadius: '20px',
+          '& .MuiLinearProgress-bar': {
+            backgroundColor: color, // Setzt die Farbe der gefüllten Progressbar
+          },
+          backgroundColor: '#e0e0e0', // Setzt die Hintergrundfarbe der Progressbar
+        }}/>
+    </Box>
   );
-};
-
-export default CompetencyProgressbar;
+}
