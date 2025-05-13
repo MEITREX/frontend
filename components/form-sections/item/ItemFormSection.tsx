@@ -98,26 +98,15 @@ export type ItemFormSectionProps =
         | PreloadedQuery<lecturerAllSkillsQuery>
         | undefined
         | null;
-    }
-  | {
-      operation: "view";
-      item: CreateItem;
     };
 
-/** type guard for checking if setItem is available at compile time */
-export const isItemEditable = (
-  props: ItemFormSectionProps
-): props is Extract<ItemFormSectionProps, { operation: "create" | "edit" }> =>
-  props.operation !== "view";
-
-export const {
-  staticSkillCategorySkillMap: SKILL_CATALOGUE,
-  staticSkillCategoryTitleShortNameMap: SKILL_CATEGORY_ABBREVIATION,
-} = getStandardizedCompetencies();
-
 const ItemFormSection = (props: ItemFormSectionProps) => {
-  const { item, operation } = props;
-  const isEditable = operation !== "view";
+  const { item } = props;
+
+  const {
+    staticSkillCategorySkillMap: SKILL_CATALOGUE,
+    staticSkillCategoryTitleShortNameMap: SKILL_CATEGORY_ABBREVIATION,
+  } = getStandardizedCompetencies();
 
   const skillsSelected = item.associatedSkills;
 
