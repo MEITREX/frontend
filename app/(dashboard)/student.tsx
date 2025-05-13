@@ -139,17 +139,17 @@ export default function StudentPage() {
     }
   `;
 
-  function SurveyLoader({ queryRef, userId }) {
+  function SurveyLoader({queryRef, userId} : { queryRef: any, userId: any }) {
     console.log('ENETRT')
     
-      const data = usePreloadedQuery(playerTypeSurveyQuery, queryRef);
+    const data = usePreloadedQuery(playerTypeSurveyQuery, queryRef);
 
-      console.log('DATA', data)
-      console.log('test')
-      if(!data){
-        return <SurveyPopup id={userId} />;
-      }
-      return <div></div>
+    console.log('DATA', data)
+    console.log('test')
+    if(!data){
+      return <SurveyPopup id={userId} />;
+    }
+    return <div></div>
    
      
       
