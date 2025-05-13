@@ -27,8 +27,8 @@ const BLOOM_LEVELS = [
   "UNDERSTAND",
   "APPLY",
   "ANALYZE",
-  "EVALUATE",
   "CREATE",
+  "EVALUATE",
 ] as const;
 
 export type CreateItem = {
