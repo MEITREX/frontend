@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { PlayerTypeSurveyQuery } from "@/__generated__/PlayerTypeSurveyQuery.graphql"
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, Box, Typography, LinearProgress
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-
 import test from '../assets/test1.jpg'
 import test2 from "../assets/test3.png"
 import logo from "@/assets/logo.svg";
 import { commitMutation, graphql, useFragment, useLazyLoadQuery, useMutation } from "react-relay";
-import { PlayerTypeSurveyUserQuery } from '@/__generated__/PlayerTypeSurveyUserQuery.graphql';
-import { PlayerTypeSurveyEvaluateHexadTypeMutation, QuestionInput } from '@/__generated__/PlayerTypeSurveyEvaluateHexadTypeMutation.graphql';
+import { AnswerInput, PlayerTypeSurveyEvaluateHexadTypeMutation, QuestionInput } from '@/__generated__/PlayerTypeSurveyEvaluateHexadTypeMutation.graphql';
 
-enum Types{
+enum Types {
   ACHIEVER = "ACHIEVER",
   PLAYER = "PLAYER",
   SOCIALISER = "SOCIALISER",
@@ -132,12 +129,12 @@ const questions = [
         label: "user freedom for creative expression.",
         image: test,
         types: [Types.FREE_SPIRIT, Types.DISRUPTOR, Types.PLAYER],
-        non_types: [Types.ACHIEVER,  Types.PHILANTHROPIST, Types.SOCIALISER]
+        non_types: [Types.ACHIEVER, Types.PHILANTHROPIST, Types.SOCIALISER]
       },
       {
         label: "clear progress tracking and reward systems.",
         image: test2,
-        types: [Types.ACHIEVER,  Types.PHILANTHROPIST, Types.SOCIALISER],
+        types: [Types.ACHIEVER, Types.PHILANTHROPIST, Types.SOCIALISER],
         non_types: [Types.FREE_SPIRIT, Types.DISRUPTOR, Types.PLAYER]
       }
     ]
@@ -149,12 +146,12 @@ const questions = [
         label: "open-ended creativity and flexibility.",
         image: test,
         types: [Types.FREE_SPIRIT, Types.DISRUPTOR, Types.PLAYER],
-        non_types: [Types.ACHIEVER, Types.SOCIALISER,  Types.PHILANTHROPIST]
+        non_types: [Types.ACHIEVER, Types.SOCIALISER, Types.PHILANTHROPIST]
       },
       {
         label: "achievement-driven goals or social opportunities.",
         image: test2,
-        types: [Types.ACHIEVER, Types.SOCIALISER,  Types.PHILANTHROPIST],
+        types: [Types.ACHIEVER, Types.SOCIALISER, Types.PHILANTHROPIST],
         non_types: [Types.FREE_SPIRIT, Types.DISRUPTOR, Types.PLAYER]
       }
     ]
@@ -245,8 +242,8 @@ const SurveyPopup = ({ id }: { id: string }) => {
   }, [currentQuestionIndex, answers]);
 
   useEffect(() => {
-    
-    
+
+
   }, [])
 
   const [PlayerTypeSurveyCalcScoresMutation] = useMutation<PlayerTypeSurveyEvaluateHexadTypeMutation>(graphql`
@@ -266,8 +263,14 @@ const SurveyPopup = ({ id }: { id: string }) => {
       }
   `);
 
-  const handleFinishSurvey = () => {
-    const input = Object.entries(answers).map(([index, option]) => ({
+  type Answer = {
+    answer: string;
+    types: string[];
+    index: number;
+  };
+
+  const handleFinishSurvey = (updatedAnswers: Array<Answer>) => {
+    const input = Object.entries(updatedAnswers).map(([index, option]) => ({
       text: questions[Number(index)].question,
       selectedAnswer: {
         text: option?.answer,
@@ -286,42 +289,42 @@ const SurveyPopup = ({ id }: { id: string }) => {
 
     console.log(input, 'TEST')
 
-    if(!id) return
-  
+    if (!id) return
+
     PlayerTypeSurveyCalcScoresMutation({
-      variables:{
+      variables: {
         id: id,
-        input: {questions: input}
+        input: { questions: input }
       },
-      onCompleted(){
+      onCompleted() {
         console.log('Pushed')
       },
-      onError(error){
+      onError(error) {
         console.log('Err', error)
         console.log('ID', id, 'INPUT', input)
       }
 
     })
-    
-  };
-  
-  
-  
-  
-  
-  
-   
 
-  
-  const handleSelect = (answer: any, types: any, question: any, non_types: any ,i: number) => {
-    setSelected({'question': question, 'answer': answer, 'types': types, 'non_types': non_types,  'index': i});
+  };
+
+
+
+
+
+
+
+
+
+  const handleSelect = (answer: any, types: any, question: any, non_types: any, i: number) => {
+    setSelected({ 'question': question, 'answer': answer, 'types': types, 'non_types': non_types, 'index': i });
   };
 
   const handleNext = () => {
     const updatedAnswers = {
-        ...answers,
-        [currentQuestionIndex]: selected
-      };
+      ...answers,
+      [currentQuestionIndex]: selected
+    };
     setAnswers(updatedAnswers)
     setSelected(null);
     if (currentQuestionIndex < questions.length - 1) {
@@ -330,15 +333,15 @@ const SurveyPopup = ({ id }: { id: string }) => {
       setOpen(false);
       console.log("Antworten:", updatedAnswers, id);
 
-      handleFinishSurvey()
+      handleFinishSurvey(updatedAnswers)
     }
   };
 
   const handleSkip = async () => {
     const updatedAnswers = {
-        ...answers,
-        [currentQuestionIndex]: null
-      };
+      ...answers,
+      [currentQuestionIndex]: null
+    };
     setAnswers(updatedAnswers)
     setSelected(null);
     if (currentQuestionIndex < questions.length - 1) {
@@ -351,10 +354,10 @@ const SurveyPopup = ({ id }: { id: string }) => {
 
   const handleBack = () => {
     const prevIndex = currentQuestionIndex - 1;
-  
+
     // Wiederherstellen der vorherigen Antwort (falls vorhanden)
     const previousAnswerIndex = answers[prevIndex];
-  
+
     setCurrentQuestionIndex(prevIndex);
     setSelected(previousAnswerIndex ?? null);
   };
@@ -365,124 +368,124 @@ const SurveyPopup = ({ id }: { id: string }) => {
   const answeredCount = Object.keys(answers).length;
   const progress = (answeredCount / totalQuestions) * 100;
 
-  
-  
+
+
 
   return (
     <>
 
-    <Dialog open={open} maxWidth="md" fullWidth>
-      <Box sx={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'white' }}>
-        <LinearProgress
-          variant="determinate"
-          value={progress}
-          sx={{
-            height: 6,
-            borderRadius: 2,
-            backgroundColor: '#eee',
-            '& .MuiLinearProgress-bar': {
+      <Dialog open={open} maxWidth="md" fullWidth>
+        <Box sx={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'white' }}>
+          <LinearProgress
+            variant="determinate"
+            value={progress}
+            sx={{
+              height: 6,
+              borderRadius: 2,
+              backgroundColor: '#eee',
+              '& .MuiLinearProgress-bar': {
                 backgroundColor: '#2196f3',
-            }
-          }}
-        />
-      </Box>
-      <DialogTitle>
-        Question {currentQuestionIndex + 1}
-        <Button
-          onClick={() => setConfirmSkipOpen(true)}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            minWidth: 'auto',
-            padding: 1,
-            color: 'grey.600'
-          }}
-        >
-          <CloseIcon />
-        </Button>
-      </DialogTitle>
-      <DialogContent>
-        <Typography variant="h6" fontWeight="bold" mb={2}>
-          {current.question}
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-          {current.options.map((opt, i) => (
-            <Box
-              key={i}
-              onClick={() => handleSelect(opt.label, opt.types, current.question,  opt.non_types, i)}
-              sx={{
-                position: 'relative',
-                width: '50%',
-                height: 200,
-                borderRadius: 2,
-                overflow: 'hidden',
-                cursor: 'pointer',
-                border: selected?.index === i ? '4px solid #2196f3' : '4px solid transparent',
-                transition: 'border 0.2s ease-in-out',
-                backgroundImage: `url(${opt.image.src})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                display: 'flex',
-                alignItems: 'flex-end',
-                justifyContent: 'center'
-              }}
-            >
-              <Typography
-                variant="h6"
+              }
+            }}
+          />
+        </Box>
+        <DialogTitle>
+          Question {currentQuestionIndex + 1}
+          <Button
+            onClick={() => setConfirmSkipOpen(true)}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              minWidth: 'auto',
+              padding: 1,
+              color: 'grey.600'
+            }}
+          >
+            <CloseIcon />
+          </Button>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="h6" fontWeight="bold" mb={2}>
+            {current.question}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+            {current.options.map((opt, i) => (
+              <Box
+                key={i}
+                onClick={() => handleSelect(opt.label, opt.types, current.question, opt.non_types, i)}
                 sx={{
-                  color: 'white',
-                  fontWeight: 'bold',
-                  textShadow: '0 0 6px rgba(0,0,0,0.7)',
-                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                  width: '100%',
-                  textAlign: 'center',
-                  py: 1
+                  position: 'relative',
+                  width: '50%',
+                  height: 200,
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  border: selected?.index === i ? '4px solid #2196f3' : '4px solid transparent',
+                  transition: 'border 0.2s ease-in-out',
+                  backgroundImage: `url(${opt.image.src})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  justifyContent: 'center'
                 }}
               >
-                {opt.label}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
-      </DialogContent>
-      <DialogActions sx={{ justifyContent: 'space-between', px: 3 }}>
-        <Button variant="contained" color="info" onClick={handleSkip}>
-          Skip
-        </Button>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: 'white',
+                    fontWeight: 'bold',
+                    textShadow: '0 0 6px rgba(0,0,0,0.7)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                    width: '100%',
+                    textAlign: 'center',
+                    py: 1
+                  }}
+                >
+                  {opt.label}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'space-between', px: 3 }}>
+          <Button variant="contained" color="info" onClick={handleSkip}>
+            Skip
+          </Button>
+          <Box sx={{ display: 'flex', gap: 2 }}>
             {currentQuestionIndex > 0 && (
-            <Button variant="outlined" onClick={handleBack}>
+              <Button variant="outlined" onClick={handleBack}>
                 Zurück
-            </Button>
+              </Button>
             )}
             <Button
-            variant="contained"
-            onClick={handleNext}
-            disabled={selected === null}
+              variant="contained"
+              onClick={handleNext}
+              disabled={selected === null}
             >
-            {currentQuestionIndex === questions.length - 1 ? 'Finish' : 'Next'}
+              {currentQuestionIndex === questions.length - 1 ? 'Finish' : 'Next'}
             </Button>
-        </Box>
-      </DialogActions>
-    </Dialog>
-    <Dialog open={confirmSkipOpen} onClose={() => setConfirmSkipOpen(false)}>
-      <DialogTitle>Are you sure you want to quit the survey?</DialogTitle>
-      <DialogContent>
+          </Box>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={confirmSkipOpen} onClose={() => setConfirmSkipOpen(false)}>
+        <DialogTitle>Are you sure you want to quit the survey?</DialogTitle>
+        <DialogContent>
           <Typography>
             All your answers will be lost and there will be no chance to re-do the survey
           </Typography>
-      </DialogContent>
-      <DialogActions>
+        </DialogContent>
+        <DialogActions>
           <Button onClick={() => {
-              setConfirmSkipOpen(false);
-              setOpen(false); // schließt die Umfrage
-            }}>
+            setConfirmSkipOpen(false);
+            setOpen(false); // schließt die Umfrage
+          }}>
             Quit and skip survey
           </Button>
           <Button
             onClick={() => {
-             
+
               setConfirmSkipOpen(false)
             }}
             color="info"
@@ -490,8 +493,8 @@ const SurveyPopup = ({ id }: { id: string }) => {
           >
             Back to survey
           </Button>
-      </DialogActions>
-    </Dialog>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
