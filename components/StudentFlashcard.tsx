@@ -3,9 +3,10 @@ import { sample } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 import { graphql, useFragment } from "react-relay";
 import { StudentFlashcardSide } from "./StudentFlashcardSide";
-import { Chip, Stack } from "@mui/material";
-import {SKILL_CATEGORY_ABBREVIATION} from "@/components/form-sections/item/ItemFormSection";
-import { LightTooltip } from "./LightTooltip";
+import ItemFormSectionPreview from "@/components/form-sections/item/ItemFormSectionPreview";
+import { BloomLevel } from "@/__generated__/QuestionPreviewFragment.graphql";
+import { Item } from "./form-sections/item/ItemFormSection";
+import { Stack } from "@mui/material";
 
 export function StudentFlashcard({
   _flashcard,
@@ -28,11 +29,15 @@ export function StudentFlashcard({
           text
         }
         item {
+          id
           associatedSkills {
+            id
             skillName
             skillCategory
-      }
-    }
+            isCustomSkill
+          }
+          associatedBloomLevels
+        }
       }
     `,
     _flashcard
@@ -61,16 +66,16 @@ export function StudentFlashcard({
     onChange(numCorrect / answers.length);
   }, [answers, question, knew, onChange]);
 
-  const currentItem = flashcard.item;
-  const currentSkills = new Map<string, string[]>();
-  currentItem.associatedSkills.forEach((skill) => {
-    if(currentSkills.has(skill.skillCategory)) {
-      currentSkills.get(skill.skillCategory)!.push(skill.skillName);
-    }
-    else {
-      currentSkills.set(skill.skillCategory, [skill.skillName]);
-    }
-  });
+  const currentItem = useMemo<Item>(
+      () => ({
+        id: flashcard.itemId,
+        associatedSkills: flashcard.item!.associatedSkills.map((skill) => ({
+          ...skill,
+        })),
+        associatedBloomLevels: flashcard.item!.associatedBloomLevels as BloomLevel[],
+      }),
+      [flashcard.item, flashcard.itemId]
+  );
 
   return (
     <div>
@@ -92,34 +97,7 @@ export function StudentFlashcard({
           justifyContent: "center",
         }}
       >
-        {Array.from(currentSkills.entries()).map(([category, skills]) =>
-          skills.map((skill, i) => (
-            <LightTooltip
-              title={
-              <>
-                <p><strong>{category + ":"}</strong></p>
-                <p><strong>{skill}</strong></p>
-              </>
-              }
-              placement="top"
-            >
-              <Chip
-                key={`${skill}-${i}`}
-                size="small"
-                sx={{
-                  maxWidth: "250px",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                }}
-                title={`${category}: ${skill}`}
-                label={(SKILL_CATEGORY_ABBREVIATION[category] ||category) +
-                  ": " + skill
-                }
-              />
-            </LightTooltip>
-          ))
-        )}
+        <ItemFormSectionPreview item={currentItem} />
       </Stack>
 
       <div className="mt-6 text-center text-gray-600">

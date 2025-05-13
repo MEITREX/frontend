@@ -17,7 +17,6 @@ import { MultipleChoiceQuestion } from "@/components/quiz/MultipleChoiceQuestion
 import { Check, Close, Search } from "@mui/icons-material";
 import {
   Button,
-  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -28,7 +27,7 @@ import {
 } from "@mui/material";
 import useResizeObserver from "@react-hook/resize-observer";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Confetti from "react-confetti";
 import {
   graphql,
@@ -38,8 +37,9 @@ import {
 } from "react-relay";
 import { dispatch } from "use-bus";
 import { SimilarSegments } from "../../media/[mediaId]/SimilarSegments";
-import { SKILL_CATEGORY_ABBREVIATION } from "@/components/form-sections/item/ItemFormSection";
-import { LightTooltip } from "@/components/LightTooltip";
+import ItemFormSectionPreview from "@/components/form-sections/item/ItemFormSectionPreview";
+import { BloomLevel } from "@/__generated__/QuestionPreviewFragment.graphql";
+import { Item } from "@/components/form-sections/item/ItemFormSection";
 
 export default function StudentQuiz() {
   // Get course id from url
@@ -101,9 +101,12 @@ export default function StudentQuiz() {
             items {
               id
               associatedSkills {
+                id
                 skillName
                 skillCategory
+                isCustomSkill
               }
+              associatedBloomLevels
             }
           }
         }
@@ -167,17 +170,17 @@ export default function StudentQuiz() {
     }
   };
 
-  const currentItem = contentsByIds[0].items?.find((item) => item.id === currentQuestion.itemId);
-
-  const currentSkills = new Map<string, string[]>();
-  currentItem?.associatedSkills.forEach((skill) => {
-    if(currentSkills.has(skill.skillCategory)) {
-      currentSkills.get(skill.skillCategory)!.push(skill.skillName);
-    }
-    else {
-      currentSkills.set(skill.skillCategory, [skill.skillName]);
-    }
-  });
+  const currentItem = contentsByIds[0].items!.find((item) => item.id === currentQuestion.itemId)!;
+  const currentItemForPreview = useMemo<Item>(
+        () => ({
+          id: currentItem.id,
+          associatedSkills: currentItem.associatedSkills.map((skill) => ({
+            ...skill,
+          })),
+          associatedBloomLevels: currentItem.associatedBloomLevels as BloomLevel[],
+        }),
+        [currentItem, currentItem.id]
+  );
 
   return (
     <main>
@@ -206,34 +209,7 @@ export default function StudentQuiz() {
           justifyContent: "center",
         }}
       >
-        {Array.from(currentSkills.entries()).map(([category, skills]) =>
-          skills.map((skill, i) => (
-            <LightTooltip
-              title={
-              <>
-                <p><strong>{category + ":"}</strong></p>
-                <p><strong>{skill}</strong></p>
-              </>
-              }
-              placement="top"
-            >
-              <Chip
-                key={`${skill}-${i}`}
-                size="small"
-                sx={{
-                  maxWidth: "250px",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                }}
-                title={`${category}: ${skill}`}
-                label={(SKILL_CATEGORY_ABBREVIATION[category] ||category) +
-                  ": " + skill
-                }
-              />
-            </LightTooltip>
-          ))
-        )}
+        <ItemFormSectionPreview item={currentItemForPreview} />
       </Stack>
 
       <Question

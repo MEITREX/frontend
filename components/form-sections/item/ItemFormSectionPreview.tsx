@@ -1,6 +1,7 @@
 import { Chip, Divider, Stack } from "@mui/material";
 import { CreateItem, getStandardizedCompetencies } from "./ItemFormSection";
 import { BloomLevel } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
+import { LightTooltip } from "@/components/LightTooltip";
 
 export type ItemFormSectionPreviewProps = {
   item: CreateItem;
@@ -43,22 +44,31 @@ const ItemFormSectionPreview = ({ item }: ItemFormSectionPreviewProps) => {
         sx={{ margin: "0 4px", height: "32px" }}
       />
       {skillsSelected.map((skill) => (
-        <Chip
-          key={`${skill.skillCategory}-${skill.skillName}`}
-          sx={{
-            maxWidth: "200px",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-          }}
-          title={skill.skillCategory + ": " + skill.skillName}
-          label={
-            (SKILL_CATEGORY_ABBREVIATION[skill.skillCategory] ||
-              skill.skillCategory) +
-            ": " +
-            skill.skillName
-          }
-        />
+        <LightTooltip
+              title={
+              <>
+                <p><strong>{skill.skillCategory + ":"}</strong></p>
+                <p><strong>{skill.skillName}</strong></p>
+              </>
+              }
+              placement="top"
+        >
+          <Chip
+            key={`${skill.skillCategory}-${skill.skillName}`}
+            sx={{
+              maxWidth: "200px",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+            }}
+            label={
+              (SKILL_CATEGORY_ABBREVIATION[skill.skillCategory] ||
+                skill.skillCategory) +
+              ": " +
+              skill.skillName
+            }
+          />
+        </LightTooltip>
       ))}
     </Stack>
   );
