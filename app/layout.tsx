@@ -1,7 +1,13 @@
 "use client";
 
 import "@/styles/globals.css";
-import React, { useEffect, useMemo } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { PageLayout } from "@/components/PageLayout";
 import { initRelayEnvironment } from "@/src/RelayEnvironment";
@@ -10,7 +16,7 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import { ThemeProvider, colors, createTheme } from "@mui/material";
+import { CssBaseline, ThemeProvider } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
@@ -25,6 +31,11 @@ import {
 } from "react-oidc-context";
 import { RelayEnvironmentProvider } from "react-relay";
 import PageLoading from "./loading";
+import { themeColorBlind, themeDark, themeLight } from "./color-themes";
+import {
+  ThemeVariantContext,
+  ThemeVariantContextType,
+} from "./ThemeVariantContext";
 
 dayjs.extend(isBetween);
 
@@ -41,25 +52,60 @@ const oidcConfig: AuthProviderProps = {
   },
 };
 
-const theme = createTheme({
-  palette: {
-    success: colors.green,
-  },
-  typography: {
-    h1: {
-      fontSize: "2rem",
-      fontWeight: "400",
-    },
-    h2: {
-      fontSize: "1.5rem",
-      fontWeight: "400",
-    },
-  },
-});
-
 export default function App({ children }: { children: React.ReactNode }) {
+  // TODO integrate this with settings
+  const getSavedThemeVariant = useCallback(() => {
+    const savedTheme = localStorage.getItem("themeVariant");
+    if (savedTheme)
+      return savedTheme as ThemeVariantContextType["themeVariant"];
+    else return null;
+  }, []);
+
+  const [themeVariant, setThemeVariant] = useState<
+    ThemeVariantContextType["themeVariant"]
+  >(() => {
+    const savedTheme = getSavedThemeVariant();
+    if (savedTheme) return savedTheme;
+
+    // default to browser preference, defaulting to light when not supplied
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  });
+
+  // when browser-default changes, the theme should also change - unless color-blind is selected
+  // TODO maybe introduce setting to toggle this behavior
+  useLayoutEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const handleMediaQueryChange = (_e: Event) => {
+      if (themeVariant !== "color-blind") {
+        setThemeVariant(mediaQuery.matches ? "dark" : "light");
+      }
+    };
+    mediaQuery.addEventListener("change", handleMediaQueryChange);
+    return () =>
+      mediaQuery.removeEventListener("change", handleMediaQueryChange);
+  }, [themeVariant]);
+
+  // TODO integrate this with settings
+  const handleThemeUserChange = useCallback(
+    (newTheme: ThemeVariantContextType["themeVariant"]) => {
+      setThemeVariant(newTheme);
+      localStorage.setItem("themeVariant", newTheme);
+    },
+    []
+  );
+
+  const currentActiveTheme =
+    themeVariant === "dark"
+      ? themeDark
+      : themeVariant === "color-blind"
+      ? themeColorBlind
+      : themeLight;
+
   return (
-    <html lang="de" className="h-full overflow-hidden">
+    <html lang="en" className="h-full overflow-hidden">
       <head>
         <title>MEITREX</title>
       </head>
@@ -68,9 +114,19 @@ export default function App({ children }: { children: React.ReactNode }) {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DndProvider backend={HTML5Backend}>
               <SigninContent>
-                <PageViewProvider>
-                  <PageLayout>{children}</PageLayout>
-                </PageViewProvider>
+                <ThemeProvider theme={currentActiveTheme}>
+                  <CssBaseline />
+                  <ThemeVariantContext.Provider
+                    value={{
+                      themeVariant,
+                      setThemeVariant: handleThemeUserChange,
+                    }}
+                  >
+                    <PageViewProvider>
+                      <PageLayout>{children}</PageLayout>
+                    </PageViewProvider>
+                  </ThemeVariantContext.Provider>
+                </ThemeProvider>
               </SigninContent>
             </DndProvider>
           </LocalizationProvider>
@@ -123,7 +179,7 @@ function SigninContent({ children }: { children: React.ReactNode }) {
   if (auth.isAuthenticated) {
     return (
       <RelayEnvironmentProvider environment={environment}>
-        <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        {children}
       </RelayEnvironmentProvider>
     );
   }

@@ -31,7 +31,9 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
+  MenuItem,
   Paper,
+  Select,
   TextField,
   Tooltip,
   Typography,
@@ -39,9 +41,91 @@ import {
 import dayjs from "dayjs";
 import { chain, debounce } from "lodash";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactElement, useCallback, useState, useTransition } from "react";
+import {
+  ReactElement,
+  useCallback,
+  useContext,
+  useState,
+  useTransition,
+} from "react";
 import { useAuth } from "react-oidc-context";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
+import { ThemeVariantContext } from "@/app/ThemeVariantContext";
+
+const NavbarSemanticSearchQueryFragment = graphql`
+  query NavbarSemanticSearchQuery($term: String!, $skip: Boolean!) {
+    semanticSearch(queryText: $term, count: 30) @skip(if: $skip) {
+      score
+      ... on AssessmentSemanticSearchResult {
+        assessmentId
+        score
+        assessment {
+          ... on FlashcardSetAssessment {
+            metadata {
+              name
+              courseId
+              course {
+                title
+              }
+            }
+
+            __typename
+          }
+          ... on QuizAssessment {
+            metadata {
+              name
+              courseId
+              course {
+                title
+              }
+            }
+            __typename
+          }
+        }
+      }
+      ... on MediaRecordSegmentSemanticSearchResult {
+        mediaRecordSegment {
+          __typename
+          ... on VideoRecordSegment {
+            startTime
+            mediaRecord {
+              id
+              name
+
+              contents {
+                id
+                metadata {
+                  name
+                  course {
+                    id
+                    title
+                  }
+                }
+              }
+            }
+          }
+          ... on DocumentRecordSegment {
+            page
+            mediaRecord {
+              id
+              name
+              contents {
+                id
+                metadata {
+                  name
+                  course {
+                    id
+                    title
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 
 function useIsTutor(_frag: NavbarIsTutor$key) {
   const { realmRoles, courseMemberships } = useFragment(
@@ -82,80 +166,7 @@ function NavbarBase({
   const router = useRouter();
 
   const searchResults = useLazyLoadQuery<NavbarSemanticSearchQuery>(
-    graphql`
-      query NavbarSemanticSearchQuery($term: String!, $skip: Boolean!) {
-        semanticSearch(queryText: $term, count: 30) @skip(if: $skip) {
-          score
-          ... on AssessmentSemanticSearchResult {
-            assessmentId
-            score
-            assessment {
-              ... on FlashcardSetAssessment {
-                metadata {
-                  name
-                  courseId
-                  course {
-                    title
-                  }
-                }
-
-                __typename
-              }
-              ... on QuizAssessment {
-                metadata {
-                  name
-                  courseId
-                  course {
-                    title
-                  }
-                }
-                __typename
-              }
-            }
-          }
-          ... on MediaRecordSegmentSemanticSearchResult {
-            mediaRecordSegment {
-              __typename
-              ... on VideoRecordSegment {
-                startTime
-                mediaRecord {
-                  id
-                  name
-
-                  contents {
-                    id
-                    metadata {
-                      name
-                      course {
-                        id
-                        title
-                      }
-                    }
-                  }
-                }
-              }
-              ... on DocumentRecordSegment {
-                page
-                mediaRecord {
-                  id
-                  name
-                  contents {
-                    id
-                    metadata {
-                      name
-                      course {
-                        id
-                        title
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    `,
+    NavbarSemanticSearchQueryFragment,
     { term: term, skip: term.length < 3 }
   );
 
@@ -255,6 +266,8 @@ function NavbarBase({
     );
   }
 
+  const { themeVariant, setThemeVariant } = useContext(ThemeVariantContext);
+
   return (
     <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
       <div className="text-center mt-8 text-3xl font-medium tracking-wider sticky">
@@ -265,13 +278,30 @@ function NavbarBase({
             fontFamily: "'Quicksand', sans-serif",
             fontSize: "2.5rem",
             fontWeight: "bold",
-            color: "#089CDC",
             marginTop: "4px",
             textAlign: "center",
+            color: (theme) => theme.palette.primary.main,
           }}
         >
           MEITREX
         </Typography>
+
+        <div className="mt-4">
+          <Select
+            value={themeVariant}
+            onChange={(e) =>
+              setThemeVariant(
+                e.target.value as "light" | "dark" | "color-blind"
+              )
+            }
+            fullWidth
+            size="small"
+          >
+            <MenuItem value="light">Light</MenuItem>
+            <MenuItem value="dark">Dark</MenuItem>
+            <MenuItem value="color-blind">Color-Blind</MenuItem>
+          </Select>
+        </div>
       </div>
 
       <NavbarSection>
