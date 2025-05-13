@@ -13,8 +13,8 @@ import {
 import dayjs from "dayjs";
 import { chain } from "lodash";
 import Link from "next/link";
-import { Fragment, useState } from "react";
-import { useLazyLoadQuery } from "react-relay";
+import { Fragment, Suspense, useEffect, useState } from "react";
+import { useLazyLoadQuery, usePreloadedQuery, useQueryLoader } from "react-relay";
 import { graphql } from "relay-runtime";
 import SurveyPopup from "@/components/PlayerTypeSurvey"
 import { PlayerTypeSurveyUserQuery } from "@/__generated__/PlayerTypeSurveyUserQuery.graphql";
@@ -128,36 +128,58 @@ export default function StudentPage() {
     .value();
 
   var showSurvey = false
+  const playerTypeSurveyQuery = graphql`
+    query PlayerTypeSurveyQuery($id: UUID!) {
+      getPlayerHexadScoreById(userId: $id) {
+        scores {
+          type
+          value
+        }
+      }
+    }
+  `;
+
+  function SurveyLoader({ queryRef, userId }) {
+    console.log('ENETRT')
+    
+      const data = usePreloadedQuery(playerTypeSurveyQuery, queryRef);
+
+      console.log('DATA', data)
+      console.log('test')
+      if(!data){
+        return <SurveyPopup id={userId} />;
+      }
+      return <div></div>
+   
+     
+      
+    
+    
+    
+
+    
+  }
 
   function GetPlayerHexadScore() {
 
-    const userID = currentUserInfo.id
-    console.log(userID)
+    const userId = currentUserInfo.id;
+    const [queryRef, loadQuery] = useQueryLoader(playerTypeSurveyQuery);
 
-    try{
-      const { getPlayerHexadScoreById } =
-      useLazyLoadQuery<PlayerTypeSurveyQuery>(
-        graphql`
-            query PlayerTypeSurveyQuery($id: UUID!) {
-                getPlayerHexadScoreById(userId: $id) {
-                    scores {
-                        type
-                        value
-                    }
-                }
-            }
-        `,
-        { id: userID }
-      );
-      console.log(getPlayerHexadScoreById.scores)
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        loadQuery({ id: userId });
+      }, 1); // künstlicher Delay
 
-      showSurvey = false
-      return <div></div>
-    } catch(err) {
-      console.log('err')
-      showSurvey = true
-      return <SurveyPopup id={userID} />
-    }
+      return () => clearTimeout(timer);
+    }, [userId, loadQuery]);
+
+    console.log('QUERYREF', queryRef, userId)
+
+    return (
+      <Suspense fallback={<div>Loading...</div>}>
+        {queryRef && <SurveyLoader queryRef={queryRef} userId={currentUserInfo.id} />}
+      </Suspense>
+    );
 
     
     

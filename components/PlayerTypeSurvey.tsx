@@ -13,6 +13,15 @@ import { commitMutation, graphql, useFragment, useLazyLoadQuery, useMutation } f
 import { PlayerTypeSurveyUserQuery } from '@/__generated__/PlayerTypeSurveyUserQuery.graphql';
 import { PlayerTypeSurveyEvaluateHexadTypeMutation, QuestionInput } from '@/__generated__/PlayerTypeSurveyEvaluateHexadTypeMutation.graphql';
 
+enum Types{
+  ACHIEVER = "ACHIEVER",
+  PLAYER = "PLAYER",
+  SOCIALISER = "SOCIALISER",
+  PHILANTHROPIST = "PHILANTHROPIST",
+  FREE_SPIRIT = "FREE_SPIRIT",
+  DISRUPTOR = "DISRUPTOR"
+}
+
 const questions = [
   {
     question: "In team activities, you tend to",
@@ -20,14 +29,14 @@ const questions = [
       {
         label: "actively assist teammates, share resources, and coordinate teamwork.",
         image: test,
-        types: ["PHILANTHROPIST", "SOCIALISER", "FREE_SPIRIT"],
-        non_types: ["ACHIEVER", "PLAYER", "DISRUPTOR"]
+        types: [Types.PHILANTHROPIST, Types.SOCIALISER, Types.FREE_SPIRIT],
+        non_types: [Types.ACHIEVER, Types.PLAYER, Types.DISRUPTOR]
       },
       {
         label: "focus on personal goals and optimize strategies for rewards.",
         image: test2,
-        types: ["ACHIEVER", "PLAYER", "DISRUPTOR"],
-        non_types: ["PHILANTHROPIST", "SOCIALISER", "FREE_SPIRIT"]
+        types: [Types.ACHIEVER, Types.PLAYER, Types.DISRUPTOR],
+        non_types: [Types.PHILANTHROPIST, Types.SOCIALISER, Types.FREE_SPIRIT]
       }
     ]
   },
@@ -37,14 +46,14 @@ const questions = [
       {
         label: "experiment freely, ignoring rule limitations.",
         image: test,
-        types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"],
-        non_types: ["ACHIEVER", "SOCIALISER", "PHILANTHROPIST"]
+        types: [Types.FREE_SPIRIT, Types.DISRUPTOR, Types.PLAYER],
+        non_types: [Types.ACHIEVER, Types.SOCIALISER, Types.PHILANTHROPIST]
       },
       {
         label: "follow tutorials step-by-step to unlock achievements.",
         image: test2,
-        types: ["ACHIEVER", "SOCIALISER", "PHILANTHROPIST"],
-        non_types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"]
+        types: [Types.ACHIEVER, Types.SOCIALISER, Types.PHILANTHROPIST],
+        non_types: [Types.FREE_SPIRIT, Types.DISRUPTOR, Types.PLAYER]
       }
     ]
   },
@@ -54,14 +63,14 @@ const questions = [
       {
         label: "improve team rankings through collaboration.",
         image: test,
-        types: ["SOCIALISER", "PHILANTHROPIST", "ACHIEVER"],
-        non_types: ["DISRUPTOR", "PLAYER", "FREE_SPIRIT"]
+        types: [Types.SOCIALISER, Types.PHILANTHROPIST, Types.ACHIEVER],
+        non_types: [Types.DISRUPTOR, Types.PLAYER, Types.FREE_SPIRIT]
       },
       {
         label: "break rules or exploit loopholes to outperform others.",
         image: test2,
-        types: ["DISRUPTOR", "PLAYER", "FREE_SPIRIT"],
-        non_types: ["SOCIALISER", "PHILANTHROPIST", "ACHIEVER"],
+        types: [Types.DISRUPTOR, Types.PLAYER, Types.FREE_SPIRIT],
+        non_types: [Types.SOCIALISER, Types.PHILANTHROPIST, Types.ACHIEVER],
       }
     ]
   },
@@ -71,14 +80,14 @@ const questions = [
       {
         label: "helping others or contributing to the community.",
         image: test,
-        types: ["PHILANTHROPIST", "SOCIALISER", "ACHIEVER"],
-        non_types: ["DISRUPTOR", "PLAYER", "FREE_SPIRIT"]
+        types: [Types.PHILANTHROPIST, Types.SOCIALISER, Types.ACHIEVER],
+        non_types: [Types.DISRUPTOR, Types.PLAYER, Types.FREE_SPIRIT]
       },
       {
         label: "earning unique rewards or pushing system boundaries.",
         image: test2,
-        types: ["DISRUPTOR", "PLAYER", "FREE_SPIRIT"],
-        non_types: ["PHILANTHROPIST", "SOCIALISER", "ACHIEVER"]
+        types: [Types.DISRUPTOR, Types.PLAYER, Types.FREE_SPIRIT],
+        non_types: [Types.PHILANTHROPIST, Types.SOCIALISER, Types.ACHIEVER]
       }
     ]
   },
@@ -88,14 +97,14 @@ const questions = [
       {
         label: "report it to improve the system.",
         image: test,
-        types: ["PHILANTHROPIST", "ACHIEVER", "SOCIALISER"],
-        non_types: ["DISRUPTOR", "FREE_SPIRIT", "PLAYER"]
+        types: [Types.PHILANTHROPIST, Types.ACHIEVER, Types.SOCIALISER],
+        non_types: [Types.DISRUPTOR, Types.FREE_SPIRIT, Types.PLAYER]
       },
       {
         label: "exploit it to create new play styles.",
         image: test2,
-        types: ["DISRUPTOR", "FREE_SPIRIT", "PLAYER"],
-        non_types: ["PHILANTHROPIST", "ACHIEVER", "SOCIALISER"]
+        types: [Types.DISRUPTOR, Types.FREE_SPIRIT, Types.PLAYER],
+        non_types: [Types.PHILANTHROPIST, Types.ACHIEVER, Types.SOCIALISER]
       }
     ]
   },
@@ -105,14 +114,14 @@ const questions = [
       {
         label: "collaborating with others to solve tasks.",
         image: test,
-        types: ["SOCIALISER", "PHILANTHROPIST", "ACHIEVER"],
-        non_types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"]
+        types: [Types.SOCIALISER, Types.PHILANTHROPIST, Types.ACHIEVER],
+        non_types: [Types.FREE_SPIRIT, Types.DISRUPTOR, Types.PLAYER]
       },
       {
         label: "exploring independently with unconventional methods.",
         image: test2,
-        types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"],
-        non_types: ["SOCIALISER", "PHILANTHROPIST", "ACHIEVER"]
+        types: [Types.FREE_SPIRIT, Types.DISRUPTOR, Types.PLAYER],
+        non_types: [Types.SOCIALISER, Types.PHILANTHROPIST, Types.ACHIEVER]
       }
     ]
   },
@@ -122,14 +131,14 @@ const questions = [
       {
         label: "user freedom for creative expression.",
         image: test,
-        types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"],
-        non_types: ["ACHIEVER",  "PHILANTHROPIST", "SOCIALISER"]
+        types: [Types.FREE_SPIRIT, Types.DISRUPTOR, Types.PLAYER],
+        non_types: [Types.ACHIEVER,  Types.PHILANTHROPIST, Types.SOCIALISER]
       },
       {
         label: "clear progress tracking and reward systems.",
         image: test2,
-        types: ["ACHIEVER",  "PHILANTHROPIST", "SOCIALISER"],
-        non_types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"]
+        types: [Types.ACHIEVER,  Types.PHILANTHROPIST, Types.SOCIALISER],
+        non_types: [Types.FREE_SPIRIT, Types.DISRUPTOR, Types.PLAYER]
       }
     ]
   },
@@ -139,14 +148,14 @@ const questions = [
       {
         label: "open-ended creativity and flexibility.",
         image: test,
-        types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"],
-        non_types: ["ACHIEVER", "SOCIALISER",  "PHILANTHROPIST"]
+        types: [Types.FREE_SPIRIT, Types.DISRUPTOR, Types.PLAYER],
+        non_types: [Types.ACHIEVER, Types.SOCIALISER,  Types.PHILANTHROPIST]
       },
       {
         label: "achievement-driven goals or social opportunities.",
         image: test2,
-        types: ["ACHIEVER", "SOCIALISER",  "PHILANTHROPIST"],
-        non_types: ["FREE_SPIRIT", "DISRUPTOR", "PLAYER"]
+        types: [Types.ACHIEVER, Types.SOCIALISER,  Types.PHILANTHROPIST],
+        non_types: [Types.FREE_SPIRIT, Types.DISRUPTOR, Types.PLAYER]
       }
     ]
   },
@@ -154,16 +163,16 @@ const questions = [
     question: "When earning rewards, you care most about",
     options: [
       {
-        label: "their uniqueness or community impact.",
+        label: "heir uniqueness or community impact.",
         image: test,
-        types: ["PHILANTHROPIST", "FREE_SPIRIT", "SOCIALISER"],
-        non_types: ["PLAYER", "ACHIEVER", "DISRUPTOR"]
+        types: [Types.PHILANTHROPIST, Types.FREE_SPIRIT, Types.SOCIALISER],
+        non_types: [Types.PLAYER, Types.ACHIEVER, Types.DISRUPTOR]
       },
       {
         label: "their practical value or competitive advantage.",
         image: test2,
-        types: ["PLAYER", "ACHIEVER", "DISRUPTOR"],
-        non_types: ["PHILANTHROPIST", "FREE_SPIRIT", "SOCIALISER"]
+        types: [Types.PLAYER, Types.ACHIEVER, Types.DISRUPTOR],
+        non_types: [Types.PHILANTHROPIST, Types.FREE_SPIRIT, Types.SOCIALISER]
       }
     ]
   },
@@ -173,14 +182,14 @@ const questions = [
       {
         label: "offer guidance and support.",
         image: test,
-        types: ["PHILANTHROPIST", "SOCIALISER", "ACHIEVER"],
-        non_types: ["PLAYER", "DISRUPTOR", "FREE_SPIRIT"]
+        types: [Types.PHILANTHROPIST, Types.SOCIALISER, Types.ACHIEVER],
+        non_types: [Types.PLAYER, Types.DISRUPTOR, Types.FREE_SPIRIT]
       },
       {
         label: "optimize your own strategy based on their errors.",
         image: test2,
-        types: ["PLAYER", "DISRUPTOR", "FREE_SPIRIT"],
-        non_types: ["PHILANTHROPIST", "SOCIALISER", "ACHIEVER"]
+        types: [Types.PLAYER, Types.DISRUPTOR, Types.FREE_SPIRIT],
+        non_types: [Types.PHILANTHROPIST, Types.SOCIALISER, Types.ACHIEVER]
       }
     ]
   },
@@ -190,14 +199,14 @@ const questions = [
       {
         label: "follow them and find optimal solutions.",
         image: test,
-        types: ["ACHIEVER", "PHILANTHROPIST", "SOCIALISER"],
-        non_types: ["DISRUPTOR", "FREE_SPIRIT", "PLAYER"]
+        types: [Types.ACHIEVER, Types.PHILANTHROPIST, Types.SOCIALISER],
+        non_types: [Types.DISRUPTOR, Types.FREE_SPIRIT, Types.PLAYER]
       },
       {
         label: "test their limits to innovate.",
         image: test2,
-        types: ["DISRUPTOR", "FREE_SPIRIT", "PLAYER"],
-        non_types: ["ACHIEVER", "PHILANTHROPIST", "SOCIALISER"]
+        types: [Types.DISRUPTOR, Types.FREE_SPIRIT, Types.PLAYER],
+        non_types: [Types.ACHIEVER, Types.PHILANTHROPIST, Types.SOCIALISER]
       }
     ]
   },
@@ -207,14 +216,14 @@ const questions = [
       {
         label: "community-building or charity projects.",
         image: test,
-        types: ["PHILANTHROPIST", "SOCIALISER", "ACHIEVER"],
-        non_types: ["PLAYER", "DISRUPTOR", "FREE_SPIRIT"]
+        types: [Types.PHILANTHROPIST, Types.SOCIALISER, Types.ACHIEVER],
+        non_types: [Types.PLAYER, Types.DISRUPTOR, Types.FREE_SPIRIT]
       },
       {
-        label: "time-limited competitions or experimental challenges.",
+        label: "Time-limited competitions or experimental challenges.",
         image: test2,
-        types: ["PLAYER", "DISRUPTOR", "FREE_SPIRIT"],
-        non_types: ["PHILANTHROPIST", "SOCIALISER", "ACHIEVER"]
+        types: [Types.PLAYER, Types.DISRUPTOR, Types.FREE_SPIRIT],
+        non_types: [Types.PHILANTHROPIST, Types.SOCIALISER, Types.ACHIEVER]
       }
     ]
   },
@@ -264,12 +273,10 @@ const SurveyPopup = ({ id }: { id: string }) => {
         text: option?.answer,
         playerTypes: option?.types
       },
-      possibleAnswers: [
-        {
-          text: "",
-          playerTypes: option?.non_types
-        }
-      ]
+      possibleAnswers: questions[Number(index)].options.map(opt => ({
+        text: opt.label,
+        playerTypes: opt.types
+      }))
     }));
 
     if (!id || typeof id !== 'string') {
@@ -291,6 +298,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
       },
       onError(error){
         console.log('Err', error)
+        console.log('ID', id, 'INPUT', input)
       }
 
     })
