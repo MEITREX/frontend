@@ -66,12 +66,13 @@ const ItemFormSectionPreview = ({ item }: ItemFormSectionPreviewProps) => {
 
 export default ItemFormSectionPreview;
 
+// colors/ difficulty in inspiration of https://en.wikipedia.org/wiki/Bloom%27s_taxonomy
 const BLOOM_TAXONOMY_COLORS: Record<BloomLevel, string> = {
-  REMEMBER: "#FF0000",
-  UNDERSTAND: "#FF7F00",
-  APPLY: "#FFFF00",
-  ANALYZE: "#7FFF00",
-  EVALUATE: "#00FF00",
-  CREATE: "#00FF7F",
+  REMEMBER: "#00FF7F",
+  UNDERSTAND: "#00FF00",
+  APPLY: "#7FFF00",
+  ANALYZE: "#FFFF00",
+  CREATE: "#FF7F00",
+  EVALUATE: "#FF0000",
   "%future added value": "#FFFFFF",
 } as const;
