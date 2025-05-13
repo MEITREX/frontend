@@ -1705,26 +1705,19 @@ type MultipleChoiceQuestion implements Question {
   item: Item!
 }
 
+# 
+# Mutations for the flashcard service. Provides mutations for creating, updating, and deleting flashcard as well as
+# creating and deleting flashcard sets. To update a flashcard set, update, delete, and create flashcards individually.
 type Mutation {
   # 
-  # Modify Content
-  # 🔒 The user must have admin access to the course containing the section to perform this action.
-  mutateContent(contentId: UUID!): ContentMutation!
-
+  #   ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
   # 
-  # Modify the section with the given id.
-  # 🔒 The user must have admin access to the course containing the section to perform this action.
-  mutateSection(sectionId: UUID!): SectionMutation!
-
+  #   Triggers the recalculation of the skill level of the user.
+  #   This is done automatically at some time in the night.
   # 
-  # Modify a flashcard set.
-  # 🔒 The user must be an admin the course the flashcard set is in to perform this action.
-  mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
-
-  # 
-  # Logs that a user has learned a flashcard.
-  # 🔒 The user must be enrolled in the course the flashcard set is in to perform this action.
-  logFlashcardLearned(input: LogFlashcardLearnedInput!): FlashcardLearnedFeedback!
+  #   The purpose of this mutation is to allow testing of the skill level score and demonstrate the functionality.
+  #   🔒 The user must be a super-user, otherwise an exception is thrown.
+  recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
 
   # 
   #     ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
@@ -1735,17 +1728,6 @@ type Mutation {
   #     The purpose of this mutation is to allow testing of the reward score and demonstrate the functionality.
   #     🔒 The user be an admin in the course with the given courseId to perform this action.
   recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
-  evaluatePlayerHexadScore(userId: UUID!, input: PlayerAnswerInput!): PlayerHexadScore!
-
-  # 
-  #   ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
-  # 
-  #   Triggers the recalculation of the skill level of the user.
-  #   This is done automatically at some time in the night.
-  # 
-  #   The purpose of this mutation is to allow testing of the skill level score and demonstrate the functionality.
-  #   🔒 The user must be a super-user, otherwise an exception is thrown.
-  recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
 
   # 
   # Creates a new media record
@@ -1838,6 +1820,7 @@ type Mutation {
   # Removes the specified user's access to the specified course.
   # 🔒 The calling user must be an admin in this course to perform this action.
   deleteMembership(input: CourseMembershipInput!): CourseMembership!
+  evaluatePlayerHexadScore(userId: UUID!, input: PlayerAnswerInput!): PlayerHexadScore!
 
   # 
   # Modify a quiz.
@@ -1852,6 +1835,26 @@ type Mutation {
   # Log that a multiple choice quiz is completed.
   # 🔒 The user must be enrolled in the course the quiz is in to perform this action.
   logQuizCompleted(input: QuizCompletedInput!): QuizCompletionFeedback!
+
+  # 
+  # Modify Content
+  # 🔒 The user must have admin access to the course containing the section to perform this action.
+  mutateContent(contentId: UUID!): ContentMutation!
+
+  # 
+  # Modify the section with the given id.
+  # 🔒 The user must have admin access to the course containing the section to perform this action.
+  mutateSection(sectionId: UUID!): SectionMutation!
+
+  # 
+  # Modify a flashcard set.
+  # 🔒 The user must be an admin the course the flashcard set is in to perform this action.
+  mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
+
+  # 
+  # Logs that a user has learned a flashcard.
+  # 🔒 The user must be enrolled in the course the flashcard set is in to perform this action.
+  logFlashcardLearned(input: LogFlashcardLearnedInput!): FlashcardLearnedFeedback!
 
   # Creates a new media content and links the given media records to it.
   createMediaContentAndLinkRecords(contentInput: CreateMediaContentInput!, mediaRecordIds: [UUID!]!): MediaContent!
@@ -2000,67 +2003,19 @@ type PublicUserInfo {
 
 type Query {
   # 
-  # Retrieves all existing contents for a given course.
-  # 🔒 The user must have access to the courses with the given ids to access their contents, otherwise an error is thrown.
-  contentsByCourseIds(courseIds: [UUID!]!): [[Content!]!]
+  # Gets the publicly available information for a list of users with the specified IDs.
+  # If a user does not exist, null is returned for that user.
+  findPublicUserInfos(ids: [UUID!]!): [PublicUserInfo]!
 
   # 
-  # Get contents by ids. Throws an error if any of the ids are not found.
-  # 🔒 The user must have access to the courses containing the contents with the given ids to access their contents,
-  # otherwise an error is thrown.
-  contentsByIds(ids: [UUID!]!): [Content!]!
+  # Gets the user information of the currently authorized user.
+  currentUserInfo: UserInfo!
 
   # 
-  # Get contents by ids. If any of the given ids are not found, the corresponding element in the result list will be null.
-  # 🔒 The user must have access to the courses containing the contents with the given ids, otherwise null is returned
-  # for the respective contents.
-  findContentsByIds(ids: [UUID!]!): [Content]!
-
-  # 
-  # Get contents by chapter ids. Returns a list containing sublists, where each sublist contains all contents
-  # associated with that chapter
-  # 🔒 The user must have access to the courses containing the chapters with the given ids, otherwise an error is thrown.
-  contentsByChapterIds(chapterIds: [UUID!]!): [[Content!]!]!
-
-  # 
-  #     Generates user specific suggestions for multiple chapters.
-  # 
-  #     Only content that the user can access will be considered.
-  #     The contents will be ranked by suggested date, with the most overdue or most urgent content first.
-  # 
-  #     🔒 The user must have access to the courses containing the chapters with the given ids, otherwise an error is thrown.
-  suggestionsByChapterIds(
-    # 
-    # The ids of the chapters for which suggestions should be generated.
-    chapterIds: [UUID!]!
-
-    # 
-    # The amount of suggestions to generate in total.
-    amount: Int!
-
-    # 
-    # Only suggestions for these skill types will be generated.
-    # If no skill types are given, suggestions for all skill types will be generated,
-    # also containing suggestions for media content (which do not have a skill type).
-    skillTypes: [SkillType!]! = []
-  ): [Suggestion!]!
-
-  # 
-  # Get flashcards by their ids.
-  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
-  flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
-
-  # 
-  # Get flashcard sets by their assessment ids.
-  # Returns a list of flashcard sets in the same order as the provided ids.
-  # Each element is null if the corresponding id is not found.
-  # 🔒 The user must be enrolled in the course the flashcard sets belong to. Otherwise for that element null is returned.
-  findFlashcardSetsByAssessmentIds(assessmentIds: [UUID!]!): [FlashcardSet]!
-
-  # 
-  # Get flashcards of a course that are due to be reviewed.
-  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
-  dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
+  # Gets all of the users' information for a list of users with the specified IDs.
+  # Only available to privileged users.
+  # If a user does not exist, null is returned for that user.
+  findUserInfos(ids: [UUID!]!): [UserInfo]!
 
   # 
   # Get the reward score of the current user for the specified course.
@@ -2076,22 +2031,6 @@ type Query {
   # Gets the power scores for each user in the course, ordered by power score descending.
   # 🔒 The user must have access to the course with the given id to access the scoreboard, otherwise an error is thrown.
   scoreboard(courseId: UUID!): [ScoreboardItem!]!
-
-  # 
-  # Gets the publicly available information for a list of users with the specified IDs.
-  # If a user does not exist, null is returned for that user.
-  findPublicUserInfos(ids: [UUID!]!): [PublicUserInfo]!
-
-  # 
-  # Gets the user information of the currently authorized user.
-  currentUserInfo: UserInfo!
-
-  # 
-  # Gets all of the users' information for a list of users with the specified IDs.
-  # Only available to privileged users.
-  # If a user does not exist, null is returned for that user.
-  findUserInfos(ids: [UUID!]!): [UserInfo]!
-  getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
 
   # 
   #     Returns the media records with the given IDs. Throws an error if a MediaRecord corresponding to a given ID
@@ -2157,6 +2096,8 @@ type Query {
   # Returns the courses with the given ids.
   # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
   coursesByIds(ids: [UUID!]!): [Course!]!
+  getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
+  PlayerHexadScoreExists(userId: UUID!): Boolean!
 
   # 
   # Get quiz by assessment ID.
@@ -2164,6 +2105,69 @@ type Query {
   # 🔒 The user must be enrolled in the course the quizzes belong to to access them. Otherwise null is returned for
   # an quiz if the user has no access to it.
   findQuizzesByAssessmentIds(assessmentIds: [UUID!]!): [Quiz]!
+
+  # 
+  # Retrieves all existing contents for a given course.
+  # 🔒 The user must have access to the courses with the given ids to access their contents, otherwise an error is thrown.
+  contentsByCourseIds(courseIds: [UUID!]!): [[Content!]!]
+
+  # 
+  # Get contents by ids. Throws an error if any of the ids are not found.
+  # 🔒 The user must have access to the courses containing the contents with the given ids to access their contents,
+  # otherwise an error is thrown.
+  contentsByIds(ids: [UUID!]!): [Content!]!
+
+  # 
+  # Get contents by ids. If any of the given ids are not found, the corresponding element in the result list will be null.
+  # 🔒 The user must have access to the courses containing the contents with the given ids, otherwise null is returned
+  # for the respective contents.
+  findContentsByIds(ids: [UUID!]!): [Content]!
+
+  # 
+  # Get contents by chapter ids. Returns a list containing sublists, where each sublist contains all contents
+  # associated with that chapter
+  # 🔒 The user must have access to the courses containing the chapters with the given ids, otherwise an error is thrown.
+  contentsByChapterIds(chapterIds: [UUID!]!): [[Content!]!]!
+
+  # 
+  #     Generates user specific suggestions for multiple chapters.
+  # 
+  #     Only content that the user can access will be considered.
+  #     The contents will be ranked by suggested date, with the most overdue or most urgent content first.
+  # 
+  #     🔒 The user must have access to the courses containing the chapters with the given ids, otherwise an error is thrown.
+  suggestionsByChapterIds(
+    # 
+    # The ids of the chapters for which suggestions should be generated.
+    chapterIds: [UUID!]!
+
+    # 
+    # The amount of suggestions to generate in total.
+    amount: Int!
+
+    # 
+    # Only suggestions for these skill types will be generated.
+    # If no skill types are given, suggestions for all skill types will be generated,
+    # also containing suggestions for media content (which do not have a skill type).
+    skillTypes: [SkillType!]! = []
+  ): [Suggestion!]!
+
+  # 
+  # Get flashcards by their ids.
+  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
+  flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
+
+  # 
+  # Get flashcard sets by their assessment ids.
+  # Returns a list of flashcard sets in the same order as the provided ids.
+  # Each element is null if the corresponding id is not found.
+  # 🔒 The user must be enrolled in the course the flashcard sets belong to. Otherwise for that element null is returned.
+  findFlashcardSetsByAssessmentIds(assessmentIds: [UUID!]!): [FlashcardSet]!
+
+  # 
+  # Get flashcards of a course that are due to be reviewed.
+  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
+  dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
 
   # Performs a semantic search with the specified search term. Returns at most `count` results. If a courseWhitelist is 
   # provided, only results from the specified courses will be returned.
@@ -2848,16 +2852,6 @@ type Suggestion {
 enum SuggestionType {
   NEW_CONTENT
   REPETITION
-}
-
-#  schema file of the microservice
-#  TODO define data types, queries and mutations
-#  this can be done in a separate files as long as they are in this folder and
-#  end with .graphqls
-#  example
-type Template {
-  id: ID!
-  name: String!
 }
 
 # An RFC-3339 compliant Full Time Scalar
