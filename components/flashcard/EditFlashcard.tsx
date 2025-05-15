@@ -1,7 +1,4 @@
-import {
-  BloomLevel,
-  EditFlashcardFragment$key,
-} from "@/__generated__/EditFlashcardFragment.graphql";
+import { EditFlashcardFragment$key } from "@/__generated__/EditFlashcardFragment.graphql";
 import {
   EditFlashcardMutation,
   UpdateFlashcardInput,
@@ -12,7 +9,11 @@ import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { graphql, PreloadedQuery, useFragment, useMutation } from "react-relay";
 import { useError } from "../ErrorContext";
-import { CreateItem, Item } from "../form-sections/item/ItemFormSection";
+import {
+  CreateItem,
+  Item,
+  mapRelayItemToItem,
+} from "../form-sections/item/ItemFormSection";
 import Flashcard from "./Flashcard";
 import { FlashcardSideData } from "./FlashcardSide";
 
@@ -92,21 +93,14 @@ export function EditFlashcard({
   flashcardNumber,
 }: Props) {
   const { flashcardSetId, courseId } = useParams();
-  const { setError, error } = useError();
+  const { setError } = useError();
 
   const data = useFragment(FlashcardFragment, flashcard);
   const [updateFlashcard, isUpdating] = useMutation<EditFlashcardMutation>(
     editFlashcardMutation
   );
 
-  // Destructuring necessary due to `readonly` types from relay
-  const [item, setItem] = useState<Item | CreateItem>({
-    id: data.itemId,
-    associatedSkills: data.item.associatedSkills.map((skill) => ({
-      ...skill,
-    })),
-    associatedBloomLevels: data.item.associatedBloomLevels as BloomLevel[],
-  });
+  const [item, setItem] = useState<Item | CreateItem>(mapRelayItemToItem(data));
   const [flashcardSides, setFlashcardSides] = useState<FlashcardSideData[]>(
     data.sides.map((readOnlySide) => ({ ...readOnlySide }))
   );
