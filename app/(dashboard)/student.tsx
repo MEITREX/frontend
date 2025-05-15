@@ -15,10 +15,13 @@ import dayjs from "dayjs";
 import { chain } from "lodash";
 import Link from "next/link";
 import { Fragment, Suspense, useEffect, useState } from "react";
-import { useLazyLoadQuery, usePreloadedQuery, useQueryLoader } from "react-relay";
+import {
+  useLazyLoadQuery,
+  usePreloadedQuery,
+  useQueryLoader,
+} from "react-relay";
 import { graphql } from "relay-runtime";
-import SurveyPopup from "@/components/PlayerTypeSurvey"
-
+import SurveyPopup from "@/components/PlayerTypeSurvey";
 
 export default function StudentPage() {
   const { currentUserInfo } = useLazyLoadQuery<studentStudentQuery>(
@@ -88,8 +91,8 @@ export default function StudentPage() {
       } else {
         return x.course.yearDivision
           ? yearDivisionToStringShort[x.course.yearDivision] +
-          " " +
-          dayjs(x.course.startDate).year()
+              " " +
+              dayjs(x.course.startDate).year()
           : dayjs(x.course.startDate).year();
       }
     })
@@ -97,9 +100,9 @@ export default function StudentPage() {
     .orderBy(
       sortby === "yearDivision"
         ? [
-          ([key, courses]) => courses[0].course.startYear,
-          ([key, courses]) => courses[0].course.yearDivision,
-        ]
+            ([key, courses]) => courses[0].course.startYear,
+            ([key, courses]) => courses[0].course.yearDivision,
+          ]
         : ([key, _]) => key,
 
       sortby === "title" ? "asc" : "desc"
@@ -128,25 +131,25 @@ export default function StudentPage() {
     .value();
 
   const existingSurveyResults = graphql`
-    query studentPlayerHexadScoreExistsQuery($id: UUID!){
+    query studentPlayerHexadScoreExistsQuery($id: UUID!) {
       PlayerHexadScoreExists(userId: $id)
     }
   `;
 
-
-  function ExistLoader({ queryRef, userId }: { queryRef: any, userId: any }) {
-    const data = usePreloadedQuery<studentPlayerHexadScoreExistsQuery>(existingSurveyResults, queryRef)
-
+  function ExistLoader({ queryRef, userId }: { queryRef: any; userId: any }) {
+    const data = usePreloadedQuery<studentPlayerHexadScoreExistsQuery>(
+      existingSurveyResults,
+      queryRef
+    );
 
     if (data.PlayerHexadScoreExists) {
-      return <div></div>
+      return <div></div>;
     } else {
       return <SurveyPopup id={userId} />;
     }
   }
 
   function GetPlayerHexadScore() {
-
     const userId = currentUserInfo.id;
     const [queryRef, loadQuery] = useQueryLoader(existingSurveyResults);
 
@@ -158,17 +161,13 @@ export default function StudentPage() {
       return () => clearTimeout(timer);
     }, [userId, loadQuery]);
 
-
     return (
       <Suspense fallback={<div>Loading...</div>}>
-        {queryRef && <ExistLoader queryRef={queryRef} userId={currentUserInfo.id} />}
+        {queryRef && (
+          <ExistLoader queryRef={queryRef} userId={currentUserInfo.id} />
+        )}
       </Suspense>
     );
-
-
-
-
-
   }
 
   return (
