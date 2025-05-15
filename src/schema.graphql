@@ -1262,7 +1262,7 @@ type FlashcardSet {
 
 # 
 # A set of flashcards, flashcard related fields are stored in the flashcard service.
-type FlashcardSetAssessment implements Assessment, Content {
+type FlashcardSetAssessment implements Assessment & Content {
   # 
   # Assessment metadata
   assessmentMetadata: AssessmentMetadata!
@@ -2289,7 +2289,7 @@ type Quiz {
 
 # 
 # A quiz, quiz related fields are stored in the quiz service.
-type QuizAssessment implements Assessment, Content {
+type QuizAssessment implements Assessment & Content {
   # 
   # Assessment metadata
   assessmentMetadata: AssessmentMetadata!
