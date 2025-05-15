@@ -10,7 +10,7 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import { ThemeProvider, colors, createTheme } from "@mui/material";
+import { ThemeProvider } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
@@ -25,6 +25,7 @@ import {
 } from "react-oidc-context";
 import { RelayEnvironmentProvider } from "react-relay";
 import PageLoading from "./loading";
+import { lightTheme } from "./color-themes";
 
 dayjs.extend(isBetween);
 
@@ -40,22 +41,6 @@ const oidcConfig: AuthProviderProps = {
     window.history.replaceState({}, document.title, window.location.pathname);
   },
 };
-
-const theme = createTheme({
-  palette: {
-    success: colors.green,
-  },
-  typography: {
-    h1: {
-      fontSize: "2rem",
-      fontWeight: "400",
-    },
-    h2: {
-      fontSize: "1.5rem",
-      fontWeight: "400",
-    },
-  },
-});
 
 export default function App({ children }: { children: React.ReactNode }) {
   return (
@@ -123,7 +108,7 @@ function SigninContent({ children }: { children: React.ReactNode }) {
   if (auth.isAuthenticated) {
     return (
       <RelayEnvironmentProvider environment={environment}>
-        <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        <ThemeProvider theme={lightTheme}>{children}</ThemeProvider>
       </RelayEnvironmentProvider>
     );
   }
