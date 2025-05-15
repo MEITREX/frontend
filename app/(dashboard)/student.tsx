@@ -127,9 +127,6 @@ export default function StudentPage() {
 
     .value();
 
-  var showSurvey = false
-  
-
   const existingSurveyResults = graphql`
     query studentPlayerHexadScoreExistsQuery($id: UUID!){
       PlayerHexadScoreExists(userId: $id)
@@ -140,9 +137,8 @@ export default function StudentPage() {
   function ExistLoader({ queryRef, userId }: { queryRef: any, userId: any }) {
     const data = usePreloadedQuery<studentPlayerHexadScoreExistsQuery>(existingSurveyResults, queryRef)
 
-    console.log(data)
 
-    if(data.PlayerHexadScoreExists){
+    if (data.PlayerHexadScoreExists) {
       return <div></div>
     } else {
       return <SurveyPopup id={userId} />;
@@ -162,7 +158,6 @@ export default function StudentPage() {
       return () => clearTimeout(timer);
     }, [userId, loadQuery]);
 
-    console.log('QUERYREF', queryRef, userId)
 
     return (
       <Suspense fallback={<div>Loading...</div>}>

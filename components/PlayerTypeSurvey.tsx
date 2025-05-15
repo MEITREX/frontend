@@ -287,8 +287,6 @@ const SurveyPopup = ({ id }: { id: string }) => {
       return;
     }
 
-    console.log(input, 'TEST')
-
     if (!id) return
 
     PlayerTypeSurveyCalcScoresMutation({
@@ -296,13 +294,6 @@ const SurveyPopup = ({ id }: { id: string }) => {
         id: id,
         input: { questions: input }
       },
-      onCompleted() {
-        console.log('Pushed')
-      },
-      onError(error) {
-        console.log('Err', error)
-        console.log('ID', id, 'INPUT', input)
-      }
 
     })
 
@@ -331,7 +322,6 @@ const SurveyPopup = ({ id }: { id: string }) => {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
       setOpen(false);
-      console.log("Antworten:", updatedAnswers, id);
 
       handleFinishSurvey(updatedAnswers)
     }
@@ -348,7 +338,6 @@ const SurveyPopup = ({ id }: { id: string }) => {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
       setOpen(false);
-      console.log("Antworten:", updatedAnswers);
     }
   };
 
