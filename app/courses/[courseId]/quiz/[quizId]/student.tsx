@@ -111,6 +111,20 @@ export default function StudentQuiz() {
     { id: [quizId] }
   );
 
+  const currentItem = contentsByIds[0].items!.find(
+    (item) => item.id === currentQuestion.itemId
+  )!;
+  const currentItemForPreview = useMemo<Item>(
+    () => ({
+      id: currentItem.id,
+      associatedSkills: currentItem.associatedSkills.map((skill) => ({
+        ...skill,
+      })),
+      associatedBloomLevels: currentItem.associatedBloomLevels as BloomLevel[],
+    }),
+    [currentItem, currentItem.id]
+  );
+
   if (contentsByIds.length == 0) {
     return <PageError message="No quiz found with given id." />;
   }
@@ -165,20 +179,6 @@ export default function StudentQuiz() {
       });
     }
   };
-
-  const currentItem = contentsByIds[0].items!.find(
-    (item) => item.id === currentQuestion.itemId,
-  )!;
-  const currentItemForPreview = useMemo<Item>(
-    () => ({
-      id: currentItem.id,
-      associatedSkills: currentItem.associatedSkills.map((skill) => ({
-        ...skill,
-      })),
-      associatedBloomLevels: currentItem.associatedBloomLevels as BloomLevel[],
-    }),
-    [currentItem, currentItem.id],
-  );
 
   return (
     <main>
