@@ -13,7 +13,7 @@
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "prepare": "husky install",
-    "update-schema": "fetch-graphql-schema http://localhost:8080/graphql -o src/schema.graphql -r && ( [[ \"$OSTYPE\" == \"darwin\"* ]] && sed -i '' 's/Assessment,/Assessment \\&/' src/schema.graphql || sed -i 's/Assessment,/Assessment \\&/' src/schema.graphql )"
+    "update-schema": "fetch-graphql-schema http://localhost:8080/graphql -o src/schema.graphql -r && ( [[ \"$OSTYPE\" == \"darwin\"* ]] && sed -i '' 's/Assessment,/Assessment \\&/' src/schema.graphql || sed -i 's/Assessment,/Assessment \\&/' src/schema.graphql ) && format-graphql --write ./src/schema.graphql"
   },
   "lint-staged": {
     "*.{ts,tsx,css,json}": "prettier --write"
@@ -78,6 +78,7 @@
     "concurrently": "^8.2.2",
     "eslint-config-prettier": "^8.10.0",
     "fetch-graphql-schema": "^0.2.1",
+    "format-graphql": "^1.5.0",
     "husky": "^8.0.3",
     "lint-staged": "^13.3.0",
     "prettier": "^2.8.8",
