@@ -21,7 +21,7 @@ import {
   useQueryLoader,
 } from "react-relay";
 import { graphql } from "relay-runtime";
-import SurveyPopup from "@/components/PlayerTypeSurvey";
+import SurveyPopup from "@/components/gamification/player-hexad-type-survey/PlayerTypeSurvey";
 
 export default function StudentPage() {
   const { currentUserInfo } = useLazyLoadQuery<studentStudentQuery>(
