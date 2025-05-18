@@ -10,21 +10,23 @@ import {
   LinearProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import {
-  graphql,
-  useMutation,
-} from "react-relay";
+import { graphql, useMutation } from "react-relay";
 import { PlayerTypeSurveyEvaluateHexadTypeMutation } from "@/__generated__/PlayerTypeSurveyEvaluateHexadTypeMutation.graphql";
 import { questions } from "./questions";
 import { PlayerTypes } from "../types";
+
+type Answer = {
+  answer: string;
+  types: PlayerTypes[];
+  index: number;
+};
 
 const SurveyPopup = ({ id }: { id: string }) => {
   const [open, setOpen] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Answer | null>>({});
-  const [selected, setSelected] = useState<any>(null);
+  const [selected, setSelected] = useState<Answer | null>(null);
   const [confirmSkipOpen, setConfirmSkipOpen] = useState(false);
-  var showSurvey = false;
 
   useEffect(() => {
     const savedAnswer = answers[currentQuestionIndex];
@@ -46,31 +48,25 @@ const SurveyPopup = ({ id }: { id: string }) => {
       }
     `);
 
-  type Answer = {
-    answer: string;
-    types: PlayerTypes[];
-    index: number;
-  };
+  const handleFinishSurvey = (updatedAnswers: Record<number, Answer | null>) => {
+    const input = Object.entries(updatedAnswers)
+      .filter(([_, answer]) => answer !== null)
+      .map(([index, answer]) => ({
+        text: questions[Number(index)].question,
+        selectedAnswer: {
+          text: answer!.answer,
+          playerTypes: answer!.types,
+        },
+        possibleAnswers: questions[Number(index)].options.map((opt) => ({
+          text: opt.label,
+          playerTypes: opt.types,
+        })),
+      }));
 
-  const handleFinishSurvey = (updatedAnswers: Record<number, Answer>) => {
-    const input = Object.entries(updatedAnswers).map(([index, option]) => ({
-      text: questions[Number(index)].question,
-      selectedAnswer: {
-        text: option?.answer,
-        playerTypes: option?.types,
-      },
-      possibleAnswers: questions[Number(index)].options.map((opt) => ({
-        text: opt.label,
-        playerTypes: opt.types,
-      })),
-    }));
-
-    if (!id || typeof id !== "string") {
-      console.error("Ungültige oder fehlende userId:", id);
+    if (!id) {
+      console.error("Invalid user ID:", id);
       return;
     }
-
-    if (!id) return;
 
     PlayerTypeSurveyCalcScoresMutation({
       variables: {
@@ -103,22 +99,23 @@ const SurveyPopup = ({ id }: { id: string }) => {
     };
     setAnswers(updatedAnswers);
     setSelected(null);
+
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
       setOpen(false);
-
       handleFinishSurvey(updatedAnswers);
     }
   };
 
-  const handleSkip = async () => {
+  const handleSkip = () => {
     const updatedAnswers = {
       ...answers,
       [currentQuestionIndex]: null,
     };
     setAnswers(updatedAnswers);
     setSelected(null);
+
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
@@ -128,16 +125,11 @@ const SurveyPopup = ({ id }: { id: string }) => {
 
   const handleBack = () => {
     const prevIndex = currentQuestionIndex - 1;
-
-    // Wiederherstellen der vorherigen Antwort (falls vorhanden)
-    const previousAnswerIndex = answers[prevIndex];
-
     setCurrentQuestionIndex(prevIndex);
-    setSelected(previousAnswerIndex ?? null);
+    setSelected(answers[prevIndex] ?? null);
   };
 
   const current = questions[currentQuestionIndex];
-
   const totalQuestions = questions.length;
   const answeredCount = Object.keys(answers).length;
   const progress = (answeredCount / totalQuestions) * 100;
@@ -291,7 +283,6 @@ const SurveyPopup = ({ id }: { id: string }) => {
       </Dialog>
     </>
   );
-
 };
 
 export default SurveyPopup;
