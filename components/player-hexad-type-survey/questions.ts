@@ -302,8 +302,6 @@ export const questions = [
     question: "When earning rewards, you care most about",
     options: [
       {
-        label: "heir uniqueness or community impact.",
-        image: test,
         label: "their uniqueness or community impact.",
         image: impact_9_A,
         types: [
