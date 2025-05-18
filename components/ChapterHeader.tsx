@@ -80,15 +80,15 @@ export function ChapterHeader({
   chapter.skills
     .filter((c) => c !== null)
     .forEach((c) => {
-      if (!skillCategoryMap.has(c.skillCategory)) {
-        skillCategoryMap.set(c.skillCategory, []);
+      if (!skillCategoryMap.has(c!.skillCategory)) {
+        skillCategoryMap.set(c!.skillCategory, []);
       }
-      skillCategoryMap.get(c.skillCategory)!.push(c.skillName);
+      skillCategoryMap.get(c!.skillCategory)!.push(c!.skillName);
     });
 
-  skillCategoryMap.keys().forEach((key) => {
+  for (const key of skillCategoryMap.keys()) {
     skillCategoryMap.get(key)!.sort();
-  });
+  }
 
   const skillChips = Array.from(skillCategoryMap.entries())
     .sort()
