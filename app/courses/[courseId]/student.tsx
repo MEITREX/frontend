@@ -92,7 +92,6 @@ export default function StudentCoursePage() {
                 userProgressData {
                   nextLearnDate
                   lastLearnDate
-                  
                 }
 
                 id
@@ -157,7 +156,7 @@ export default function StudentCoursePage() {
   const course = coursesByIds[0];
 
   const [expandedBars, setExpandedBars] = useState<Record<string, boolean>>({});
-  
+
   const toggleProgressbar = (id: string) => {
     setExpandedBars((prev) => ({
       ...prev,
@@ -167,15 +166,35 @@ export default function StudentCoursePage() {
 
   const [showProgressbars, setShowProgressbars] = useState(true);
   const [showUpNext, setShowUpNext] = useState(true);
-  
+
   // Colors for Progressbar
   function getColorByIndex(index: number): string {
     const colors = [
-      "#EF4444", "#F97316", "#F59E0B", "#EAB308", "#84CC16",
-      "#22C55E", "#10B981", "#14B8A6", "#06B6D4", "#0EA5E9",
-      "#3B82F6", "#6366F1", "#8B5CF6", "#A855F7", "#D946EF",
-      "#EC4899", "#F43F5E", "#78716C", "#64748B", "#475569",
-      "#334155", "#0F172A", "#172554", "#1E3A8A", "#312E81"
+      "#EF4444",
+      "#F97316",
+      "#F59E0B",
+      "#EAB308",
+      "#84CC16",
+      "#22C55E",
+      "#10B981",
+      "#14B8A6",
+      "#06B6D4",
+      "#0EA5E9",
+      "#3B82F6",
+      "#6366F1",
+      "#8B5CF6",
+      "#A855F7",
+      "#D946EF",
+      "#EC4899",
+      "#F43F5E",
+      "#78716C",
+      "#64748B",
+      "#475569",
+      "#334155",
+      "#0F172A",
+      "#172554",
+      "#1E3A8A",
+      "#312E81",
     ];
 
     return colors[index % colors.length];
@@ -186,22 +205,33 @@ export default function StudentCoursePage() {
   const uniqueSkillCategories = Array.from(
     new Map(course.skills.map((skill) => [skill.skillCategory, skill])).values()
   );
-  
+
   // Sort the categories by value. Categories with skillValue 0 will be displayed last.
   const sortedSkillCategories = [...uniqueSkillCategories].sort((a, b) => {
     const getTotalProgress = (category: typeof a) => {
-      const skillsInCategory = course.skills.filter(skill => skill.skillCategory === category.skillCategory);
-      const uniqueSkills = Array.from(new Map(skillsInCategory.map(s => [s.skillName, s])).values());
+      const skillsInCategory = course.skills.filter(
+        (skill) => skill.skillCategory === category.skillCategory
+      );
+      const uniqueSkills = Array.from(
+        new Map(skillsInCategory.map((s) => [s.skillName, s])).values()
+      );
       return uniqueSkills.reduce(
-        (acc, skill) => acc + Object.values(skill.skillLevels || {}).reduce((sum, level) => sum + (level?.value || 0), 0),
+        (acc, skill) =>
+          acc +
+          Object.values(skill.skillLevels || {}).reduce(
+            (sum, level) => sum + (level?.value || 0),
+            0
+          ),
         0
       );
     };
     return getTotalProgress(b) - getTotalProgress(a);
   });
 
-  const totalPages = Math.ceil(uniqueSkillCategories.length / categoriesPerPage);
-  
+  const totalPages = Math.ceil(
+    uniqueSkillCategories.length / categoriesPerPage
+  );
+
   const currentCategorySlice = sortedSkillCategories.slice(
     currentPage * categoriesPerPage,
     (currentPage + 1) * categoriesPerPage
@@ -237,7 +267,7 @@ export default function StudentCoursePage() {
               <Info />
             </IconButton>
           </LightTooltip>
-        )}  
+        )}
         <div className="flex-1"></div>
 
         <Button
@@ -328,7 +358,7 @@ export default function StudentCoursePage() {
           </Link>
         </div>
       </div>
-      
+
       <div className="flex flex-col gap-2 mb-4">
         <div className="flex items-center gap-4">
           <Button
@@ -346,7 +376,11 @@ export default function StudentCoursePage() {
             title={
               <>
                 <p className="text-slate-600 mb-1">Information Skillprogress</p>
-                <p>{"Here you can see your personal progress for this course, splitted up in every skill category that is assigned to this course. Every skill category consists of unique skills. These skills are assigned to the different exercises. If you complete an exercise your skill progress will increase."}</p>
+                <p>
+                  {
+                    "Here you can see your personal progress for this course, splitted up in every skill category that is assigned to this course. Every skill category consists of unique skills. These skills are assigned to the different exercises. If you complete an exercise your skill progress will increase."
+                  }
+                </p>
               </>
             }
           >
@@ -356,48 +390,60 @@ export default function StudentCoursePage() {
           </LightTooltip>
 
           {showProgressbars && totalPages > 1 && (
-          <div className="flex gap-2 items-center ml-12">
-            <IconButton onClick={handlePrevPage} disabled={currentPage === 0}>
-              <ArrowBackIosNewIcon />
-            </IconButton>
-            <span>
-              {currentPage + 1} / {totalPages}
-            </span>
-            <IconButton onClick={handleNextPage} disabled={currentPage >= totalPages - 1}>
-              <ArrowForwardIosIcon />
-            </IconButton>
-          </div>
-        )}
+            <div className="flex gap-2 items-center ml-12">
+              <IconButton onClick={handlePrevPage} disabled={currentPage === 0}>
+                <ArrowBackIosNewIcon />
+              </IconButton>
+              <span>
+                {currentPage + 1} / {totalPages}
+              </span>
+              <IconButton
+                onClick={handleNextPage}
+                disabled={currentPage >= totalPages - 1}
+              >
+                <ArrowForwardIosIcon />
+              </IconButton>
+            </div>
+          )}
         </div>
       </div>
 
-      <div>  
+      <div>
         {showProgressbars && (
-          
           <div className="competency-progressbars grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            
-            
             {currentCategorySlice.map((uniqueSkill) => {
-
-              const skillsInCategory = course.skills.filter(skill => skill.skillCategory === uniqueSkill.skillCategory);
+              const skillsInCategory = course.skills.filter(
+                (skill) => skill.skillCategory === uniqueSkill.skillCategory
+              );
               const uniqueSkillsInCategory = Array.from(
-                new Map(skillsInCategory.map(skill => [skill.skillName, skill])).values()
+                new Map(
+                  skillsInCategory.map((skill) => [skill.skillName, skill])
+                ).values()
               );
 
-              const totalCategoryProgress = uniqueSkillsInCategory.reduce((acc, skill) =>
-                acc + Object.values(skill.skillLevels || {}).reduce((sum, level) => sum + (level?.value || 0), 0),
+              const totalCategoryProgress = uniqueSkillsInCategory.reduce(
+                (acc, skill) =>
+                  acc +
+                  Object.values(skill.skillLevels || {}).reduce(
+                    (sum, level) => sum + (level?.value || 0),
+                    0
+                  ),
                 0
               );
-              const categoryProgressValue = Math.floor(Math.min(totalCategoryProgress * 100 / uniqueSkillsInCategory.length, 100));
+              const categoryProgressValue = Math.floor(
+                Math.min(
+                  (totalCategoryProgress * 100) / uniqueSkillsInCategory.length,
+                  100
+                )
+              );
 
               const barSections: { color: string; widthPercent: number }[] = [];
               const totalSkills = uniqueSkillsInCategory.length;
 
               uniqueSkillsInCategory.forEach((skill, index) => {
-                const skillProgressValue = Object.values(skill.skillLevels || {}).reduce(
-                  (sum, level) => sum + (level?.value || 0),
-                  0
-                );
+                const skillProgressValue = Object.values(
+                  skill.skillLevels || {}
+                ).reduce((sum, level) => sum + (level?.value || 0), 0);
                 const clamped = Math.min(skillProgressValue, 1);
                 const widthPercent = Math.floor((clamped * 100) / totalSkills);
                 if (widthPercent > 0) {
@@ -409,17 +455,28 @@ export default function StudentCoursePage() {
               });
 
               return (
-                <div key={uniqueSkill.skillCategory} className="mb-4 w-full pl-10">
+                <div
+                  key={uniqueSkill.skillCategory}
+                  className="mb-4 w-full pl-10"
+                >
                   <div className="flex items-center gap-2 w-full">
                     <Button
-                      onClick={() => toggleProgressbar(uniqueSkill.skillCategory)}
+                      onClick={() =>
+                        toggleProgressbar(uniqueSkill.skillCategory)
+                      }
                       className="w-6 h-6 min-w-0 p-0 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-600 transition-colors duration-200"
                     >
-                      {expandedBars[uniqueSkill.skillCategory] ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                      {expandedBars[uniqueSkill.skillCategory] ? (
+                        <ExpandLessIcon fontSize="small" />
+                      ) : (
+                        <ExpandMoreIcon fontSize="small" />
+                      )}
                     </Button>
                     <div className="flex-1">
                       <CompetencyProgressbar
-                        competencyName={`${uniqueSkill.skillCategory} - ${Math.floor(categoryProgressValue)}%`}
+                        competencyName={`${
+                          uniqueSkill.skillCategory
+                        } - ${Math.floor(categoryProgressValue)}%`}
                         heightValue={15}
                         progressValue={categoryProgressValue}
                         color={stringToColor(uniqueSkill.skillCategory)}
@@ -429,17 +486,21 @@ export default function StudentCoursePage() {
                   {expandedBars[uniqueSkill.skillCategory] && (
                     <div className="ml-4">
                       {uniqueSkillsInCategory.map((skill, index) => {
-                        const rawValue = Object.values(skill?.skillLevels || {}).reduce(
-                          (sum, level) => sum + (level?.value || 0),
-                          0
-                        );
+                        const rawValue = Object.values(
+                          skill?.skillLevels || {}
+                        ).reduce((sum, level) => sum + (level?.value || 0), 0);
                         const clamped = Math.min(rawValue, 1);
                         const skillProgressPercent = Math.floor(clamped * 100);
 
                         return (
                           <div key={skill.skillName} className="pl-8 w-full">
                             <CompetencyProgressbar
-                              competencyName={skill.skillName + " - " + Math.floor(skillProgressPercent) + "%"}
+                              competencyName={
+                                skill.skillName +
+                                " - " +
+                                Math.floor(skillProgressPercent) +
+                                "%"
+                              }
                               heightValue={10}
                               progressValue={skillProgressPercent}
                               color={stringToColor(uniqueSkill.skillCategory)}
@@ -452,9 +513,8 @@ export default function StudentCoursePage() {
                 </div>
               );
             })}
-        </div>
-      )}
-
+          </div>
+        )}
       </div>
 
       <section className="mt-8 mb-20">
