@@ -16,8 +16,10 @@ import { questions } from "./questions";
 import { PlayerTypes } from "../types";
 
 type Answer = {
+  question: string;
   answer: string;
   types: PlayerTypes[];
+  non_types: PlayerTypes[];
   index: number;
 };
 
@@ -48,7 +50,9 @@ const SurveyPopup = ({ id }: { id: string }) => {
       }
     `);
 
-  const handleFinishSurvey = (updatedAnswers: Record<number, Answer | null>) => {
+  const handleFinishSurvey = (
+    updatedAnswers: Record<number, Answer | null>
+  ) => {
     const input = Object.entries(updatedAnswers)
       .filter(([_, answer]) => answer !== null)
       .map(([index, answer]) => ({
@@ -77,17 +81,17 @@ const SurveyPopup = ({ id }: { id: string }) => {
   };
 
   const handleSelect = (
-    answer: any,
-    types: any,
-    question: any,
-    non_types: any,
+    answer: string,
+    types: PlayerTypes[],
+    question: string,
+    non_types: PlayerTypes[],
     i: number
   ) => {
     setSelected({
-      question: question,
-      answer: answer,
-      types: types,
-      non_types: non_types,
+      question,
+      answer,
+      types,
+      non_types,
       index: i,
     });
   };
@@ -139,7 +143,14 @@ const SurveyPopup = ({ id }: { id: string }) => {
       {/* Main Survey Dialog */}
       <Dialog open={open} maxWidth="md" fullWidth>
         {/* Progress Bar */}
-        <Box sx={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "white" }}>
+        <Box
+          sx={{
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
+            backgroundColor: "white",
+          }}
+        >
           <LinearProgress
             variant="determinate"
             value={progress}
@@ -186,7 +197,13 @@ const SurveyPopup = ({ id }: { id: string }) => {
                 <Box
                   key={i}
                   onClick={() =>
-                    handleSelect(opt.label, opt.types, current.question, opt.non_types, i)
+                    handleSelect(
+                      opt.label,
+                      opt.types,
+                      current.question,
+                      opt.non_types,
+                      i
+                    )
                   }
                   sx={{
                     position: "relative",
@@ -199,14 +216,18 @@ const SurveyPopup = ({ id }: { id: string }) => {
                     alignItems: "flex-end",
                     justifyContent: "center",
                     transition: "transform 0.3s ease, border 0.2s ease-in-out",
-                    boxShadow: `0 0 0 ${isSelected ? "2px #009BDE" : "1px #0000001A"}`,
+                    boxShadow: `0 0 0 ${
+                      isSelected ? "2px #009BDE" : "1px #0000001A"
+                    }`,
                     backgroundImage: `url(${opt.image.src})`,
                     backgroundSize: "auto calc(100% - 10px)",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
                     "&:hover": {
                       transform: "scale(1.03)",
-                      boxShadow: `0 0 0 2px ${isSelected ? "#009BDE" : "#B3E6F9"}`,
+                      boxShadow: `0 0 0 2px ${
+                        isSelected ? "#009BDE" : "#B3E6F9"
+                      }`,
                       zIndex: 1,
                     },
                   }}
@@ -249,7 +270,9 @@ const SurveyPopup = ({ id }: { id: string }) => {
               onClick={handleNext}
               disabled={selected === null}
             >
-              {currentQuestionIndex === questions.length - 1 ? "Finish" : "Next"}
+              {currentQuestionIndex === questions.length - 1
+                ? "Finish"
+                : "Next"}
             </Button>
           </Box>
         </DialogActions>
@@ -260,7 +283,8 @@ const SurveyPopup = ({ id }: { id: string }) => {
         <DialogTitle>Are you sure you want to quit the survey?</DialogTitle>
         <DialogContent>
           <Typography>
-            All your answers will be lost and there will be no chance to re-do the survey.
+            All your answers will be lost and there will be no chance to re-do
+            the survey.
           </Typography>
         </DialogContent>
         <DialogActions>

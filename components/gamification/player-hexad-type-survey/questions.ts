@@ -22,7 +22,7 @@ import rules_11_A from "@/assets/survey/rules_11_A.svg";
 import barriers_11_B from "@/assets/survey/barriers_11_B.svg";
 import community_12_A from "@/assets/survey/community_12_A.svg";
 import competition_12_B from "@/assets/survey/competition_12_B.svg";
-import { PlayerTypes } from "../types"
+import { PlayerTypes } from "../types";
 
 export const questions = [
   {
@@ -243,7 +243,7 @@ export const questions = [
       },
       {
         label: "clear progress tracking and reward systems.",
-        image:progress_7_B,
+        image: progress_7_B,
         types: [
           PlayerTypes.ACHIEVER,
           PlayerTypes.PHILANTHROPIST,
