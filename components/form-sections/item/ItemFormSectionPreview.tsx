@@ -45,13 +45,17 @@ const ItemFormSectionPreview = ({ item }: ItemFormSectionPreviewProps) => {
       />
       {skillsSelected.map((skill) => (
         <LightTooltip
-              title={
-              <>
-                <p><strong>{skill.skillCategory + ":"}</strong></p>
-                <p><strong>{skill.skillName}</strong></p>
-              </>
-              }
-              placement="top"
+          title={
+            <>
+              <p>
+                <strong>{skill.skillCategory + ":"}</strong>
+              </p>
+              <p>
+                <strong>{skill.skillName}</strong>
+              </p>
+            </>
+          }
+          placement="top"
         >
           <Chip
             key={`${skill.skillCategory}-${skill.skillName}`}

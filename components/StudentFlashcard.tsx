@@ -67,23 +67,22 @@ export function StudentFlashcard({
   }, [answers, question, knew, onChange]);
 
   const currentItem = useMemo<Item>(
-      () => ({
-        id: flashcard.itemId,
-        associatedSkills: flashcard.item!.associatedSkills.map((skill) => ({
-          ...skill,
-        })),
-        associatedBloomLevels: flashcard.item!.associatedBloomLevels as BloomLevel[],
-      }),
-      [flashcard.item, flashcard.itemId]
+    () => ({
+      id: flashcard.itemId,
+      associatedSkills: flashcard.item!.associatedSkills.map((skill) => ({
+        ...skill,
+      })),
+      associatedBloomLevels: flashcard.item!
+        .associatedBloomLevels as BloomLevel[],
+    }),
+    [flashcard.item, flashcard.itemId]
   );
 
   return (
     <div>
       <div className="w-full my-6 flex items-center">
         <div className="border-b border-b-gray-300 grow"></div>
-        <div className="px-3 text-xs text-gray-600">
-          {label}
-        </div>
+        <div className="px-3 text-xs text-gray-600">{label}</div>
         <div className="border-b border-b-gray-300 grow"></div>
       </div>
 

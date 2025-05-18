@@ -59,19 +59,15 @@ export default function StudentQuiz() {
   }, [currentIndex]);
 
   const [trackCompleted, loading] =
-    useMutation<studentQuizTrackCompletedMutation>(
-      graphql`
-        mutation studentQuizTrackCompletedMutation(
-          $input: QuizCompletedInput!
-        ) {
-          logQuizCompleted(input: $input) {
-            correctness
-            hintsUsed
-            success
-          }
+    useMutation<studentQuizTrackCompletedMutation>(graphql`
+      mutation studentQuizTrackCompletedMutation($input: QuizCompletedInput!) {
+        logQuizCompleted(input: $input) {
+          correctness
+          hintsUsed
+          success
         }
-      `
-    );
+      }
+    `);
 
   const [completedInput, setCompletedInput] = useState<
     QuestionCompletedInput[]
@@ -170,16 +166,18 @@ export default function StudentQuiz() {
     }
   };
 
-  const currentItem = contentsByIds[0].items!.find((item) => item.id === currentQuestion.itemId)!;
+  const currentItem = contentsByIds[0].items!.find(
+    (item) => item.id === currentQuestion.itemId,
+  )!;
   const currentItemForPreview = useMemo<Item>(
-        () => ({
-          id: currentItem.id,
-          associatedSkills: currentItem.associatedSkills.map((skill) => ({
-            ...skill,
-          })),
-          associatedBloomLevels: currentItem.associatedBloomLevels as BloomLevel[],
-        }),
-        [currentItem, currentItem.id]
+    () => ({
+      id: currentItem.id,
+      associatedSkills: currentItem.associatedSkills.map((skill) => ({
+        ...skill,
+      })),
+      associatedBloomLevels: currentItem.associatedBloomLevels as BloomLevel[],
+    }),
+    [currentItem, currentItem.id],
   );
 
   return (
