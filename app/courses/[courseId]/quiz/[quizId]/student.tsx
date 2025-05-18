@@ -111,11 +111,27 @@ export default function StudentQuiz() {
     { id: [quizId] }
   );
 
+  const quiz = contentsByIds[0].quiz;
+  const currentQuestion = quiz?.selectedQuestions[currentIndex];
+  const currentItem = contentsByIds[0].items!.find(
+    (item) => item.id === currentQuestion?.itemId
+  )!;
+
+  const currentItemForPreview = useMemo<Item>(
+    () => ({
+      id: currentItem.id,
+      associatedSkills: currentItem.associatedSkills.map((skill) => ({
+        ...skill,
+      })),
+      associatedBloomLevels: currentItem.associatedBloomLevels as BloomLevel[],
+    }),
+    [currentItem]
+  );
+
   if (contentsByIds.length == 0) {
     return <PageError message="No quiz found with given id." />;
   }
 
-  const quiz = contentsByIds[0].quiz;
   if (quiz == null) {
     return (
       <PageError
@@ -125,7 +141,6 @@ export default function StudentQuiz() {
     );
   }
 
-  const currentQuestion = quiz.selectedQuestions[currentIndex];
   if (!currentQuestion) {
     return (
       <PageError title={contentsByIds[0].metadata.name} message="Empty quiz." />
@@ -165,20 +180,6 @@ export default function StudentQuiz() {
       });
     }
   };
-
-  const currentItem = contentsByIds[0].items!.find(
-    (item) => item.id === currentQuestion.itemId,
-  )!;
-  const currentItemForPreview = useMemo<Item>(
-    () => ({
-      id: currentItem.id,
-      associatedSkills: currentItem.associatedSkills.map((skill) => ({
-        ...skill,
-      })),
-      associatedBloomLevels: currentItem.associatedBloomLevels as BloomLevel[],
-    }),
-    [currentItem, currentItem.id],
-  );
 
   return (
     <main>

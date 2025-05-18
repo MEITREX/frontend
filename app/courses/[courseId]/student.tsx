@@ -140,20 +140,12 @@ export default function StudentCoursePage() {
     }
   `);
 
-  // Show 404 error page if id was not found
-  if (coursesByIds.length == 0) {
-    return <PageError message="No course found with given id." />;
-  }
-
   // Extract scoreboard
   const rows: Data[] = scoreboard
     .slice(0, 3)
     .map((element) =>
       createData(element.user?.userName ?? "Unknown", element.powerScore)
     );
-
-  // Extract course
-  const course = coursesByIds[0];
 
   const [expandedBars, setExpandedBars] = useState<Record<string, boolean>>({});
 
@@ -166,42 +158,17 @@ export default function StudentCoursePage() {
 
   const [showProgressbars, setShowProgressbars] = useState(true);
   const [showUpNext, setShowUpNext] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
 
-  // Colors for Progressbar
-  function getColorByIndex(index: number): string {
-    const colors = [
-      "#EF4444",
-      "#F97316",
-      "#F59E0B",
-      "#EAB308",
-      "#84CC16",
-      "#22C55E",
-      "#10B981",
-      "#14B8A6",
-      "#06B6D4",
-      "#0EA5E9",
-      "#3B82F6",
-      "#6366F1",
-      "#8B5CF6",
-      "#A855F7",
-      "#D946EF",
-      "#EC4899",
-      "#F43F5E",
-      "#78716C",
-      "#64748B",
-      "#475569",
-      "#334155",
-      "#0F172A",
-      "#172554",
-      "#1E3A8A",
-      "#312E81",
-    ];
-
-    return colors[index % colors.length];
+  // Show 404 error page if id was not found
+  if (coursesByIds.length == 0) {
+    return <PageError message="No course found with given id." />;
   }
 
+  // Extract course
+  const course = coursesByIds[0];
+
   const categoriesPerPage = 3;
-  const [currentPage, setCurrentPage] = useState(0);
   const uniqueSkillCategories = Array.from(
     new Map(course.skills.map((skill) => [skill.skillCategory, skill])).values()
   );

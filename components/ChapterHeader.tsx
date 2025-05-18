@@ -94,6 +94,7 @@ export function ChapterHeader({
     .sort()
     .map(([category, skillNames], index) => (
       <LightTooltip
+        key={category}
         title={
           <>
             <p>
