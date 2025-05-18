@@ -1,30 +1,27 @@
-import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Box,
-  Typography,
-  LinearProgress,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import test from "../assets/test1.jpg";
-import test2 from "../assets/test3.png";
-import logo from "@/assets/logo.svg";
-import {
-  commitMutation,
-  graphql,
-  useFragment,
-  useLazyLoadQuery,
-  useMutation,
-} from "react-relay";
-import {
-  AnswerInput,
-  PlayerTypeSurveyEvaluateHexadTypeMutation,
-  QuestionInput,
-} from "@/__generated__/PlayerTypeSurveyEvaluateHexadTypeMutation.graphql";
+import team_collaberation_1_A from "@/assets/survey/team_collaberation_1_A.svg";
+import personal_goals_1_B from "@/assets/survey/personal_goals_1_B.svg";
+import experiment_2_A from "@/assets/survey/experiment_2_A.svg";
+import completed_steps_2_B from "@/assets/survey/completed_steps_2_B.svg";
+import collaberation_3_A from "@/assets/survey/collaberation_3_A.svg";
+import loophole_3_B from "@/assets/survey/loophole_3_B.svg";
+import love_4_A from "@/assets/survey/love_4_A.svg";
+import rewards_4_B from "@/assets/survey/rewards_4_B.svg";
+import bugfix_5_A from "@/assets/survey/bugfix_5_A.svg";
+import exploit_5_B from "@/assets/survey/exploit_5_B.svg";
+import teamwork_6_A from "@/assets/survey/teamwork_6_A.svg";
+import explore_6_B from "@/assets/survey/explore_6_B.svg";
+import creative_7_A from "@/assets/survey/creative_7_A.svg";
+import progress_7_B from "@/assets/survey/progress_7_B.svg";
+import openend_8_A from "@/assets/survey/openend_8_A.svg";
+import achievement_8_B from "@/assets/survey/achievement_8_B.svg";
+import impact_9_A from "@/assets/survey/impact_9_A.svg";
+import advantage_9_B from "@/assets/survey/advantage_9_B.svg";
+import guidance_10_A from "@/assets/survey/guidance_10_A.svg";
+import optimize_10_B from "@/assets/survey/optimize_10_B.svg";
+import rules_11_A from "@/assets/survey/rules_11_A.svg";
+import barriers_11_B from "@/assets/survey/barriers_11_B.svg";
+import community_12_A from "@/assets/survey/community_12_A.svg";
+import competition_12_B from "@/assets/survey/competition_12_B.svg";
 
 enum PlayerTypes {
   ACHIEVER = "ACHIEVER",
@@ -35,14 +32,14 @@ enum PlayerTypes {
   DISRUPTOR = "DISRUPTOR",
 }
 
-const questions = [
+export const questions = [
   {
     question: "In team activities, you tend to",
     options: [
       {
         label:
           "actively assist teammates, share resources, and coordinate teamwork.",
-        image: test,
+        image: team_collaberation_1_A,
         types: [
           PlayerTypes.PHILANTHROPIST,
           PlayerTypes.SOCIALISER,
@@ -56,7 +53,7 @@ const questions = [
       },
       {
         label: "focus on personal goals and optimize strategies for rewards.",
-        image: test2,
+        image: personal_goals_1_B,
         types: [
           PlayerTypes.ACHIEVER,
           PlayerTypes.PLAYER,
@@ -75,7 +72,7 @@ const questions = [
     options: [
       {
         label: "experiment freely, ignoring rule limitations.",
-        image: test,
+        image: experiment_2_A,
         types: [
           PlayerTypes.FREE_SPIRIT,
           PlayerTypes.DISRUPTOR,
@@ -89,7 +86,7 @@ const questions = [
       },
       {
         label: "follow tutorials step-by-step to unlock achievements.",
-        image: test2,
+        image: completed_steps_2_B,
         types: [
           PlayerTypes.ACHIEVER,
           PlayerTypes.SOCIALISER,
@@ -108,7 +105,7 @@ const questions = [
     options: [
       {
         label: "improve team rankings through collaboration.",
-        image: test,
+        image: collaberation_3_A,
         types: [
           PlayerTypes.SOCIALISER,
           PlayerTypes.PHILANTHROPIST,
@@ -122,7 +119,7 @@ const questions = [
       },
       {
         label: "break rules or exploit loopholes to outperform others.",
-        image: test2,
+        image: loophole_3_B,
         types: [
           PlayerTypes.DISRUPTOR,
           PlayerTypes.PLAYER,
@@ -141,7 +138,7 @@ const questions = [
     options: [
       {
         label: "helping others or contributing to the community.",
-        image: test,
+        image: love_4_A,
         types: [
           PlayerTypes.PHILANTHROPIST,
           PlayerTypes.SOCIALISER,
@@ -155,7 +152,7 @@ const questions = [
       },
       {
         label: "earning unique rewards or pushing system boundaries.",
-        image: test2,
+        image: rewards_4_B,
         types: [
           PlayerTypes.DISRUPTOR,
           PlayerTypes.PLAYER,
@@ -174,7 +171,7 @@ const questions = [
     options: [
       {
         label: "report it to improve the system.",
-        image: test,
+        image: bugfix_5_A,
         types: [
           PlayerTypes.PHILANTHROPIST,
           PlayerTypes.ACHIEVER,
@@ -188,7 +185,7 @@ const questions = [
       },
       {
         label: "exploit it to create new play styles.",
-        image: test2,
+        image: exploit_5_B,
         types: [
           PlayerTypes.DISRUPTOR,
           PlayerTypes.FREE_SPIRIT,
@@ -207,7 +204,7 @@ const questions = [
     options: [
       {
         label: "collaborating with others to solve tasks.",
-        image: test,
+        image: teamwork_6_A,
         types: [
           PlayerTypes.SOCIALISER,
           PlayerTypes.PHILANTHROPIST,
@@ -221,7 +218,7 @@ const questions = [
       },
       {
         label: "exploring independently with unconventional methods.",
-        image: test2,
+        image: explore_6_B,
         types: [
           PlayerTypes.FREE_SPIRIT,
           PlayerTypes.DISRUPTOR,
@@ -240,7 +237,7 @@ const questions = [
     options: [
       {
         label: "user freedom for creative expression.",
-        image: test,
+        image: creative_7_A,
         types: [
           PlayerTypes.FREE_SPIRIT,
           PlayerTypes.DISRUPTOR,
@@ -254,7 +251,7 @@ const questions = [
       },
       {
         label: "clear progress tracking and reward systems.",
-        image: test2,
+        image:progress_7_B,
         types: [
           PlayerTypes.ACHIEVER,
           PlayerTypes.PHILANTHROPIST,
@@ -273,7 +270,7 @@ const questions = [
     options: [
       {
         label: "open-ended creativity and flexibility.",
-        image: test,
+        image: openend_8_A,
         types: [
           PlayerTypes.FREE_SPIRIT,
           PlayerTypes.DISRUPTOR,
@@ -287,7 +284,7 @@ const questions = [
       },
       {
         label: "achievement-driven goals or social opportunities.",
-        image: test2,
+        image: achievement_8_B,
         types: [
           PlayerTypes.ACHIEVER,
           PlayerTypes.SOCIALISER,
@@ -307,6 +304,8 @@ const questions = [
       {
         label: "heir uniqueness or community impact.",
         image: test,
+        label: "their uniqueness or community impact.",
+        image: impact_9_A,
         types: [
           PlayerTypes.PHILANTHROPIST,
           PlayerTypes.FREE_SPIRIT,
@@ -320,7 +319,7 @@ const questions = [
       },
       {
         label: "their practical value or competitive advantage.",
-        image: test2,
+        image: advantage_9_B,
         types: [
           PlayerTypes.PLAYER,
           PlayerTypes.ACHIEVER,
@@ -339,7 +338,7 @@ const questions = [
     options: [
       {
         label: "offer guidance and support.",
-        image: test,
+        image: guidance_10_A,
         types: [
           PlayerTypes.PHILANTHROPIST,
           PlayerTypes.SOCIALISER,
@@ -353,7 +352,7 @@ const questions = [
       },
       {
         label: "optimize your own strategy based on their errors.",
-        image: test2,
+        image: optimize_10_B,
         types: [
           PlayerTypes.PLAYER,
           PlayerTypes.DISRUPTOR,
@@ -372,7 +371,7 @@ const questions = [
     options: [
       {
         label: "follow them and find optimal solutions.",
-        image: test,
+        image: rules_11_A,
         types: [
           PlayerTypes.ACHIEVER,
           PlayerTypes.PHILANTHROPIST,
@@ -386,7 +385,7 @@ const questions = [
       },
       {
         label: "test their limits to innovate.",
-        image: test2,
+        image: barriers_11_B,
         types: [
           PlayerTypes.DISRUPTOR,
           PlayerTypes.FREE_SPIRIT,
@@ -405,7 +404,7 @@ const questions = [
     options: [
       {
         label: "community-building or charity projects.",
-        image: test,
+        image: community_12_A,
         types: [
           PlayerTypes.PHILANTHROPIST,
           PlayerTypes.SOCIALISER,
@@ -419,7 +418,7 @@ const questions = [
       },
       {
         label: "Time-limited competitions or experimental challenges.",
-        image: test2,
+        image: competition_12_B,
         types: [
           PlayerTypes.PLAYER,
           PlayerTypes.DISRUPTOR,
