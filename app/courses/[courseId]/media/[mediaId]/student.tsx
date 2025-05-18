@@ -167,8 +167,8 @@ export default function StudentMediaPage() {
             }}
             className="group w-full flex items-center justify-center cursor-col-resize"
           >
-            <div className="w-[4px] flex items-center justify-center group-hover:w-[6px] group-active:w-[6px] transition-all h-full bg-slate-50 rounded-full group-hover:bg-slate-300 group-active:bg-slate-200">
-              <div className="bg-slate-300 transition-all group-hover:bg-slate-500 w-[2px] h-[20px] group-hover:h-[40px]"></div>
+            <div className="w-[4px] flex items-center justify-center group-hover:w-[6px] group-active:w-[6px] transition-all h-full rounded-full group-hover:bg-slate-300 group-active:bg-slate-200">
+              <div className="transition-all group-hover:bg-slate-500 w-[2px] h-[20px] group-hover:h-[40px]"></div>
             </div>
           </div>
         )}

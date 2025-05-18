@@ -172,7 +172,6 @@ export function ChapterProgress({ progress }: { progress: number }) {
         value={100}
         size="3rem"
         thickness={4}
-        className="!text-white"
       />
       <CircularProgress
         className="absolute"

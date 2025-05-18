@@ -149,7 +149,6 @@ export function SkillLevel({
         courseId={courseId}
         badge={
           <SkillBadge
-            color={colors.white}
             level={level}
             progress={progress}
             strokeColor={colors.gray[300]}
@@ -341,14 +340,12 @@ function SkillBadge({
   color,
   strokeColor,
   progressColor,
-  textColor = "white",
 }: {
   level: number;
   progress: number;
   color: string;
   strokeColor?: string;
   progressColor?: string;
-  textColor?: string;
 }) {
   return (
     <div className="relative h-[3.25rem] w-12 flex justify-center select-none">
@@ -361,7 +358,6 @@ function SkillBadge({
       />
       <div
         className="absolute inset-0 drop-shadow flex flex-col items-center justify-center"
-        style={{ color: textColor }}
       >
         <div className="mt-0.5 text-xs">level</div>
         <div className="-mt-2 font-bold text-lg">{level}</div>

@@ -208,7 +208,7 @@ export function ProgressBar({
 }) {
   return (
     <div className="relative rounded-full overflow-hidden h-4 w-20 min-[1500px]:w-40 min-[1620px]:w-48">
-      <div className="w-full h-full bg-slate-100"></div>
+      <div className="w-full h-full"></div>
       <div
         className="absolute top-0 h-full transition-[width] duration-500"
         style={{

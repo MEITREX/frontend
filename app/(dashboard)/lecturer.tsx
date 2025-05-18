@@ -79,7 +79,7 @@ export default function LecturerPage() {
                 <Typography
                   variant="h6"
                   component="div"
-                  className="shrink text-ellipsis overflow-hidden whitespace-nowrap "
+                  className="shrink text-ellipsis overflow-hidden whitespace-nowrap"
                 >
                   <Link href={`/courses/${course.id}`} color="black">
                     {course.title}

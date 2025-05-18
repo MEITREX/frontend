@@ -1,5 +1,5 @@
 import {colors, createTheme } from "@mui/material";
-import customColors from "./colors";
+import { muiColors, muiColorsColorBlind } from "./colors";
 
 const commonStyles = {
   typography: {
@@ -21,8 +21,7 @@ export const themeLight = createTheme({
     mode: "light",
     colorBlind: false,
     success: colors.green,
-    primary: customColors.primary,
-    background: customColors.background.light,
+    ...muiColors,
   },
   ...commonStyles,
 });
@@ -32,8 +31,7 @@ export const themeDark = createTheme({
     contrastThreshold: 4.5,
     mode: "dark",
     colorBlind: false,
-    primary: customColors.primary,
-    background: customColors.background.dark,
+    ...muiColors,
   },
   ...commonStyles,
 });
@@ -43,6 +41,7 @@ export const themeColorBlind = createTheme({
     mode: "light",
     // have tried to override mode for a "colorBlind" mode, but it wouldn't work no matter what I tried
     colorBlind: true,
+    ...muiColorsColorBlind,
   },
   ...commonStyles,
 });

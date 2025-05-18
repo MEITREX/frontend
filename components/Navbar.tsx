@@ -269,7 +269,7 @@ function NavbarBase({
   const { themeVariant, setThemeVariant } = useContext(ThemeVariantContext);
 
   return (
-    <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
+    <div className="shrink-0 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
       <div className="text-center mt-8 text-3xl font-medium tracking-wider sticky">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logo.src} alt="GITS logo" className="w-24 m-auto" />
@@ -373,7 +373,7 @@ function NavbarBase({
 
 function NavbarSection({ children, title }: { children: any; title?: string }) {
   return (
-    <div className="bg-white rounded-lg">
+    <div className="rounded-lg">
       <List
         subheader={
           title ? (

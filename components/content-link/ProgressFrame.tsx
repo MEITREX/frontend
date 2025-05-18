@@ -22,7 +22,7 @@ export function ProgressFrame({
   return (
     <>
       <div
-        className={`absolute w-full h-full rounded-full bg-white box-content group-hover:border-4 group-hover:border-white`}
+        className={`absolute w-full h-full rounded-full box-content group-hover:border-4 group-hover:border-white`}
       ></div>
       <CircularProgress
         variant="determinate"
