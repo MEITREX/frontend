@@ -7,7 +7,14 @@ import {
 import { Edit } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { PreloadedQuery, useFragment } from "react-relay";
 import { graphql } from "relay-runtime";
 import { Item } from "../form-sections/item/ItemFormSection";
@@ -141,8 +148,10 @@ const QuestionPreview = ({
       }
     }
   }, []);
-  toggleInlineItemFormSection();
 
+  useLayoutEffect(() => {
+    toggleInlineItemFormSection();
+  }, []);
   useEffect(() => {
     window.addEventListener("resize", toggleInlineItemFormSection);
 
