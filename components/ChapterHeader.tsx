@@ -1,7 +1,12 @@
 "use client";
 import { ChapterHeaderFragment$key } from "@/__generated__/ChapterHeaderFragment.graphql";
 import { Done, ExpandLess, ExpandMore } from "@mui/icons-material";
-import { Chip, CircularProgress, IconButton, Typography } from "@mui/material";
+import {
+  Chip,
+  CircularProgress,
+  IconButton,
+  Typography,
+} from "@mui/material";
 import dayjs from "dayjs";
 import { ReactNode } from "react";
 import { graphql, useFragment } from "react-relay";
@@ -125,7 +130,7 @@ export function ChapterHeader({
 
   return (
     <div
-      className="flex items-center py-4 pl-8 pr-12 -mx-8 mb-8 bg-gradient-to-r from-slate-100 to-slate-50"
+      className="flex items-center py-4 pl-8 pr-12 -mx-8 mb-8 bg-gradient-to-r from-bgSecondaryLight to-transparent-50"
       onClick={onExpandClick}
     >
       {expanded !== undefined && (
