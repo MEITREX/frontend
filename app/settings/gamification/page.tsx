@@ -32,12 +32,9 @@ export default function GamificationSettingsPage() {
             control={<Radio />}
             label="Gamification Enabled"
           />
-          <Typography
-            variant="caption"
-            sx={{ ml: 4, color: "text.secondary" }}
-          >
-            Gamification is the use of game-like elements such as games,
-            badges, or leaderboards to increase engagement and motivation.
+          <Typography variant="caption" sx={{ ml: 4, color: "text.secondary" }}>
+            Gamification is the use of game-like elements such as games, badges,
+            or leaderboards to increase engagement and motivation.
           </Typography>
         </Box>
 
@@ -47,10 +44,7 @@ export default function GamificationSettingsPage() {
             control={<Radio />}
             label="Adaptive Gamification Enabled"
           />
-          <Typography
-            variant="caption"
-            sx={{ ml: 4, color: "text.secondary" }}
-          >
+          <Typography variant="caption" sx={{ ml: 4, color: "text.secondary" }}>
             Adaptive gamification dynamically adjusts game-like elements based
             on each user's behavior and engagement to provide a more
             personalized experience.
@@ -63,10 +57,7 @@ export default function GamificationSettingsPage() {
             control={<Radio />}
             label="All Gamification Disabled"
           />
-          <Typography
-            variant="caption"
-            sx={{ ml: 4, color: "text.secondary" }}
-          >
+          <Typography variant="caption" sx={{ ml: 4, color: "text.secondary" }}>
             Completely disables all gamification elements in the application.
           </Typography>
         </Box>
