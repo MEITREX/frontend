@@ -4,6 +4,7 @@ import { NavbarSemanticSearchQuery } from "@/__generated__/NavbarSemanticSearchQ
 import { NavbarStudentQuery } from "@/__generated__/NavbarStudentQuery.graphql";
 import logo from "@/assets/logo.svg";
 import duration from "dayjs/plugin/duration";
+import Link from "next/link";
 
 dayjs.extend(duration);
 
@@ -14,6 +15,7 @@ import {
   Logout,
   ManageSearch,
   Search,
+  Settings,
 } from "@mui/icons-material";
 import {
   Autocomplete,
@@ -439,6 +441,13 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
             <Avatar src={auth.user?.profile?.picture} />
           </ListItemAvatar>
           <ListItemText primary={auth.user?.profile?.name} />
+          <Tooltip title="Settings" placement="left">
+            <Link href="/settings/gamification">
+              <IconButton>
+                <Settings />
+              </IconButton>
+            </Link>
+          </Tooltip>
         </ListItem>
 
         {tutor && (
