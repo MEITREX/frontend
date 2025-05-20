@@ -18,7 +18,6 @@ export default function NotificationSettingsPage() {
   });
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target);
     setSettings({
       ...settings,
       [event.target.name]: event.target.checked,
