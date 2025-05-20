@@ -46,7 +46,7 @@ export default function GamificationSettingsPage() {
           />
           <Typography variant="caption" sx={{ ml: 4, color: "text.secondary" }}>
             Adaptive gamification dynamically adjusts game-like elements based
-            on each user's behavior and engagement to provide a more
+            on each user&apos;s behavior and engagement to provide a more
             personalized experience.
           </Typography>
         </Box>
