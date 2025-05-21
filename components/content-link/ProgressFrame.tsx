@@ -22,14 +22,14 @@ export function ProgressFrame({
   return (
     <>
       <div
-        className={`absolute w-full h-full rounded-full bg-white box-content group-hover:border-4 group-hover:border-white`}
+        className={`absolute w-full h-full rounded-full bg-bg box-content group-hover:border-4 group-hover:border-shadeLight`}
       ></div>
       <CircularProgress
         variant="determinate"
         value={100}
         size="100%"
         thickness={3}
-        sx={{ color: "grey.100" }}
+        sx={{ color: (theme) => theme.palette.shade.dark }}
       />
       <CircularProgress
         className="absolute"

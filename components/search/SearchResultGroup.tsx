@@ -18,6 +18,7 @@ import {
   Link,
   Paper,
   Tooltip,
+  useTheme,
 } from "@mui/material";
 import { useState } from "react";
 import { graphql, useFragment } from "react-relay";
@@ -269,6 +270,8 @@ export function AssessmentSearchResultGroup({
     _searchResults
   );
 
+  const theme = useTheme();
+
   return (
     <Paper
       variant="outlined"
@@ -302,24 +305,35 @@ export function AssessmentSearchResultGroup({
 
       <Box
         sx={{ borderRadius: "20px" }}
-        className="bg-white p-[15px] flex items-center gap-2"
+        className="p-[15px] flex items-center gap-2"
       >
         <div
           className="h-[40px] aspect-square rounded-full flex items-center justify-center"
-          style={{ backgroundColor: ContentTypeToColor[assessment.__typename] }}
+          style={{
+            backgroundColor:
+              theme.palette.assessment[
+                ContentTypeToColor[assessment.__typename]
+              ],
+          }}
         >
           {assessment.__typename === "FlashcardSetAssessment" ? (
             <QuestionAnswerRounded
               sx={{
-                color: "text.secondary",
-                backgroundColor: ContentTypeToColor[assessment.__typename],
+                color: theme.palette.colorBlind ? "white" : "text.secondary",
+                backgroundColor:
+                  theme.palette.assessment[
+                    ContentTypeToColor[assessment.__typename]
+                  ],
               }}
             />
           ) : assessment.__typename === "QuizAssessment" ? (
             <Quiz
               sx={{
-                color: "text.secondary",
-                backgroundColor: ContentTypeToColor[assessment.__typename],
+                color: theme.palette.colorBlind ? "white" : "text.secondary",
+                backgroundColor:
+                  theme.palette.assessment[
+                    ContentTypeToColor[assessment.__typename]
+                  ],
               }}
             />
           ) : (

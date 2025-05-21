@@ -221,7 +221,7 @@ export default function LecturerFlashcards() {
                     </Button>
                     <Button
                       disabled={isAddFlashcardOpen}
-                      sx={{ color: "red" }}
+                      color="warning"
                       startIcon={<Delete />}
                       onClick={() => {
                         if (

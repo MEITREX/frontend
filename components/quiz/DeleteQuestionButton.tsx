@@ -40,8 +40,9 @@ export function DeleteQuestionButton({ assessmentId, num }: Props) {
   return (
     <Button
       startIcon={<Delete />}
+      color="warning"
       onClick={() => handleDelete()}
-      sx={{ minWidth: "fit-content", color: "red" }}
+      sx={{ minWidth: "fit-content" }}
     >
       <span className="max-lg:hidden">Delete</span>
     </Button>

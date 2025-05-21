@@ -26,7 +26,7 @@ export function SectionHeader({
   return (
     <div className={`flex gap-2 items-center ${children ? "mb-4" : "mb-1"}`}>
       {children && (
-        <div className="bg-gray-200 px-12 py-2 h-full rounded-xl text-center self-start">
+        <div className="bg-shadeDark px-12 py-2 h-full rounded-xl text-center self-start">
           {children}
         </div>
       )}

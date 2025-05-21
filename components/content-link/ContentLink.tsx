@@ -16,17 +16,22 @@ import {
   QuestionAnswerRounded,
   Quiz,
 } from "@mui/icons-material";
-import { Chip, Typography } from "@mui/material";
+import { Chip, Typography, useTheme } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { graphql, useFragment } from "react-relay";
 import colors from "tailwindcss/colors";
 import { NoMaxWidthTooltip } from "../search/SearchResultItem";
 import { ProgressFrame } from "./ProgressFrame";
+import { PaletteOptions } from "@mui/material/styles/createPalette";
 
-export const ContentTypeToColor: Record<string, string> = {
-  MediaContent: colors.violet[200],
-  FlashcardSetAssessment: colors.emerald[200],
-  QuizAssessment: colors.rose[200],
+// using the theme property names to keep the colors responsive to the theme
+export const ContentTypeToColor: Record<
+  string,
+  keyof PaletteOptions["assessment"]
+> = {
+  MediaContent: "media",
+  FlashcardSetAssessment: "flashcardSet",
+  QuizAssessment: "quiz",
 };
 
 export type ContentChip = { key: string; label: string; color?: string };
@@ -103,6 +108,9 @@ export function ContentLink({
     `,
     _content
   );
+
+  const theme = useTheme();
+
   const isProcessing =
     content.aiProcessingProgress?.state === "PROCESSING" ||
     content.aiProcessingProgress?.state === "ENQUEUED" ||
@@ -130,7 +138,7 @@ export function ContentLink({
     {
       key: "type",
       label: typeString,
-      color: ContentTypeToColor[content.__typename],
+      color: theme.palette.assessment[ContentTypeToColor[content.__typename]],
     },
     ...(pageView === PageView.Lecturer && isProcessing
       ? [{ key: "processing", label: "Processing..." }]
@@ -151,7 +159,12 @@ export function ContentLink({
   const cursor = !disabled ? "cursor-pointer" : "cursor-default";
   const frameSize = size == "small" ? "w-10 h-10" : "w-16 h-16";
 
-  let icon =
+  const iconColor = disabled
+    ? "text.disabled"
+    : theme.palette.colorBlind
+    ? "white"
+    : "text.secondary";
+  const icon =
     content.__typename === "MediaContent" ? (
       <div
         className={
@@ -167,17 +180,10 @@ export function ContentLink({
     ) : content.__typename === "FlashcardSetAssessment" ? (
       <QuestionAnswerRounded
         className="!w-1/2 !h-1/2"
-        sx={{
-          color: disabled ? "text.disabled" : "text.secondary",
-        }}
+        sx={{ color: iconColor }}
       />
     ) : content.__typename === "QuizAssessment" ? (
-      <Quiz
-        className="!w-[47%] !h-[47%]"
-        sx={{
-          color: disabled ? "text.disabled" : "text.secondary",
-        }}
-      />
+      <Quiz className="!w-[47%] !h-[47%]" sx={{ color: iconColor }} />
     ) : (
       <div>unknown</div>
     );
@@ -202,7 +208,9 @@ export function ContentLink({
       >
         <ProgressFrame
           color={
-            disabled ? colors.gray[100] : ContentTypeToColor[content.__typename]
+            disabled
+              ? theme.palette.text.disabled
+              : theme.palette.assessment[ContentTypeToColor[content.__typename]]
           }
           _progress={content.userProgressData}
         />
@@ -220,7 +228,12 @@ export function ContentLink({
               key={chip.key}
               className={"!h-4 px-0 !text-[0.6rem]"}
               label={chip.label}
-              sx={{ backgroundColor: chip.color }}
+              sx={{
+                backgroundColor: chip.color,
+                color: theme.palette.colorBlind
+                  ? "white"
+                  : theme.palette.text.primary,
+              }}
               classes={{ label: size == "small" ? "!px-2 mt-[0.1rem]" : "" }}
             />
           ))}

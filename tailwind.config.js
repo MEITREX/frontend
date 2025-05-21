@@ -17,6 +17,12 @@ module.exports = {
         bgSecondary: "var(--color-muitheme-bg-secondary)",
         bgSecondaryLight: "var(--color-muitheme-bg-secondary-light)",
         primaryDark: "var(--color-muitheme-primary-dark)",
+        shadeLight: "var(--color-muitheme-shadeLight)",
+        shadeDark: "var(--color-muitheme-shadeDark)",
+
+        contentFC: "var(--color-muitheme-assessment-media)",
+        contentMedia: "var(--color-muitheme-assessment-quiz)",
+        contentQuiz: "var(--color-muitheme-assessment-fc)",
       },
     },
   },
