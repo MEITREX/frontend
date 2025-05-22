@@ -29,6 +29,8 @@ const SurveyPopup = ({ id }: { id: string }) => {
   const [answers, setAnswers] = useState<Record<number, Answer | null>>({});
   const [selected, setSelected] = useState<Answer | null>(null);
   const [confirmSkipOpen, setConfirmSkipOpen] = useState(false);
+  const [isCompletedScreen, setIsCompletedScreen] = useState(false);
+  const [isErrorScreen, setIsErrorScreen] = useState(false);
 
   useEffect(() => {
     const savedAnswer = answers[currentQuestionIndex];
@@ -72,11 +74,21 @@ const SurveyPopup = ({ id }: { id: string }) => {
       return;
     }
 
+    console.log()
+
     PlayerTypeSurveyCalcScoresMutation({
       variables: {
         id: id,
         input: { questions: input },
       },
+      onError() {
+        setIsErrorScreen(true); // ❌ Fehler anzeigen
+      },
+      onCompleted() {
+        // 👉 Abschluss-Screen erst nach erfolgreicher Mutation anzeigen
+        setIsCompletedScreen(true);
+        setTimeout(() => setOpen(false), 8000);
+      }
     });
   };
 
@@ -104,10 +116,11 @@ const SurveyPopup = ({ id }: { id: string }) => {
     setAnswers(updatedAnswers);
     setSelected(null);
 
-    if (currentQuestionIndex < questions.length - 1) {
+    const lastQuestion = currentQuestionIndex === questions.length - 1;
+
+    if (!lastQuestion) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      setOpen(false);
       handleFinishSurvey(updatedAnswers);
     }
   };
@@ -123,7 +136,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      setOpen(false);
+      handleFinishSurvey(updatedAnswers)
     }
   };
 
@@ -133,10 +146,64 @@ const SurveyPopup = ({ id }: { id: string }) => {
     setSelected(answers[prevIndex] ?? null);
   };
 
+  const handleSkipSurveyConfirm = () => {
+    setConfirmSkipOpen(false);
+    setOpen(false);
+    handleFinishSurvey([])
+  }
+
   const current = questions[currentQuestionIndex];
   const totalQuestions = questions.length;
   const answeredCount = Object.keys(answers).length;
   const progress = (answeredCount / totalQuestions) * 100;
+
+  if (isErrorScreen) {
+    return (
+      <Dialog open={open} maxWidth="md" fullWidth>
+        <DialogContent>
+          <Box textAlign="center" py={6}>
+            <Box fontSize={60}>❌</Box> {/* ❌ Emoji für Fehleranzeige */}
+            <Typography variant="h5" fontWeight="bold" mt={2}>
+              Submission failed
+            </Typography>
+            <Typography mt={1}>
+              We couldn’t save your answers. Please try again later.
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3 }}>
+          <Button onClick={() => setOpen(false)} variant="contained">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  }
+
+  if (isCompletedScreen) {
+    return (
+      <Dialog open={open} maxWidth="md" fullWidth>
+        <DialogContent>
+          <Box textAlign="center" py={6}>
+            <Box fontSize={60}>✔</Box>
+            <Typography variant="h5" fontWeight="bold" mt={2}>
+              Survey completed
+            </Typography>
+            <Typography mt={1}>
+              Your player type is now tailored to your preferences
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3 }}>
+          <Button variant="contained" onClick={() => setOpen(false)}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+
+
 
   return (
     <>
@@ -185,6 +252,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
 
         {/* Question Content */}
         <DialogContent>
+
           <Typography variant="h6" fontWeight="bold" mb={2}>
             {current.question}
           </Typography>
@@ -216,18 +284,16 @@ const SurveyPopup = ({ id }: { id: string }) => {
                     alignItems: "flex-end",
                     justifyContent: "center",
                     transition: "transform 0.3s ease, border 0.2s ease-in-out",
-                    boxShadow: `0 0 0 ${
-                      isSelected ? "2px #009BDE" : "1px #0000001A"
-                    }`,
+                    boxShadow: `0 0 0 ${isSelected ? "2px #009BDE" : "1px #0000001A"
+                      }`,
                     backgroundImage: `url(${opt.image.src})`,
                     backgroundSize: "auto calc(100% - 10px)",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
                     "&:hover": {
                       transform: "scale(1.03)",
-                      boxShadow: `0 0 0 2px ${
-                        isSelected ? "#009BDE" : "#B3E6F9"
-                      }`,
+                      boxShadow: `0 0 0 2px ${isSelected ? "#009BDE" : "#B3E6F9"
+                        }`,
                       zIndex: 1,
                     },
                   }}
@@ -256,7 +322,8 @@ const SurveyPopup = ({ id }: { id: string }) => {
 
         {/* Navigation Buttons */}
         <DialogActions sx={{ justifyContent: "space-between", px: 3 }}>
-          <Button variant="contained" color="info" onClick={handleSkip}>
+
+          <Button variant="outlined" color="info" onClick={handleSkip}>
             Skip
           </Button>
           <Box sx={{ display: "flex", gap: 2 }}>
@@ -275,6 +342,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
                 : "Next"}
             </Button>
           </Box>
+
         </DialogActions>
       </Dialog>
 
@@ -289,10 +357,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => {
-              setConfirmSkipOpen(false);
-              setOpen(false);
-            }}
+            onClick={() => handleSkipSurveyConfirm()}
           >
             Quit and skip survey
           </Button>
