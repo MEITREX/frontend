@@ -124,7 +124,7 @@ export default function LecturerQuiz() {
         <GenerateQuizModal
           onClose={() => setGenerateSetModalOpen(false)}
           isOpen={isGenerateSetModalOpen}
-          chapterId={content.metadata.chapterId}
+          courseId={courseId}
         />
       </ErrorContext.Provider>
     </main>
