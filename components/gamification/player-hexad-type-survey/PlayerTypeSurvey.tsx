@@ -31,6 +31,10 @@ const SurveyPopup = ({ id }: { id: string }) => {
   const [confirmSkipOpen, setConfirmSkipOpen] = useState(false);
   const [isCompletedScreen, setIsCompletedScreen] = useState(false);
   const [isErrorScreen, setIsErrorScreen] = useState(false);
+  const [isStartScreen, setIsStartScreen] = useState(true);
+  const [isSkippedScreen, setIsSkippedScreen] = useState(false);
+
+
 
   useEffect(() => {
     const savedAnswer = answers[currentQuestionIndex];
@@ -83,8 +87,13 @@ const SurveyPopup = ({ id }: { id: string }) => {
         setIsErrorScreen(true);
       },
       onCompleted() {
-        setIsCompletedScreen(true);
-        setTimeout(() => setOpen(false), 8000);
+        if(input.length > 0){
+          setIsCompletedScreen(true);
+          setTimeout(() => setOpen(false), 8000);
+        } else {
+          setIsSkippedScreen(true)
+          setTimeout(() => setOpen(false), 8000);
+        }
       },
     });
   };
@@ -144,8 +153,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
   };
 
   const handleSkipSurveyConfirm = () => {
-    setConfirmSkipOpen(false);
-    setOpen(false);
+    setIsSkippedScreen(true)
     handleFinishSurvey([]);
   };
 
@@ -154,9 +162,197 @@ const SurveyPopup = ({ id }: { id: string }) => {
   const answeredCount = Object.keys(answers).length;
   const progress = (answeredCount / totalQuestions) * 100;
 
+  if (isSkippedScreen) {
+    if (isSkippedScreen) {
+      return (
+        <Dialog open={open} maxWidth="md" fullWidth>
+          <Box
+            sx={{
+              position: "sticky",
+              top: 0,
+              zIndex: 1,
+              backgroundColor: "white",
+            }}
+          >
+            <LinearProgress
+              variant="determinate"
+              value={100}
+              sx={{
+                height: 6,
+                borderRadius: 2,
+                backgroundColor: "#eee",
+                "& .MuiLinearProgress-bar": {
+                  backgroundColor: "#2196f3",
+                },
+              }}
+            />
+          </Box>
+          <DialogTitle>
+            <Button
+              onClick={() => setConfirmSkipOpen(true)}
+              disabled={true}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                minWidth: "auto",
+                padding: 1,
+                color: "grey.600",
+              }}
+            >
+              <CloseIcon />
+            </Button>
+          </DialogTitle>
+          <DialogContent>
+            <Box textAlign="center" py={6}>
+              <Box fontSize={60}>🚫</Box> {/* Emoji oben */}
+              <Typography variant="h5" fontWeight="bold" mt={2}>
+                Survey skipped
+              </Typography>
+              <Typography mt={1}>
+                We’ll apply default settings for now – these values can change to improve your experience.
+              </Typography>
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ px: 3 }}>
+            <Button onClick={() => setOpen(false)} variant="contained">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+      );
+    }
+
+  }
+
+  if (isStartScreen) {
+    return (
+      <>
+        <Dialog open={open} maxWidth="md" fullWidth>
+          <Box
+            sx={{
+              position: "sticky",
+              top: 0,
+              zIndex: 1,
+              backgroundColor: "white",
+            }}
+          >
+            <LinearProgress
+              variant="determinate"
+              value={0}
+              sx={{
+                height: 6,
+                borderRadius: 2,
+                backgroundColor: "#eee",
+                "& .MuiLinearProgress-bar": {
+                  backgroundColor: "#2196f3",
+                },
+              }}
+            />
+          </Box>
+          <DialogTitle>
+            <Button
+              onClick={() => setConfirmSkipOpen(true)}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                minWidth: "auto",
+                padding: 1,
+                color: "grey.600",
+              }}
+            >
+              <CloseIcon />
+            </Button>
+          </DialogTitle>
+          <DialogContent>
+            <Box textAlign="center" py={6}>
+              <Box fontSize={60}>📖</Box> {/* Emoji */}
+              <Typography variant="h5" fontWeight="bold" mt={2}>
+                Welcome to the player type survey
+              </Typography>
+              <Typography mt={1}>
+                This short survey helps us understand how you interact in games, so we can personalize your experience.
+              </Typography>
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ px: 3 }}>
+            <Button
+              variant="contained"
+              onClick={() => setIsStartScreen(false)} // ⏩ zur ersten Frage
+            >
+              Start Survey
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Confirm Skip Dialog */}
+        <Dialog open={confirmSkipOpen} onClose={() => setConfirmSkipOpen(false)}>
+          <DialogTitle>Are you sure you want to quit the survey?</DialogTitle>
+          <DialogContent>
+            <Typography>
+              All your answers will be lost and there will be no chance to re-do
+              the survey.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => handleSkipSurveyConfirm()}>
+              Quit and skip survey
+            </Button>
+            <Button
+              color="info"
+              variant="contained"
+              onClick={() => setConfirmSkipOpen(false)}
+            >
+              Back to survey
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </>
+    );
+  }
+
+
   if (isErrorScreen) {
     return (
       <Dialog open={open} maxWidth="md" fullWidth>
+        <Box
+          sx={{
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
+            backgroundColor: "white",
+          }}
+        >
+          <LinearProgress
+            variant="determinate"
+            value={100}
+            sx={{
+              height: 6,
+              borderRadius: 2,
+              backgroundColor: "#eee",
+              "& .MuiLinearProgress-bar": {
+                backgroundColor: "#2196f3",
+              },
+            }}
+          />
+        </Box>
+        <DialogTitle>
+          <Button
+            onClick={() => setConfirmSkipOpen(true)}
+            disabled={true}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              minWidth: "auto",
+              padding: 1,
+              color: "grey.600",
+            }}
+          >
+            <CloseIcon />
+          </Button>
+        </DialogTitle>
         <DialogContent>
           <Box textAlign="center" py={6}>
             <Box fontSize={60}>❌</Box> {/* ❌ Emoji für Fehleranzeige */}
@@ -180,6 +376,43 @@ const SurveyPopup = ({ id }: { id: string }) => {
   if (isCompletedScreen) {
     return (
       <Dialog open={open} maxWidth="md" fullWidth>
+        <Box
+          sx={{
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
+            backgroundColor: "white",
+          }}
+        >
+          <LinearProgress
+            variant="determinate"
+            value={100}
+            sx={{
+              height: 6,
+              borderRadius: 2,
+              backgroundColor: "#eee",
+              "& .MuiLinearProgress-bar": {
+                backgroundColor: "#2196f3",
+              },
+            }}
+          />
+        </Box>
+        <DialogTitle>
+          <Button
+            onClick={() => setConfirmSkipOpen(true)}
+            disabled={true}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              minWidth: "auto",
+              padding: 1,
+              color: "grey.600",
+            }}
+          >
+            <CloseIcon />
+          </Button>
+        </DialogTitle>
         <DialogContent>
           <Box textAlign="center" py={6}>
             <Box fontSize={60}>✔</Box>
