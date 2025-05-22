@@ -30,7 +30,7 @@ export function FeedbackTooltip({
         </div>
       }
       classes={{
-        tooltip: "!bg-white border border-gray-200 !text-black",
+        tooltip: "border border-gray-200 !text-black",
       }}
     >
       <Box display="inline-block">{children}</Box>

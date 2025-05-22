@@ -176,7 +176,7 @@ export function RichTextEditor({
         <div className="pt-[6px] focus-within:pt-[42px] transition-all">
           <div className="p-2 pt-1">
             {label && (
-              <div className="text-[#666666] absolute font-normal text-[12px] mx-3 -left-[3px] -top-[9px] group-focus-within:-left-[4px] group-focus-within:-top-[10px] bg-white px-1 group-focus-within:text-[#3676CB]">
+              <div className="text-[#666666] absolute font-normal text-[12px] mx-3 -left-[3px] -top-[9px] group-focus-within:-left-[4px] group-focus-within:-top-[10px] px-1 group-focus-within:text-[#3676CB]">
                 {label} {required ? "*" : ""}
               </div>
             )}

@@ -78,9 +78,9 @@ export function StudentFlashcardSide({
             color={knew ? "success" : "inherit"}
             disabled={!turned}
             onClick={(e) => setKnew(true)}
-            startIcon={<Check className="text-white" />}
+            startIcon={<Check />}
           >
-            <span className="text-white">Correct</span>
+            <span>Correct</span>
           </Button>
           <Button
             size="small"
@@ -90,7 +90,7 @@ export function StudentFlashcardSide({
             onClick={(e) => setKnew(false)}
             startIcon={<Close className="text-white" />}
           >
-            <span className="text-white">Wrong</span>
+            <span>Wrong</span>
           </Button>
         </div>
       </motion.div>

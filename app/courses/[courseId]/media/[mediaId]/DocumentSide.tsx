@@ -183,7 +183,7 @@ export function DocumentSide({
 
           {linkedRecords.length > 0 && (
             <>
-              <div className="flex text-slate-500 items-center gap-2 text-xs font-medium px-1">
+              <div className="flex items-center gap-2 text-xs font-medium px-1">
                 Referenced at:
                 {linkedRecords.map((linkedRecord) => (
                   <div
@@ -193,7 +193,7 @@ export function DocumentSide({
                     }
                     className="w-12 aspect-video rounded-sm overflow-hidden shadow-lg relative"
                   >
-                    <div className="w-full h-full bg-slate-900/30 z-10 absolute text-white flex transition-all items-center justify-center cursor-pointer hover:bg-slate-900/40 text-[10px]">
+                    <div className="w-full h-full z-10 absolute flex transition-all items-center justify-center cursor-pointer hover:bg-slate-900/40 text-[10px]">
                       {dayjs
                         .duration(linkedRecord.startTime ?? 0, "seconds")
                         .format(

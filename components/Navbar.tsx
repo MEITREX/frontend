@@ -328,9 +328,7 @@ function NavbarBase({
           renderOption={(props, option) => (
             <li {...props} key={option?.breadcrumbs}>
               <div>
-                <div className="text-[10px] text-slate-500">
-                  {option.breadcrumbs}
-                </div>
+                <div className="text-[10px]">{option.breadcrumbs}</div>
                 {option.title}
                 {option.position && (
                   <div className="text-[10px] text-slate-400">

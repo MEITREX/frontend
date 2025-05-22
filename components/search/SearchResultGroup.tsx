@@ -171,7 +171,6 @@ export function MediaRecordSearchResultGroup({
     <Paper
       variant="outlined"
       sx={{ margin: "15px", borderRadius: "20px" }}
-      className="bg-slate-200"
     >
       <Box sx={{ display: "flex", width: "100%" }}>
         <Tooltip title="Toggle expanded view">
@@ -276,7 +275,6 @@ export function AssessmentSearchResultGroup({
     <Paper
       variant="outlined"
       sx={{ margin: "15px", borderRadius: "20px" }}
-      className="bg-slate-200"
     >
       <Box className="flex items-center w-full">
         <div className="aspect-square w-[40px] m-1"></div>

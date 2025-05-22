@@ -275,7 +275,7 @@ function Segment({
 }) {
   return (
     <div
-      className={`overflow-hidden border  shadow  text-xs rounded-md p-2 gap-1 grid grid-cols-[auto_2fr_1fr] bg-slate-50 border-slate-200`}
+      className={`overflow-hidden border  shadow  text-xs rounded-md p-2 gap-1 grid grid-cols-[auto_2fr_1fr] border-slate-200`}
     >
       <div className="col-span-full ml-1 mb-0.5 font-medium">{title}</div>
 
@@ -322,10 +322,7 @@ function Segment({
                   .duration(segment.startTime ?? 0, "seconds")
                   .format("HH:mm:ss")}
               </span>
-              <span className="italic text-slate-400">
-                {" "}
-                – {segment.transcript}
-              </span>
+              <span className="italic"> – {segment.transcript}</span>
             </div>
 
             <div className="p-1 flex flex-col justify-center">
@@ -373,7 +370,7 @@ function CurrentSegment({
 
   return (
     <div
-      className={`overflow-hidden relative text-xs rounded-b-md p-2 gap-1 grid grid-cols-[auto_2fr_1fr] bg-slate-100`}
+      className={`overflow-hidden relative text-xs rounded-b-md p-2 gap-1 grid grid-cols-[auto_2fr_1fr]`}
     >
       <div className="col-span-full ml-1 mb-0.5 font-medium">
         {segment.title}
@@ -399,10 +396,10 @@ function CurrentSegment({
       </NoMaxWidthTooltip>
 
       <div className="p-1 rounded-[4px] text-[10px]  cursor-pointer hover:bg-slate-100 active:bg-slate-200 transition duration-100 h-14 block overflow-hidden">
-        <span className="text-slate-500">
+        <span className="">
           {dayjs.duration(segment.startTime ?? 0, "seconds").format("HH:mm:ss")}
         </span>
-        <span className="italic text-slate-400"> – {segment.transcript}</span>
+        <span className="italic"> – {segment.transcript}</span>
       </div>
 
       <div className="p-1 flex flex-col justify-center">

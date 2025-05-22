@@ -95,7 +95,7 @@ export function DialogBase<T extends { [k in string]: any }>({
           ))}
         </Form>
         {inProgress && (
-          <div className="absolute inset-0 bg-white z-10 flex justify-center items-center">
+          <div className="absolute inset-0 z-10 flex justify-center items-center">
             <CircularProgress />
           </div>
         )}

@@ -506,7 +506,7 @@ export function MediaRecordSelector({
         ))}
 
         <div
-          className="m-2 flex  items-center gap-8 w-[500px] min-h-36 bg-slate-100 shadow-inner hover:bg-slate-200 p-8 rounded-md border border-dashed border-slate-500 cursor-pointer"
+          className="m-2 flex  items-center gap-8 w-[500px] min-h-36 shadow-inner hover:bg-slate-200 p-8 rounded-md border border-dashed border-slate-500 cursor-pointer"
           {...getRootProps()}
         >
           <input {...getInputProps()} />

@@ -120,7 +120,7 @@ export function ChapterHeader({
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
             overflow: "hidden",
-            backgroundColor: stringToColor(category),
+            // backgroundColor: stringToColor(category),
             color: getReadableTextColor(stringToColor(category)),
           }}
           label={category}
