@@ -404,23 +404,6 @@ export default function StudentCoursePage() {
                 )
               );
 
-              const barSections: { color: string; widthPercent: number }[] = [];
-              const totalSkills = uniqueSkillsInCategory.length;
-
-              uniqueSkillsInCategory.forEach((skill, index) => {
-                const skillProgressValue = Object.values(
-                  skill.skillLevels || {}
-                ).reduce((sum, level) => sum + (level?.value || 0), 0);
-                const clamped = Math.min(skillProgressValue, 1);
-                const widthPercent = Math.floor((clamped * 100) / totalSkills);
-                if (widthPercent > 0) {
-                  barSections.push({
-                    color: stringToColor(skill.skillName),
-                    widthPercent,
-                  });
-                }
-              });
-
               return (
                 <div
                   key={uniqueSkill.skillCategory}
@@ -452,7 +435,7 @@ export default function StudentCoursePage() {
                   </div>
                   {expandedBars[uniqueSkill.skillCategory] && (
                     <div className="ml-4">
-                      {uniqueSkillsInCategory.map((skill, index) => {
+                      {uniqueSkillsInCategory.map((skill) => {
                         const rawValue = Object.values(
                           skill?.skillLevels || {}
                         ).reduce((sum, level) => sum + (level?.value || 0), 0);
