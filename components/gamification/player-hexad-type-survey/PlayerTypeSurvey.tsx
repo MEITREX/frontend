@@ -74,21 +74,18 @@ const SurveyPopup = ({ id }: { id: string }) => {
       return;
     }
 
-    console.log()
-
     PlayerTypeSurveyCalcScoresMutation({
       variables: {
         id: id,
         input: { questions: input },
       },
       onError() {
-        setIsErrorScreen(true); // ❌ Fehler anzeigen
+        setIsErrorScreen(true);
       },
       onCompleted() {
-        // 👉 Abschluss-Screen erst nach erfolgreicher Mutation anzeigen
         setIsCompletedScreen(true);
         setTimeout(() => setOpen(false), 8000);
-      }
+      },
     });
   };
 
@@ -136,7 +133,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      handleFinishSurvey(updatedAnswers)
+      handleFinishSurvey(updatedAnswers);
     }
   };
 
@@ -149,8 +146,8 @@ const SurveyPopup = ({ id }: { id: string }) => {
   const handleSkipSurveyConfirm = () => {
     setConfirmSkipOpen(false);
     setOpen(false);
-    handleFinishSurvey([])
-  }
+    handleFinishSurvey([]);
+  };
 
   const current = questions[currentQuestionIndex];
   const totalQuestions = questions.length;
@@ -200,10 +197,8 @@ const SurveyPopup = ({ id }: { id: string }) => {
           </Button>
         </DialogActions>
       </Dialog>
-    )
+    );
   }
-
-
 
   return (
     <>
@@ -252,7 +247,6 @@ const SurveyPopup = ({ id }: { id: string }) => {
 
         {/* Question Content */}
         <DialogContent>
-
           <Typography variant="h6" fontWeight="bold" mb={2}>
             {current.question}
           </Typography>
@@ -284,16 +278,18 @@ const SurveyPopup = ({ id }: { id: string }) => {
                     alignItems: "flex-end",
                     justifyContent: "center",
                     transition: "transform 0.3s ease, border 0.2s ease-in-out",
-                    boxShadow: `0 0 0 ${isSelected ? "2px #009BDE" : "1px #0000001A"
-                      }`,
+                    boxShadow: `0 0 0 ${
+                      isSelected ? "2px #009BDE" : "1px #0000001A"
+                    }`,
                     backgroundImage: `url(${opt.image.src})`,
                     backgroundSize: "auto calc(100% - 10px)",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
                     "&:hover": {
                       transform: "scale(1.03)",
-                      boxShadow: `0 0 0 2px ${isSelected ? "#009BDE" : "#B3E6F9"
-                        }`,
+                      boxShadow: `0 0 0 2px ${
+                        isSelected ? "#009BDE" : "#B3E6F9"
+                      }`,
                       zIndex: 1,
                     },
                   }}
@@ -322,7 +318,6 @@ const SurveyPopup = ({ id }: { id: string }) => {
 
         {/* Navigation Buttons */}
         <DialogActions sx={{ justifyContent: "space-between", px: 3 }}>
-
           <Button variant="outlined" color="info" onClick={handleSkip}>
             Skip
           </Button>
@@ -342,7 +337,6 @@ const SurveyPopup = ({ id }: { id: string }) => {
                 : "Next"}
             </Button>
           </Box>
-
         </DialogActions>
       </Dialog>
 
@@ -356,9 +350,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={() => handleSkipSurveyConfirm()}
-          >
+          <Button onClick={() => handleSkipSurveyConfirm()}>
             Quit and skip survey
           </Button>
           <Button
