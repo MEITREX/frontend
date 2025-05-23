@@ -337,11 +337,9 @@ export function AddCodeAssignmentModal({
           </DialogContent>
 
           <DialogActions>
-            {step === "form" && (
-              <Button onClick={() => setStep("select")}>Back</Button>
-            )}
-
+            {step === "select" && (
             <LoadingButton onClick={handleSync}>Sync assignments</LoadingButton>
+            )}
 
             <Button onClick={onClose} disabled={isSyncing}>
               Cancel
@@ -352,7 +350,7 @@ export function AddCodeAssignmentModal({
                 disabled={!valid}
                 loading={isCreatingAssignment}
               >
-                Save
+                Add
               </LoadingButton>
             )}
             <Backdrop open={isSyncing} sx={{ zIndex: "modal" }}>
