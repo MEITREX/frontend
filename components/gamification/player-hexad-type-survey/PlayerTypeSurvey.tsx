@@ -34,8 +34,6 @@ const SurveyPopup = ({ id }: { id: string }) => {
   const [isStartScreen, setIsStartScreen] = useState(true);
   const [isSkippedScreen, setIsSkippedScreen] = useState(false);
 
-
-
   useEffect(() => {
     const savedAnswer = answers[currentQuestionIndex];
     setSelected(savedAnswer ?? null);
@@ -87,11 +85,11 @@ const SurveyPopup = ({ id }: { id: string }) => {
         setIsErrorScreen(true);
       },
       onCompleted() {
-        if(input.length > 0){
+        if (input.length > 0) {
           setIsCompletedScreen(true);
           setTimeout(() => setOpen(false), 8000);
         } else {
-          setIsSkippedScreen(true)
+          setIsSkippedScreen(true);
           setTimeout(() => setOpen(false), 8000);
         }
       },
@@ -153,7 +151,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
   };
 
   const handleSkipSurveyConfirm = () => {
-    setIsSkippedScreen(true)
+    setIsSkippedScreen(true);
     handleFinishSurvey([]);
   };
 
@@ -163,66 +161,65 @@ const SurveyPopup = ({ id }: { id: string }) => {
   const progress = (answeredCount / totalQuestions) * 100;
 
   if (isSkippedScreen) {
-    if (isSkippedScreen) {
-      return (
-        <Dialog open={open} maxWidth="md" fullWidth>
-          <Box
+    return (
+      <Dialog open={open} maxWidth="md" fullWidth>
+        <Box
+          sx={{
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
+            backgroundColor: "white",
+          }}
+        >
+          <LinearProgress
+            variant="determinate"
+            value={100}
             sx={{
-              position: "sticky",
-              top: 0,
-              zIndex: 1,
-              backgroundColor: "white",
+              height: 6,
+              borderRadius: 2,
+              backgroundColor: "#eee",
+              "& .MuiLinearProgress-bar": {
+                backgroundColor: "#2196f3",
+              },
+            }}
+          />
+        </Box>
+        <DialogTitle>
+          <Button
+            onClick={() => setConfirmSkipOpen(true)}
+            disabled={true}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              minWidth: "auto",
+              padding: 1,
+              color: "grey.600",
             }}
           >
-            <LinearProgress
-              variant="determinate"
-              value={100}
-              sx={{
-                height: 6,
-                borderRadius: 2,
-                backgroundColor: "#eee",
-                "& .MuiLinearProgress-bar": {
-                  backgroundColor: "#2196f3",
-                },
-              }}
-            />
+            <CloseIcon />
+          </Button>
+        </DialogTitle>
+        <DialogContent>
+          <Box textAlign="center" py={6}>
+            <Box fontSize={60}>🚫</Box>
+            <Typography variant="h5" fontWeight="bold" mt={2}>
+              Survey skipped
+            </Typography>
+            <Typography mt={1}>
+              Default settings have been applied. They’ll automatically adapt
+              over time based on your interactions to provide a more
+              personalized experience.
+            </Typography>
           </Box>
-          <DialogTitle>
-            <Button
-              onClick={() => setConfirmSkipOpen(true)}
-              disabled={true}
-              sx={{
-                position: "absolute",
-                right: 8,
-                top: 8,
-                minWidth: "auto",
-                padding: 1,
-                color: "grey.600",
-              }}
-            >
-              <CloseIcon />
-            </Button>
-          </DialogTitle>
-          <DialogContent>
-            <Box textAlign="center" py={6}>
-              <Box fontSize={60}>🚫</Box> {/* Emoji oben */}
-              <Typography variant="h5" fontWeight="bold" mt={2}>
-                Survey skipped
-              </Typography>
-              <Typography mt={1}>
-                We’ll apply default settings for now – these values can change to improve your experience.
-              </Typography>
-            </Box>
-          </DialogContent>
-          <DialogActions sx={{ px: 3 }}>
-            <Button onClick={() => setOpen(false)} variant="contained">
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-      );
-    }
-
+        </DialogContent>
+        <DialogActions sx={{ px: 3 }}>
+          <Button onClick={() => setOpen(false)} variant="contained">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
   }
 
   if (isStartScreen) {
@@ -267,27 +264,28 @@ const SurveyPopup = ({ id }: { id: string }) => {
           </DialogTitle>
           <DialogContent>
             <Box textAlign="center" py={6}>
-              <Box fontSize={60}>📖</Box> {/* Emoji */}
+              <Box fontSize={60}>📖</Box>
               <Typography variant="h5" fontWeight="bold" mt={2}>
-                Welcome to the player type survey
+                Welcome to the Player Type survey
               </Typography>
               <Typography mt={1}>
-                This short survey helps us understand how you interact in games, so we can personalize your experience.
+                This survey determines your Player Type, enabling us to adapt
+                gamification elements in a way that keeps you engaged and
+                personalizes your experience.
               </Typography>
             </Box>
           </DialogContent>
           <DialogActions sx={{ px: 3 }}>
-            <Button
-              variant="contained"
-              onClick={() => setIsStartScreen(false)} // ⏩ zur ersten Frage
-            >
+            <Button variant="contained" onClick={() => setIsStartScreen(false)}>
               Start Survey
             </Button>
           </DialogActions>
         </Dialog>
 
-        {/* Confirm Skip Dialog */}
-        <Dialog open={confirmSkipOpen} onClose={() => setConfirmSkipOpen(false)}>
+        <Dialog
+          open={confirmSkipOpen}
+          onClose={() => setConfirmSkipOpen(false)}
+        >
           <DialogTitle>Are you sure you want to quit the survey?</DialogTitle>
           <DialogContent>
             <Typography>
@@ -311,7 +309,6 @@ const SurveyPopup = ({ id }: { id: string }) => {
       </>
     );
   }
-
 
   if (isErrorScreen) {
     return (
@@ -355,7 +352,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
         </DialogTitle>
         <DialogContent>
           <Box textAlign="center" py={6}>
-            <Box fontSize={60}>❌</Box> {/* ❌ Emoji für Fehleranzeige */}
+            <Box fontSize={60}>❌</Box>
             <Typography variant="h5" fontWeight="bold" mt={2}>
               Submission failed
             </Typography>
@@ -420,7 +417,8 @@ const SurveyPopup = ({ id }: { id: string }) => {
               Survey completed
             </Typography>
             <Typography mt={1}>
-              Your player type is now tailored to your preferences
+              Your player type has been determined based on your answers and
+              will adapt as you continue using the application.
             </Typography>
           </Box>
         </DialogContent>
