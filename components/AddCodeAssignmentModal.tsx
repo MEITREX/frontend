@@ -46,6 +46,8 @@ import { LoadingButton } from "@mui/lab";
 import toast from "react-hot-toast";
 import { useAccessTokenCheck } from "./useAccessTokenCheck";
 import { AddCodeAssignmentModalExternalAssignmentsQuery } from "@/__generated__/AddCodeAssignmentModalExternalAssignmentsQuery.graphql";
+import { AddCodeAssignmentModalSyncAssignmentsMutation } from "@/__generated__/AddCodeAssignmentModalSyncAssignmentsMutation.graphql";
+import { AddCodeAssignmentModalExternalCourseQuery } from "@/__generated__/AddCodeAssignmentModalExternalCourseQuery.graphql";
 
 const GetExternalAssignmentsQuery = graphql`
   query AddCodeAssignmentModalExternalAssignmentsQuery($courseId: UUID!) {
@@ -133,6 +135,27 @@ export function AddCodeAssignmentModal({
       }
     `);
 
+  const data = useLazyLoadQuery<AddCodeAssignmentModalExternalCourseQuery>(
+    graphql`
+      query AddCodeAssignmentModalExternalCourseQuery($courseId: UUID!) {
+        getExternalCourse(courseId: $courseId) {
+          url
+          courseTitle
+        }
+      }
+    `,
+    { courseId }
+  );
+
+  const [syncAssignments, isSyncing] =
+    useMutation<AddCodeAssignmentModalSyncAssignmentsMutation>(graphql`
+      mutation AddCodeAssignmentModalSyncAssignmentsMutation(
+        $courseTitle: String!
+      ) {
+        syncAssignmentsForCourse(courseTitle: $courseTitle)
+      }
+    `);
+
   const handleSubmit = () => {
     createAssignment({
       variables: {
@@ -172,6 +195,37 @@ export function AddCodeAssignmentModal({
       onCompleted() {
         toast.success("Code assignment created successfully.");
         onClose();
+      },
+    });
+  };
+
+  const handleSync = async () => {
+    if (!data.getExternalCourse) return;
+
+    syncAssignments({
+      variables: { courseTitle: data.getExternalCourse.courseTitle },
+      onCompleted: (res) => {
+        if (!res.syncAssignmentsForCourse) {
+          toast.error(`${provider.name} sync failed.`);
+          return;
+        }
+        toast.success(`${provider.name} synced successfully.`);
+
+        fetchQuery<AddCodeAssignmentModalExternalAssignmentsQuery>(
+          env,
+          GetExternalAssignmentsQuery,
+          { courseId }
+        )
+          .toPromise()
+          .then((data) => {
+            if (data?.getExternalCodeAssignments) {
+              setAssignments([...data.getExternalCodeAssignments]);
+            }
+          });
+      },
+      onError: (err) => {
+        console.error(err);
+        toast.error("Sync failed.");
       },
     });
   };
@@ -285,7 +339,12 @@ export function AddCodeAssignmentModal({
             {step === "form" && (
               <Button onClick={() => setStep("select")}>Back</Button>
             )}
-            <Button onClick={onClose}>Cancel</Button>
+
+            <LoadingButton onClick={handleSync}>Sync assignments</LoadingButton>
+
+            <Button onClick={onClose} disabled={isSyncing}>
+              Cancel
+            </Button>
             {step === "form" && (
               <LoadingButton
                 onClick={handleSubmit}
@@ -295,6 +354,9 @@ export function AddCodeAssignmentModal({
                 Save
               </LoadingButton>
             )}
+            <Backdrop open={isSyncing} sx={{ zIndex: "modal" }}>
+              <CircularProgress />
+            </Backdrop>
           </DialogActions>
         </Dialog>
       )}

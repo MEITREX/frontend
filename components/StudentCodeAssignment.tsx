@@ -231,7 +231,7 @@ export default function StudentCodeAssignment({
               Required
             </Typography>
             <Typography variant="body2">
-              {assignment.totalCredits !== -1
+              {assignment.totalCredits
                 ? Math.round(
                     assignment.requiredPercentage! * assignment.totalCredits!
                   )
@@ -244,7 +244,7 @@ export default function StudentCodeAssignment({
               Total
             </Typography>
             <Typography variant="body2">
-              {assignment.totalCredits !== -1 ? assignment.totalCredits : "N/A"}
+              {assignment.totalCredits ? assignment.totalCredits : "N/A"}
             </Typography>
           </Box>
 
@@ -253,7 +253,7 @@ export default function StudentCodeAssignment({
               Achieved
             </Typography>
             <Typography variant="body2">
-              {grading.achievedCredits && grading.achievedCredits != -1
+              {grading.achievedCredits != null
                 ? grading.achievedCredits
                 : "N/A"}
             </Typography>

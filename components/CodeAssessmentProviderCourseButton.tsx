@@ -18,9 +18,6 @@ import {
   codeAssessmentProvider,
   providerConfig,
 } from "@/components/ProviderConfig";
-import { CodeAssessmentProviderCourseButtonSyncAssignmentsMutation } from "@/__generated__/CodeAssessmentProviderCourseButtonSyncAssignmentsMutation.graphql";
-import { graphql, useMutation } from "react-relay";
-import toast from "react-hot-toast";
 
 type Props = {
   externalCourse: {
@@ -36,15 +33,6 @@ export function CodeAssessmentProviderCourseButton({ externalCourse }: Props) {
   const checkAccessToken = useAccessTokenCheck();
   const provider = providerConfig[codeAssessmentProvider];
   const buttonRef = useRef<HTMLButtonElement | null>(null);
-
-  const [syncAssignments, isSyncing] =
-    useMutation<CodeAssessmentProviderCourseButtonSyncAssignmentsMutation>(graphql`
-      mutation CodeAssessmentProviderCourseButtonSyncAssignmentsMutation(
-        $courseTitle: String!
-      ) {
-        syncAssignmentsForCourse(courseTitle: $courseTitle)
-      }
-    `);
 
   const handleClick = async () => {
     const isAvailable = await checkAccessToken();
@@ -68,27 +56,6 @@ export function CodeAssessmentProviderCourseButton({ externalCourse }: Props) {
     setAnchorEl(null);
   };
 
-  const handleSync = async () => {
-    if (!externalCourse) return;
-
-    syncAssignments({
-      variables: { courseTitle: externalCourse.courseTitle },
-      onCompleted: (res) => {
-        handleMenuClose();
-        if (!res.syncAssignmentsForCourse) {
-          toast.error(`${provider.name} sync failed.`);
-          return;
-        }
-        toast.success(`${provider.name}  synced successfully.`);
-      },
-      onError: (err) => {
-        console.error(err);
-        handleMenuClose();
-        toast.error("Sync failed.");
-      },
-    });
-  };
-
   return (
     <>
       {showProviderDialog && (
@@ -108,14 +75,13 @@ export function CodeAssessmentProviderCourseButton({ externalCourse }: Props) {
         //   sx={{ color: "text.secondary" }}
         startIcon={<GitHub />}
         onClick={handleClick}
-        disabled={isSyncing}
       >
         GitHub Classroom
       </Button>
 
       <Menu
         anchorEl={anchorEl}
-        open={Boolean(anchorEl) && !isSyncing}
+        open={Boolean(anchorEl)}
         onClose={handleMenuClose}
         MenuListProps={{
           "aria-labelledby": "github-classroom-button",
@@ -136,13 +102,6 @@ export function CodeAssessmentProviderCourseButton({ externalCourse }: Props) {
           }}
         >
           Create assignment
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            handleSync();
-          }}
-        >
-          Sync assignments
         </MenuItem>
       </Menu>
 
