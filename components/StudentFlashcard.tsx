@@ -1,4 +1,8 @@
+import { BloomLevel } from "@/__generated__/QuestionPreviewFragment.graphql";
 import { StudentFlashcard$key } from "@/__generated__/StudentFlashcard.graphql";
+import { Item } from "@/components/form-sections/item/ItemFormSection";
+import ItemFormSectionPreview from "@/components/form-sections/item/ItemFormSectionPreview";
+import { Stack } from "@mui/material";
 import { sample } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 import { graphql, useFragment } from "react-relay";
@@ -23,6 +27,16 @@ export function StudentFlashcard({
           isAnswer
           label
           text
+        }
+        item {
+          id
+          associatedSkills {
+            id
+            skillName
+            skillCategory
+            isCustomSkill
+          }
+          associatedBloomLevels
         }
       }
     `,
@@ -52,13 +66,38 @@ export function StudentFlashcard({
     onChange(numCorrect / answers.length);
   }, [answers, question, knew, onChange]);
 
+  const currentItem = useMemo<Item>(
+    () => ({
+      id: flashcard.itemId,
+      associatedSkills: flashcard.item!.associatedSkills.map((skill) => ({
+        ...skill,
+      })),
+      associatedBloomLevels: flashcard.item!
+        .associatedBloomLevels as BloomLevel[],
+    }),
+    [flashcard.item, flashcard.itemId]
+  );
+
   return (
     <div>
-      <div className="w-full border-b border-b-gray-300 mt-6 flex justify-center">
-        <div className="bg-white -mb-[9px] px-3 text-xs text-gray-600">
-          {label}
-        </div>
+      <div className="w-full my-6 flex items-center">
+        <div className="border-b border-b-gray-300 grow"></div>
+        <div className="px-3 text-xs text-gray-600">{label}</div>
+        <div className="border-b border-b-gray-300 grow"></div>
       </div>
+
+      <Stack
+        id="skills-selected"
+        direction="row"
+        sx={{
+          marginBottom: "1.5rem",
+          flexWrap: "wrap",
+          gap: 1,
+          justifyContent: "center",
+        }}
+      >
+        <ItemFormSectionPreview item={currentItem} />
+      </Stack>
 
       <div className="mt-6 text-center text-gray-600">
         {question?.text ?? "This flashcard does not have any questions."}

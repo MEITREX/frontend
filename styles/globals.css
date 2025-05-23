@@ -24,6 +24,7 @@
     https://github.com/tailwindlabs/tailwindcss/pull/5732
 */
 @layer utilities {
+
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
     display: none;

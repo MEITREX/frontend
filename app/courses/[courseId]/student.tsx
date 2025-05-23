@@ -26,6 +26,12 @@ import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
 import { useState } from "react";
+import CompetencyProgressbar from "@/components/CompetencyProgressbar";
+import { stringToColor } from "@/components/ChapterHeader";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 interface Data {
   name: string;
@@ -97,6 +103,7 @@ export default function StudentCoursePage() {
           }
           skills {
             skillName
+            skillCategory
             skillLevels {
               remember {
                 value
@@ -133,11 +140,6 @@ export default function StudentCoursePage() {
     }
   `);
 
-  // Show 404 error page if id was not found
-  if (coursesByIds.length == 0) {
-    return <PageError message="No course found with given id." />;
-  }
-
   // Extract scoreboard
   const rows: Data[] = scoreboard
     .slice(0, 3)
@@ -145,27 +147,94 @@ export default function StudentCoursePage() {
       createData(element.user?.userName ?? "Unknown", element.powerScore)
     );
 
+  const [expandedBars, setExpandedBars] = useState<Record<string, boolean>>({});
+
+  const toggleProgressbar = (id: string) => {
+    setExpandedBars((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const [showProgressbars, setShowProgressbars] = useState(true);
+  const [showUpNext, setShowUpNext] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+
+  // Show 404 error page if id was not found
+  if (coursesByIds.length == 0) {
+    return <PageError message="No course found with given id." />;
+  }
+
   // Extract course
   const course = coursesByIds[0];
+
+  const categoriesPerPage = 3;
+  const uniqueSkillCategories = Array.from(
+    new Map(course.skills.map((skill) => [skill.skillCategory, skill])).values()
+  );
+
+  // Sort the categories by value. Categories with skillValue 0 will be displayed last.
+  const sortedSkillCategories = [...uniqueSkillCategories].sort((a, b) => {
+    const getTotalProgress = (category: typeof a) => {
+      const skillsInCategory = course.skills.filter(
+        (skill) => skill.skillCategory === category.skillCategory
+      );
+      const uniqueSkills = Array.from(
+        new Map(skillsInCategory.map((s) => [s.skillName, s])).values()
+      );
+      return uniqueSkills.reduce(
+        (acc, skill) =>
+          acc +
+          Object.values(skill.skillLevels || {}).reduce(
+            (sum, level) => sum + (level?.value || 0),
+            0
+          ),
+        0
+      );
+    };
+    return getTotalProgress(b) - getTotalProgress(a);
+  });
+
+  const totalPages = Math.ceil(
+    uniqueSkillCategories.length / categoriesPerPage
+  );
+
+  const currentCategorySlice = sortedSkillCategories.slice(
+    currentPage * categoriesPerPage,
+    (currentPage + 1) * categoriesPerPage
+  );
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   return (
     <main>
       <FormErrors error={error} onClose={() => setError(null)} />
       <div className="flex gap-4 items-center">
         <Typography variant="h1">{course.title}</Typography>
-        <LightTooltip
-          title={
-            <>
-              <p className="text-slate-600 mb-1">Beschreibung</p>
-              <p>{course.description}</p>
-            </>
-          }
-        >
-          <IconButton>
-            <Info />
-          </IconButton>
-        </LightTooltip>
-
+        {course.description && (
+          <LightTooltip
+            title={
+              <>
+                <p className="text-slate-600 mb-1">Beschreibung</p>
+                <p>{course.description}</p>
+              </>
+            }
+          >
+            <IconButton>
+              <Info />
+            </IconButton>
+          </LightTooltip>
+        )}
         <div className="flex-1"></div>
 
         <Button
@@ -257,9 +326,160 @@ export default function StudentCoursePage() {
         </div>
       </div>
 
+      <div className="flex flex-col gap-2 mb-4">
+        <div className="flex items-center gap-4">
+          <Button
+            onClick={() => setShowProgressbars((prev) => !prev)}
+            className="w-8 h-8 min-w-0 p-0 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-600 transition-colors duration-200"
+          >
+            <div className="flex items-center justify-center">
+              {showProgressbars ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </div>
+          </Button>
+
+          <Typography variant="h2">Skill progress</Typography>
+
+          <LightTooltip
+            title={
+              <>
+                <p className="text-slate-600 mb-1">Information Skillprogress</p>
+                <p>
+                  {
+                    "Here you can see your personal progress for this course, splitted up in every skill category that is assigned to this course. Every skill category consists of unique skills. These skills are assigned to the different exercises. If you complete an exercise your skill progress will increase."
+                  }
+                </p>
+              </>
+            }
+          >
+            <IconButton>
+              <Info />
+            </IconButton>
+          </LightTooltip>
+
+          {showProgressbars && totalPages > 1 && (
+            <div className="flex gap-2 items-center ml-12">
+              <IconButton onClick={handlePrevPage} disabled={currentPage === 0}>
+                <ArrowBackIosNewIcon />
+              </IconButton>
+              <span>
+                {currentPage + 1} / {totalPages}
+              </span>
+              <IconButton
+                onClick={handleNextPage}
+                disabled={currentPage >= totalPages - 1}
+              >
+                <ArrowForwardIosIcon />
+              </IconButton>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div>
+        {showProgressbars && (
+          <div className="competency-progressbars grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {currentCategorySlice.map((uniqueSkill) => {
+              const skillsInCategory = course.skills.filter(
+                (skill) => skill.skillCategory === uniqueSkill.skillCategory
+              );
+              const uniqueSkillsInCategory = Array.from(
+                new Map(
+                  skillsInCategory.map((skill) => [skill.skillName, skill])
+                ).values()
+              );
+
+              const totalCategoryProgress = uniqueSkillsInCategory.reduce(
+                (acc, skill) =>
+                  acc +
+                  Object.values(skill.skillLevels || {}).reduce(
+                    (sum, level) => sum + (level?.value || 0),
+                    0
+                  ),
+                0
+              );
+              const categoryProgressValue = Math.floor(
+                Math.min(
+                  (totalCategoryProgress * 100) / uniqueSkillsInCategory.length,
+                  100
+                )
+              );
+
+              return (
+                <div
+                  key={uniqueSkill.skillCategory}
+                  className="mb-4 w-full pl-10"
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    <Button
+                      onClick={() =>
+                        toggleProgressbar(uniqueSkill.skillCategory)
+                      }
+                      className="w-6 h-6 min-w-0 p-0 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-600 transition-colors duration-200"
+                    >
+                      {expandedBars[uniqueSkill.skillCategory] ? (
+                        <ExpandLessIcon fontSize="small" />
+                      ) : (
+                        <ExpandMoreIcon fontSize="small" />
+                      )}
+                    </Button>
+                    <div className="flex-1">
+                      <CompetencyProgressbar
+                        competencyName={`${
+                          uniqueSkill.skillCategory
+                        } - ${Math.floor(categoryProgressValue)}%`}
+                        heightValue={15}
+                        progressValue={categoryProgressValue}
+                        color={stringToColor(uniqueSkill.skillCategory)}
+                      />
+                    </div>
+                  </div>
+                  {expandedBars[uniqueSkill.skillCategory] && (
+                    <div className="ml-4">
+                      {uniqueSkillsInCategory.map((skill) => {
+                        const rawValue = Object.values(
+                          skill?.skillLevels || {}
+                        ).reduce((sum, level) => sum + (level?.value || 0), 0);
+                        const clamped = Math.min(rawValue, 1);
+                        const skillProgressPercent = Math.floor(clamped * 100);
+
+                        return (
+                          <div key={skill.skillName} className="pl-8 w-full">
+                            <CompetencyProgressbar
+                              competencyName={
+                                skill.skillName +
+                                " - " +
+                                Math.floor(skillProgressPercent) +
+                                "%"
+                              }
+                              heightValue={10}
+                              progressValue={skillProgressPercent}
+                              color={stringToColor(uniqueSkill.skillCategory)}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       <section className="mt-8 mb-20">
         <div className="flex justify-between items-center">
-          <Typography variant="h2">Up next</Typography>
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={() => setShowUpNext((prev) => !prev)}
+              className="w-8 h-8 min-w-0 p-0 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-600 transition-colors duration-200"
+            >
+              <div className="flex items-center justify-center">
+                {showUpNext ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </div>
+            </Button>
+            <Typography variant="h2">Up next</Typography>
+          </div>
           <Button
             startIcon={<Repeat />}
             onClick={() => router.push(`/courses/${id}/flashcards/due`)}
@@ -267,15 +487,17 @@ export default function StudentCoursePage() {
             Repeat learned flashcards
           </Button>
         </div>
-        <div className="mt-8 gap-8 flex flex-wrap">
-          {course.suggestions.map((x) => (
-            <Suggestion
-              courseId={course.id}
-              key={x.content.id}
-              _suggestion={x}
-            />
-          ))}
-        </div>
+        {showUpNext && (
+          <div className="mt-4 gap-8 flex flex-wrap pl-8">
+            {course.suggestions.map((x) => (
+              <Suggestion
+                courseId={course.id}
+                key={x.content.id}
+                _suggestion={x}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {orderBy(course.chapters.elements, [

@@ -5,6 +5,7 @@ pnpm-lock.yaml
 # next.js
 .next
 next-env.d.ts
+styles/globals.css
 
 # graphql codegen
 __generated__
