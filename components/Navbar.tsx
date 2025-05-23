@@ -14,12 +14,15 @@ import {
   Dashboard,
   Logout,
   ManageSearch,
+  Notifications,
   Search,
   Settings,
 } from "@mui/icons-material";
 import {
   Autocomplete,
   Avatar,
+  Badge,
+  Box,
   Button,
   CircularProgress,
   ClickAwayListener,
@@ -34,6 +37,7 @@ import {
   ListItemText,
   ListSubheader,
   Paper,
+  Popover,
   TextField,
   Tooltip,
   Typography,
@@ -44,6 +48,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ReactElement, useCallback, useState, useTransition } from "react";
 import { useAuth } from "react-oidc-context";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
+import { truncate } from "node:fs";
 
 function useIsTutor(_frag: NavbarIsTutor$key) {
   const { realmRoles, courseMemberships } = useFragment(
@@ -72,6 +77,8 @@ type SearchResultType = {
   position?: string;
   url: string;
 };
+
+
 
 function NavbarBase({
   children,
@@ -257,6 +264,9 @@ function NavbarBase({
     );
   }
 
+  
+
+
   return (
     <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
       <div className="text-center mt-8 text-3xl font-medium tracking-wider sticky">
@@ -415,6 +425,36 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
 
   const tutor = useIsTutor(_isTutor);
 
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const handleOpenNotifications = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseNotifications = () => {
+    setAnchorEl(null);
+  };
+
+  const isOpen = Boolean(anchorEl);
+
+  // Dummy data, will be reomoved later
+  const notifications = [
+    {
+      title: "🎯 New Mission Available",
+      description: "You’ve unlocked a new level – check it out now!",
+      href: "/missions/new",
+      read: true
+    },
+    {
+      title: "🏆 Weekly Summary",
+      description: "Your score has increased by 30 points",
+      href: "/dashboard",
+      read: false
+    }
+  ];
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
   return (
     <div className="sticky bottom-0 py-6 -mt-6 bg-gradient-to-t from-slate-200 from-75% to-transparent">
       <NavbarSection>
@@ -441,6 +481,13 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
             <Avatar src={auth.user?.profile?.picture} />
           </ListItemAvatar>
           <ListItemText primary={auth.user?.profile?.name} />
+          <Tooltip title="Notifications" placement="left">
+            <IconButton onClick={handleOpenNotifications}>
+              <Badge badgeContent={unreadCount} color="error" max={99} overlap="circular">
+                <Notifications />
+              </Badge>
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Settings" placement="left">
             <Link href="/settings/gamification">
               <IconButton>
@@ -456,6 +503,66 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
             <SwitchPageViewButton />
           </>
         )}
+        <Popover
+          open={isOpen}
+          anchorEl={anchorEl}
+          onClose={handleCloseNotifications}
+          anchorOrigin={{
+            vertical: 'center',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'center',
+            horizontal: 'left',
+          }}
+          PaperProps={{
+            sx: {
+              minWidth: 400,
+              maxWidth: 480,
+              maxHeight: 400,
+              overflowY: 'auto',
+              p: 2,
+              borderRadius: 3
+            },
+          }}
+        >
+          <Box sx={{ p: 2, minWidth: 250 }}>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Notifications
+            </Typography>
+            <Divider sx={{ my: 1 }} />
+            {/* Beispiel-Inhalte */}
+            {notifications.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                No new notifications.
+              </Typography>
+            ) : (
+              notifications.map((note, index) => (
+                <Box key={index} mb={2}>
+                  <Link href={note.href} style={{ textDecoration: 'none' }}>
+                    <Box
+                      sx={{
+                        borderRadius: 2,
+                        p: 2,
+                        '&:hover': {
+                          backgroundColor: '#f5f5f5',
+                          cursor: 'pointer',
+                        },
+                      }}
+                    >
+                      <Typography variant="subtitle1" fontWeight="bold">
+                        {note.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {note.description}
+                      </Typography>
+                    </Box>
+                  </Link>
+                </Box>
+              ))
+            )}
+          </Box>
+        </Popover>
       </NavbarSection>
     </div>
   );
