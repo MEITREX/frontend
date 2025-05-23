@@ -301,6 +301,7 @@ export function AddCodeAssignmentModal({
 
                   <AssessmentMetadataFormSection
                     onChange={setAssessmentMetadata}
+                    isRepeatable={false}
                   />
                   <FormSection title="Scoring">
                     <TextField

@@ -153,6 +153,7 @@ export function EditAssignmentModal({
           <AssessmentMetadataFormSection
             metadata={content.assessmentMetadata}
             onChange={setAssessmentMetadata}
+            isRepeatable={false}
           />
           <FormSection title="Scoring">
             <TextField

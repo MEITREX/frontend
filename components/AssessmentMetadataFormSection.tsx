@@ -34,9 +34,11 @@ const skillTypeLabel: Record<SkillType, string> = {
 export function AssessmentMetadataFormSection({
   onChange,
   metadata,
+  isRepeatable = true,
 }: {
   onChange: (side: AssessmentMetadataPayload | null) => void;
   metadata?: AssessmentMetadataPayload | null;
+  isRepeatable?: boolean;
 }) {
   const [intervalLearning, setIntervalLearning] = useState(
     metadata?.initialLearningInterval != null
@@ -124,6 +126,7 @@ export function AssessmentMetadataFormSection({
         value={skillPoints}
         onChange={(e, a) => setSkillPoints(a as number)}
       />
+      {isRepeatable && (
       <FormGroup>
         <FormControlLabel
           control={
@@ -135,6 +138,7 @@ export function AssessmentMetadataFormSection({
           label="Should this content be repeated?"
         />
       </FormGroup>
+      )}
       {intervalLearning && (
         <TextField
           className="w-96"
