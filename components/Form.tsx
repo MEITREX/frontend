@@ -10,14 +10,16 @@ export function FormSection({
   title,
   subtitle,
   children,
+  showDivider = true,
 }: {
   title: string;
   subtitle?: string;
   children?: ReactNode;
+  showDivider?: boolean;
 }) {
   return (
     <>
-      <FormDivider />
+      {showDivider && <FormDivider />}
       <div>
         <Typography className="pl-4 pt-2">{title}</Typography>
         <div className="pl-4 pt-2 !max-w-[200px] w-max break-words text-[10px] text-gray-500">
@@ -45,7 +47,7 @@ export function FormActions({
 
 export function Form({ children }: { children: ReactNode }) {
   return (
-    <div className="grid grid-cols-[max-content_auto] gap-3 gap-x-24 w-fit">
+    <div className="grid grid-cols-[max-content_auto] gap-3 gap-x-24">
       {children}
     </div>
   );
