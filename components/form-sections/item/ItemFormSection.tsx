@@ -18,7 +18,7 @@ import standardizedCompetencies from "../data/standardized-competency-catalog.js
 import ItemFormSectionAutocompletes from "./ItemFormSectionAutocompletes";
 import { processStandardizedCompetencies } from "./standardizedCompentencies";
 
-const getStandardizedCompetencies = cache(() =>
+export const getStandardizedCompetencies = cache(() =>
   processStandardizedCompetencies(standardizedCompetencies)
 );
 
@@ -27,8 +27,8 @@ const BLOOM_LEVELS = [
   "UNDERSTAND",
   "APPLY",
   "ANALYZE",
-  "EVALUATE",
   "CREATE",
+  "EVALUATE",
 ] as const;
 
 export type CreateItem = {
@@ -98,21 +98,10 @@ export type ItemFormSectionProps =
         | PreloadedQuery<lecturerAllSkillsQuery>
         | undefined
         | null;
-    }
-  | {
-      operation: "view";
-      item: CreateItem;
     };
 
-/** type guard for checking if setItem is available at compile time */
-export const isItemEditable = (
-  props: ItemFormSectionProps
-): props is Extract<ItemFormSectionProps, { operation: "create" | "edit" }> =>
-  props.operation !== "view";
-
 const ItemFormSection = (props: ItemFormSectionProps) => {
-  const { item, operation } = props;
-  const isEditable = operation !== "view";
+  const { item } = props;
 
   const {
     staticSkillCategorySkillMap: SKILL_CATALOGUE,
@@ -129,7 +118,6 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
         </InputLabel>
 
         <Select
-          disabled={!isEditable}
           // prevent selection text from
           sx={{
             ".Mui-disabled": {
@@ -140,16 +128,14 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
           label="Bloom Level"
           labelId="assessmentBloomLevelsLabel"
           value={item.associatedBloomLevels}
-          onChange={({ target: { value } }) => {
-            if (isItemEditable(props)) {
-              props.setItem((prev) => ({
-                ...prev,
-                associatedBloomLevels: (typeof value === "string"
-                  ? value.split(",")
-                  : value) as BloomLevel[],
-              }));
-            }
-          }}
+          onChange={({ target: { value } }) =>
+            props.setItem((prev) => ({
+              ...prev,
+              associatedBloomLevels: (typeof value === "string"
+                ? value.split(",")
+                : value) as BloomLevel[],
+            }))
+          }
           renderValue={(selectedLevels) =>
             selectedLevels
               .map(
@@ -161,8 +147,8 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
           required
           multiple
         >
-          {BLOOM_LEVELS.map((level, i) => (
-            <MenuItem value={level} key={i}>
+          {BLOOM_LEVELS.map((level) => (
+            <MenuItem value={level} key={level}>
               <Checkbox
                 checked={item.associatedBloomLevels.indexOf(level) !== -1}
               />
@@ -202,18 +188,15 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
                   ": " +
                   skill.skillName
                 }
-                onDelete={
-                  isItemEditable(props)
-                    ? () =>
-                        props.setItem((prev) => {
-                          const newSelectedSkills = [...prev.associatedSkills];
-                          newSelectedSkills.splice(i, 1);
-                          return {
-                            ...prev,
-                            associatedSkills: newSelectedSkills,
-                          };
-                        })
-                    : undefined
+                onDelete={() =>
+                  props.setItem((prev) => {
+                    const newSelectedSkills = [...prev.associatedSkills];
+                    newSelectedSkills.splice(i, 1);
+                    return {
+                      ...prev,
+                      associatedSkills: newSelectedSkills,
+                    };
+                  })
                 }
               />
             ))}
@@ -224,7 +207,7 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
         <div className="my-[-6px]" />
       )}
 
-      {isEditable && props.allSkillsQueryRef && (
+      {props.allSkillsQueryRef && (
         <ItemFormSectionAutocompletes
           skillsSelected={skillsSelected}
           setItem={props.setItem}

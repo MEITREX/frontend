@@ -22,8 +22,8 @@ export type AssessmentMetadataPayload = {
 };
 
 const skillTypeLabel: Record<SkillType, string> = {
-  CREATE: "Create",
   EVALUATE: "Evaluate",
+  CREATE: "Create",
   ANALYZE: "Analyze",
   APPLY: "Apply",
   REMEMBER: "Remember",
@@ -95,8 +95,8 @@ export function AssessmentMetadataFormSection({
               "UNDERSTAND",
               "APPLY",
               "ANALYZE",
-              "EVALUATE",
               "CREATE",
+              "EVALUATE",
             ] as const
           ).map((val, i) => (
             <MenuItem value={val} key={i}>

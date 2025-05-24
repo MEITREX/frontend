@@ -17,33 +17,21 @@ export type FlashcardSideData = {
   isAnswer: boolean;
 };
 
-export type FlashcardSideProps =
-  | {
-      operation: "view";
-      sideData: FlashcardSideData;
-    }
-  | {
-      operation: "edit" | "create";
-      sideData: FlashcardSideData;
-      setSideData: Dispatch<SetStateAction<FlashcardSideData[]>>;
-      sideDataIndex: number;
-    };
-
-const isFlashcardSideEditable = (
-  props: FlashcardSideProps
-): props is Extract<
-  FlashcardSideProps,
-  { operation: "edit" } | { operation: "create" }
-> => props.operation === "edit";
+export type FlashcardSideProps = {
+  operation: "edit" | "create";
+  sideData: FlashcardSideData;
+  setSideData: Dispatch<SetStateAction<FlashcardSideData[]>>;
+  sideDataIndex: number;
+};
 
 export function FlashcardSide(props: FlashcardSideProps) {
   const { sideData, operation } = props;
   const isEditable = operation === "edit";
 
   const [isEditing, setIsEditing] = useState(false);
+
   const onEditSubmit = useCallback(
     (data: FlashcardSideData) => {
-      if (!isFlashcardSideEditable(props)) return;
       const { setSideData, sideDataIndex } = props;
 
       setIsEditing(false);

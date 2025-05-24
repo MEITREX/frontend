@@ -2,41 +2,37 @@ import { Add } from "@mui/icons-material";
 import { Button, IconButton, Tooltip, Typography } from "@mui/material";
 import { Dispatch, SetStateAction, useState } from "react";
 import ItemFormSection, {
-  isItemEditable,
   ItemFormSectionProps,
 } from "../form-sections/item/ItemFormSection";
 import { EditSideModal } from "./EditSideModal";
 import { FlashcardSide, FlashcardSideData } from "./FlashcardSide";
-
-type FlashcardProps = {
-  title: string;
-  flashcardSides: FlashcardSideData[];
-} & ItemFormSectionProps &
-  (
-    | {
-        operation: "edit" | "create";
-        setSideData: Dispatch<SetStateAction<FlashcardSideData[]>>;
-        onCancel: () => void;
-        onSave: () => void;
-        isProcessing: boolean;
-      }
-    | {
-        operation: "view";
-      }
-  );
-
+import ItemFormSectionPreview, {
+  ItemFormSectionPreviewProps,
+} from "../form-sections/item/ItemFormSectionPreview";
+import { FlashcardSidePreview } from "./FlashcardSidePreview";
+type FlashcardProps =
+  | (ItemFormSectionProps & {
+      operation: "create" | "edit";
+      title: string;
+      flashcardSides: FlashcardSideData[];
+      setSideData: Dispatch<SetStateAction<FlashcardSideData[]>>;
+      onCancel: () => void;
+      onSave: () => void;
+      isProcessing: boolean;
+    })
+  | (ItemFormSectionPreviewProps & {
+      title: string;
+      flashcardSides: FlashcardSideData[];
+      operation: "view";
+    });
 const Flashcard = (props: FlashcardProps) => {
-  const { title, operation, flashcardSides, item } = props;
-  const isEditable = operation !== "view";
-
   const [addNewFlashcardSide, setAddNewFlashcardSide] =
     useState<boolean>(false);
 
   // predicates for valid flashcard entry
-  const hasQuestion = flashcardSides.some((s) => s.isQuestion);
-  const hasAnswer = flashcardSides.some((s) => s.isAnswer);
-  //const isAssociatedDataPresent = item.associatedBloomLevels.length > 0 && item.associatedSkills.length > 0;
-  const isFlashcardValid = hasQuestion && hasAnswer; //&& isAssociatedDataPresent;
+  const hasQuestion = props.flashcardSides.some((s) => s.isQuestion);
+  const hasAnswer = props.flashcardSides.some((s) => s.isAnswer);
+  const isFlashcardValid = hasQuestion && hasAnswer;
 
   const errorMessage = !hasQuestion
     ? "At least one question side is required to save"
@@ -44,31 +40,36 @@ const Flashcard = (props: FlashcardProps) => {
 
   return (
     <>
-      <div className="pt-4 pb-6 -mx-8 px-8 bg-gray-50">
+      <div className="pt-4 pb-6 -mx-8 px-8 bg-gray-50 flex flex-col gap-y-2">
         <Typography variant="overline" color="textSecondary">
-          {title}
+          {props.title}
         </Typography>
 
         {/* Prop destructuring is fix for type error */}
-        <ItemFormSection {...(isItemEditable(props) ? props : props)} />
-        <div className="flex flex-wrap gap-2">
-          {flashcardSides.map((currentSide, i) => (
-            <FlashcardSide
-              key={`flashcard-${title}-side-${i}`}
-              sideData={currentSide}
-              // If editable, setter for the side data is necessary
-              {...(isEditable
-                ? {
-                    sideDataIndex: i,
-                    setSideData: props.setSideData,
-                    operation,
-                  }
-                : {
-                    operation,
-                  })}
-            />
-          ))}
-          {isEditable &&
+        {props.operation === "view" ? (
+          <ItemFormSectionPreview item={props.item} />
+        ) : (
+          <ItemFormSection {...props} />
+        )}
+
+        <div className="flex flex-wrap gap-2 mt-4">
+          {props.flashcardSides.map((currentSide, i) =>
+            props.operation === "view" ? (
+              <FlashcardSidePreview
+                key={`flashcard-${props.title}-side-${i}`}
+                sideData={currentSide}
+              />
+            ) : (
+              <FlashcardSide
+                key={`flashcard-${props.title}-side-${i}`}
+                sideData={currentSide}
+                sideDataIndex={i}
+                setSideData={props.setSideData}
+                operation={props.operation}
+              />
+            )
+          )}
+          {props.operation !== "view" &&
             (addNewFlashcardSide ? (
               <EditSideModal
                 onClose={() => setAddNewFlashcardSide(false)}
@@ -88,7 +89,7 @@ const Flashcard = (props: FlashcardProps) => {
             ))}
         </div>
       </div>
-      {isEditable && (
+      {props.operation !== "view" && (
         // unfortunately, this css must be adjusted to the one in lecturer.tsx
         <div className="flex gap-x-2 mt-4">
           <Tooltip title={errorMessage} disableHoverListener={isFlashcardValid}>
