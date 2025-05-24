@@ -43,6 +43,18 @@ directive @OnDemand on FIELD_DEFINITION
 # Indicates an Input Object is a OneOf Input Object.
 directive @oneOf on INPUT_OBJECT
 
+# This directive allows results to be deferred during execution
+directive @defer(
+  # Deferred behaviour is controlled by this argument
+  if: Boolean! = true
+
+  # A unique label that represents the fragment being deferred
+  label: String
+) on FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+# This directive disables error propagation when a non nullable field returns null for the given operation.
+directive @experimental_disableErrorPropagation on QUERY | MUTATION | SUBSCRIPTION
+
 directive @resolveTo(requiredSelectionSet: String, sourceName: String!, sourceTypeName: String!, sourceFieldName: String!, sourceSelectionSet: String, sourceArgs: ResolveToSourceArgs, keyField: String, keysArg: String, pubsubTopic: String, filterBy: String, additionalArgs: ResolveToSourceArgs, result: String, resultType: String) on FIELD_DEFINITION
 
 type AccessToken {
@@ -61,6 +73,11 @@ enum AiEntityProcessingState {
   ENQUEUED
   PROCESSING
   DONE
+}
+
+input AnswerInput {
+  text: String!
+  playerTypes: [PlayerType!]!
 }
 
 interface Assessment {
@@ -2091,9 +2108,50 @@ type MultipleChoiceQuestion implements Question {
   item: Item!
 }
 
-# 
-# Mutations for the assignment service. Provides mutations for creating, updating, and deleting assignments.
 type Mutation {
+  # 
+  # Generates an access token for the given provider using an authorization code obtained from the OAuth flow.
+  # This should be called **only after** the user completes authorization and the frontend retrieves the auth code.
+  # After the access token is generated, the user is redirected to the redirect URI.
+  generateAccessToken(input: GenerateAccessTokenInput!): Boolean!
+
+  # 
+  # Update top-level fields of an assignment.
+  # 🔒 The user must be an admin in the course the assignment belongs to.
+  updateAssignment(assessmentId: UUID!, input: UpdateAssignmentInput!): Assignment!
+
+  # 
+  # Modify an assignment.
+  # 🔒 The user must be an admin in the course the assignment is in to perform this action.
+  mutateAssignment(assessmentId: UUID!): AssignmentMutation!
+
+  # 
+  # Logs that a user's assignment score has been imported, i.e. the user has completed the assignment.
+  # 🔒 The user must be a tutor in the course the assignment is in to perform this action.
+  logAssignmentCompleted(input: LogAssignmentCompletedInput!): AssignmentCompletedFeedback!
+
+  # 
+  # Saves mappings of meitrex users to external students.
+  # Used to deal with ManualMappingInstances.
+  # Returns list of all deleted ManualMappingInstance ids.
+  # Returns null if connection to UserService failed.
+  # 🔒 The user must be an admin in the course to perform this action.
+  saveStudentMappings(courseId: UUID!, studentMappingInputs: [StudentMappingInput!]!): [String]!
+
+  # 
+  # Fetches assignment info from external code assessment provider for the given course
+  syncAssignmentsForCourse(courseTitle: String!): Boolean!
+
+  # 
+  # Modify a flashcard set.
+  # 🔒 The user must be an admin the course the flashcard set is in to perform this action.
+  mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
+
+  # 
+  # Logs that a user has learned a flashcard.
+  # 🔒 The user must be enrolled in the course the flashcard set is in to perform this action.
+  logFlashcardLearned(input: LogFlashcardLearnedInput!): FlashcardLearnedFeedback!
+
   # 
   #     ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
   # 
@@ -2160,6 +2218,16 @@ type Mutation {
   deleteMembership(input: CourseMembershipInput!): CourseMembership!
 
   # 
+  #   ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
+  # 
+  #   Triggers the recalculation of the skill level of the user.
+  #   This is done automatically at some time in the night.
+  # 
+  #   The purpose of this mutation is to allow testing of the skill level score and demonstrate the functionality.
+  #   🔒 The user must be a super-user, otherwise an exception is thrown.
+  recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
+
+  # 
   # Modify Content
   # 🔒 The user must have admin access to the course containing the section to perform this action.
   mutateContent(contentId: UUID!): ContentMutation!
@@ -2207,32 +2275,6 @@ type Mutation {
   setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
 
   # 
-  # Generates an access token for the given provider using an authorization code obtained from the OAuth flow.
-  # This should be called **only after** the user completes authorization and the frontend retrieves the auth code.
-  # After the access token is generated, the user is redirected to the redirect URI.
-  generateAccessToken(input: GenerateAccessTokenInput!): Boolean!
-
-  # 
-  #   ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
-  # 
-  #   Triggers the recalculation of the skill level of the user.
-  #   This is done automatically at some time in the night.
-  # 
-  #   The purpose of this mutation is to allow testing of the skill level score and demonstrate the functionality.
-  #   🔒 The user must be a super-user, otherwise an exception is thrown.
-  recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
-
-  # 
-  # Modify a flashcard set.
-  # 🔒 The user must be an admin the course the flashcard set is in to perform this action.
-  mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
-
-  # 
-  # Logs that a user has learned a flashcard.
-  # 🔒 The user must be enrolled in the course the flashcard set is in to perform this action.
-  logFlashcardLearned(input: LogFlashcardLearnedInput!): FlashcardLearnedFeedback!
-
-  # 
   # Modify a quiz.
   # 🔒 The user must be an admin the course the quiz is in to perform this action.
   mutateQuiz(assessmentId: UUID!): QuizMutation!
@@ -2245,33 +2287,7 @@ type Mutation {
   # Log that a multiple choice quiz is completed.
   # 🔒 The user must be enrolled in the course the quiz is in to perform this action.
   logQuizCompleted(input: QuizCompletedInput!): QuizCompletionFeedback!
-
-  # 
-  # Update top-level fields of an assignment.
-  # 🔒 The user must be an admin in the course the assignment belongs to.
-  updateAssignment(assessmentId: UUID!, input: UpdateAssignmentInput!): Assignment!
-
-  # 
-  # Modify an assignment.
-  # 🔒 The user must be an admin in the course the assignment is in to perform this action.
-  mutateAssignment(assessmentId: UUID!): AssignmentMutation!
-
-  # 
-  # Logs that a user's assignment score has been imported, i.e. the user has completed the assignment.
-  # 🔒 The user must be a tutor in the course the assignment is in to perform this action.
-  logAssignmentCompleted(input: LogAssignmentCompletedInput!): AssignmentCompletedFeedback!
-
-  # 
-  # Saves mappings of meitrex users to external students.
-  # Used to deal with ManualMappingInstances.
-  # Returns list of all deleted ManualMappingInstance ids.
-  # Returns null if connection to UserService failed.
-  # 🔒 The user must be an admin in the course to perform this action.
-  saveStudentMappings(courseId: UUID!, studentMappingInputs: [StudentMappingInput!]!): [String]!
-
-  # 
-  # Fetches assignment info from external code assessment provider for the given course
-  syncAssignmentsForCourse(courseTitle: String!): Boolean!
+  evaluatePlayerHexadScore(userId: UUID!, input: PlayerAnswerInput!): PlayerHexadScore!
 
   # Creates a new media content and links the given media records to it.
   createMediaContentAndLinkRecords(contentInput: CreateMediaContentInput!, mediaRecordIds: [UUID!]!): MediaContent!
@@ -2364,6 +2380,28 @@ type PaginationInfo {
   hasNext: Boolean!
 }
 
+input PlayerAnswerInput {
+  questions: [QuestionInput!]!
+}
+
+type PlayerHexadScore {
+  scores: [PlayerTypeScore!]!
+}
+
+enum PlayerType {
+  PHILANTHROPIST
+  SOCIALISER
+  FREE_SPIRIT
+  ACHIEVER
+  PLAYER
+  DISRUPTOR
+}
+
+type PlayerTypeScore {
+  type: PlayerType!
+  value: Float!
+}
+
 type ProgressLogItem {
   # 
   # The date the user completed the content item.
@@ -2400,6 +2438,82 @@ type PublicUserInfo {
 }
 
 type Query {
+  # 
+  # Gets the publicly available information for a list of users with the specified IDs.
+  # If a user does not exist, null is returned for that user.
+  findPublicUserInfos(ids: [UUID!]!): [PublicUserInfo]!
+
+  # 
+  # Gets the user information of the currently authorized user.
+  currentUserInfo: UserInfo!
+
+  # 
+  # Gets all of the users' information for a list of users with the specified IDs.
+  # Only available to privileged users.
+  # If a user does not exist, null is returned for that user.
+  findUserInfos(ids: [UUID!]!): [UserInfo]!
+
+  # 
+  # Checks whether an access token for a given third-party provider exists and is
+  # still valid for the currently authenticated user.
+  # Returns `true` if:
+  # - The access token exists and is not expired, OR
+  # - The refresh token exists and is not expired.
+  isAccessTokenAvailable(provider: ExternalServiceProviderDto!): Boolean!
+
+  # 
+  # Get assignment by assessment ID.
+  # If any of the assessment IDs are not found, the corresponding assignment will be null.
+  # 🔒 The user must be enrolled in the course the assignments belong to to access them. Otherwise null is returned for
+  # an assignment if the user has no access to it.
+  findAssignmentsByAssessmentIds(assessmentIds: [UUID!]!): [Assignment]!
+
+  # 
+  # Get all gradings for one assignment
+  # 🔒 The user must be an admin in the course the assignment belongs to to access them. Otherwise null is returned for
+  # an assignment if the user has no access to it.
+  getGradingsForAssignment(assessmentId: UUID!): [Grading!]!
+
+  # 
+  # Gets all the available external exercises.
+  # CourseId is the id of the course the user is currently working in.
+  # 🔒 The user must be an admin in the course. Otherwise null is returned.
+  getExternalAssignments(courseId: UUID!): [ExternalAssignment!]!
+
+  # 
+  # Gets all the available external code exercises.
+  # CourseId is the id of the course the user is currently working in.
+  # 🔒 The user must be an admin in the course. Otherwise null is returned.
+  getExternalCodeAssignments(courseId: UUID!): [String!]!
+
+  # 
+  # Get the corresponding external course for the given courseId.
+  # CourseId is the id of the course the user is currently working in.
+  # 🔒 The user must be an admin in the course. Otherwise null is returned.
+  getExternalCourse(courseId: UUID!): ExternalCourse
+
+  # 
+  # Gets all manual student mappings, i.e. all students where the backend could not map to a meitrex user.
+  # 🔒 The user must be an admin in the course. Otherwise null is returned.
+  getManualMappingInstances(courseId: UUID!): [ManualMappingInstance]!
+
+  # 
+  # Get flashcards by their ids.
+  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
+  flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
+
+  # 
+  # Get flashcard sets by their assessment ids.
+  # Returns a list of flashcard sets in the same order as the provided ids.
+  # Each element is null if the corresponding id is not found.
+  # 🔒 The user must be enrolled in the course the flashcard sets belong to. Otherwise for that element null is returned.
+  findFlashcardSetsByAssessmentIds(assessmentIds: [UUID!]!): [FlashcardSet]!
+
+  # 
+  # Get flashcards of a course that are due to be reviewed.
+  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
+  dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
+
   # 
   # Get the reward score of the current user for the specified course.
   # 🔒 The user must have access to the course with the given id to access their scores, otherwise an error is thrown.
@@ -2527,87 +2641,13 @@ type Query {
   mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
 
   # 
-  # Gets the publicly available information for a list of users with the specified IDs.
-  # If a user does not exist, null is returned for that user.
-  findPublicUserInfos(ids: [UUID!]!): [PublicUserInfo]!
-
-  # 
-  # Gets the user information of the currently authorized user.
-  currentUserInfo: UserInfo!
-
-  # 
-  # Gets all of the users' information for a list of users with the specified IDs.
-  # Only available to privileged users.
-  # If a user does not exist, null is returned for that user.
-  findUserInfos(ids: [UUID!]!): [UserInfo]!
-
-  # 
-  # Checks whether an access token for a given third-party provider exists and is
-  # still valid for the currently authenticated user.
-  # Returns `true` if:
-  # - The access token exists and is not expired, OR
-  # - The refresh token exists and is not expired.
-  isAccessTokenAvailable(provider: ExternalServiceProviderDto!): Boolean!
-
-  # 
-  # Get flashcards by their ids.
-  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
-  flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
-
-  # 
-  # Get flashcard sets by their assessment ids.
-  # Returns a list of flashcard sets in the same order as the provided ids.
-  # Each element is null if the corresponding id is not found.
-  # 🔒 The user must be enrolled in the course the flashcard sets belong to. Otherwise for that element null is returned.
-  findFlashcardSetsByAssessmentIds(assessmentIds: [UUID!]!): [FlashcardSet]!
-
-  # 
-  # Get flashcards of a course that are due to be reviewed.
-  # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
-  dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
-
-  # 
   # Get quiz by assessment ID.
   # If any of the assessment IDs are not found, the corresponding quiz will be null.
   # 🔒 The user must be enrolled in the course the quizzes belong to to access them. Otherwise null is returned for
   # an quiz if the user has no access to it.
   findQuizzesByAssessmentIds(assessmentIds: [UUID!]!): [Quiz]!
-
-  # 
-  # Get assignment by assessment ID.
-  # If any of the assessment IDs are not found, the corresponding assignment will be null.
-  # 🔒 The user must be enrolled in the course the assignments belong to to access them. Otherwise null is returned for
-  # an assignment if the user has no access to it.
-  findAssignmentsByAssessmentIds(assessmentIds: [UUID!]!): [Assignment]!
-
-  # 
-  # Get all gradings for one assignment
-  # 🔒 The user must be an admin in the course the assignment belongs to to access them. Otherwise null is returned for
-  # an assignment if the user has no access to it.
-  getGradingsForAssignment(assessmentId: UUID!): [Grading!]!
-
-  # 
-  # Gets all the available external exercises.
-  # CourseId is the id of the course the user is currently working in.
-  # 🔒 The user must be an admin in the course. Otherwise null is returned.
-  getExternalAssignments(courseId: UUID!): [ExternalAssignment!]!
-
-  # 
-  # Gets all the available external code exercises.
-  # CourseId is the id of the course the user is currently working in.
-  # 🔒 The user must be an admin in the course. Otherwise null is returned.
-  getExternalCodeAssignments(courseId: UUID!): [String!]!
-
-  # 
-  # Get the corresponding external course for the given courseId.
-  # CourseId is the id of the course the user is currently working in.
-  # 🔒 The user must be an admin in the course. Otherwise null is returned.
-  getExternalCourse(courseId: UUID!): ExternalCourse
-
-  # 
-  # Gets all manual student mappings, i.e. all students where the backend could not map to a meitrex user.
-  # 🔒 The user must be an admin in the course. Otherwise null is returned.
-  getManualMappingInstances(courseId: UUID!): [ManualMappingInstance]!
+  getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
+  PlayerHexadScoreExists(userId: UUID!): Boolean!
 
   # Performs a semantic search with the specified search term. Returns at most `count` results. If a courseWhitelist is 
   # provided, only results from the specified courses will be returned.
@@ -2652,6 +2692,12 @@ input QuestionCompletedInput {
   # 
   # true when a hint was used for the question
   usedHint: Boolean!
+}
+
+input QuestionInput {
+  text: String!
+  selectedAnswer: AnswerInput!
+  possibleAnswers: [AnswerInput!]!
 }
 
 enum QuestionPoolingMode {

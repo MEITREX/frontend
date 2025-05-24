@@ -127,17 +127,17 @@ export function AssessmentMetadataFormSection({
         onChange={(e, a) => setSkillPoints(a as number)}
       />
       {isRepeatable && (
-      <FormGroup>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={intervalLearning}
-              onChange={() => setIntervalLearning(!intervalLearning)}
-            />
-          }
-          label="Should this content be repeated?"
-        />
-      </FormGroup>
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={intervalLearning}
+                onChange={() => setIntervalLearning(!intervalLearning)}
+              />
+            }
+            label="Should this content be repeated?"
+          />
+        </FormGroup>
       )}
       {intervalLearning && (
         <TextField
