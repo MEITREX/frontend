@@ -142,7 +142,7 @@ export default function StudentPage() {
       queryRef
     );
 
-    console.log('EXE', data.PlayerHexadScoreExists)
+    console.log("EXE", data.PlayerHexadScoreExists);
 
     if (data.PlayerHexadScoreExists) {
       return <div></div>;
@@ -157,7 +157,7 @@ export default function StudentPage() {
 
     useEffect(() => {
       const timer = setTimeout(() => {
-        loadQuery({ id: userId }, { fetchPolicy: 'network-only' });
+        loadQuery({ id: userId }, { fetchPolicy: "network-only" });
       }, 1); // künstlicher Delay
 
       return () => clearTimeout(timer);
