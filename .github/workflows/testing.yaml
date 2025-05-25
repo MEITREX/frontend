@@ -98,7 +98,7 @@ jobs:
           cache-to: type=gha,mode=max
           tags: ghcr.io/meitrex/keycloak:latest
           push: true
-  
+
   docker-build-frontend-k8s:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'

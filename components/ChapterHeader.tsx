@@ -1,12 +1,31 @@
 "use client";
 import { ChapterHeaderFragment$key } from "@/__generated__/ChapterHeaderFragment.graphql";
 import { Done, ExpandLess, ExpandMore } from "@mui/icons-material";
-import { CircularProgress, IconButton, Typography } from "@mui/material";
+import { Chip, CircularProgress, IconButton, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { ReactNode } from "react";
 import { graphql, useFragment } from "react-relay";
-import { SkillLevels } from "./SkillLevels";
-import { Skill } from "./Skill";
+import { LightTooltip } from "./LightTooltip";
+
+export function stringToColor(string: string): string {
+  let hash = 0;
+  let i;
+
+  /* eslint-disable no-bitwise */
+  for (i = 0; i < string.length; i += 1) {
+    hash = string.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  let color = "#";
+
+  for (i = 0; i < 3; i += 1) {
+    const value = (hash >> (i * 8)) & 0xff;
+    color += `00${value.toString(16)}`.slice(-2);
+  }
+  /* eslint-enable no-bitwise */
+
+  return color;
+}
 
 export function ChapterHeader({
   _chapter,
@@ -37,13 +56,72 @@ export function ChapterHeader({
         }
         description
         skills {
-          ...SkillFragment
-          ...SkillLevelsFragment
+          skillName
+          skillCategory
         }
       }
     `,
     _chapter
   );
+
+  function getReadableTextColor(backgroundColor: String) {
+    const hex = backgroundColor.replace("#", "");
+
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 125 ? "#000000" : "#FFFFFF";
+  }
+
+  const skillCategoryMap = new Map<string, string[]>();
+
+  chapter.skills
+    .filter((c) => c !== null)
+    .forEach((c) => {
+      if (!skillCategoryMap.has(c!.skillCategory)) {
+        skillCategoryMap.set(c!.skillCategory, []);
+      }
+      skillCategoryMap.get(c!.skillCategory)!.push(c!.skillName);
+    });
+
+  for (const key of skillCategoryMap.keys()) {
+    skillCategoryMap.get(key)!.sort();
+  }
+
+  const skillChips = Array.from(skillCategoryMap.entries())
+    .sort()
+    .map(([category, skillNames], index) => (
+      <LightTooltip
+        key={category}
+        title={
+          <>
+            <p>
+              <strong>{category + ":"}</strong>
+            </p>
+            <ul className="list-disc pl-6">
+              {[...new Set(skillNames)].map((skillName, index) => (
+                <li key={index}>{skillName}</li>
+              ))}
+            </ul>
+          </>
+        }
+      >
+        <Chip
+          key={index}
+          sx={{
+            maxWidth: "250px",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            backgroundColor: stringToColor(category),
+            color: getReadableTextColor(stringToColor(category)),
+          }}
+          label={category}
+        />
+      </LightTooltip>
+    ));
 
   return (
     <div
@@ -60,7 +138,7 @@ export function ChapterHeader({
       </div>
       <div className="flex justify-between items-center flex-grow">
         <div className="pr-8 flex flex-col items-start">
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 whitespace-nowrap items-center">
             <Typography variant="h2" onClick={(e) => e.stopPropagation()}>
               {chapter.title}
             </Typography>
@@ -79,13 +157,7 @@ export function ChapterHeader({
             {chapter.description}
           </Typography>
         </div>
-        {student && (
-          <span>
-            {chapter.skills.map(
-              (c, index) => c !== null && <Skill key={index} _skill={c} />
-            )}
-          </span>
-        )}
+        <div className="flex justify-end flex-wrap gap-2">{skillChips}</div>
       </div>
     </div>
   );
