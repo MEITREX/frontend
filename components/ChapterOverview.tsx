@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { ChapterOverviewItem } from "./ChapterOverviewItem";
 
 function generateSinePath(
@@ -37,6 +37,8 @@ export function ChapterOverview({ anzahl }: { anzahl: number }) {
 
   const sinePath = generateSinePath(totalWidth, height, amplitude, waves);
 
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
   return (
     <div className="w-full overflow-y-hidden border border-slate-200s border-4 rounded-3xl px-24 pb-10 mb-8">
       <div
@@ -73,7 +75,8 @@ export function ChapterOverview({ anzahl }: { anzahl: number }) {
             <ChapterOverviewItem
               progress={50}
               disabled={false}
-              initiallySelected={false}
+              selected={i === selectedIndex}
+              onClick={() => setSelectedIndex(i)}
               title={`Kapitel ${i + 1}`}
               description={`Beschreibung für Kapitel ${i + 1}`}
             />

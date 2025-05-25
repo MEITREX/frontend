@@ -5,27 +5,22 @@ import { CircularProgress } from "@mui/material";
 export function ChapterOverviewItem({
   progress,
   disabled,
-  initiallySelected,
+  selected,
+  onClick,
   title,
   description,
 }: {
   progress: number;
   disabled: boolean;
-  initiallySelected: boolean;
+  selected: boolean;
+  onClick: () => void;
   title: string;
   description: string;
 }): JSX.Element {
-  const [selected, setSelected] = useState(initiallySelected);
-
-  const handleClick = () => {
-    if (disabled) return;
-    setSelected((prev) => !prev);
-  };
-
   return (
     <div className="relative flex flex-col items-center justify-center w-100 h-auto">
       <div
-        onClick={() => handleClick()}
+        onClick={onClick}
         className="relative flex justify-center items-center"
       >
         <div
@@ -76,7 +71,7 @@ export function ChapterOverviewItem({
           ))}
       </div>
       <div
-        onClick={() => handleClick()}
+        onClick={onClick}
         className="absolute top-full mt-2 flex flex-col items-center w-40 h-auto"
       >
         {/* Dreieck */}
