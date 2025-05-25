@@ -33,6 +33,9 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
+import { ChapterOverviewItem } from "@/components/ChapterOverviewItem";
+import { ChapterOverview } from "@/components/ChapterOverview";
+
 interface Data {
   name: string;
   power: number;
@@ -156,9 +159,10 @@ export default function StudentCoursePage() {
     }));
   };
 
-  const [showProgressbars, setShowProgressbars] = useState(true);
-  const [showUpNext, setShowUpNext] = useState(true);
+  const [showProgressbars, setShowProgressbars] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
+  const [showUpNext, setShowUpNext] = useState(false);
+  const [showChapterOverview, setshowChapterOverview] = useState(true);
 
   // Show 404 error page if id was not found
   if (coursesByIds.length == 0) {
@@ -326,7 +330,7 @@ export default function StudentCoursePage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 mb-4">
+      <div className="flex flex-col gap-2 mb-8">
         <div className="flex items-center gap-4">
           <Button
             onClick={() => setShowProgressbars((prev) => !prev)}
@@ -467,7 +471,7 @@ export default function StudentCoursePage() {
         )}
       </div>
 
-      <section className="mt-8 mb-20">
+      <section className="mt-8 mb-8">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
             <Button
@@ -499,6 +503,23 @@ export default function StudentCoursePage() {
           </div>
         )}
       </section>
+
+      <div className="flex items-center gap-4 mb-4">
+        <Button
+          onClick={() => setshowChapterOverview((prev) => !prev)}
+          className="w-8 h-8 min-w-0 p-0 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-600 transition-colors duration-200"
+        >
+          <div className="flex items-center justify-center">
+            {showChapterOverview ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </div>
+        </Button>
+
+        <Typography variant="h2">Chapter Overview</Typography>
+      </div>
+
+      {showChapterOverview && (
+        <ChapterOverview anzahl={course.chapters.elements.length} />
+      )}
 
       {orderBy(course.chapters.elements, [
         (x) => new Date(x.startDate).getTime(),
