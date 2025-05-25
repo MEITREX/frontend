@@ -21,7 +21,7 @@ import {
   useQueryLoader,
 } from "react-relay";
 import { graphql } from "relay-runtime";
-import SurveyPopup from "@/components/PlayerTypeSurvey";
+import SurveyPopup from "@/components/gamification/player-hexad-type-survey/PlayerTypeSurvey";
 
 export default function StudentPage() {
   const { currentUserInfo } = useLazyLoadQuery<studentStudentQuery>(
@@ -142,6 +142,8 @@ export default function StudentPage() {
       queryRef
     );
 
+    console.log('EXE', data.PlayerHexadScoreExists)
+
     if (data.PlayerHexadScoreExists) {
       return <div></div>;
     } else {
@@ -155,7 +157,7 @@ export default function StudentPage() {
 
     useEffect(() => {
       const timer = setTimeout(() => {
-        loadQuery({ id: userId });
+        loadQuery({ id: userId }, { fetchPolicy: 'network-only' });
       }, 1); // künstlicher Delay
 
       return () => clearTimeout(timer);
