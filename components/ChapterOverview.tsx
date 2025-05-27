@@ -3,6 +3,7 @@ import { ChapterOverviewItem } from "./ChapterOverviewItem";
 import { graphql, useFragment } from "react-relay";
 import { ChapterOverviewFragment$key } from "@/__generated__/ChapterOverviewFragment.graphql";
 import _ from "lodash";
+import { StudentChapter } from "./StudentChapter";
 
 const ChapterFragment = graphql`
   fragment ChapterOverviewFragment on ChapterPayload {
@@ -12,7 +13,7 @@ const ChapterFragment = graphql`
       title
       number
       ...ChapterOverviewItemFragment
-      #...StudentChapterFragment
+      ...StudentChapterFragment
     }
   }
 `;
@@ -64,7 +65,7 @@ export function ChapterOverview({
 
   const sinePath = generateSinePath(totalWidth, height, amplitude, waves);
 
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   return (
     <div className="w-full overflow-y-hidden border border-slate-200s border-4 rounded-3xl px-24 pb-10 mb-8">
@@ -106,6 +107,9 @@ export function ChapterOverview({
             />
           </div>
         ))}
+      </div>
+      <div>
+        <StudentChapter key={sortedChapters[selectedIndex].id} _chapter={sortedChapters[selectedIndex]} />
       </div>
     </div>
   );
