@@ -12,6 +12,9 @@ const ChapterFragment = graphql`
       startDate
       title
       number
+      userProgress {
+        progress  
+      }
       ...ChapterOverviewItemFragment
       ...StudentChapterFragment
     }
@@ -48,24 +51,26 @@ export function ChapterOverview({
     (x) => new Date(x.startDate).getTime(),
     "number",
   ]);
-  const anzahl = sortedChapters.length;
+  const numberOfChapters = sortedChapters.length;
 
   const height = 300;
   const amplitude = 50;
   const spacing = 160;
   const waves = 2; // Number of sine waves
-  const totalWidth = spacing * (anzahl - 1);
+  const totalWidth = spacing * (numberOfChapters - 1);
 
-  const points = Array.from({ length: anzahl }, (_, i) => {
+  const points = Array.from({ length: numberOfChapters }, (_, i) => {
     const x = spacing * i;
-    const radians = (i / (anzahl - 1 || 1)) * 2 * waves * Math.PI;
+    const radians = (i / (numberOfChapters - 1 || 1)) * 2 * waves * Math.PI;
     const y = height / 2 + Math.sin(radians) * amplitude;
     return { x, y };
   });
 
   const sinePath = generateSinePath(totalWidth, height, amplitude, waves);
-
-  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  
+  const tempIndex = sortedChapters.findIndex((chapter) => chapter.userProgress.progress < 100);
+  const startIndex = tempIndex < 0 ? numberOfChapters - 1 : tempIndex;
+  const [selectedIndex, setSelectedIndex] = useState<number>(startIndex);
 
   return (
     <div className="w-full overflow-y-hidden border border-slate-200s border-4 rounded-3xl px-24 pb-10 mb-8">
