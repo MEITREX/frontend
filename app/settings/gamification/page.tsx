@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
+  CircularProgress,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -10,14 +11,92 @@ import {
   RadioGroup,
   Typography,
 } from "@mui/material";
+import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
+import { pageDefaultSettingsMutation } from "@/__generated__/pageDefaultSettingsMutation.graphql";
+import { pageStudentGamificationQuery } from "@/__generated__/pageStudentGamificationQuery.graphql";
+import { pageUserGamificationSettingsQuery } from "@/__generated__/pageUserGamificationSettingsQuery.graphql";
+import { pageUpdateGamificationSettingsMutation } from "@/__generated__/pageUpdateGamificationSettingsMutation.graphql";
+
+enum GamificationSettings {
+  GAMIFICATION_ENABLED = "GAMIFICATION_ENABLED",
+  ADAPTIVE_GAMIFICATION_ENABLED = "ADAPTIVE_GAMIFICATION_ENABLED",
+  ALL_GAMIFICATION_DISABLED = "ALL_GAMIFICATION_DISABLED",
+}
 
 export default function GamificationSettingsPage() {
-  //TODO: Fetch current settings + set new settings
-  const [setting, setSetting] = useState("adaptiveGamification");
+  const [setting, setSetting] = useState<GamificationSettings | undefined>(
+    undefined
+  );
+
+  const { currentUserInfo } = useLazyLoadQuery<pageStudentGamificationQuery>(
+    graphql`
+      query pageStudentGamificationQuery {
+        currentUserInfo {
+          id
+        }
+      }
+    `,
+    {}
+  );
+
+  const userGamificationSettings =
+    useLazyLoadQuery<pageUserGamificationSettingsQuery>(
+      graphql`
+        query pageUserGamificationSettingsQuery($id: UUID!) {
+          findUserSettings(userId: $id) {
+            gamification
+          }
+        }
+      `,
+      { id: currentUserInfo.id },
+      { fetchPolicy: "network-only" }
+    );
+
+  const [updateGamificationSettings] =
+    useMutation<pageUpdateGamificationSettingsMutation>(graphql`
+      mutation pageUpdateGamificationSettingsMutation(
+        $id: UUID!
+        $input: SettingsInput!
+      ) {
+        updateSettings(userId: $id, input: $input) {
+          gamification
+        }
+      }
+    `);
+
+  useEffect(() => {
+    if (userGamificationSettings?.findUserSettings?.gamification) {
+      setSetting(
+        userGamificationSettings.findUserSettings
+          .gamification as GamificationSettings
+      );
+    }
+  }, [userGamificationSettings]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSetting(event.target.value);
+    const newValue = event.target.value as GamificationSettings;
+    setSetting(newValue);
+    updateGamificationSettings({
+      variables: {
+        id: currentUserInfo.id,
+        input: { gamification: newValue },
+      },
+      onCompleted(data) {
+        console.log("Update successful:", data);
+      },
+      onError(error) {
+        console.error("Update failed:", error);
+      },
+    });
   };
+
+  if (setting === undefined) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <FormControl>
@@ -28,7 +107,7 @@ export default function GamificationSettingsPage() {
       <RadioGroup value={setting} onChange={handleChange}>
         <Box sx={{ display: "flex", flexDirection: "column" }}>
           <FormControlLabel
-            value="gamification"
+            value={GamificationSettings.GAMIFICATION_ENABLED}
             control={<Radio />}
             label="Gamification Enabled"
           />
@@ -40,7 +119,7 @@ export default function GamificationSettingsPage() {
 
         <Box sx={{ mt: 2, display: "flex", flexDirection: "column" }}>
           <FormControlLabel
-            value="adaptiveGamification"
+            value={GamificationSettings.ADAPTIVE_GAMIFICATION_ENABLED}
             control={<Radio />}
             label="Adaptive Gamification Enabled"
           />
@@ -53,7 +132,7 @@ export default function GamificationSettingsPage() {
 
         <Box sx={{ mt: 2, display: "flex", flexDirection: "column" }}>
           <FormControlLabel
-            value="gamificationDisabled"
+            value={GamificationSettings.ALL_GAMIFICATION_DISABLED}
             control={<Radio />}
             label="All Gamification Disabled"
           />
