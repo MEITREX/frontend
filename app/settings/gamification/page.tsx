@@ -91,11 +91,7 @@ export default function GamificationSettingsPage() {
   };
 
   if (setting === undefined) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
+    return null;
   }
 
   return (
