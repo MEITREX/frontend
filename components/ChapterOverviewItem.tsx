@@ -58,19 +58,21 @@ export function ChapterOverviewItem({
           thickness={4}
           className="!text-gray-200"
         />
-        <CircularProgress
-          className="absolute"
-          variant="determinate"
-          value={progress}
-          thickness={4}
-          size="4rem"
-          sx={{
-            "& .MuiCircularProgress-circle": {
-              strokeLinecap: "round",
-            },
-            color: selected ? "#F27900" : "#84BFE6",
-          }}
-        />
+        {!disabled && (
+          <CircularProgress
+            className="absolute"
+            variant="determinate"
+            value={progress}
+            thickness={4}
+            size="4rem"
+            sx={{
+              "& .MuiCircularProgress-circle": {
+                strokeLinecap: "round",
+              },
+              color: selected ? "#F27900" : "#84BFE6",
+            }}
+          />
+        )}
         {(disabled && (
           <LockOutlined className="absolute w-9 h-9 text-gray-300" />
         )) ||
