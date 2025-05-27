@@ -30,6 +30,7 @@ export function stringToColor(string: string): string {
 export function ChapterHeader({
   _chapter,
   expanded,
+  expandable,
   action,
   onExpandClick,
   courseId,
@@ -37,6 +38,7 @@ export function ChapterHeader({
 }: {
   _chapter: ChapterHeaderFragment$key;
   expanded?: boolean;
+  expandable?: boolean;
   action?: ReactNode;
   onExpandClick?: () => void;
   courseId: string;
@@ -128,7 +130,7 @@ export function ChapterHeader({
       className="flex items-center py-4 pl-8 pr-12 mb-8 bg-gradient-to-r from-slate-100 to-slate-50 rounded-3xl"
       onClick={onExpandClick}
     >
-      {expanded !== undefined && (
+      {(expandable === undefined || expandable) && expanded !== undefined && (
         <IconButton className="!-ml-2 !mr-4">
           {expanded ? <ExpandLess /> : <ExpandMore />}
         </IconButton>

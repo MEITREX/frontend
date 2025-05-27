@@ -57,6 +57,7 @@ export function StudentChapter({
           courseId={courseId}
           _chapter={chapter}
           expanded={expanded}
+          expandable={!standardExpand}
           onExpandClick={() => setExpanded((curr) => !curr)}
           student={true}
         />
