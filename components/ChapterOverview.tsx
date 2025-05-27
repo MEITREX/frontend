@@ -75,7 +75,7 @@ export function ChapterOverview({
   const [selectedIndex, setSelectedIndex] = useState<number>(startIndex);
 
   return (
-    <div className="border border-slate-200s border-4 rounded-3xl px-8">
+    <div className="w-full">
       <div className="w-full overflow-y-hidden overflow-x-auto px-24 pb-10 mb-8">
         <div
           style={{

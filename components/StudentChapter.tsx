@@ -8,6 +8,7 @@ import { ChapterContent } from "./ChapterContent";
 import { ChapterHeader } from "./ChapterHeader";
 import { OtherContent } from "./OtherContent";
 import { StudentSection } from "./StudentSection";
+import Divider from "@mui/material/Divider";
 
 export function StudentChapter({
   _chapter,
@@ -51,7 +52,7 @@ export function StudentChapter({
   const [expanded, setExpanded] = useState(standardExpand);
 
   return (
-    <div className="w-full">
+    <div className="w-full  bg-gradient-to-r  from-slate-100 to-slate-50 ">
       <section ref={handleRef}>
         <ChapterHeader
           courseId={courseId}

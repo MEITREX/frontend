@@ -39,7 +39,7 @@ export function ChapterOverviewItem({
   return (
     <div className="relative flex flex-col items-center justify-center w-100 h-auto">
       <div
-        onClick={onClick}
+        onClick={!disabled ? onClick : undefined}
         className="relative flex justify-center items-center"
       >
         <div
@@ -92,7 +92,7 @@ export function ChapterOverviewItem({
           ))}
       </div>
       <div
-        onClick={onClick}
+        onClick={!disabled ? onClick : undefined}
         className="absolute top-full mt-2 flex flex-col items-center w-40 h-auto"
       >
         {/* Dreieck */}

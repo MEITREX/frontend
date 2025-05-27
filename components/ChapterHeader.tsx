@@ -127,7 +127,7 @@ export function ChapterHeader({
 
   return (
     <div
-      className="flex items-center py-4 pl-8 pr-12 mb-8 bg-gradient-to-r from-slate-100 to-slate-50 rounded-3xl"
+      className="flex items-center pl-4 pr-6 py-4 rounded-3xl"
       onClick={onExpandClick}
     >
       {(expandable === undefined || expandable) && expanded !== undefined && (

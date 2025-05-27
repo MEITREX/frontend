@@ -1,6 +1,6 @@
 "use client";
 import { studentCourseIdQuery } from "@/__generated__/studentCourseIdQuery.graphql";
-import { Button, IconButton, Switch, Typography } from "@mui/material";
+import { Button, Divider, IconButton, Switch, Typography } from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
@@ -30,10 +30,47 @@ import CompetencyProgressbar from "@/components/CompetencyProgressbar";
 import { stringToColor } from "@/components/ChapterHeader";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 import { ChapterOverview } from "@/components/ChapterOverview";
+
+import * as React from "react";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Box from "@mui/material/Box";
+
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import ReorderIcon from "@mui/icons-material/Reorder";
+import TimelineIcon from "@mui/icons-material/Timeline";
+
+function CustomTabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  );
+}
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
+  };
+}
 
 interface Data {
   name: string;
@@ -47,6 +84,22 @@ function createData(name: string, power: number) {
 export default function StudentCoursePage() {
   // Get course id from url
   const { courseId: id } = useParams();
+
+  // tabs
+  const [value, setValue] = React.useState(0);
+  const handleChange = (event: any, newValue: React.SetStateAction<number>) => {
+    setValue(newValue);
+  };
+
+  // Toggle button for viewing chapters
+  const [viewStyle, setViewStyle] = React.useState<string | null>("graph");
+  const handleViewStyle = (
+    event: React.MouseEvent<HTMLElement>,
+    newViewStyle: string | null
+  ) => {
+    setViewStyle(newViewStyle);
+    setshowChapterOverview((prev) => !prev);
+  };
 
   const router = useRouter();
   const [error, setError] = useState<any>(null);
@@ -149,18 +202,7 @@ export default function StudentCoursePage() {
       createData(element.user?.userName ?? "Unknown", element.powerScore)
     );
 
-  const [expandedBars, setExpandedBars] = useState<Record<string, boolean>>({});
-
-  const toggleProgressbar = (id: string) => {
-    setExpandedBars((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
-  const [showProgressbars, setShowProgressbars] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const [showUpNext, setShowUpNext] = useState(false);
   const [showChapterOverview, setshowChapterOverview] = useState(true);
 
   // Show 404 error page if id was not found
@@ -222,305 +264,315 @@ export default function StudentCoursePage() {
   return (
     <main>
       <FormErrors error={error} onClose={() => setError(null)} />
-      <div className="flex gap-4 items-center">
-        <Typography variant="h1">{course.title}</Typography>
-        {course.description && (
-          <LightTooltip
-            title={
-              <>
-                <p className="text-slate-600 mb-1">Beschreibung</p>
-                <p>{course.description}</p>
-              </>
-            }
-          >
-            <IconButton>
-              <Info />
-            </IconButton>
-          </LightTooltip>
-        )}
-        <div className="flex-1"></div>
 
-        <Button
-          color="inherit"
-          size="small"
-          variant="outlined"
-          endIcon={<ExitToAppIcon />}
-          onClick={() => {
-            if (
-              confirm(
-                "Do you really want to leave this course? You might loose the progress you've already made"
-              )
-            ) {
-              leave({
-                variables: {
-                  courseId: id,
-                },
-                onError: setError,
-
-                updater(store) {
-                  const userRecord = store.get(userId)!;
-                  const records =
-                    userRecord.getLinkedRecords("courseMemberships")!;
-
-                  userRecord.setLinkedRecords(
-                    records.filter((x) => x.getValue("courseId") !== id),
-                    "courseMemberships"
-                  );
-                },
-                onCompleted() {
-                  router.push("/courses?leftCourse=true");
-                },
-              });
-            }
-          }}
-        >
-          Leave course
-        </Button>
-      </div>
-      <div className="grid grid-cols-2 items-start">
-        <div className="object-cover my-12">
-          <div className="pl-8 pr-10 py-6 border-4 border-slate-200 rounded-3xl">
-            <RewardScores _scores={course.rewardScores} courseId={course.id} />
-          </div>
-          <div className="mt-2 mx-4 flex items-center gap-8">
-            <RewardScoresHelpButton />
-            <Button
-              endIcon={<NavigateNextIcon />}
-              onClick={() => router.push(`/courses/${id}/statistics`)}
-            >
-              Full history
-            </Button>
-          </div>
-        </div>
-        <div className="mx-5">
-          <TableContainer component={Paper} className="mt-12 mb-2">
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Student Name</TableCell>
-                  <TableCell align="right">Power</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows.map((row) => (
-                  <TableRow
-                    key={row.name}
-                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                  >
-                    <TableCell component="th" scope="row">
-                      {row.name}
-                    </TableCell>
-                    <TableCell align="right">{row.power}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <Link href={{ pathname: `${id}/scoreboard` }}>
-            <Button variant="text" endIcon={<NavigateNextIcon />}>
-              Full Scoreboard
-            </Button>
-          </Link>
-          <Link href={{ pathname: `${id}/skills` }}>
-            <Button variant="text" endIcon={<NavigateNextIcon />}>
-              Knowledge Status
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2 mb-8">
-        <div className="flex items-center gap-4">
+      {/* Header section with course title, description and leave button */}
+      <div className="grid gap-2 pb-6">
+        <div className="flex justify-between">
+          <Typography variant="h1">{course.title}</Typography>
           <Button
-            onClick={() => setShowProgressbars((prev) => !prev)}
-            className="w-8 h-8 min-w-0 p-0 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-600 transition-colors duration-200"
-          >
-            <div className="flex items-center justify-center">
-              {showProgressbars ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </div>
-          </Button>
-
-          <Typography variant="h2">Skill progress</Typography>
-
-          <LightTooltip
-            title={
-              <>
-                <p className="text-slate-600 mb-1">Information Skillprogress</p>
-                <p>
-                  {
-                    "Here you can see your personal progress for this course, splitted up in every skill category that is assigned to this course. Every skill category consists of unique skills. These skills are assigned to the different exercises. If you complete an exercise your skill progress will increase."
-                  }
-                </p>
-              </>
-            }
-          >
-            <IconButton>
-              <Info />
-            </IconButton>
-          </LightTooltip>
-
-          {showProgressbars && totalPages > 1 && (
-            <div className="flex gap-2 items-center ml-12">
-              <IconButton onClick={handlePrevPage} disabled={currentPage === 0}>
-                <ArrowBackIosNewIcon />
-              </IconButton>
-              <span>
-                {currentPage + 1} / {totalPages}
-              </span>
-              <IconButton
-                onClick={handleNextPage}
-                disabled={currentPage >= totalPages - 1}
-              >
-                <ArrowForwardIosIcon />
-              </IconButton>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div>
-        {showProgressbars && (
-          <div className="competency-progressbars grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {currentCategorySlice.map((uniqueSkill) => {
-              const skillsInCategory = course.skills.filter(
-                (skill) => skill.skillCategory === uniqueSkill.skillCategory
-              );
-              const uniqueSkillsInCategory = Array.from(
-                new Map(
-                  skillsInCategory.map((skill) => [skill.skillName, skill])
-                ).values()
-              );
-
-              const totalCategoryProgress = uniqueSkillsInCategory.reduce(
-                (acc, skill) =>
-                  acc +
-                  Object.values(skill.skillLevels || {}).reduce(
-                    (sum, level) => sum + (level?.value || 0),
-                    0
-                  ),
-                0
-              );
-              const categoryProgressValue = Math.floor(
-                Math.min(
-                  (totalCategoryProgress * 100) / uniqueSkillsInCategory.length,
-                  100
+            color="inherit"
+            size="small"
+            variant="outlined"
+            endIcon={<ExitToAppIcon />}
+            onClick={() => {
+              if (
+                confirm(
+                  "Do you really want to leave this course? You might loose the progress you've already made"
                 )
-              );
+              ) {
+                leave({
+                  variables: {
+                    courseId: id,
+                  },
+                  onError: setError,
 
-              return (
-                <div
-                  key={uniqueSkill.skillCategory}
-                  className="mb-4 w-full pl-10"
-                >
-                  <div className="flex items-center gap-2 w-full">
-                    <Button
-                      onClick={() =>
-                        toggleProgressbar(uniqueSkill.skillCategory)
-                      }
-                      className="w-6 h-6 min-w-0 p-0 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-600 transition-colors duration-200"
-                    >
-                      {expandedBars[uniqueSkill.skillCategory] ? (
-                        <ExpandLessIcon fontSize="small" />
-                      ) : (
-                        <ExpandMoreIcon fontSize="small" />
-                      )}
-                    </Button>
-                    <div className="flex-1">
-                      <CompetencyProgressbar
-                        competencyName={`${
-                          uniqueSkill.skillCategory
-                        } - ${Math.floor(categoryProgressValue)}%`}
-                        heightValue={15}
-                        progressValue={categoryProgressValue}
-                        color={stringToColor(uniqueSkill.skillCategory)}
-                      />
-                    </div>
-                  </div>
-                  {expandedBars[uniqueSkill.skillCategory] && (
-                    <div className="ml-4">
-                      {uniqueSkillsInCategory.map((skill) => {
-                        const rawValue = Object.values(
-                          skill?.skillLevels || {}
-                        ).reduce((sum, level) => sum + (level?.value || 0), 0);
-                        const clamped = Math.min(rawValue, 1);
-                        const skillProgressPercent = Math.floor(clamped * 100);
+                  updater(store) {
+                    const userRecord = store.get(userId)!;
+                    const records =
+                      userRecord.getLinkedRecords("courseMemberships")!;
 
-                        return (
-                          <div key={skill.skillName} className="pl-8 w-full">
-                            <CompetencyProgressbar
-                              competencyName={
-                                skill.skillName +
-                                " - " +
-                                Math.floor(skillProgressPercent) +
-                                "%"
-                              }
-                              heightValue={10}
-                              progressValue={skillProgressPercent}
-                              color={stringToColor(uniqueSkill.skillCategory)}
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      <section className="mt-8 mb-8">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={() => setShowUpNext((prev) => !prev)}
-              className="w-8 h-8 min-w-0 p-0 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-600 transition-colors duration-200"
-            >
-              <div className="flex items-center justify-center">
-                {showUpNext ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-              </div>
-            </Button>
-            <Typography variant="h2">Up next</Typography>
-          </div>
-          <Button
-            startIcon={<Repeat />}
-            onClick={() => router.push(`/courses/${id}/flashcards/due`)}
+                    userRecord.setLinkedRecords(
+                      records.filter((x) => x.getValue("courseId") !== id),
+                      "courseMemberships"
+                    );
+                  },
+                  onCompleted() {
+                    router.push("/courses?leftCourse=true");
+                  },
+                });
+              }
+            }}
           >
-            Repeat learned flashcards
+            Leave course
           </Button>
         </div>
-        {showUpNext && (
-          <div className="mt-4 gap-8 flex flex-wrap pl-8">
-            {course.suggestions.map((x) => (
-              <Suggestion
-                courseId={course.id}
-                key={x.content.id}
-                _suggestion={x}
-              />
-            ))}
-          </div>
+        {course.description && (
+          <div className="text-sm text-gray-500">{course.description}</div>
         )}
-      </section>
-
-      <div className="flex items-center gap-4 mb-4">
-        <Typography variant="h2">{showChapterOverview ? "Level-Overview" : "List-Overview"}</Typography>
-        <Switch 
-          checked={showChapterOverview}
-          onChange={() => setshowChapterOverview((prev) => !prev)}
-        />
       </div>
 
-      {showChapterOverview ? (
-        <ChapterOverview _chapters={course.chapters} />
-      ) : (
-        orderBy(course.chapters.elements, [
-          (x) => new Date(x.startDate).getTime(),
-          "number",
-        ]).map((chapter) => (
-          <StudentChapter key={chapter.id} _chapter={chapter} standardExpand={false}/>
-        ))
-      )}
+      {/* Tabs for Learning Progress and Chapters */}
+      <Box sx={{ width: "100%" }}>
+        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <Tabs
+            value={value}
+            onChange={handleChange}
+            aria-label="basic tabs example"
+          >
+            <Tab label="Learning Progress" {...a11yProps(0)} />
+            <Tab label="Chapters" {...a11yProps(1)} />
+          </Tabs>
+        </Box>
+        <CustomTabPanel value={value} index={0}>
+          <div className="flex flex-col gap-12">
+            <div className="grid grid-cols-2 items-start gap-4">
+              <div className="object-cover flex flex-col gap-2">
+                <div className="p-4 border-4 border-slate-200 rounded-3xl">
+                  <RewardScores
+                    _scores={course.rewardScores}
+                    courseId={course.id}
+                  />
+                </div>
+                <div className="mx-4 flex items-center gap-8">
+                  <RewardScoresHelpButton />
+                  <Button
+                    endIcon={<NavigateNextIcon />}
+                    onClick={() => router.push(`/courses/${id}/statistics`)}
+                  >
+                    Full history
+                  </Button>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <TableContainer component={Paper}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Student Name</TableCell>
+                        <TableCell align="right">Power</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {rows.map((row) => (
+                        <TableRow
+                          key={row.name}
+                          sx={{
+                            "&:last-child td, &:last-child th": { border: 0 },
+                          }}
+                        >
+                          <TableCell component="th" scope="row">
+                            {row.name}
+                          </TableCell>
+                          <TableCell align="right">{row.power}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                <div className="flex flex-row gap-8">
+                  <Link href={{ pathname: `${id}/scoreboard` }}>
+                    <Button variant="text" endIcon={<NavigateNextIcon />}>
+                      Full Scoreboard
+                    </Button>
+                  </Link>
+                  <Link href={{ pathname: `${id}/skills` }}>
+                    <Button variant="text" endIcon={<NavigateNextIcon />}>
+                      Knowledge Status
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-4">
+                <Typography variant="h2">Skill progress</Typography>
+
+                <LightTooltip
+                  title={
+                    <>
+                      <p className="text-slate-600 mb-1">
+                        Information Skillprogress
+                      </p>
+                      <p>
+                        {
+                          "Here you can see your personal progress for this course, splitted up in every skill category that is assigned to this course. Every skill category consists of unique skills. These skills are assigned to the different exercises. If you complete an exercise your skill progress will increase."
+                        }
+                      </p>
+                    </>
+                  }
+                >
+                  <IconButton>
+                    <Info />
+                  </IconButton>
+                </LightTooltip>
+
+                {totalPages > 1 && (
+                  <div className="flex gap-2 items-center ml-12">
+                    <IconButton
+                      onClick={handlePrevPage}
+                      disabled={currentPage === 0}
+                    >
+                      <ArrowBackIosNewIcon />
+                    </IconButton>
+                    <span>
+                      {currentPage + 1} / {totalPages}
+                    </span>
+                    <IconButton
+                      onClick={handleNextPage}
+                      disabled={currentPage >= totalPages - 1}
+                    >
+                      <ArrowForwardIosIcon />
+                    </IconButton>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {currentCategorySlice.map((uniqueSkill) => {
+                  const skillsInCategory = course.skills.filter(
+                    (skill) => skill.skillCategory === uniqueSkill.skillCategory
+                  );
+                  const uniqueSkillsInCategory = Array.from(
+                    new Map(
+                      skillsInCategory.map((skill) => [skill.skillName, skill])
+                    ).values()
+                  );
+
+                  const totalCategoryProgress = uniqueSkillsInCategory.reduce(
+                    (acc, skill) =>
+                      acc +
+                      Object.values(skill.skillLevels || {}).reduce(
+                        (sum, level) => sum + (level?.value || 0),
+                        0
+                      ),
+                    0
+                  );
+                  const categoryProgressValue = Math.floor(
+                    Math.min(
+                      (totalCategoryProgress * 100) /
+                        uniqueSkillsInCategory.length,
+                      100
+                    )
+                  );
+
+                  return (
+                    <div
+                      key={uniqueSkill.skillCategory}
+                      className="mb-4 w-full"
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <div className="flex-1">
+                          <CompetencyProgressbar
+                            competencyName={`${
+                              uniqueSkill.skillCategory
+                            } - ${Math.floor(categoryProgressValue)}%`}
+                            heightValue={15}
+                            progressValue={categoryProgressValue}
+                            color={stringToColor(uniqueSkill.skillCategory)}
+                          />
+                        </div>
+                      </div>
+                      <div className="ml-4">
+                        {uniqueSkillsInCategory.map((skill) => {
+                          const rawValue = Object.values(
+                            skill?.skillLevels || {}
+                          ).reduce(
+                            (sum, level) => sum + (level?.value || 0),
+                            0
+                          );
+                          const clamped = Math.min(rawValue, 1);
+                          const skillProgressPercent = Math.floor(
+                            clamped * 100
+                          );
+
+                          return (
+                            <div key={skill.skillName} className="pl-8 w-full">
+                              <CompetencyProgressbar
+                                competencyName={
+                                  skill.skillName +
+                                  " - " +
+                                  Math.floor(skillProgressPercent) +
+                                  "%"
+                                }
+                                heightValue={10}
+                                progressValue={skillProgressPercent}
+                                color={stringToColor(uniqueSkill.skillCategory)}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </CustomTabPanel>
+        <CustomTabPanel value={value} index={1}>
+          <div className="flex flex-col items-end gap-4">
+            <ToggleButtonGroup
+              value={viewStyle}
+              color="primary"
+              exclusive
+              onChange={handleViewStyle}
+              aria-label="chapter view style"
+            >
+              <ToggleButton value="graph" aria-label="graph view">
+                <TimelineIcon />
+              </ToggleButton>
+              <ToggleButton value="list" aria-label="list view">
+                <ReorderIcon />
+              </ToggleButton>
+            </ToggleButtonGroup>
+
+            {showChapterOverview ? (
+              <ChapterOverview _chapters={course.chapters} />
+            ) : (
+              <div>
+                <section className="mt-8 mb-8">
+                  <div className="flex justify-between items-center">
+                    <Typography variant="h2">Up next</Typography>
+                    <Button
+                      startIcon={<Repeat />}
+                      onClick={() =>
+                        router.push(`/courses/${id}/flashcards/due`)
+                      }
+                    >
+                      Repeat learned flashcards
+                    </Button>
+                  </div>
+                  <div className="mt-4 gap-8 flex flex-wrap pl-8">
+                    {course.suggestions.map((x) => (
+                      <Suggestion
+                        courseId={course.id}
+                        key={x.content.id}
+                        _suggestion={x}
+                      />
+                    ))}
+                  </div>
+                </section>
+                <div className="border border-w-2 border-gray-200 rounded-3xl overflow-hidden">
+                  {orderBy(course.chapters.elements, [
+                    (x) => new Date(x.startDate).getTime(),
+                    "number",
+                  ]).map((chapter, i) => (
+                    <>
+                      <StudentChapter
+                        key={chapter.id}
+                        _chapter={chapter}
+                        standardExpand={false}
+                      />
+                      {i < course.chapters.elements.length - 1 && <Divider />}
+                    </>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </CustomTabPanel>
+      </Box>
     </main>
   );
 }
