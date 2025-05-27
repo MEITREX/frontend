@@ -553,7 +553,7 @@ export default function StudentCoursePage() {
                     ))}
                   </div>
                 </section>
-                <div className="border border-w-2 border-gray-200 rounded-3xl overflow-hidden">
+                <div className="border border-2 border-gray-300 rounded-3xl overflow-hidden">
                   {orderBy(course.chapters.elements, [
                     (x) => new Date(x.startDate).getTime(),
                     "number",

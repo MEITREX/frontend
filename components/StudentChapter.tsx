@@ -52,7 +52,7 @@ export function StudentChapter({
   const [expanded, setExpanded] = useState(standardExpand);
 
   return (
-    <div className="w-full  bg-gradient-to-r  from-slate-100 to-slate-50 ">
+    <div className="w-full">
       <section ref={handleRef}>
         <ChapterHeader
           courseId={courseId}
@@ -63,12 +63,14 @@ export function StudentChapter({
           student={true}
         />
         <Collapse in={expanded}>
-          <ChapterContent>
-            {chapter.sections.map((section) => (
-              <StudentSection key={section.id} _section={section} />
-            ))}
-          </ChapterContent>
-          <OtherContent _chapter={chapter} courseId={courseId} />
+          <div className="pl-12">
+            <ChapterContent>
+              {chapter.sections.map((section) => (
+                <StudentSection key={section.id} _section={section} />
+              ))}
+            </ChapterContent>
+            <OtherContent _chapter={chapter} courseId={courseId} />
+          </div>
         </Collapse>
       </section>
     </div>
