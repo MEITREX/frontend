@@ -1,6 +1,6 @@
 "use client";
 import { studentCourseIdQuery } from "@/__generated__/studentCourseIdQuery.graphql";
-import { Button, IconButton, Typography } from "@mui/material";
+import { Button, IconButton, Switch, Typography } from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
@@ -33,7 +33,6 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
-import { ChapterOverviewItem } from "@/components/ChapterOverviewItem";
 import { ChapterOverview } from "@/components/ChapterOverview";
 
 interface Data {
@@ -505,26 +504,23 @@ export default function StudentCoursePage() {
       </section>
 
       <div className="flex items-center gap-4 mb-4">
-        <Button
-          onClick={() => setshowChapterOverview((prev) => !prev)}
-          className="w-8 h-8 min-w-0 p-0 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-600 transition-colors duration-200"
-        >
-          <div className="flex items-center justify-center">
-            {showChapterOverview ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </div>
-        </Button>
-
-        <Typography variant="h2">Chapter Overview</Typography>
+        <Typography variant="h2">{showChapterOverview ? "Level-Overview" : "List-Overview"}</Typography>
+        <Switch 
+          checked={showChapterOverview}
+          onChange={() => setshowChapterOverview((prev) => !prev)}
+        />
       </div>
 
-      {showChapterOverview && <ChapterOverview _chapters={course.chapters} />}
-
-      {orderBy(course.chapters.elements, [
-        (x) => new Date(x.startDate).getTime(),
-        "number",
-      ]).map((chapter) => (
-        <StudentChapter key={chapter.id} _chapter={chapter} />
-      ))}
+      {showChapterOverview ? (
+        <ChapterOverview _chapters={course.chapters} />
+      ) : (
+        orderBy(course.chapters.elements, [
+          (x) => new Date(x.startDate).getTime(),
+          "number",
+        ]).map((chapter) => (
+          <StudentChapter key={chapter.id} _chapter={chapter} standardExpand={false}/>
+        ))
+      )}
     </main>
   );
 }

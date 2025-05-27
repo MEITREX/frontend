@@ -11,8 +11,10 @@ import { StudentSection } from "./StudentSection";
 
 export function StudentChapter({
   _chapter,
+  standardExpand,
 }: {
   _chapter: StudentChapterFragment$key;
+  standardExpand: boolean;
 }) {
   const searchParams = useSearchParams();
   const selectedChapter = searchParams.get("chapterId");
@@ -46,14 +48,7 @@ export function StudentChapter({
     [chapter, selectedChapter]
   );
 
-  const [expanded, setExpanded] = useState(
-    (!selectedChapter &&
-      dayjs().isBetween(
-        chapter.suggestedStartDate,
-        chapter.suggestedEndDate
-      )) ||
-      chapter.id === selectedChapter
-  );
+  const [expanded, setExpanded] = useState(standardExpand);
 
   return (
     <section ref={handleRef}>

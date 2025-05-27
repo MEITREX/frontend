@@ -109,7 +109,7 @@ export function ChapterOverview({
         ))}
       </div>
       <div>
-        <StudentChapter key={sortedChapters[selectedIndex].id} _chapter={sortedChapters[selectedIndex]} />
+        <StudentChapter key={sortedChapters[selectedIndex].id} _chapter={sortedChapters[selectedIndex]} standardExpand={true}/>
       </div>
     </div>
   );
