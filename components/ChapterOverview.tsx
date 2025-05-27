@@ -1,5 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { ChapterOverviewItem } from "./ChapterOverviewItem";
+import { graphql, useFragment } from "react-relay";
+import { ChapterOverviewFragment$key } from "@/__generated__/ChapterOverviewFragment.graphql";
+import _ from "lodash";
+
+const ChapterFragment = graphql`
+  fragment ChapterOverviewFragment on ChapterPayload {
+    elements {
+      id
+      startDate
+      title
+      number
+      ...ChapterOverviewItemFragment
+      #...StudentChapterFragment
+    }
+  }
+`;
 
 function generateSinePath(
   width: number,
@@ -21,7 +37,18 @@ function generateSinePath(
   return path;
 }
 
-export function ChapterOverview({ anzahl }: { anzahl: number }) {
+export function ChapterOverview({
+  _chapters,
+}: {
+  _chapters: ChapterOverviewFragment$key;
+}) {
+  const chapters = useFragment(ChapterFragment, _chapters);
+  const sortedChapters = _.orderBy(chapters.elements, [
+    (x) => new Date(x.startDate).getTime(),
+    "number",
+  ]);
+  const anzahl = sortedChapters.length;
+
   const height = 300;
   const amplitude = 50;
   const spacing = 160;
@@ -73,12 +100,9 @@ export function ChapterOverview({ anzahl }: { anzahl: number }) {
             }}
           >
             <ChapterOverviewItem
-              progress={67}
-              disabled={true}
+              _chapter={sortedChapters[i]}
               selected={i === selectedIndex}
               onClick={() => setSelectedIndex(i)}
-              title={`Kapitel ${i + 1}`}
-              description={`Beschreibung für Kapitel ${i + 1}`}
             />
           </div>
         ))}

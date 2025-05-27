@@ -1,22 +1,41 @@
 import React, { useState } from "react";
 import { DoneRounded, LockOutlined } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
+import { graphql, useFragment } from "react-relay";
+import { ChapterOverviewItemFragment$key } from "@/__generated__/ChapterOverviewItemFragment.graphql";
+
+const ChapterFragment = graphql`
+  fragment ChapterOverviewItemFragment on Chapter {
+    title
+    description
+    userProgress {
+      progress
+    }
+    suggestedStartDate
+    suggestedEndDate
+    startDate
+    endDate
+  }
+`;
 
 export function ChapterOverviewItem({
-  progress,
-  disabled,
+  _chapter,
   selected,
   onClick,
-  title,
-  description,
 }: {
-  progress: number;
-  disabled: boolean;
+  _chapter: ChapterOverviewItemFragment$key;
   selected: boolean;
   onClick: () => void;
-  title: string;
-  description: string;
-}): JSX.Element {
+}) {
+  const chapter = useFragment(ChapterFragment, _chapter);
+  const progress = chapter.userProgress.progress;
+  const suggestedStartDate = Date.parse(
+    chapter.suggestedStartDate ?? chapter.startDate
+  );
+  const disabled = suggestedStartDate.valueOf() > Date.now();
+  const title = chapter.title;
+  const description = chapter.description;
+
   return (
     <div className="relative flex flex-col items-center justify-center w-100 h-auto">
       <div

@@ -84,6 +84,7 @@ export default function StudentCoursePage() {
             ...RewardScoresFragment
           }
           chapters {
+            ...ChapterOverviewFragment
             elements {
               id
               number
@@ -91,7 +92,6 @@ export default function StudentCoursePage() {
               ...StudentChapterFragment
               contents {
                 ...ContentLinkFragment
-
                 userProgressData {
                   nextLearnDate
                   lastLearnDate
@@ -517,9 +517,7 @@ export default function StudentCoursePage() {
         <Typography variant="h2">Chapter Overview</Typography>
       </div>
 
-      {showChapterOverview && (
-        <ChapterOverview anzahl={course.chapters.elements.length} />
-      )}
+      {showChapterOverview && <ChapterOverview _chapters={course.chapters} />}
 
       {orderBy(course.chapters.elements, [
         (x) => new Date(x.startDate).getTime(),
