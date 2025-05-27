@@ -85,7 +85,7 @@ export function ChapterOverviewItem({
           (progress == 100 && (
             <DoneRounded
               className="absolute w-10 h-10"
-              style={{ color: "#84BFE6" }}
+              style={{ color: selected ? "#F27900" : "#84BFE6" }}
             />
           ))}
       </div>
