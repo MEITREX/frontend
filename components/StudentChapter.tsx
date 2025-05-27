@@ -51,22 +51,24 @@ export function StudentChapter({
   const [expanded, setExpanded] = useState(standardExpand);
 
   return (
-    <section ref={handleRef}>
-      <ChapterHeader
-        courseId={courseId}
-        _chapter={chapter}
-        expanded={expanded}
-        onExpandClick={() => setExpanded((curr) => !curr)}
-        student={true}
-      />
-      <Collapse in={expanded}>
-        <ChapterContent>
-          {chapter.sections.map((section) => (
-            <StudentSection key={section.id} _section={section} />
-          ))}
-        </ChapterContent>
-        <OtherContent _chapter={chapter} courseId={courseId} />
-      </Collapse>
-    </section>
+    <div className="w-full">
+      <section ref={handleRef}>
+        <ChapterHeader
+          courseId={courseId}
+          _chapter={chapter}
+          expanded={expanded}
+          onExpandClick={() => setExpanded((curr) => !curr)}
+          student={true}
+        />
+        <Collapse in={expanded}>
+          <ChapterContent>
+            {chapter.sections.map((section) => (
+              <StudentSection key={section.id} _section={section} />
+            ))}
+          </ChapterContent>
+          <OtherContent _chapter={chapter} courseId={courseId} />
+        </Collapse>
+      </section>
+    </div>
   );
 }

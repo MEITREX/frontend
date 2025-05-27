@@ -13,7 +13,7 @@ const ChapterFragment = graphql`
       title
       number
       userProgress {
-        progress  
+        progress
       }
       ...ChapterOverviewItemFragment
       ...StudentChapterFragment
@@ -67,54 +67,62 @@ export function ChapterOverview({
   });
 
   const sinePath = generateSinePath(totalWidth, height, amplitude, waves);
-  
-  const tempIndex = sortedChapters.findIndex((chapter) => chapter.userProgress.progress < 100);
+
+  const tempIndex = sortedChapters.findIndex(
+    (chapter) => chapter.userProgress.progress < 100
+  );
   const startIndex = tempIndex < 0 ? numberOfChapters - 1 : tempIndex;
   const [selectedIndex, setSelectedIndex] = useState<number>(startIndex);
 
   return (
-    <div className="w-full overflow-y-hidden border border-slate-200s border-4 rounded-3xl px-24 pb-10 mb-8">
-      <div
-        style={{
-          position: "relative",
-          height,
-          minWidth: totalWidth,
-          maxWidth: "max-content",
-        }}
-      >
-        <svg
-          width={totalWidth}
-          height={height}
+    <div className="border border-slate-200s border-4 rounded-3xl px-8">
+      <div className="w-full overflow-y-hidden overflow-x-auto px-24 pb-10 mb-8">
+        <div
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            zIndex: 0,
+            position: "relative",
+            height,
+            minWidth: totalWidth,
+            maxWidth: "max-content",
           }}
         >
-          <path d={sinePath} fill="none" stroke="#E4E4E4" strokeWidth={16} />
-        </svg>
-
-        {points.map(({ x, y }, i) => (
-          <div
-            key={i}
+          <svg
+            width={totalWidth}
+            height={height}
             style={{
               position: "absolute",
-              left: x,
-              top: y,
-              transform: "translate(-50%, -50%)",
+              top: 0,
+              left: 0,
+              zIndex: 0,
             }}
           >
-            <ChapterOverviewItem
-              _chapter={sortedChapters[i]}
-              selected={i === selectedIndex}
-              onClick={() => setSelectedIndex(i)}
-            />
-          </div>
-        ))}
+            <path d={sinePath} fill="none" stroke="#E4E4E4" strokeWidth={16} />
+          </svg>
+
+          {points.map(({ x, y }, i) => (
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                left: x,
+                top: y,
+                transform: "translate(-50%, -50%)",
+              }}
+            >
+              <ChapterOverviewItem
+                _chapter={sortedChapters[i]}
+                selected={i === selectedIndex}
+                onClick={() => setSelectedIndex(i)}
+              />
+            </div>
+          ))}
+        </div>
       </div>
-      <div>
-        <StudentChapter key={sortedChapters[selectedIndex].id} _chapter={sortedChapters[selectedIndex]} standardExpand={true}/>
+      <div className="w-full">
+        <StudentChapter
+          key={sortedChapters[selectedIndex].id}
+          _chapter={sortedChapters[selectedIndex]}
+          standardExpand={true}
+        />
       </div>
     </div>
   );
