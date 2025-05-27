@@ -5,7 +5,7 @@ function generateSinePath(
   width: number,
   height: number,
   amplitude: number,
-  waves = 1
+  waves: number
 ) {
   const points = 200;
   const centerY = height / 2;
@@ -73,8 +73,8 @@ export function ChapterOverview({ anzahl }: { anzahl: number }) {
             }}
           >
             <ChapterOverviewItem
-              progress={50}
-              disabled={false}
+              progress={67}
+              disabled={true}
               selected={i === selectedIndex}
               onClick={() => setSelectedIndex(i)}
               title={`Kapitel ${i + 1}`}
