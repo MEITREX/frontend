@@ -458,6 +458,8 @@ directive @DecimalMax(value: String!, inclusive: Boolean! = true, message: Strin
 
 directive @DecimalMin(value: String!, inclusive: Boolean! = true, message: String = "graphql.validation.DecimalMin.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
+directive @defer(if: Boolean! = true, label: String) on FRAGMENT_SPREAD | INLINE_FRAGMENT
+
 type DocumentRecordSegment implements MediaRecordSegment {
   id: UUID!
   mediaRecord: MediaRecord!
@@ -479,6 +481,8 @@ type ExactAnswerQuestion implements Question {
   text: JSON!
   type: QuestionType!
 }
+
+directive @experimental_disableErrorPropagation on QUERY | MUTATION | SUBSCRIPTION
 
 type Flashcard {
   item: Item!
@@ -553,6 +557,12 @@ input FlashcardSideInput {
   isQuestion: Boolean!
   label: String!
   text: JSON!
+}
+
+enum Gamification {
+  ADAPTIVE_GAMIFICATION_ENABLED
+  ALL_GAMIFICATION_DISABLED
+  GAMIFICATION_ENABLED
 }
 
 input GenerateMediaRecordLinksInput {
@@ -705,6 +715,7 @@ type Mutation {
   createMembership(input: CourseMembershipInput!): CourseMembership!
   createQuizAssessment(assessmentInput: CreateAssessmentInput!, quizInput: CreateQuizInput!): QuizAssessment!
   createSection(input: CreateSectionInput!): Section!
+  defaultSettings(userId: UUID!): Settings!
   deleteChapter(id: UUID!): UUID!
   deleteCourse(id: UUID!): UUID!
   deleteFlashcardSet(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the flashcard set and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
@@ -729,6 +740,7 @@ type Mutation {
   updateCourse(input: UpdateCourseInput!): Course!
   updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
   updateMembership(input: CourseMembershipInput!): CourseMembership!
+  updateSettings(input: SettingsInput!, userId: UUID!): Settings!
 }
 
 directive @Negative(message: String = "graphql.validation.Negative.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
@@ -738,6 +750,16 @@ directive @NegativeOrZero(message: String = "graphql.validation.NegativeOrZero.m
 directive @NotBlank(message: String = "graphql.validation.NotBlank.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 directive @NotEmpty(message: String = "graphql.validation.NotEmpty.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+type Notification {
+  gamification: Boolean!
+  lecture: Boolean!
+}
+
+input NotificationInput {
+  gamification: Boolean
+  lecture: Boolean
+}
 
 type NumericQuestion implements Question {
   correctAnswer: Float!
@@ -825,6 +847,7 @@ type Query {
   findPublicUserInfos(ids: [UUID!]!): [PublicUserInfo]!
   findQuizzesByAssessmentIds(assessmentIds: [UUID!]!): [Quiz]!
   findUserInfos(ids: [UUID!]!): [UserInfo]!
+  findUserSettings(userId: UUID): Settings!
   flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
   getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
   getSemanticallySimilarEntities(count: Int! = 10, courseWhitelist: [UUID!], excludeEntitiesWithSameParent: Boolean, segmentId: UUID!): [SemanticSearchResult!]!
@@ -1010,6 +1033,16 @@ type SelfAssessmentQuestion implements Question {
 
 interface SemanticSearchResult {
   score: Float!
+}
+
+type Settings {
+  gamification: Gamification
+  notification: Notification
+}
+
+input SettingsInput {
+  gamification: Gamification
+  notification: NotificationInput
 }
 
 type SingleAssociation {
