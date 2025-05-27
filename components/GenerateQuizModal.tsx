@@ -93,7 +93,8 @@ export function GenerateQuizModal({
       capabilities.relationship !== "" &&
       capabilities.keywords.every((kw) => kw.trim() !== "");
 
-    const validMaterials = materialIds.length !== 0;
+    const validMaterials =
+      materialIds.length !== 0 && materialIds.every((m) => m !== "");
     const validQuestionAmount = Object.values(questionAmount).some(
       (amount) => amount !== 0
     );
@@ -106,24 +107,25 @@ export function GenerateQuizModal({
 
   const data = useLazyLoadQuery<GenerateQuizModalMediaQuery>(
     graphql`
-      query GenerateQuizModalMediaQuery($courseId: UUID!) {
-        mediaRecordsForCourses(courseIds: [$courseId]) {
-          ... on MediaRecord {
-            __typename
-            id
-            name
-            type
-          }
+      query GenerateQuizModalMediaQuery {
+        mediaRecords {
+          id
+          name
+          type
+          courseIds
         }
       }
     `,
     { courseId }
   );
 
-  const mediaRecords = data.mediaRecordsForCourses.flat();
+  const mediaRecords = data.mediaRecords.filter((item) => {
+    return item.courseIds.includes(courseId);
+  });
 
   function handleSubmit() {
     console.log("start query");
+    _onClose();
   }
 
   function handleNext() {
@@ -136,7 +138,7 @@ export function GenerateQuizModal({
   }
 
   return (
-    <Dialog maxWidth="lg" open={isOpen} onClose={_onClose}>
+    <Dialog maxWidth="sm" open={isOpen} onClose={_onClose}>
       <DialogTitle>Generate Quiz</DialogTitle>
       <FormDivider />
       {error?.source.errors.map((err: any, i: number) => (
@@ -177,15 +179,21 @@ export function GenerateQuizModal({
           <Button onClick={_onClose} variant="outlined" color="error">
             Cancel
           </Button>
-          <Box>
+          <Box className="inline-flex gap-2">
             <Button
               onClick={() => setTabIndex(Math.max(0, tabIndex - 1))}
               disabled={tabIndex == 0}
+              variant="outlined"
             >
               Back
             </Button>
-            <Button onClick={handleNext} disabled={!valid}>
-              {tabIndex != 2 ? "Next" : "Save"}
+            <Button
+              onClick={handleNext}
+              disabled={!valid}
+              color="success"
+              variant="outlined"
+            >
+              {tabIndex != 2 ? "Next" : "Generate"}
             </Button>
           </Box>
         </Box>

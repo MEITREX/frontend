@@ -5,7 +5,6 @@ import {
   AlertTitle,
   Button,
   IconButton,
-  ListItemText,
   MenuItem,
   Select,
 } from "@mui/material";
@@ -17,19 +16,18 @@ export function LectureMaterialsTabPanel({
   materialIds,
   onChange,
 }: {
-  mediaRecords: GenerateQuizModalMediaQuery$data["mediaRecordsForCourses"][0];
+  mediaRecords: GenerateQuizModalMediaQuery$data["mediaRecords"];
   materialIds: string[];
   onChange: (materialIds: string[]) => void;
 }) {
   const [selectedMediaIds, setSelectedMediaIds] =
     useState<string[]>(materialIds);
-  const selectableMedia = useMemo(() => {
-    return mediaRecords.filter((media) => !selectedMediaIds.includes(media.id));
-  }, [mediaRecords, selectedMediaIds]);
 
   const noMediaToPick = useMemo(() => {
-    mediaRecords.filter((item) => !item.id || !item.name || !item.type);
-    return mediaRecords.length === 0;
+    const test = mediaRecords.filter((item) => {
+      return !!item.id && !!item.name;
+    });
+    return test.length === 0;
   }, [mediaRecords]);
 
   const addMaterial = useCallback(
@@ -69,20 +67,27 @@ export function LectureMaterialsTabPanel({
             Add Material
           </Button>
         </div>
-        {noMediaToPick ? (
+        {!noMediaToPick ? (
           selectedMediaIds.map((media, i) => (
-            <div className="flex justify-between items-center w-full" key={i}>
+            <div className="flex justify-between items-center" key={i}>
               <Select
                 className="min-w-[16rem] "
                 labelId="relationshipLabel"
-                value={media ?? ""}
+                value={media}
                 onChange={({ target: { value } }) => updateMaterialAt(i, value)}
                 inputProps={{ id: "relationshipLabel" }}
                 required
               >
-                {selectableMedia.map((media, i) => (
-                  <MenuItem value={media.id} key={i}>
-                    <ListItemText>{media.name}</ListItemText>
+                {mediaRecords.map((mediaOption) => (
+                  <MenuItem
+                    value={mediaOption.id}
+                    key={mediaOption.id}
+                    disabled={
+                      selectedMediaIds.includes(mediaOption.id) &&
+                      selectedMediaIds[i] !== mediaOption.id
+                    }
+                  >
+                    {mediaOption.name}
                   </MenuItem>
                 ))}
               </Select>
