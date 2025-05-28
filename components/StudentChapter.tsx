@@ -63,7 +63,8 @@ export function StudentChapter({
           student={true}
         />
         <Collapse in={expanded}>
-          <div className="pl-12">
+          <Divider className="ml-16" />
+          <div className="pl-12 pt-8">
             <ChapterContent>
               {chapter.sections.map((section) => (
                 <StudentSection key={section.id} _section={section} />

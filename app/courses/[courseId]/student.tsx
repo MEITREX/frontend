@@ -307,7 +307,9 @@ export default function StudentCoursePage() {
           </Button>
         </div>
         {course.description && (
-          <div className="text-sm text-gray-500">{course.description}</div>
+          <Typography variant="body2" color="text.secondary">
+            {course.description}
+          </Typography>
         )}
       </div>
 
@@ -461,19 +463,17 @@ export default function StudentCoursePage() {
                       key={uniqueSkill.skillCategory}
                       className="mb-4 w-full"
                     >
-                      <div className="flex items-center gap-2 w-full">
-                        <div className="flex-1">
-                          <CompetencyProgressbar
-                            competencyName={`${
-                              uniqueSkill.skillCategory
-                            } - ${Math.floor(categoryProgressValue)}%`}
-                            heightValue={15}
-                            progressValue={categoryProgressValue}
-                            color={stringToColor(uniqueSkill.skillCategory)}
-                          />
-                        </div>
+                      <div className="flex items-center gap-2 w-full mb-2">
+                        <CompetencyProgressbar
+                          competencyName={`${
+                            uniqueSkill.skillCategory
+                          } - ${Math.floor(categoryProgressValue)}%`}
+                          heightValue={15}
+                          progressValue={categoryProgressValue}
+                          color={stringToColor(uniqueSkill.skillCategory)}
+                        />
                       </div>
-                      <div className="ml-4">
+                      <div className="flex flex-col gap-2">
                         {uniqueSkillsInCategory.map((skill) => {
                           const rawValue = Object.values(
                             skill?.skillLevels || {}
@@ -511,10 +511,11 @@ export default function StudentCoursePage() {
           </div>
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
-          <div className="flex flex-col items-end gap-4">
+          <div className="flex flex-col items-end w-full gap-4">
             <ToggleButtonGroup
               value={viewStyle}
               color="primary"
+              size="small"
               exclusive
               onChange={handleViewStyle}
               aria-label="chapter view style"
@@ -530,8 +531,10 @@ export default function StudentCoursePage() {
             {showChapterOverview ? (
               <ChapterOverview _chapters={course.chapters} />
             ) : (
-              <div>
-                <section className="mt-8 mb-8">
+              <div className="flex flex-col gap-8 w-full">
+                <div>
+                  {" "}
+                  {/*Up next*/}
                   <div className="flex justify-between items-center">
                     <Typography variant="h2">Up next</Typography>
                     <Button
@@ -543,7 +546,7 @@ export default function StudentCoursePage() {
                       Repeat learned flashcards
                     </Button>
                   </div>
-                  <div className="mt-4 gap-8 flex flex-wrap pl-8">
+                  <div className="mt-4 gap-8 flex flex-wrap">
                     {course.suggestions.map((x) => (
                       <Suggestion
                         courseId={course.id}
@@ -552,21 +555,24 @@ export default function StudentCoursePage() {
                       />
                     ))}
                   </div>
-                </section>
-                <div className="border border-2 border-gray-300 rounded-3xl overflow-hidden">
-                  {orderBy(course.chapters.elements, [
-                    (x) => new Date(x.startDate).getTime(),
-                    "number",
-                  ]).map((chapter, i) => (
-                    <>
-                      <StudentChapter
-                        key={chapter.id}
-                        _chapter={chapter}
-                        standardExpand={false}
-                      />
-                      {i < course.chapters.elements.length - 1 && <Divider />}
-                    </>
-                  ))}
+                </div>
+                <div className="flex flex-col w-full gap-4">
+                  <Typography variant="h2">Chapters</Typography>
+                  <div className="border border-2 border-gray-300 rounded-3xl w-full overflow-hidden">
+                    {orderBy(course.chapters.elements, [
+                      (x) => new Date(x.startDate).getTime(),
+                      "number",
+                    ]).map((chapter, i) => (
+                      <>
+                        <StudentChapter
+                          key={chapter.id}
+                          _chapter={chapter}
+                          standardExpand={false}
+                        />
+                        {i < course.chapters.elements.length - 1 && <Divider />}
+                      </>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

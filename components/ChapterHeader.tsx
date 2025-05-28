@@ -1,6 +1,6 @@
 "use client";
 import { ChapterHeaderFragment$key } from "@/__generated__/ChapterHeaderFragment.graphql";
-import { Done, ExpandLess, ExpandMore } from "@mui/icons-material";
+import { Done, DoneRounded, ExpandLess, ExpandMore } from "@mui/icons-material";
 import { Chip, CircularProgress, IconButton, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { ReactNode } from "react";
@@ -113,6 +113,8 @@ export function ChapterHeader({
         <Chip
           key={index}
           sx={{
+            fontSize: "0.75rem",
+            height: "1.5rem",
             maxWidth: "250px",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -127,40 +129,51 @@ export function ChapterHeader({
 
   return (
     <div
-      className="flex items-center pl-4 pr-6 py-4 rounded-3xl"
+      className="flex flex-row justify-start items-center p-6 rounded-3xl gap-16"
       onClick={onExpandClick}
     >
-      {(expandable === undefined || expandable) && expanded !== undefined && (
-        <IconButton className="!-ml-2 !mr-4">
-          {expanded ? <ExpandLess /> : <ExpandMore />}
-        </IconButton>
-      )}
-      <div className="mr-8">
-        <ChapterProgress progress={chapter.userProgress.progress} />
-      </div>
-      <div className="flex justify-between items-center flex-grow">
-        <div className="pr-8 flex flex-col items-start">
-          <div className="flex gap-2 whitespace-nowrap items-center">
+      <div className="flex flex-row items-center justify-center flex-grow">
+        {(expandable === undefined || expandable) && expanded !== undefined && (
+          <IconButton className="!-ml-2 !mr-4">
+            {expanded ? <ExpandLess /> : <ExpandMore />}
+          </IconButton>
+        )}
+        <div className="flex flex-col items-start flex-grow gap-5">
+          <div className="flex flex-col flex-grow gap-1">
             <Typography variant="h2" onClick={(e) => e.stopPropagation()}>
               {chapter.title}
             </Typography>
             {action}
-          </div>
-          {chapter.suggestedEndDate && chapter.suggestedStartDate && (
+
             <Typography
-              variant="subtitle1"
+              variant="body2"
+              color="text.secondary"
               onClick={(e) => e.stopPropagation()}
             >
-              {dayjs(chapter.suggestedStartDate).format("D. MMMM")} –{" "}
-              {dayjs(chapter.suggestedEndDate).format("D. MMMM")}
+              {chapter.description}
             </Typography>
-          )}
-          <Typography variant="caption" onClick={(e) => e.stopPropagation()}>
-            {chapter.description}
+          </div>
+          <div className="flex items-start flex-wrap gap-2">{skillChips}</div>
+        </div>
+      </div>
+      {chapter.suggestedEndDate && chapter.suggestedStartDate && (
+        <div className="min-w-[200px] justify-start">
+          <Typography
+            variant="subtitle1"
+            color="text.secondary"
+            style={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "clip",
+            }}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+          >
+            {dayjs(chapter.suggestedStartDate).format("D. MMMM")} -{" "}
+            {dayjs(chapter.suggestedEndDate).format("D. MMMM")}
           </Typography>
         </div>
-        <div className="flex justify-end flex-wrap gap-2">{skillChips}</div>
-      </div>
+      )}
+      <ChapterProgress progress={chapter.userProgress.progress} />
     </div>
   );
 }
@@ -168,26 +181,41 @@ export function ChapterHeader({
 export function ChapterProgress({ progress }: { progress: number }) {
   return (
     <div className="relative flex justify-center items-center">
-      <div className="absolute h-12 w-12 rounded-full shadow-lg shadow-slate-100"></div>
-      <div className="absolute h-10 w-10 rounded-full shadow-inner shadow-slate-100"></div>
       <CircularProgress
         variant="determinate"
         value={100}
-        size="3rem"
+        size="2.5rem"
         thickness={4}
-        className="!text-white"
+        className="!text-gray-200"
       />
       <CircularProgress
         className="absolute"
         variant="determinate"
-        color="success"
         value={progress}
         thickness={4}
-        size="3rem"
+        size="2.5rem"
+        sx={{
+          "& .MuiCircularProgress-circle": {
+            strokeLinecap: "round",
+          },
+          color: "#84BFE6",
+        }}
       />
-      {progress == 100 && (
-        <Done fontSize="large" className="absolute text-green-600" />
-      )}
+      {(progress >= 0 && progress < 100 && (
+        <Typography
+          variant="body2"
+          fontWeight="bold"
+          style={{ color: "#84BFE6", position: "absolute" }}
+        >
+          {progress}%
+        </Typography>
+      )) ||
+        (progress == 100 && (
+          <DoneRounded
+            className="absolute w-6 h-6"
+            style={{ color: "#84BFE6" }}
+          />
+        ))}
     </div>
   );
 }
