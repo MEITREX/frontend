@@ -32,7 +32,8 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import { ChapterOverview } from "@/components/ChapterOverview";
 
 interface Data {
@@ -161,7 +162,7 @@ export default function StudentCoursePage() {
   const [showProgressbars, setShowProgressbars] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [showUpNext, setShowUpNext] = useState(false);
-  const [showChapterOverview, setshowChapterOverview] = useState(true);
+  const [showLevelOverview, setShowLevelOverview] = useState(true);
 
   // Show 404 error page if id was not found
   if (coursesByIds.length == 0) {
@@ -503,15 +504,23 @@ export default function StudentCoursePage() {
         )}
       </section>
 
-      <div className="flex items-center gap-4 mb-4">
-        <Typography variant="h2">{showChapterOverview ? "Level-Overview" : "List-Overview"}</Typography>
-        <Switch 
-          checked={showChapterOverview}
-          onChange={() => setshowChapterOverview((prev) => !prev)}
+      <div className="flex items-center gap-2 mb-4">
+        <FormatListBulletedIcon
+          color={!showLevelOverview ? "primary" : "disabled"}
+          style={{ fontSize: 28 }}
+        />
+        <Switch
+          checked={showLevelOverview}
+          onChange={() => setShowLevelOverview((prev) => !prev)}
+          color="primary"
+        />
+        <SportsEsportsIcon
+          color={showLevelOverview ? "primary" : "disabled"}
+          style={{ fontSize: 28 }}
         />
       </div>
 
-      {showChapterOverview ? (
+      {showLevelOverview ? (
         <ChapterOverview _chapters={course.chapters} />
       ) : (
         orderBy(course.chapters.elements, [

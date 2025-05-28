@@ -25,19 +25,19 @@ function generateSinePath(
   width: number,
   height: number,
   amplitude: number,
-  waves: number
+  waves: number,
+  start: number,
+  end: number,
+  totalPoints: number,
 ) {
-  const points = 200;
   const centerY = height / 2;
-
   let path = "";
-  for (let i = 0; i <= points; i++) {
-    const x = (i / points) * width;
-    const radians = (i / points) * waves * 2 * Math.PI;
+  for (let i = start; i <= end; i++) {
+    const x = (i / totalPoints) * width;
+    const radians = (i / totalPoints) * waves * 2 * Math.PI;
     const y = centerY + Math.sin(radians) * amplitude;
-    path += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
+    path += i === start ? `M ${x} ${y}` : ` L ${x} ${y}`;
   }
-
   return path;
 }
 
@@ -53,6 +53,19 @@ export function ChapterOverview({
   ]);
   const numberOfChapters = sortedChapters.length;
 
+  const totalPoints = 200;
+  
+  const firstIncompleteIndex = sortedChapters.findIndex(
+    (chapter) => chapter.userProgress.progress < 100
+  );
+
+  const completedRatio = firstIncompleteIndex < 0
+    ? 1
+    : firstIncompleteIndex / (numberOfChapters - 1);
+
+
+  const completedPoints = Math.round(completedRatio * totalPoints);
+
   const height = 300;
   const amplitude = 50;
   const spacing = 160;
@@ -66,7 +79,8 @@ export function ChapterOverview({
     return { x, y };
   });
 
-  const sinePath = generateSinePath(totalWidth, height, amplitude, waves);
+  const coloredPath = generateSinePath(totalWidth, height, amplitude, waves, 0, completedPoints, totalPoints);
+  const grayPath = generateSinePath(totalWidth, height, amplitude, waves, completedPoints , totalPoints, totalPoints);
 
   const tempIndex = sortedChapters.findIndex(
     (chapter) => chapter.userProgress.progress < 100
@@ -95,7 +109,8 @@ export function ChapterOverview({
               zIndex: 0,
             }}
           >
-            <path d={sinePath} fill="none" stroke="#E4E4E4" strokeWidth={16} />
+            <path d={grayPath} fill="none" stroke="#E4E4E4" strokeWidth={16} />
+            <path d={coloredPath} fill="none" stroke="#84BFE6" strokeWidth={16} />
           </svg>
 
           {points.map(({ x, y }, i) => (
