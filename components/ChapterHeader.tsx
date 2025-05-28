@@ -144,16 +144,19 @@ export function ChapterHeader({
               {chapter.title}
             </Typography>
             {action}
-
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {chapter.description}
-            </Typography>
+            {chapter.description && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {chapter.description}
+              </Typography>
+            )}
           </div>
-          <div className="flex items-start flex-wrap gap-2">{skillChips}</div>
+          {chapter.skills.length > 0 && (
+            <div className="flex items-start flex-wrap gap-2">{skillChips}</div>
+          )}
         </div>
       </div>
       {chapter.suggestedEndDate && chapter.suggestedStartDate && (
