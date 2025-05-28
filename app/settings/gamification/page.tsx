@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import {
   Box,
-  CircularProgress,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -12,7 +11,6 @@ import {
   Typography,
 } from "@mui/material";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
-import { pageDefaultSettingsMutation } from "@/__generated__/pageDefaultSettingsMutation.graphql";
 import { pageStudentGamificationQuery } from "@/__generated__/pageStudentGamificationQuery.graphql";
 import { pageUserGamificationSettingsQuery } from "@/__generated__/pageUserGamificationSettingsQuery.graphql";
 import { pageUpdateGamificationSettingsMutation } from "@/__generated__/pageUpdateGamificationSettingsMutation.graphql";
@@ -38,6 +36,10 @@ export default function GamificationSettingsPage() {
     `,
     {}
   );
+
+  if (!currentUserInfo?.id) {
+    return <div>Loading user info...</div>;
+  }
 
   const userGamificationSettings =
     useLazyLoadQuery<pageUserGamificationSettingsQuery>(
