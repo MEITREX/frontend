@@ -8,7 +8,6 @@ import {
   FormGroup,
   FormLabel,
   Typography,
-  CircularProgress,
 } from "@mui/material";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 import { pageStudentNotificationQuery } from "@/__generated__/pageStudentNotificationQuery.graphql";
@@ -35,6 +34,10 @@ export default function NotificationSettingsPage() {
     `,
     {}
   );
+
+  if (!currentUserInfo?.id) {
+    return <div>Loading user info...</div>;
+  }
 
   const userNotificationSettings =
     useLazyLoadQuery<pageUserNotificationSettingsQuery>(
