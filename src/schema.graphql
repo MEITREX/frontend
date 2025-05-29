@@ -752,8 +752,8 @@ directive @NotBlank(message: String = "graphql.validation.NotBlank.message") on 
 directive @NotEmpty(message: String = "graphql.validation.NotEmpty.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 type Notification {
-  gamification: Boolean!
-  lecture: Boolean!
+  gamification: Boolean
+  lecture: Boolean
 }
 
 input NotificationInput {
