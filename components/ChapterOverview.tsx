@@ -6,17 +6,29 @@ import _ from "lodash";
 import { StudentChapter } from "./StudentChapter";
 
 const ChapterFragment = graphql`
-  fragment ChapterOverviewFragment on ChapterPayload {
-    elements {
-      id
-      startDate
-      title
-      number
-      userProgress {
-        progress
+  fragment ChapterOverviewFragment on Course {
+    id
+    suggestions(amount: 4) {
+      ...SuggestionFragment
+      content {
+        id
       }
-      ...ChapterOverviewItemFragment
-      ...StudentChapterFragment
+    }
+    chapters {
+      elements {
+        id
+        startDate
+        title
+        number
+        userProgress {
+          progress
+        }
+        contents {
+          id
+        }
+        ...ChapterOverviewItemFragment
+        ...StudentChapterFragment
+      }
     }
   }
 `;
@@ -44,10 +56,10 @@ function generateSinePath(
 export function ChapterOverview({
   _chapters,
 }: {
-  _chapters: ChapterOverviewFragment$key;
+  _chapters: ChapterOverviewFragment$key; 
 }) {
-  const chapters = useFragment(ChapterFragment, _chapters);
-  const sortedChapters = _.orderBy(chapters.elements, [
+  const course = useFragment(ChapterFragment, _chapters);
+  const sortedChapters = _.orderBy(course.chapters.elements, [
     (x) => new Date(x.startDate).getTime(),
     "number",
   ]);
@@ -68,7 +80,7 @@ export function ChapterOverview({
 
   const height = 300;
   const amplitude = 50;
-  const spacing = 160;
+  const spacing = 250;
   const waves = 2; // Number of sine waves
   const totalWidth = spacing * (numberOfChapters - 1);
 
@@ -89,8 +101,8 @@ export function ChapterOverview({
   const [selectedIndex, setSelectedIndex] = useState<number>(startIndex);
 
   return (
-    <div className="border border-slate-200s border-4 rounded-3xl px-8">
-      <div className="w-full overflow-y-hidden overflow-x-auto px-24 pb-10 mb-8">
+    <div className="border-slate-200s border-4 rounded-3xl px-8">
+      <div className="w-full overflow-y-hidden overflow-x-auto px-16 pb-10 mb-8">
         <div
           style={{
             position: "relative",
@@ -127,6 +139,10 @@ export function ChapterOverview({
                 _chapter={sortedChapters[i]}
                 selected={i === selectedIndex}
                 onClick={() => setSelectedIndex(i)}
+                suggestions={course.suggestions
+                  .filter((suggestion) => sortedChapters[i].contents.some((content) => content.id === suggestion.content.id))
+                }
+                courseId={course.id}
               />
             </div>
           ))}

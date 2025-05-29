@@ -47,7 +47,6 @@ export function LecturerChapter({
   return (
     <section key={chapter.id} className="mb-6">
       <ChapterHeader
-        courseId={chapter.course.id}
         _chapter={chapter}
         action={
           <EditChapterButton _chapter={chapter} courseId={chapter.course.id} />

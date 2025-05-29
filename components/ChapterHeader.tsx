@@ -1,6 +1,6 @@
 "use client";
 import { ChapterHeaderFragment$key } from "@/__generated__/ChapterHeaderFragment.graphql";
-import { Done, ExpandLess, ExpandMore } from "@mui/icons-material";
+import { DoneRounded, ExpandLess, ExpandMore } from "@mui/icons-material";
 import { Chip, CircularProgress, IconButton, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { ReactNode } from "react";
@@ -33,7 +33,6 @@ export function ChapterHeader({
   expandable,
   action,
   onExpandClick,
-  courseId,
   student,
 }: {
   _chapter: ChapterHeaderFragment$key;
@@ -41,7 +40,6 @@ export function ChapterHeader({
   expandable?: boolean;
   action?: ReactNode;
   onExpandClick?: () => void;
-  courseId: string;
   student: boolean;
 }) {
   const chapter = useFragment(
@@ -126,18 +124,17 @@ export function ChapterHeader({
     ));
 
   return (
-    <div
-      className="flex items-center py-4 pl-8 pr-12 mb-8 bg-gradient-to-r from-slate-100 to-slate-50 rounded-3xl"
-      onClick={onExpandClick}
-    >
+    <div className="flex items-center py-4 pl-8 pr-12 mb-8 bg-gradient-to-r from-slate-100 to-slate-50 rounded-3xl">
       {(expandable === undefined || expandable) && expanded !== undefined && (
-        <IconButton className="!-ml-2 !mr-4">
+        <IconButton className="!-ml-2 !mr-4" onClick={onExpandClick}>
           {expanded ? <ExpandLess /> : <ExpandMore />}
         </IconButton>
       )}
-      <div className="mr-8">
-        <ChapterProgress progress={chapter.userProgress.progress} />
-      </div>
+      {student && (
+        <div className="mr-8">
+          <ChapterProgress progress={chapter.userProgress.progress} />
+        </div>
+      )}
       <div className="flex justify-between items-center flex-grow">
         <div className="pr-8 flex flex-col items-start">
           <div className="flex gap-2 whitespace-nowrap items-center">
@@ -173,21 +170,38 @@ export function ChapterProgress({ progress }: { progress: number }) {
       <CircularProgress
         variant="determinate"
         value={100}
-        size="3rem"
+        size="4rem"
         thickness={4}
         className="!text-white"
       />
       <CircularProgress
         className="absolute"
         variant="determinate"
-        color="success"
         value={progress}
         thickness={4}
-        size="3rem"
+        size="4rem"
+        sx={{
+          "& .MuiCircularProgress-circle": {
+            strokeLinecap: "round",
+          },
+          color: "#089CDC",
+        }}
       />
-      {progress == 100 && (
-        <Done fontSize="large" className="absolute text-green-600" />
-      )}
+      {(progress >= 0 && progress < 100 && (
+        <Typography
+          variant="body2"
+          fontWeight="bold"
+          style={{ color: "#089CDC", position: "absolute" }}
+        >
+          {progress}%
+        </Typography>
+      )) ||
+        (progress == 100 && (
+          <DoneRounded
+            className="absolute w-10 h-10 "
+            style={{ color: "#089CDC" }}
+          />
+        ))}
     </div>
   );
 }

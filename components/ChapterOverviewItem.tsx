@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { DoneRounded, LockOutlined } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
 import { graphql, useFragment } from "react-relay";
 import { ChapterOverviewItemFragment$key } from "@/__generated__/ChapterOverviewItemFragment.graphql";
+import { Suggestion } from "./Suggestion";
 
 const ChapterFragment = graphql`
   fragment ChapterOverviewItemFragment on Chapter {
@@ -22,10 +23,14 @@ export function ChapterOverviewItem({
   _chapter,
   selected,
   onClick,
+  suggestions,
+  courseId,
 }: {
   _chapter: ChapterOverviewItemFragment$key;
   selected: boolean;
   onClick: () => void;
+  suggestions?: any[];
+  courseId?: string;
 }) {
   const chapter = useFragment(ChapterFragment, _chapter);
   const progress = chapter.userProgress.progress;
@@ -38,6 +43,16 @@ export function ChapterOverviewItem({
 
   return (
     <div className="relative flex flex-col items-center justify-center w-100 h-auto">
+      <div className="bg-white rounded-lg shadow-md px-3 pb-2 text-center">
+        {suggestions && courseId && suggestions.map((suggestion) => (
+          <Suggestion
+            key={suggestion.id}
+            _suggestion={suggestion}
+            courseId={courseId}
+            small={true}
+          />
+        ))}
+      </div>
       <div
         onClick={onClick}
         className="relative flex justify-center items-center"
@@ -69,7 +84,7 @@ export function ChapterOverviewItem({
               "& .MuiCircularProgress-circle": {
                 strokeLinecap: "round",
               },
-              color: selected ? "#F27900" : "#84BFE6",
+              color: selected ? "#F27900" : "#089CDC",
             }}
           />
         )}
@@ -79,7 +94,7 @@ export function ChapterOverviewItem({
           (progress >= 0 && progress < 100 && (
             <div
               className="absolute text-sm font-bold"
-              style={{ color: selected ? "#F27900" : "#84BFE6" }}
+              style={{ color: selected ? "#F27900" : "#089CDC" }}
             >
               {progress}%
             </div>
@@ -87,7 +102,7 @@ export function ChapterOverviewItem({
           (progress == 100 && (
             <DoneRounded
               className="absolute w-10 h-10"
-              style={{ color: selected ? "#F27900" : "#84BFE6" }}
+              style={{ color: selected ? "#F27900" : "#089CDC" }}
             />
           ))}
       </div>
@@ -106,9 +121,6 @@ export function ChapterOverviewItem({
           >
             {title}
           </div>
-          {selected && (
-            <div className="text-sm text-gray-500">{description}</div>
-          )}
         </div>
       </div>
     </div>

@@ -73,6 +73,7 @@ export default function StudentCoursePage() {
         }
 
         coursesByIds(ids: [$id]) {
+          ...ChapterOverviewFragment
           suggestions(amount: 4) {
             ...SuggestionFragment
             content {
@@ -86,7 +87,6 @@ export default function StudentCoursePage() {
             ...RewardScoresFragment
           }
           chapters {
-            ...ChapterOverviewFragment
             elements {
               id
               number
@@ -482,38 +482,40 @@ export default function StudentCoursePage() {
         )}
       </div>
 
-      <section className="mt-8 mb-8">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
+      {!showLevelOverview && (
+        <section className="mt-8 mb-8">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={() => setShowUpNext((prev) => !prev)}
+                className="w-8 h-8 min-w-0 p-0 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-600 transition-colors duration-200"
+              >
+                <div className="flex items-center justify-center">
+                  {showUpNext ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                </div>
+              </Button>
+              <Typography variant="h2">Up next</Typography>
+            </div>
             <Button
-              onClick={() => setShowUpNext((prev) => !prev)}
-              className="w-8 h-8 min-w-0 p-0 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-600 transition-colors duration-200"
+              startIcon={<Repeat />}
+              onClick={() => router.push(`/courses/${id}/flashcards/due`)}
             >
-              <div className="flex items-center justify-center">
-                {showUpNext ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-              </div>
+              Repeat learned flashcards
             </Button>
-            <Typography variant="h2">Up next</Typography>
           </div>
-          <Button
-            startIcon={<Repeat />}
-            onClick={() => router.push(`/courses/${id}/flashcards/due`)}
-          >
-            Repeat learned flashcards
-          </Button>
-        </div>
-        {showUpNext && (
-          <div className="mt-4 gap-8 flex flex-wrap pl-8">
-            {course.suggestions.map((x) => (
-              <Suggestion
-                courseId={course.id}
-                key={x.content.id}
-                _suggestion={x}
-              />
-            ))}
-          </div>
-        )}
-      </section>
+          {showUpNext && (
+            <div className="mt-4 gap-8 flex flex-wrap pl-8">
+              {course.suggestions.map((x) => (
+                <Suggestion
+                  courseId={course.id}
+                  key={x.content.id}
+                  _suggestion={x}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       <div className="flex items-center gap-2 mb-4">
         <ToggleButtonGroup
@@ -535,11 +537,24 @@ export default function StudentCoursePage() {
             <ReorderIcon />
           </ToggleButton>
         </ToggleButtonGroup>
+
+        <div className="flex-1" />
+
+        {showLevelOverview && (
+          <div>
+            <Button
+              startIcon={<Repeat />}
+              onClick={() => router.push(`/courses/${id}/flashcards/due`)}
+            >
+              Repeat learned flashcards
+            </Button>
+          </div>
+        )}
       </div>
 
       <div ref={topRef}>    
         {showLevelOverview ? (
-          <ChapterOverview _chapters={course.chapters} />
+          <ChapterOverview _chapters={course} />
         ) : (
           orderBy(course.chapters.elements, [
             (x) => new Date(x.startDate).getTime(),

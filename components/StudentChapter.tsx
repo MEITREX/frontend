@@ -54,7 +54,6 @@ export function StudentChapter({
     <div className="w-full">
       <section ref={handleRef}>
         <ChapterHeader
-          courseId={courseId}
           _chapter={chapter}
           expanded={expanded}
           expandable={!standardExpand}
