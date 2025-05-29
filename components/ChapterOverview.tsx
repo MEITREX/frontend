@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { ChapterOverviewItem } from "./ChapterOverviewItem";
 import { graphql, useFragment } from "react-relay";
 import { ChapterOverviewFragment$key } from "@/__generated__/ChapterOverviewFragment.graphql";

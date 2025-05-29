@@ -25,15 +25,17 @@ import { Info, Repeat } from "@mui/icons-material";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import CompetencyProgressbar from "@/components/CompetencyProgressbar";
 import { stringToColor } from "@/components/ChapterHeader";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
-import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import ReorderIcon from "@mui/icons-material/Reorder";
+import TimelineIcon from "@mui/icons-material/Timeline";
 import { ChapterOverview } from "@/components/ChapterOverview";
 
 interface Data {
@@ -163,6 +165,15 @@ export default function StudentCoursePage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [showUpNext, setShowUpNext] = useState(false);
   const [showLevelOverview, setShowLevelOverview] = useState(true);
+  const [triggerScroll, setTriggerScroll] = useState(0);
+
+  const topRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (topRef.current && triggerScroll > 0) {
+      topRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [triggerScroll]);
 
   // Show 404 error page if id was not found
   if (coursesByIds.length == 0) {
@@ -505,31 +516,39 @@ export default function StudentCoursePage() {
       </section>
 
       <div className="flex items-center gap-2 mb-4">
-        <FormatListBulletedIcon
-          color={!showLevelOverview ? "primary" : "disabled"}
-          style={{ fontSize: 28 }}
-        />
-        <Switch
-          checked={showLevelOverview}
-          onChange={() => setShowLevelOverview((prev) => !prev)}
+        <ToggleButtonGroup
+          value={showLevelOverview}
           color="primary"
-        />
-        <SportsEsportsIcon
-          color={showLevelOverview ? "primary" : "disabled"}
-          style={{ fontSize: 28 }}
-        />
+          size="small"
+          exclusive
+          onChange={(_event, value) => {
+            if (value !== null){
+              setShowLevelOverview(value);
+              setTriggerScroll((prev) => prev + 1);
+            }
+          }}
+        >
+          <ToggleButton value={true} aria-label="graph view">
+            <TimelineIcon />
+          </ToggleButton>
+          <ToggleButton value={false} aria-label="list view">
+            <ReorderIcon />
+          </ToggleButton>
+        </ToggleButtonGroup>
       </div>
 
-      {showLevelOverview ? (
-        <ChapterOverview _chapters={course.chapters} />
-      ) : (
-        orderBy(course.chapters.elements, [
-          (x) => new Date(x.startDate).getTime(),
-          "number",
-        ]).map((chapter) => (
-          <StudentChapter key={chapter.id} _chapter={chapter} standardExpand={false}/>
-        ))
-      )}
+      <div ref={topRef}>    
+        {showLevelOverview ? (
+          <ChapterOverview _chapters={course.chapters} />
+        ) : (
+          orderBy(course.chapters.elements, [
+            (x) => new Date(x.startDate).getTime(),
+            "number",
+          ]).map((chapter) => (
+            <StudentChapter key={chapter.id} _chapter={chapter} standardExpand={false}/>
+          ))
+        )}
+      </div>
     </main>
   );
 }
