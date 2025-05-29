@@ -14,80 +14,55 @@ import {
 import dayjs from "dayjs";
 import { chain } from "lodash";
 import Link from "next/link";
-import { Fragment, Suspense, useEffect, useState } from "react";
+import React, { Fragment, Suspense, useEffect, useState } from "react";
 import {
   useLazyLoadQuery,
   usePreloadedQuery,
-  useQueryLoader
+  useQueryLoader,
 } from "react-relay";
 import { graphql } from "relay-runtime";
 import SurveyPopup from "@/components/gamification/player-hexad-type-survey/PlayerTypeSurvey";
-import { studentUserSettingsQuery } from "@/__generated__/studentUserSettingsQuery.graphql";
-
+import UserSettings from "@/components/settings/UserSettings";
+import { Settings } from "@/components/settings/types";
 export default function StudentPage() {
   const { currentUserInfo } = useLazyLoadQuery<studentStudentQuery>(
     graphql`
-        query studentStudentQuery {
-            currentUserInfo {
-                id
-                availableCourseMemberships {
-                    role
-                    course {
-                        id
-                        title
-                        startDate
-                        startYear
-                        yearDivision
-                        userProgress {
-                            progress
-                        }
-                        suggestions(amount: 3) {
-                            ...SuggestionFragment
-                        }
-                        ...CourseCardFragment
-                    }
-                }
-                unavailableCourseMemberships {
-                    role
-                    course {
-                        id
-                        title
-                        startDate
-                        startYear
-                        yearDivision
-                        ...CourseCardFragment
-                    }
-                }
+      query studentStudentQuery {
+        currentUserInfo {
+          id
+          availableCourseMemberships {
+            role
+            course {
+              id
+              title
+              startDate
+              startYear
+              yearDivision
+              userProgress {
+                progress
+              }
+              suggestions(amount: 3) {
+                ...SuggestionFragment
+              }
+              ...CourseCardFragment
             }
+          }
+          unavailableCourseMemberships {
+            role
+            course {
+              id
+              title
+              startDate
+              startYear
+              yearDivision
+              ...CourseCardFragment
+            }
+          }
         }
+      }
     `,
     {}
   );
-
-  if (!currentUserInfo?.id) {
-    return <div>Loading user info...</div>;
-  }
-
-  const userSettingsData = useLazyLoadQuery<studentUserSettingsQuery>(
-    graphql`
-        query studentUserSettingsQuery($id: UUID!) {
-            findUserSettings(userId: $id) {
-                gamification
-                notification {
-                    lecture
-                    gamification
-                }
-            }
-        }
-        `,
-    { id: currentUserInfo.id},
-    { fetchPolicy: "network-only" }
-  );
-
-  useEffect(() => {
-    // Do sth. with user settings
-    console.log(userSettingsData.findUserSettings);
-  }, [userSettingsData]);
 
   const courses = [
     ...currentUserInfo.availableCourseMemberships.map((m) => ({
@@ -195,6 +170,26 @@ export default function StudentPage() {
           <ExistLoader queryRef={queryRef} userId={currentUserInfo.id} />
         )}
       </Suspense>
+    );
+  }
+
+  const [settings, setSettings] = useState<Settings | undefined>(undefined);
+
+  useEffect(() => {
+    // Do sth. with the settings...
+    console.log(settings);
+  }, [settings]);
+
+  if (!settings) {
+    return (
+      <>
+        <UserSettings
+          userId={currentUserInfo.id}
+          onSettingsLoaded={(loadedSettings) => {
+            setSettings(loadedSettings as Settings);
+          }}
+        />
+      </>
     );
   }
 
