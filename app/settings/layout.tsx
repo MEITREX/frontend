@@ -56,7 +56,6 @@ export default function SettingsLayout({
           ))}
         </List>
       </Box>
-
       <Box sx={{ flexGrow: 1, p: 3 }}>{children}</Box>
     </Box>
   );

@@ -14,7 +14,7 @@ import {
 import dayjs from "dayjs";
 import { chain } from "lodash";
 import Link from "next/link";
-import { Fragment, Suspense, useEffect, useState } from "react";
+import React, { Fragment, Suspense, useEffect, useState } from "react";
 import {
   useLazyLoadQuery,
   usePreloadedQuery,
@@ -22,7 +22,8 @@ import {
 } from "react-relay";
 import { graphql } from "relay-runtime";
 import SurveyPopup from "@/components/gamification/player-hexad-type-survey/PlayerTypeSurvey";
-
+import UserSettings from "@/components/settings/UserSettings";
+import { Settings } from "@/components/settings/types";
 export default function StudentPage() {
   const { currentUserInfo } = useLazyLoadQuery<studentStudentQuery>(
     graphql`
@@ -152,7 +153,7 @@ export default function StudentPage() {
   }
 
   function GetPlayerHexadScore() {
-    const userId = currentUserInfo.id;
+    const userId = currentUserInfo?.id;
     const [queryRef, loadQuery] = useQueryLoader(existingSurveyResults);
 
     useEffect(() => {
@@ -169,6 +170,26 @@ export default function StudentPage() {
           <ExistLoader queryRef={queryRef} userId={currentUserInfo.id} />
         )}
       </Suspense>
+    );
+  }
+
+  const [settings, setSettings] = useState<Settings | undefined>(undefined);
+
+  useEffect(() => {
+    // Do sth. with the settings...
+    console.log(settings);
+  }, [settings]);
+
+  if (!settings) {
+    return (
+      <>
+        <UserSettings
+          userId={currentUserInfo.id}
+          onSettingsLoaded={(loadedSettings) => {
+            setSettings(loadedSettings as Settings);
+          }}
+        />
+      </>
     );
   }
 
