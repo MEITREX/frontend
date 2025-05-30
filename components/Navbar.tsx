@@ -437,21 +437,118 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
 
   const isOpen = Boolean(anchorEl);
 
+  const handleMarkAsRead = (event: React.MouseEvent, index: number) => {
+    event.stopPropagation()
+    event.preventDefault()
+
+    setNotifications(prev =>
+      prev.map((n, i) =>
+        i === index ? { ...n, read: true } : n
+      )
+    );
+  };
+
+  const handleDelete = (event: React.MouseEvent, index: number) => {
+    event.stopPropagation()
+    event.preventDefault()
+
+    setNotifications(prev =>
+      prev.filter((_, i) => i !== index)
+    );
+  };
+
+  function getRelativeTime(createdAt: string): string {
+    const now = new Date();
+    const created = new Date(createdAt);
+    const diffSec = Math.floor((now.getTime() - created.getTime()) / 1000);
+
+    const seconds = diffSec;
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const months = Math.floor(days / 30);
+    const years = Math.floor(days / 365);
+
+    if (seconds < 60) {
+      const rounded = Math.floor(seconds / 10) * 10 || 10;
+      return `${rounded} seconds ago`;
+    } else if (minutes < 10) {
+      return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+    } else if (minutes < 60) {
+      const rounded = Math.floor(minutes / 5) * 5;
+      return `${rounded} minutes ago`;
+    } else if (hours < 24) {
+      return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+    } else if (days < 30) {
+      return `${days} day${days === 1 ? '' : 's'} ago`;
+    } else if (days < 365) {
+      return `${months} month${months === 1 ? '' : 's'} ago`;
+    } else {
+      return `${years} year${years === 1 ? '' : 's'} ago`;
+    }
+  }
+
+
+
   // Dummy data, will be reomoved later
-  const notifications = [
+  const [notifications, setNotifications] = useState([
     {
       title: "🎯 New Mission Available",
-      description: "You’ve unlocked a new level – check it out now!",
+      description: "You’ve unlocked a new level – check it out now! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       href: "/missions/new",
-      read: true
+      read: true,
+      createdAt: new Date(Date.now() - 300000).toISOString(), // z. B. vor 30 Sek.
     },
     {
       title: "🏆 Weekly Summary",
       description: "Your score has increased by 30 points",
       href: "/dashboard",
-      read: false
+      read: false,
+      createdAt: new Date(Date.now() - 300392390200).toISOString(), // z. B. vor 30 Sek.
+    },
+    {
+      title: "🎯 New Mission Available",
+      description: "You’ve unlocked a new level – check it out now!",
+      href: "/missions/new",
+      read: true,
+      createdAt: new Date(Date.now() - 30000).toISOString(), // z. B. vor 30 Sek.
+    },
+    {
+      title: "🏆 Weekly Summary",
+      description: "Your score has increased by 30 points",
+      href: "/dashboard",
+      read: false,
+      createdAt: new Date(Date.now() - 3009900).toISOString(), // z. B. vor 30 Sek.
+    },
+    {
+      title: "🎯 New Mission Available",
+      description: "You’ve unlocked a new level – check it out now!",
+      href: "/missions/new",
+      read: true,
+      createdAt: new Date(Date.now() - 30656576000).toISOString(), // z. B. vor 30 Sek.
+    },
+    {
+      title: "🏆 Weekly Summary",
+      description: "Your score has increased by 30 points",
+      href: "/dashboard",
+      read: false,
+      createdAt: new Date(Date.now() - 3000000).toISOString(), // z. B. vor 30 Sek.
+    },
+    {
+      title: "🎯 New Mission Available",
+      description: "You’ve unlocked a new level – check it out now!",
+      href: "/missions/new",
+      read: true,
+      createdAt: new Date(Date.now() - 60000).toISOString(), // z. B. vor 30 Sek.
+    },
+    {
+      title: "🏆 Weekly Summary",
+      description: "Your score has increased by 30 points",
+      href: "/dashboard",
+      read: false,
+      createdAt: new Date(Date.now() - 300000).toISOString(), // z. B. vor 30 Sek.
     }
-  ];
+  ]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -517,9 +614,9 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
           }}
           PaperProps={{
             sx: {
-              minWidth: 400,
-              maxWidth: 480,
-              maxHeight: 400,
+              minWidth: 600,
+              maxWidth: 700,
+              maxHeight: 500,
               overflowY: 'auto',
               p: 2,
               borderRadius: 3
@@ -542,6 +639,7 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
                   <Link href={note.href} style={{ textDecoration: 'none' }}>
                     <Box
                       sx={{
+                        position: 'relative', // 👈 wichtig für absolute Zeit
                         borderRadius: 2,
                         p: 2,
                         '&:hover': {
@@ -550,12 +648,56 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
                         },
                       }}
                     >
+                      
                       <Typography variant="subtitle1" fontWeight="bold">
                         {note.title}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {note.description}
+                      <Tooltip title={note.description} placement="top" arrow>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          noWrap
+                          sx={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            maxWidth: '100%', // oder z. B. 400 wenn du begrenzen willst
+                          }}
+                        >
+                          {note.description}
+                        </Typography>
+                      </Tooltip>
+                      {/* Zeit oben rechts in dieser Box */}
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 12,
+                        }}
+                      >
+                        {getRelativeTime(note.createdAt)}
                       </Typography>
+
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={(event) => handleMarkAsRead(event, index)}
+                          disabled={note.read}
+                        >
+                          Mark as read
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="error"
+                          onClick={(event) => handleDelete(event, index)}
+                        >
+                          Delete
+                        </Button>
+                      </Box>
                     </Box>
                   </Link>
                 </Box>
