@@ -43,16 +43,18 @@ export function ChapterOverviewItem({
 
   return (
     <div className="relative flex flex-col items-center justify-center w-100 h-auto">
-      <div className="bg-white rounded-lg shadow-md px-3 pb-2 text-center">
-        {suggestions && courseId && suggestions.map((suggestion) => (
-          <Suggestion
-            key={suggestion.id}
-            _suggestion={suggestion}
-            courseId={courseId}
-            small={true}
-          />
-        ))}
-      </div>
+      {suggestions && suggestions.length > 0 && (
+        <div className="absolute top-0 translate-y-[-100%] bg-white rounded-lg shadow-md text-center">
+          {courseId && suggestions!.map((suggestion) => (
+              <Suggestion
+                key={suggestion.id}
+                _suggestion={suggestion}
+                courseId={courseId}
+                small={true}
+              />
+            ))}
+        </div>
+      )}
       <div
         onClick={onClick}
         className="relative flex justify-center items-center"

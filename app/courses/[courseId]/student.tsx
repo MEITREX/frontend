@@ -170,10 +170,10 @@ export default function StudentCoursePage() {
   const topRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (topRef.current && triggerScroll > 0) {
+    if (topRef.current && showLevelOverview && triggerScroll > 0) {
       topRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [triggerScroll]);
+  }, [triggerScroll, showLevelOverview]);
 
   // Show 404 error page if id was not found
   if (coursesByIds.length == 0) {
