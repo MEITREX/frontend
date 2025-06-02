@@ -14,6 +14,12 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { FormSection } from "./Form";
+import { AssessmentDetailsSkillSectionProps } from "./AssessmentDetailsSkillSection";
+import { BloomLevel } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
+import AssessmentDetailsSkillSection from "./AssessmentDetailsSkillSection";
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
+import { useQueryLoader } from "react-relay";
+import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 
 export type AssessmentMetadataPayload = {
   skillTypes: readonly SkillType[];
@@ -35,10 +41,12 @@ export function AssessmentMetadataFormSection({
   onChange,
   metadata,
   isRepeatable = true,
+  assessmentDetailsSkillSectionProps,
 }: {
   onChange: (side: AssessmentMetadataPayload | null) => void;
   metadata?: AssessmentMetadataPayload | null;
   isRepeatable?: boolean;
+  assessmentDetailsSkillSectionProps?: AssessmentDetailsSkillSectionProps;
 }) {
   const [intervalLearning, setIntervalLearning] = useState(
     metadata?.initialLearningInterval != null
@@ -75,13 +83,17 @@ export function AssessmentMetadataFormSection({
           label="Skill Type"
           labelId="assessmentSkillTypeLabel"
           value={skillTypes ?? []}
-          onChange={({ target: { value } }) =>
-            setSkillTypes(
-              (typeof value === "string"
-                ? value.split(",")
-                : value) as SkillType[]
-            )
-          }
+          onChange={({ target: { value } }) => {
+            const parsed = (
+              typeof value === "string" ? value.split(",") : value
+            ) as SkillType[];
+
+            setSkillTypes(parsed);
+            assessmentDetailsSkillSectionProps?.setItem((prev) => ({
+              ...prev,
+              associatedBloomLevels: parsed as BloomLevel[],
+            }));
+          }}
           renderValue={(selected) =>
             selected.map((x) => skillTypeLabel[x]).join(", ")
           }
@@ -153,6 +165,12 @@ export function AssessmentMetadataFormSection({
           }
           onChange={(e) => setInterval(parseInt(e.target.value))}
           required
+        />
+      )}
+
+      {assessmentDetailsSkillSectionProps && (
+        <AssessmentDetailsSkillSection
+          {...assessmentDetailsSkillSectionProps}
         />
       )}
     </FormSection>
