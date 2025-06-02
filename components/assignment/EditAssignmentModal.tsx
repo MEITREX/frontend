@@ -166,17 +166,14 @@ export function EditAssignmentModal({
         const contentRecord = store.get(content.id);
         if (!contentRecord) return;
 
-        // Generate a unique client ID for the new item
         const newItemId = `client:newItem:${crypto.randomUUID()}`;
         const newItemRecord = store.create(newItemId, "Item");
 
-        // Set associatedBloomLevels (simple scalar array)
         newItemRecord.setValue(
           item.associatedBloomLevels,
           "associatedBloomLevels"
         );
 
-        // Create and link associatedSkills
         const skillRecords = item.associatedSkills.map((skill) => {
           const skillId = `client:newSkill:${crypto.randomUUID()}`;
           const skillRecord = store.create(skillId, "ItemSkill");
@@ -188,7 +185,6 @@ export function EditAssignmentModal({
 
         newItemRecord.setLinkedRecords(skillRecords, "associatedSkills");
 
-        // Since you're only ever working with one item, overwrite the list
         contentRecord.setLinkedRecords([newItemRecord], "items");
       },
     });
