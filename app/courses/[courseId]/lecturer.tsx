@@ -3,7 +3,12 @@
 import { lecturerLecturerCourseIdQuery } from "@/__generated__/lecturerLecturerCourseIdQuery.graphql";
 import { Button, IconButton, Typography } from "@mui/material";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
-import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
+import {
+  graphql,
+  useLazyLoadQuery,
+  useMutation,
+  useQueryLoader,
+} from "react-relay";
 import { AddChapterModal } from "@/components/AddChapterModal";
 import { EditCourseModal } from "@/components/EditCourseModal";
 import { Heading } from "@/components/Heading";
@@ -21,7 +26,6 @@ import {
   codeAssessmentProvider,
   providerConfig,
 } from "@/components/ProviderConfig";
-import { useAccessTokenCheck } from "@/components/useAccessTokenCheck";
 import { CodeAssessmentProviderCourseButton } from "@/components/CodeAssessmentProviderCourseButton";
 
 graphql`
@@ -109,13 +113,6 @@ export default function LecturerCoursePage() {
         title={course.title}
         action={
           <div className="flex gap-4 items-center">
-            {/* <Button
-              startIcon={<Sync />}
-              onClick={handleSync}
-              disabled={isSyncing}
-            >
-              Sync {provider.name}
-            </Button> */}
             <CodeAssessmentProviderCourseButton
               externalCourse={query.getExternalCourse}
             />
@@ -147,7 +144,7 @@ export default function LecturerCoursePage() {
         {course.description}
       </Typography>
 
-      {orderBy(course.chapters.elements, [
+      {orderBy(course.chapters?.elements ?? [], [
         (x) => new Date(x.startDate).getTime(),
         "number",
       ]).map((chapter) => (
