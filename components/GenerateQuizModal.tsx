@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useMemo, useState } from "react";
-import { graphql, useLazyLoadQuery } from "react-relay";
+import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 import {
   CapabilitiesTabPanel,
   EducationalObjective,
@@ -20,6 +20,10 @@ import {
 import { LectureMaterialsTabPanel } from "./quiz/LectureMaterialsTabPanel";
 import { GenerateQuizModalMediaQuery } from "@/__generated__/GenerateQuizModalMediaQuery.graphql";
 import { QuestionsTabPanel } from "./quiz/QuestionsTabPanel";
+import {
+  AiGenQuestionContext,
+  GenerateQuizModalMutation,
+} from "@/__generated__/GenerateQuizModalMutation.graphql";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -59,14 +63,22 @@ const defaultCapability = {
   relationship: "",
 };
 
+const defaultQuestionAmount = {
+  multipleChoiceAmount: 0,
+  clozeAmount: 0,
+  associationAmount: 0,
+};
+
 export function GenerateQuizModal({
   onClose: _onClose,
   courseId,
   isOpen,
+  quizId,
 }: {
   onClose: () => void;
   isOpen: boolean;
   courseId: string;
+  quizId: string;
 }) {
   const [tabIndex, setTabIndex] = useState(0);
 
@@ -79,11 +91,7 @@ export function GenerateQuizModal({
     multipleChoiceAmount: number;
     clozeAmount: number;
     associationAmount: number;
-  }>({
-    multipleChoiceAmount: 0,
-    clozeAmount: 0,
-    associationAmount: 0,
-  });
+  }>(defaultQuestionAmount);
 
   const [error, setError] = useState<any>(null);
 
@@ -123,8 +131,59 @@ export function GenerateQuizModal({
     return item.courseIds.includes(courseId);
   });
 
+  const [generate] = useMutation<GenerateQuizModalMutation>(graphql`
+    mutation GenerateQuizModalMutation(
+      $context: AiGenQuestionContext!
+      $assessmentId: UUID!
+    ) {
+      mutateQuiz(assessmentId: $assessmentId) {
+        aiGenerateQuestionAsync(context: $context) {
+          assessmentId
+        }
+      }
+    }
+  `);
+
   function handleSubmit() {
-    console.log("start query");
+    const sumOfQuesitonAmount = Object.values(questionAmount).reduce(
+      (acc, val) => acc + val,
+      0
+    );
+    const context: AiGenQuestionContext = {
+      description:
+        "Use the following keywords as context to generate the questions:\n" +
+        capabilities.keywords.join(", "),
+      allowMultipleCorrectAnswers: false,
+      maxAnswersPerQuestion: 5,
+      maxExactQuestions: 0,
+      maxFreeTextQuestions: 0,
+      maxMultipleChoiceQuestions: questionAmount.multipleChoiceAmount,
+      maxNumericQuestions: 0,
+      maxQuestions: sumOfQuesitonAmount,
+      mediaRecordIds: materialIds,
+      minQuestions: sumOfQuesitonAmount,
+      quizId: quizId,
+    };
+    generate({
+      variables: { context, assessmentId: quizId },
+      onError: setError,
+
+      onCompleted() {
+        alert(
+          "Generation of questions was started successfully!" +
+            "\n Please come back later to review the generated questions!"
+        );
+        closeModal();
+      },
+    });
+  }
+
+  function closeModal() {
+    setCapabilities(defaultCapability);
+    setMaterialIds([]);
+    setQuestionAmount(defaultQuestionAmount);
+    setTabIndex(0);
+    setError(null);
     _onClose();
   }
 

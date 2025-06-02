@@ -125,6 +125,7 @@ export default function LecturerQuiz() {
           onClose={() => setGenerateSetModalOpen(false)}
           isOpen={isGenerateSetModalOpen}
           courseId={courseId}
+          quizId={quizId}
         />
       </ErrorContext.Provider>
     </main>
