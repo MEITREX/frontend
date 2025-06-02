@@ -25,6 +25,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
 import toast from "react-hot-toast";
+import { StudentCodeAssignmentCurrentUserQuery } from "@/__generated__/StudentCodeAssignmentCurrentUserQuery.graphql";
 
 export default function StudentCodeAssignment({
   contentRef,
@@ -33,6 +34,18 @@ export default function StudentCodeAssignment({
 }) {
   const { assignmentId } = useParams();
   const [error, setError] = useState<any>(null);
+
+  const { currentUserInfo } =
+    useLazyLoadQuery<StudentCodeAssignmentCurrentUserQuery>(
+      graphql`
+        query StudentCodeAssignmentCurrentUserQuery {
+          currentUserInfo {
+            id
+          }
+        }
+      `,
+      {}
+    );
 
   const content = useFragment(
     graphql`
@@ -73,6 +86,7 @@ export default function StudentCodeAssignment({
           getGradingsForAssignment(assessmentId: $assessmentId) {
             date
             achievedCredits
+            studentId
             codeAssignmentGradingMetadata {
               repoLink
               status
@@ -89,7 +103,9 @@ export default function StudentCodeAssignment({
     return <PageError message="No assignment found with given id." />;
   }
 
-  const grading = getGradingsForAssignment[0];
+  const grading = getGradingsForAssignment.find(
+    (g) => g.studentId === currentUserInfo.id
+  );
   const repoLink = grading?.codeAssignmentGradingMetadata?.repoLink;
 
   return (
@@ -253,7 +269,7 @@ export default function StudentCodeAssignment({
               Achieved
             </Typography>
             <Typography variant="body2">
-              {grading.achievedCredits != null
+              {grading?.achievedCredits != null
                 ? grading.achievedCredits
                 : "N/A"}
             </Typography>
