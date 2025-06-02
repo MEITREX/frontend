@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import {
   fetchQuery,
   graphql,
+  PreloadedQuery,
   useLazyLoadQuery,
   useMutation,
+  useQueryLoader,
   useRelayEnvironment,
 } from "react-relay";
 import {
@@ -41,13 +43,15 @@ import {
   ContentType,
   SkillType,
 } from "@/__generated__/AddCodeAssignmentModalMutation.graphql";
-import { set } from "lodash";
 import { LoadingButton } from "@mui/lab";
 import toast from "react-hot-toast";
 import { useAccessTokenCheck } from "./useAccessTokenCheck";
 import { AddCodeAssignmentModalExternalAssignmentsQuery } from "@/__generated__/AddCodeAssignmentModalExternalAssignmentsQuery.graphql";
 import { AddCodeAssignmentModalSyncAssignmentsMutation } from "@/__generated__/AddCodeAssignmentModalSyncAssignmentsMutation.graphql";
 import { AddCodeAssignmentModalExternalCourseQuery } from "@/__generated__/AddCodeAssignmentModalExternalCourseQuery.graphql";
+import { CreateItem } from "./form-sections/item/ItemFormSection";
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
+import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 
 const GetExternalAssignmentsQuery = graphql`
   query AddCodeAssignmentModalExternalAssignmentsQuery($courseId: UUID!) {
@@ -59,10 +63,12 @@ export function AddCodeAssignmentModal({
   onClose,
   chapterId,
   courseId,
+  allSkillsQueryRef,
 }: {
   onClose: () => void;
   chapterId: string;
   courseId: string;
+  allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | null | undefined;
 }) {
   const checkAccessToken = useAccessTokenCheck();
   const provider = providerConfig[codeAssessmentProvider];
@@ -75,6 +81,11 @@ export function AddCodeAssignmentModal({
   const [metadata, setMetadata] = useState<ContentMetadataPayload | null>(null);
   const [assessmentMetadata, setAssessmentMetadata] =
     useState<AssessmentMetadataPayload | null>(null);
+  const [item, setItem] = useState<CreateItem>({
+    associatedBloomLevels: [],
+    associatedSkills: [],
+  });
+
   const [requiredPercentage, setRequiredPercentage] = useState<number | null>(
     null
   );
@@ -108,13 +119,6 @@ export function AddCodeAssignmentModal({
       .then(setIsAccessTokenAvailable)
       .finally(() => setIsLoading(false));
   }, [checkAccessToken]);
-
-  const valid =
-    metadata &&
-    assessmentMetadata &&
-    requiredPercentage &&
-    requiredPercentage >= 0 &&
-    requiredPercentage <= 100;
 
   const [createAssignment, isCreatingAssignment] =
     useMutation<AddCodeAssignmentModalMutation>(graphql`
@@ -172,7 +176,7 @@ export function AddCodeAssignmentModal({
             initialLearningInterval: assessmentMetadata!
               .initialLearningInterval as number,
           },
-          items: [],
+          items: [item],
         },
         assignmentInput: {
           assignmentType: "CODE_ASSIGNMENT",
@@ -229,6 +233,13 @@ export function AddCodeAssignmentModal({
       },
     });
   };
+
+  const valid =
+    metadata &&
+    assessmentMetadata &&
+    requiredPercentage !== null &&
+    requiredPercentage >= 0 &&
+    requiredPercentage <= 100;
 
   return (
     <>
@@ -302,7 +313,14 @@ export function AddCodeAssignmentModal({
                   <AssessmentMetadataFormSection
                     onChange={setAssessmentMetadata}
                     isRepeatable={false}
+                    assessmentDetailsSkillSectionProps={{
+                      operation: "create",
+                      item,
+                      setItem,
+                      allSkillsQueryRef,
+                    }}
                   />
+
                   <FormSection title="Scoring">
                     <TextField
                       label="Required percentage"
@@ -338,7 +356,9 @@ export function AddCodeAssignmentModal({
 
           <DialogActions>
             {step === "select" && (
-            <LoadingButton onClick={handleSync}>Sync assignments</LoadingButton>
+              <LoadingButton onClick={handleSync}>
+                Sync assignments
+              </LoadingButton>
             )}
 
             <Button onClick={onClose} disabled={isSyncing}>

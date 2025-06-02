@@ -23,12 +23,19 @@ import {
   Typography,
 } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
+import { useEffect, useState } from "react";
+import {
+  graphql,
+  useFragment,
+  useLazyLoadQuery,
+  useQueryLoader,
+} from "react-relay";
 import { DeleteAssignmentButton } from "./assignment/DeleteAssignmentButton";
 import { EditAssignmentModal } from "./assignment/EditAssignmentModal";
 import toast from "react-hot-toast";
 import { UUID } from "crypto";
+import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 
 export default function LecturerCodeAssignment({
   contentRef,
@@ -64,6 +71,15 @@ export default function LecturerCodeAssignment({
     `,
     contentRef
   );
+
+  const [allSkillsQueryRef, loadAllSkillsQuery] =
+    useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
+
+  useEffect(() => {
+    if (contentRef && !allSkillsQueryRef) {
+      loadAllSkillsQuery({ courseId });
+    }
+  }, [courseId, loadAllSkillsQuery, allSkillsQueryRef]);
 
   const { findAssignmentsByAssessmentIds } =
     useLazyLoadQuery<LecturerCodeAssignmentQuery>(
@@ -219,6 +235,7 @@ export default function LecturerCodeAssignment({
           onClose={() => setEditSetOpen(false)}
           onError={setError}
           contentRef={content}
+          allSkillsQueryRef={allSkillsQueryRef}
         />
       )}
 

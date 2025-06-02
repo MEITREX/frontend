@@ -24,10 +24,18 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { graphql, useFragment, useMutation } from "react-relay";
+import {
+  graphql,
+  PreloadedQuery,
+  useFragment,
+  useMutation,
+  useQueryLoader,
+} from "react-relay";
 import { MediaContentModal } from "./MediaContentModal";
 import { QuizModal } from "./QuizModal";
 import { AddCodeAssignmentModal } from "./AddCodeAssignmentModal";
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
+import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 
 export function EditContentModal({
   chapterId,
@@ -55,6 +63,15 @@ export function EditContentModal({
   const [openCodeAssignmentModal, setOpenCodeAssignmentModal] = useState(false);
 
   const [openModal, setOpenModal] = useState(false);
+
+  const [allSkillsQueryRef, loadAllSkillsQuery] =
+    useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
+
+  useEffect(() => {
+    if (courseId && !allSkillsQueryRef) {
+      loadAllSkillsQuery({ courseId });
+    }
+  }, [courseId, loadAllSkillsQuery, allSkillsQueryRef]);
 
   const chapter = useFragment(
     graphql`
@@ -368,6 +385,7 @@ export function EditContentModal({
           onClose={() => setOpenCodeAssignmentModal(false)}
           chapterId={chapterId}
           courseId={courseId}
+          allSkillsQueryRef={allSkillsQueryRef}
         />
       )}
     </>

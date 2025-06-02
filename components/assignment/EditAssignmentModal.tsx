@@ -9,8 +9,14 @@ import {
   TextField,
   InputAdornment,
 } from "@mui/material";
-import { useState } from "react";
-import { graphql, useFragment, useMutation } from "react-relay";
+import { useEffect, useState } from "react";
+import {
+  graphql,
+  PreloadedQuery,
+  useFragment,
+  useMutation,
+  useQueryLoader,
+} from "react-relay";
 import { EditAssignmentModalFragment$key } from "@/__generated__/EditAssignmentModalFragment.graphql";
 import { EditAssignmentModalGradingMutation } from "@/__generated__/EditAssignmentModalGradingMutation.graphql";
 import { EditAssignmentModalAssessmentMutation } from "@/__generated__/EditAssignmentModalAssessmentMutation.graphql";
@@ -24,15 +30,20 @@ import {
 } from "@/components/ContentMetadataFormSection";
 import { Form, FormSection } from "@/components/Form";
 import { LoadingButton } from "@mui/lab";
+import { CreateItem } from "../AssessmentDetailsSkillSection";
+import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 
 export function EditAssignmentModal({
   onClose,
   onError,
   contentRef,
+  allSkillsQueryRef,
 }: {
   onClose: () => void;
   onError: (e: any) => void;
   contentRef: EditAssignmentModalFragment$key;
+  allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
 }) {
   const content = useFragment(
     graphql`
@@ -59,6 +70,14 @@ export function EditAssignmentModal({
             readmeHtml
             assignmentLink
             invitationLink
+          }
+        }
+        items {
+          associatedBloomLevels
+          associatedSkills {
+            skillName
+            skillCategory
+            isCustomSkill
           }
         }
       }
@@ -97,6 +116,16 @@ export function EditAssignmentModal({
   const [requiredPercentage, setRequiredPercentage] = useState<number | null>(
     content.assignment?.requiredPercentage! * 100
   );
+  const initialItem: CreateItem = {
+    associatedBloomLevels:
+      content.items.length > 0
+        ? [...content.items[0].associatedBloomLevels]
+        : [],
+    associatedSkills:
+      content.items.length > 0 ? [...content.items[0].associatedSkills] : [],
+  };
+
+  const [item, setItem] = useState<CreateItem>(initialItem);
 
   const valid =
     metadata != null &&
@@ -154,6 +183,12 @@ export function EditAssignmentModal({
             metadata={content.assessmentMetadata}
             onChange={setAssessmentMetadata}
             isRepeatable={false}
+            assessmentDetailsSkillSectionProps={{
+              operation: "edit",
+              item,
+              setItem,
+              allSkillsQueryRef,
+            }}
           />
           <FormSection title="Scoring">
             <TextField
