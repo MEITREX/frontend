@@ -68,7 +68,7 @@ export function EditContentModal({
     useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
 
   useEffect(() => {
-    if (courseId && !allSkillsQueryRef) {
+    if (!allSkillsQueryRef) {
       loadAllSkillsQuery({ courseId });
     }
   }, [courseId, loadAllSkillsQuery, allSkillsQueryRef]);
