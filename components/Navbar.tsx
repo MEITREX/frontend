@@ -438,7 +438,9 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
           }
         >
           <ListItemAvatar>
-            <Avatar src={auth.user?.profile?.picture} />
+            <Link href={"/profile"}>
+              <Avatar src={auth.user?.profile?.picture} />
+            </Link>
           </ListItemAvatar>
           <ListItemText primary={auth.user?.profile?.name} />
           <Tooltip title="Settings" placement="left">
