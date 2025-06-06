@@ -27,6 +27,7 @@ services:
       - type: bind
         source: ./../frontend/keycloak-realm
         target: /opt/keycloak/data/import
+      - ./keycloak-theme:/opt/keycloak/themes
     networks:
       - dapr-network
 
