@@ -26,11 +26,13 @@ import {
 import { RelayEnvironmentProvider } from "react-relay";
 import PageLoading from "./loading";
 
+import TutorWidget from "@/components/tutor/TutorWidget"; // Import the TutorWidget component
+
 dayjs.extend(isBetween);
 
 const oidcConfig: AuthProviderProps = {
   redirect_uri:
-    process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ?? "http://localhost:3005",
+    process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ?? "http://localhost:3006",
   client_id: process.env.NEXT_PUBLIC_OAUTH_CLIENT_ID ?? "frontend",
   authority:
     process.env.NEXT_PUBLIC_OAUTH_AUTHORITY ??
@@ -75,6 +77,7 @@ export default function App({ children }: { children: React.ReactNode }) {
             </DndProvider>
           </LocalizationProvider>
         </AuthProvider>
+        <TutorWidget />
       </body>
     </html>
   );
