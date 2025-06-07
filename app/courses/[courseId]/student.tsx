@@ -1,6 +1,6 @@
 "use client";
 import { studentCourseIdQuery } from "@/__generated__/studentCourseIdQuery.graphql";
-import { Button, Divider, IconButton, Switch, Typography } from "@mui/material";
+import { Button, Divider, IconButton, Typography } from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
@@ -37,11 +37,6 @@ import * as React from "react";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
-
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import ReorderIcon from "@mui/icons-material/Reorder";
-import TimelineIcon from "@mui/icons-material/Timeline";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -89,16 +84,6 @@ export default function StudentCoursePage() {
   const [value, setValue] = React.useState(0);
   const handleChange = (event: any, newValue: React.SetStateAction<number>) => {
     setValue(newValue);
-  };
-
-  // Toggle button for viewing chapters
-  const [viewStyle, setViewStyle] = React.useState<string | null>("graph");
-  const handleViewStyle = (
-    event: React.MouseEvent<HTMLElement>,
-    newViewStyle: string | null
-  ) => {
-    setViewStyle(newViewStyle);
-    setshowChapterOverview((prev) => !prev);
   };
 
   const router = useRouter();
@@ -319,13 +304,17 @@ export default function StudentCoursePage() {
           <Tabs
             value={value}
             onChange={handleChange}
-            aria-label="basic tabs example"
+            aria-label="Tabs for course student page"
           >
-            <Tab label="Learning Progress" {...a11yProps(0)} />
-            <Tab label="Chapters" {...a11yProps(1)} />
+            <Tab label="Course Overview" {...a11yProps(0)} />
+            <Tab label="Learning Progress" {...a11yProps(1)} />
+            <Tab label="Chapters" {...a11yProps(2)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
+          <ChapterOverview _chapters={course.chapters} />
+        </CustomTabPanel>
+        <CustomTabPanel value={value} index={1}>
           <div className="flex flex-col gap-12">
             <div className="grid grid-cols-2 items-start gap-4">
               <div className="object-cover flex flex-col gap-2">
@@ -510,72 +499,50 @@ export default function StudentCoursePage() {
             </div>
           </div>
         </CustomTabPanel>
-        <CustomTabPanel value={value} index={1}>
+        <CustomTabPanel value={value} index={2}>
           <div className="flex flex-col items-end w-full gap-4">
-            <ToggleButtonGroup
-              value={viewStyle}
-              color="primary"
-              size="small"
-              exclusive
-              onChange={handleViewStyle}
-              aria-label="chapter view style"
-            >
-              <ToggleButton value="graph" aria-label="graph view">
-                <TimelineIcon />
-              </ToggleButton>
-              <ToggleButton value="list" aria-label="list view">
-                <ReorderIcon />
-              </ToggleButton>
-            </ToggleButtonGroup>
-
-            {showChapterOverview ? (
-              <ChapterOverview _chapters={course.chapters} />
-            ) : (
-              <div className="flex flex-col gap-8 w-full">
-                <div>
-                  {" "}
-                  {/*Up next*/}
-                  <div className="flex justify-between items-center">
-                    <Typography variant="h2">Up next</Typography>
-                    <Button
-                      startIcon={<Repeat />}
-                      onClick={() =>
-                        router.push(`/courses/${id}/flashcards/due`)
-                      }
-                    >
-                      Repeat learned flashcards
-                    </Button>
-                  </div>
-                  <div className="mt-4 gap-8 flex flex-wrap">
-                    {course.suggestions.map((x) => (
-                      <Suggestion
-                        courseId={course.id}
-                        key={x.content.id}
-                        _suggestion={x}
-                      />
-                    ))}
-                  </div>
+            <div className="flex flex-col gap-8 w-full">
+              <div>
+                {" "}
+                {/*Up next*/}
+                <div className="flex justify-between items-center">
+                  <Typography variant="h2">Up next</Typography>
+                  <Button
+                    startIcon={<Repeat />}
+                    onClick={() => router.push(`/courses/${id}/flashcards/due`)}
+                  >
+                    Repeat learned flashcards
+                  </Button>
                 </div>
-                <div className="flex flex-col w-full gap-4">
-                  <Typography variant="h2">Chapters</Typography>
-                  <div className="border border-2 border-gray-300 rounded-3xl w-full overflow-hidden">
-                    {orderBy(course.chapters.elements, [
-                      (x) => new Date(x.startDate).getTime(),
-                      "number",
-                    ]).map((chapter, i) => (
-                      <>
-                        <StudentChapter
-                          key={chapter.id}
-                          _chapter={chapter}
-                          standardExpand={false}
-                        />
-                        {i < course.chapters.elements.length - 1 && <Divider />}
-                      </>
-                    ))}
-                  </div>
+                <div className="mt-4 gap-8 flex flex-wrap">
+                  {course.suggestions.map((x) => (
+                    <Suggestion
+                      courseId={course.id}
+                      key={x.content.id}
+                      _suggestion={x}
+                    />
+                  ))}
                 </div>
               </div>
-            )}
+              <div className="flex flex-col w-full gap-4">
+                <Typography variant="h2">Chapters</Typography>
+                <div className="border border-2 border-gray-300 rounded-3xl w-full overflow-hidden">
+                  {orderBy(course.chapters.elements, [
+                    (x) => new Date(x.startDate).getTime(),
+                    "number",
+                  ]).map((chapter, i) => (
+                    <>
+                      <StudentChapter
+                        key={chapter.id}
+                        _chapter={chapter}
+                        standardExpand={false}
+                      />
+                      {i < course.chapters.elements.length - 1 && <Divider />}
+                    </>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </CustomTabPanel>
       </Box>
