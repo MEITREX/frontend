@@ -108,6 +108,7 @@ export default function StudentCoursePage() {
         }
 
         coursesByIds(ids: [$id]) {
+          ...ChapterOverviewFragment
           suggestions(amount: 4) {
             ...SuggestionFragment
             content {
@@ -121,7 +122,6 @@ export default function StudentCoursePage() {
             ...RewardScoresFragment
           }
           chapters {
-            ...ChapterOverviewFragment
             elements {
               id
               number
@@ -311,7 +311,7 @@ export default function StudentCoursePage() {
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
-          <ChapterOverview _chapters={course.chapters} />
+          <ChapterOverview _chapters={course} />
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
           <div className="flex flex-col gap-12">

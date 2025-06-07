@@ -28,7 +28,7 @@ export function ChapterOverviewItem({
   onClick: () => void;
 }) {
   const chapter = useFragment(ChapterFragment, _chapter);
-  const progress = chapter.userProgress.progress;
+  const progress = Math.round(chapter.userProgress.progress);
   const suggestedStartDate = Date.parse(
     chapter.suggestedStartDate ?? chapter.startDate
   );
@@ -107,7 +107,9 @@ export function ChapterOverviewItem({
             {title}
           </div>
           {selected && (
-            <div className="text-sm text-gray-500">{description}</div>
+            <div className="text-sm text-gray-500 line-clamp-5">
+              {description}
+            </div>
           )}
         </div>
       </div>

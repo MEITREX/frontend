@@ -113,7 +113,7 @@ export function ChapterProgress({ progress }: { progress: number }) {
       <CircularProgress
         variant="determinate"
         value={100}
-        size="2.5rem"
+        size="3rem"
         thickness={4}
         className="!text-gray-200"
       />
@@ -122,7 +122,7 @@ export function ChapterProgress({ progress }: { progress: number }) {
         variant="determinate"
         value={progress}
         thickness={4}
-        size="2.5rem"
+        size="3rem"
         sx={{
           "& .MuiCircularProgress-circle": {
             strokeLinecap: "round",
@@ -136,7 +136,7 @@ export function ChapterProgress({ progress }: { progress: number }) {
           fontWeight="bold"
           style={{ color: "#84BFE6", position: "absolute" }}
         >
-          {progress}%
+          {Math.round(progress)}%
         </Typography>
       )) ||
         (progress == 100 && (
