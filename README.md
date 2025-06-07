@@ -44,7 +44,7 @@ After everything was installed, updated and created, you can run the project wit
 pnpm dev
 ```
 
-This will start the development server on [http://localhost:3005](http://localhost:3005). You can now open this link in your browser and see the project running, if you are connected to the university vpn. The page will automatically reload if you make changes to the code. You will see the build errors and lint errors in the console.
+This will start the development server on [http://localhost:3006](http://localhost:3006). You can now open this link in your browser and see the project running, if you are connected to the university vpn. The page will automatically reload if you make changes to the code. You will see the build errors and lint errors in the console.
 
 ### How to work with the project
 

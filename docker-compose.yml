@@ -7,11 +7,11 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_BACKEND_URL: "http://localhost:8080/graphql"
-        NEXT_PUBLIC_OAUTH_REDIRECT_URL: "http://localhost:3005"
+        NEXT_PUBLIC_OAUTH_REDIRECT_URL: "http://localhost:3006"
         NEXT_PUBLIC_OAUTH_CLIENT_ID: "frontend"
         NEXT_PUBLIC_OAUTH_AUTHORITY: "http://localhost:9009/realms/GITS"
     ports:
-      - "3005:3000"
+      - "3006:3000"
     networks:
       - dapr-network
 
