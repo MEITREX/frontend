@@ -188,7 +188,6 @@ export default function StudentCoursePage() {
     );
 
   const [currentPage, setCurrentPage] = useState(0);
-  const [showChapterOverview, setshowChapterOverview] = useState(true);
 
   // Show 404 error page if id was not found
   if (coursesByIds.length == 0) {
