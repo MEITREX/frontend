@@ -2,6 +2,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import {
   Box,
+  Button,
   FormControl,
   Grid,
   InputLabel,
@@ -37,13 +38,28 @@ export default function AllAchievements({
   handleOpenAchievement,
   achievements,
 }: AllAchievementsProps) {
+  const groupedAchievements = filteredAchievements.reduce(
+    (acc, achievement) => {
+      const course = achievement.courseId || "Unknown Course";
+      if (!acc[course]) {
+        acc[course] = [];
+      }
+      acc[course].push(achievement);
+      return acc;
+    },
+    {} as Record<string, any[]>
+  );
+
   return (
     <Box
       sx={{
         border: "1px solid #ccc", // hellgrau
         borderRadius: 2, // leicht gerundete Ecken
-        p: 2, // etwas Innenabstand
+        p: 0, // etwas Innenabstand
         mb: 4,
+        maxHeight: "800px", // maximale Höhe
+        overflowY: "auto", // vertikales Scrollen bei Overflow
+        paddingRight: 1, // optional: verhindert abgeschnittene Scrollbar
       }}
     >
       <Box
@@ -53,6 +69,12 @@ export default function AllAchievements({
           alignItems: "center",
           mb: 2,
           px: 2,
+          position: "sticky",
+          top: 0,
+          backgroundColor: "white", // wichtig, sonst ist es transparent
+          zIndex: 1, // über Scroll-Content
+          p: 2,
+          borderBottom: "1px solid #eee",
         }}
       >
         <Typography variant="h6" fontWeight="bold">
@@ -119,36 +141,112 @@ export default function AllAchievements({
         </Box>
       </Box>
 
-      <Grid container spacing={1}>
-        {filteredAchievements.map((a) => (
-          <Grid item xs={2} key={a.id}>
-            {" "}
-            {/* 6 Elemente pro Zeile */}
-            <Tooltip title={a.title} arrow>
-              <Box
-                key={a.id}
-                sx={{
-                  fontSize: 40, // Icon-Größe
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: a.achieved ? "pointer" : "default",
-                  opacity: a.achieved ? 1 : 0.3,
-                  transition: "transform 0.3s ease",
-                  "&:hover": {
-                    transform: a.achieved ? "scale(1.1)" : "none",
-                  },
-                  position: "relative",
-                }}
-                onClick={() => handleOpenAchievement(a)}
-              >
-                {a.icon}
+      {Object.entries(groupedAchievements).map(
+        ([course, courseAchievements]: any) => {
+          const visibleAchievements = courseAchievements.slice(0, 11);
+          const hasMore = courseAchievements.length > 11;
+
+          console.log(filter, selectedCourse, course);
+
+          if (selectedCourse != "all" && selectedCourse == course) {
+            console.log("HIIIIIIIIIIIIIIIIIIIs");
+            return (
+              <Box key={course} mb={4} px={2}>
+                <Typography variant="h6" fontWeight="bold" mb={2}>
+                  {courses.find((c) => c.id === course)?.name ?? course}
+                </Typography>
+                <Grid container spacing={1}>
+                  {courseAchievements.map((a: any) => (
+                    <Grid item xs={2} key={a.id}>
+                      {" "}
+                      {/* 6 Elemente pro Zeile */}
+                      <Tooltip title={a.title} arrow>
+                        <Box
+                          key={a.id}
+                          sx={{
+                            fontSize: 40, // Icon-Größe
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: a.achieved ? "pointer" : "default",
+                            opacity: a.achieved ? 1 : 0.3,
+                            transition: "transform 0.3s ease",
+                            "&:hover": {
+                              transform: a.achieved ? "scale(1.1)" : "none",
+                            },
+                            position: "relative",
+                          }}
+                          onClick={() => handleOpenAchievement(a)}
+                        >
+                          {a.icon}
+                        </Box>
+                      </Tooltip>
+                    </Grid>
+                  ))}
+                </Grid>
               </Box>
-            </Tooltip>
-          </Grid>
-        ))}
-      </Grid>
+            );
+          } else {
+            return (
+              <Box key={course} mb={4} px={2}>
+                <Typography variant="h6" fontWeight="bold" mb={2}>
+                  {courses.find((c) => c.id === course)?.name ?? course}
+                </Typography>
+                <Grid container spacing={1}>
+                  {visibleAchievements.map((a: any) => (
+                    <Grid item xs={2} key={a.id}>
+                      {" "}
+                      {/* 6 Elemente pro Zeile */}
+                      <Tooltip title={a.title} arrow>
+                        <Box
+                          key={a.id}
+                          sx={{
+                            fontSize: 40, // Icon-Größe
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: a.achieved ? "pointer" : "default",
+                            opacity: a.achieved ? 1 : 0.3,
+                            transition: "transform 0.3s ease",
+                            "&:hover": {
+                              transform: a.achieved ? "scale(1.1)" : "none",
+                            },
+                            position: "relative",
+                          }}
+                          onClick={() => handleOpenAchievement(a)}
+                        >
+                          {a.icon}
+                        </Box>
+                      </Tooltip>
+                    </Grid>
+                  ))}
+                  {hasMore && (
+                    <Grid item xs={2}>
+                      <Box
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        height="100%"
+                      >
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          sx={{ minWidth: 100 }}
+                          onClick={() => setSelectedCourse(course)}
+                        >
+                          Show all
+                        </Button>
+                      </Box>
+                    </Grid>
+                  )}
+                </Grid>
+              </Box>
+            );
+          }
+        }
+      )}
     </Box>
   );
 }

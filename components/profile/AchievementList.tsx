@@ -3,10 +3,12 @@ import AchievementPopUp from "./achievements/AchievementPopUp";
 import AllAchievements from "./achievements/AllAchievements";
 import LatestAchievements from "./achievements/LatestAchievements";
 
-const AchievementList = ({ achievements }) => {
+const AchievementList = ({ achievements }: any) => {
   const achieved = achievements
-    .filter((a) => a.achieved)
-    .sort((a, b) => b.achievedAt?.getTime()! - a.achievedAt?.getTime()!) // neueste zuerst
+    .filter((a: any) => a.achieved)
+    .sort(
+      (a: any, b: any) => b.achievedAt?.getTime()! - a.achievedAt?.getTime()!
+    ) // neueste zuerst
     .slice(0, 5); // z.B. 5 letzte
 
   const [selectedCourse, setSelectedCourse] = useState("all");
@@ -18,12 +20,14 @@ const AchievementList = ({ achievements }) => {
   ];
 
   const [filter, setFilter] = useState<"achieved" | "not-achieved" | null>(
-    null
+    "achieved"
   );
 
   const filteredAchievements = achievements
-    .filter((a) => selectedCourse === "all" || a.courseId === selectedCourse)
-    .filter((a) => {
+    .filter(
+      (a: any) => selectedCourse === "all" || a.courseId === selectedCourse
+    )
+    .filter((a: any) => {
       if (filter === "achieved") return a.achieved;
       if (filter === "not-achieved") return !a.achieved;
       return true;
