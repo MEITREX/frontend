@@ -2,7 +2,6 @@
 import { LecturerChapter$key } from "@/__generated__/LecturerChapter.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { AddSectionButton } from "@/components/AddSectionButton";
-import { ChapterContent } from "@/components/ChapterContent";
 import { ChapterHeader } from "@/components/ChapterHeader";
 import EditChapterButton from "@/components/EditChapterButton";
 import { OtherContent } from "@/components/OtherContent";
@@ -55,7 +54,7 @@ export function LecturerChapter({
         student={false}
       />
 
-      <ChapterContent>
+      <div className="flex gap-12 items-start overflow-x-auto thin-scrollbar">
         {chapter.sections.map((section) => (
           <LecturerSection
             _mediaRecords={_mediaRecords}
@@ -64,7 +63,7 @@ export function LecturerChapter({
           />
         ))}
         <AddSectionButton chapterId={chapter.id} />
-      </ChapterContent>
+      </div>
 
       <OtherContent _chapter={chapter} courseId={chapter.course.id} />
     </section>
