@@ -1,3 +1,5 @@
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import {
     Box,
     Button,
@@ -9,6 +11,8 @@ import {
     InputLabel,
     MenuItem,
     Select,
+    ToggleButton,
+    ToggleButtonGroup,
     Tooltip,
     Typography
 } from "@mui/material";
@@ -29,19 +33,13 @@ const AchievementList = ({ achievements }) => {
         { id: 'course2', name: 'Informatik' },
     ];
 
-    const [selectedStatus, setSelectedStatus] = useState('achieved');
-
-    const states = [
-        { id: 'achieved', name: 'Achieved' },
-        { id: 'notAchieved', name: 'Not achieved' },
-        { id: 'all', name: 'All' },
-    ];
+    const [filter, setFilter] = useState<"achieved" | "not-achieved" | null>(null);
 
     const filteredAchievements = achievements
         .filter(a => selectedCourse === 'all' || a.courseId === selectedCourse)
         .filter(a => {
-            if (selectedStatus === 'achieved') return a.achieved;
-            if (selectedStatus === 'notAchieved') return !a.achieved;
+            if (filter === 'achieved') return a.achieved;
+            if (filter === 'not-achieved') return !a.achieved;
             return true;
         });
 
@@ -55,6 +53,13 @@ const AchievementList = ({ achievements }) => {
 
     const handleCloseAchievement = () => {
         setOpenDialog(false);
+    };
+
+    const handleChange = (
+        _: React.MouseEvent<HTMLElement>,
+        newFilter: "achieved" | "not-achieved" | null
+    ) => {
+        setFilter(newFilter);
     };
 
     return (
@@ -127,21 +132,40 @@ const AchievementList = ({ achievements }) => {
 
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             {/* Filter: Achieved / Not Achieved */}
-                            <FormControl size="small" sx={{ minWidth: 140 }}>
-                                <InputLabel id="status-select-label">Status</InputLabel>
-                                <Select
-                                    labelId="status-select-label"
-                                    value={selectedStatus}
-                                    label="Status"
-                                    onChange={(e) => setSelectedStatus(e.target.value)}
-                                >
-                                    {states.map((state) => (
-                                        <MenuItem key={state.id} value={state.id}>
-                                            {state.name}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
+                            <ToggleButtonGroup
+                                value={filter}
+                                exclusive
+                                onChange={handleChange}
+                                sx={{ mb: 2 }}
+                                size='small'
+                            >
+                                <ToggleButton value="achieved"
+                                    sx={{
+                                        '&.Mui-selected': {
+                                            backgroundColor: '#009bde', // dein Blauton
+                                            color: 'white',
+                                            '&:hover': {
+                                                backgroundColor: '#009bde',
+                                            },
+                                        },
+                                    }}>
+                                    <EmojiEventsIcon sx={{ mr: 1 }} />
+                                    Achieved
+                                </ToggleButton>
+                                <ToggleButton value="not-achieved"
+                                    sx={{
+                                        '&.Mui-selected': {
+                                            backgroundColor: '#009bde', // dein Blauton
+                                            color: 'white',
+                                            '&:hover': {
+                                                backgroundColor: '#009bde',
+                                            },
+                                        },
+                                    }}>
+                                    <EmojiEventsOutlinedIcon sx={{ mr: 1 }} />
+                                    Not Achieved
+                                </ToggleButton>
+                            </ToggleButtonGroup>
 
                             {/* Dropdown für Kurse */}
                             <FormControl size="small" sx={{ minWidth: 160 }}>
@@ -183,7 +207,7 @@ const AchievementList = ({ achievements }) => {
                                             },
                                             position: 'relative',
                                         }}
-                                        onClick={() => a.achieved && handleOpenAchievement(a)}
+                                        onClick={() => handleOpenAchievement(a)}
                                     >
                                         {a.icon}
                                     </Box>
@@ -195,7 +219,18 @@ const AchievementList = ({ achievements }) => {
 
             </Box>
 
-            <Dialog open={openAchievementDialog} onClose={handleCloseAchievement} maxWidth="sm" fullWidth>
+
+            <Dialog open={openAchievementDialog} onClose={handleCloseAchievement} maxWidth="sm" fullWidth PaperProps={{
+                sx: {
+                    border: selectedAchievement?.achieved ? '2px solid gold' : '2px solid transparent',
+                    borderRadius: 2,
+                    p: 2,
+                    backgroundColor: 'white',
+                    boxShadow: selectedAchievement?.achieved
+                        ? '0 0 10px 2px rgba(255, 215, 0, 0.6)'
+                        : 'none',
+                }
+            }}>
                 <DialogTitle textAlign="center">
                     {selectedAchievement?.title}
                 </DialogTitle>
@@ -216,7 +251,7 @@ const AchievementList = ({ achievements }) => {
                         </Typography>
 
                         <Typography mt={1} color="textSecondary">
-                            <strong>Course:</strong> {selectedAchievement?.courseId}
+                            <strong>Course:</strong> {courses.find((c) => c.id === selectedAchievement?.courseId)?.name ?? selectedAchievement?.courseId}
                         </Typography>
                     </Box>
 

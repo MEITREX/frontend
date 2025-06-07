@@ -24,7 +24,7 @@ export const achievementsData = [
         description: "You created your first course.",
         icon: "📘",
         achieved: false,
-        achievedAt: new Date("2025-06-08T10:00:00"),
+        achievedAt: null,
         courseId: 'course1',
     }, {
         id: 4,
@@ -50,7 +50,7 @@ export const achievementsData = [
         description: "You created your first course.",
         icon: "📘",
         achieved: false,
-        achievedAt: new Date("2025-06-11T10:00:00"),
+        achievedAt: null,
         courseId: 'course1',
     }, {
         id: 7,
@@ -76,7 +76,7 @@ export const achievementsData = [
         description: "You created your first course.",
         icon: "📘",
         achieved: false,
-        achievedAt: new Date("2025-06-14T10:00:00"),
+        achievedAt: null,
         courseId: 'course2',
     }, {
         id: 10,
@@ -102,7 +102,7 @@ export const achievementsData = [
         description: "You created your first course.",
         icon: "📘",
         achieved: false,
-        achievedAt: new Date("2025-06-17T10:00:00"),
+        achievedAt: null,
         courseId: 'course2',
     }, {
         id: 13,
@@ -128,7 +128,7 @@ export const achievementsData = [
         description: "You created your first course.",
         icon: "📘",
         achieved: false,
-        achievedAt: new Date("2025-06-20T10:00:00"),
+        achievedAt: null,
         courseId: 'course1',
     }, {
         id: 16,
@@ -154,7 +154,7 @@ export const achievementsData = [
         description: "You created your first course.",
         icon: "📘",
         achieved: false,
-        achievedAt: new Date("2025-06-23T10:00:00"),
+        achievedAt: null,
         courseId: 'course1',
     }, {
         id: 19,
@@ -180,7 +180,7 @@ export const achievementsData = [
         description: "You created your first course.",
         icon: "📘",
         achieved: false,
-        achievedAt: new Date("2025-06-26T10:00:00"),
+        achievedAt: null,
         courseId: 'course2',
     },
 ];
