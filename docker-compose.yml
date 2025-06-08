@@ -24,9 +24,12 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=admin
     command: start-dev --import-realm
     volumes:
+      # Mounts in our folder need to first exit the folder and enter it again "./../frontend"
+      # This is necessary because of how docker-compose resolves paths when merging multiple compose files
       - type: bind
         source: ./../frontend/keycloak-realm
         target: /opt/keycloak/data/import
+      - ./../frontend/keycloak-theme:/opt/keycloak/themes
     networks:
       - dapr-network
 
