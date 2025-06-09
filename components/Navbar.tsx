@@ -4,7 +4,6 @@ import { NavbarSemanticSearchQuery } from "@/__generated__/NavbarSemanticSearchQ
 import { NavbarStudentQuery } from "@/__generated__/NavbarStudentQuery.graphql";
 import logo from "@/assets/logo.svg";
 import duration from "dayjs/plugin/duration";
-import Link from "next/link";
 
 dayjs.extend(duration);
 
@@ -15,7 +14,6 @@ import {
   Logout,
   ManageSearch,
   Search,
-  Settings,
 } from "@mui/icons-material";
 import {
   Autocomplete,
@@ -424,13 +422,14 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
               <IconButton
                 edge="end"
                 aria-label="logout"
-                onClick={() =>
+                onClick={() =>{
+                  window.localStorage.removeItem("meitrex-welcome-shown");
                   auth.signoutRedirect({
                     post_logout_redirect_uri:
                       process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ??
                       "http://localhost:3005",
                   })
-                }
+                }}
               >
                 <Logout />
               </IconButton>
@@ -441,13 +440,6 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
             <Avatar src={auth.user?.profile?.picture} />
           </ListItemAvatar>
           <ListItemText primary={auth.user?.profile?.name} />
-          <Tooltip title="Settings" placement="left">
-            <Link href="/settings/gamification">
-              <IconButton>
-                <Settings />
-              </IconButton>
-            </Link>
-          </Tooltip>
         </ListItem>
 
         {tutor && (
