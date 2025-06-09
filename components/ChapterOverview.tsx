@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { ChapterOverviewItem } from "./ChapterOverviewItem";
-import { graphql, useFragment } from "react-relay";
 import { ChapterOverviewFragment$key } from "@/__generated__/ChapterOverviewFragment.graphql";
 import _ from "lodash";
+import { useState } from "react";
+import { graphql, useFragment } from "react-relay";
+import { ChapterOverviewItem } from "./ChapterOverviewItem";
 import { StudentChapter } from "./StudentChapter";
 
 const ChapterFragment = graphql`
@@ -66,6 +66,17 @@ export function ChapterOverview({
     "number",
   ]);
   const numberOfChapters = sortedChapters.length;
+
+  const firstIncompleteChapter = sortedChapters.findIndex(
+    (chapter) => chapter.userProgress.progress < 100
+  );
+  const startIndex = firstIncompleteChapter < 0 ? numberOfChapters - 1 : firstIncompleteChapter;
+  const [selectedIndex, setSelectedIndex] = useState<number>(startIndex);
+
+  if (numberOfChapters === 0) {
+    return <div className="text-left text-gray-500">No chapters in this course.</div>;
+  }
+
   const totalPoints = 200;
 
   const firstIncompleteIndex = sortedChapters.findIndex(
@@ -110,12 +121,6 @@ export function ChapterOverview({
     totalPoints,
     totalPoints
   );
-
-  const tempIndex = sortedChapters.findIndex(
-    (chapter) => chapter.userProgress.progress < 100
-  );
-  const startIndex = tempIndex < 0 ? numberOfChapters - 1 : tempIndex;
-  const [selectedIndex, setSelectedIndex] = useState<number>(startIndex);
 
   return (
     <div className="w-full">

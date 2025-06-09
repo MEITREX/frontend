@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import { ChapterOverviewItemFragment$key } from "@/__generated__/ChapterOverviewItemFragment.graphql";
 import { DoneRounded, LockOutlined } from "@mui/icons-material";
 import { CircularProgress } from "@mui/material";
 import { graphql, useFragment } from "react-relay";
-import { ChapterOverviewItemFragment$key } from "@/__generated__/ChapterOverviewItemFragment.graphql";
 
 const ChapterFragment = graphql`
   fragment ChapterOverviewItemFragment on Chapter {
@@ -95,10 +94,10 @@ export function ChapterOverviewItem({
         onClick={!disabled ? onClick : undefined}
         className="absolute top-full mt-2 flex flex-col items-center w-40 h-auto"
       >
-        {/* Dreieck */}
+        {/* Triangle */}
         <div className="w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-white" />
 
-        {/* Tooltip-Blase */}
+        {/* Tooltip-Bubble */}
         <div className="bg-white rounded-lg shadow-md px-3 py-2 text-center">
           <div
             className="text-sm font-semibold"
