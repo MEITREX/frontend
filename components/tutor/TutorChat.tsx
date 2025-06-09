@@ -53,12 +53,13 @@ const TutorChat: React.FC = () => {
     // /api/llm muss den Prompt an das LLM (z.B. Ollama) weiterleiten und { answer } zurückgeben.
     try {
       // Anfrage an den Bot (API ggf. anpassen!)
-      const response = await fetch("/api/llm", {
+      const response = await fetch("/api/llm", { // z.B. const response = await fetch('http://localhost:8000/api/classify_and_preprocess', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
       const data = await response.json();
+      console.log(data);
 
       // Berechne, wie lange die "denkt nach..."-Nachricht schon angezeigt wird
       const elapsed = Date.now() - (sendTimestamp.current ?? 0);
