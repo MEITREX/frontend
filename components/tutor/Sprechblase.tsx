@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from "react";
 import RecommendationBubble from "./RecommendationBubble";
 
-const DEFAULT_TEXT = "Hallo! Willkommen bei Meitrex, falls du Fragen hast, meld dich einfach!";
+const DEFAULT_TEXT =
+  "Hallo! Willkommen bei Meitrex, falls du Fragen hast, meld dich einfach!";
 
 const DinoAvatarWithRecommendation: React.FC = () => {
-  const [recommendation, setRecommendation] = useState<string | null>(DEFAULT_TEXT);
+  const [recommendation, setRecommendation] = useState<string | null>(
+    DEFAULT_TEXT
+  );
 
   useEffect(() => {
-    (window as any).setRecommendation = (text: string | null) => setRecommendation(text);
-    return () => { delete (window as any).setRecommendation; };
+    (window as any).setRecommendation = (text: string | null) =>
+      setRecommendation(text);
+    return () => {
+      delete (window as any).setRecommendation;
+    };
   }, []);
 
   return (
@@ -26,9 +32,13 @@ const DinoAvatarWithRecommendation: React.FC = () => {
           background: "#fff",
         }}
       />
-      <RecommendationBubble text={recommendation ?? ""} visible={!!recommendation} />
+      <RecommendationBubble
+        text={recommendation ?? ""}
+        visible={!!recommendation}
+      />
     </div>
   );
 };
 
-export default DinoAvatarWithRecommendation;1
+export default DinoAvatarWithRecommendation;
+1;

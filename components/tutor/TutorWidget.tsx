@@ -4,14 +4,20 @@ import TutorChat from "./TutorChat";
 
 // Drei feste Dock-Positionen am rechten Rand
 const positions = [
-  { name: "top",    style: { top: 32, right: 32 } },
-  { name: "center", style: { top: "50%", right: 32, transform: "translateY(-50%)" } },
+  { name: "top", style: { top: 32, right: 32 } },
+  {
+    name: "center",
+    style: { top: "50%", right: 32, transform: "translateY(-50%)" },
+  },
   { name: "bottom", style: { bottom: 32, right: 32 } },
 ] as const;
 
-type TutorPosition = typeof positions[number]["name"];
+type TutorPosition = (typeof positions)[number]["name"];
 
-function getClosestPosition(clientY: number, windowHeight: number): typeof positions[number] {
+function getClosestPosition(
+  clientY: number,
+  windowHeight: number
+): (typeof positions)[number] {
   const yTargets = [
     32, // top
     windowHeight / 2,
@@ -49,17 +55,22 @@ type TutorWidgetProps = {
 const WELCOME_KEY = "meitrex-welcome-shown";
 
 const TutorWidget: React.FC<TutorWidgetProps> = ({ isAuthenticated }) => {
-  const [dockPosition, setDockPosition] = useState<typeof positions[number]>(positions[2]);
+  const [dockPosition, setDockPosition] = useState<(typeof positions)[number]>(
+    positions[2]
+  );
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const widgetRef = useRef<HTMLDivElement>(null);
   const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
   const [open, setOpen] = useState(false);
-  const [mouseDownPosition, setMouseDownPosition] = useState<{x: number, y: number} | null>(null);
+  const [mouseDownPosition, setMouseDownPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   // Recommendation Bubble Logic
 
-/* Recommendations API Logic
+  /* Recommendations API Logic
 import { showTutorRecommendation, clearTutorRecommendations } from "@/components/tutor/TutorWidget";
 
 // Zeige eine Empfehlung:
@@ -97,13 +108,18 @@ clearTutorRecommendations();
     widgetApi = {
       showRecommendation: (rec: Recommendation) => {
         setShowWelcome(false); // Welcome ggf. ausblenden
-        setRecommendations((old) => [...old.filter(r => r.id !== rec.id), rec]);
+        setRecommendations((old) => [
+          ...old.filter((r) => r.id !== rec.id),
+          rec,
+        ]);
       },
       clearRecommendations: () => {
         setRecommendations([]);
-      }
+      },
     };
-    return () => { widgetApi = null; };
+    return () => {
+      widgetApi = null;
+    };
   }, []);
 
   // Drag & Drop
@@ -138,7 +154,11 @@ clearTutorRecommendations();
       setDockPosition(closest);
 
       // Klick vs Drag unterscheiden:
-      if (mouseDownPosition && Math.abs(mouseDownPosition.x - e.clientX) < 5 && Math.abs(mouseDownPosition.y - e.clientY) < 5) {
+      if (
+        mouseDownPosition &&
+        Math.abs(mouseDownPosition.x - e.clientX) < 5 &&
+        Math.abs(mouseDownPosition.y - e.clientY) < 5
+      ) {
         setOpen((v) => !v);
       }
       setMouseDownPosition(null);
@@ -156,9 +176,7 @@ clearTutorRecommendations();
     zIndex: 10000,
     cursor: isDragging ? "grabbing" : "grab",
     transition: isDragging ? "none" : "all 0.25s cubic-bezier(.4,2,.6,1)",
-    ...(isDragging
-      ? { left: dragPos.x, top: dragPos.y }
-      : dockPosition.style),
+    ...(isDragging ? { left: dragPos.x, top: dragPos.y } : dockPosition.style),
     display: "flex",
     flexDirection: "row-reverse",
     alignItems: "flex-end",
@@ -196,7 +214,7 @@ clearTutorRecommendations();
     borderTop: "10px solid transparent",
     borderBottom: "10px solid transparent",
     borderLeft: "12px solid #fff",
-    filter: "drop-shadow(0 1px 3px rgba(80,80,80,0.10))"
+    filter: "drop-shadow(0 1px 3px rgba(80,80,80,0.10))",
   };
 
   return (
@@ -214,11 +232,15 @@ clearTutorRecommendations();
           {/* Pfeil */}
           <span style={bubbleArrowStyle as any}></span>
           <span>
-          {showWelcome
-            ? <>Hallo, willkommen bei Meitrex!<br />Falls du Fragen hast, meld dich einfach!</>
-            : recommendations.map(r => (
-                <span key={r.id}>{r.text}</span>
-              ))}
+            {showWelcome ? (
+              <>
+                Hallo, willkommen bei Meitrex!
+                <br />
+                Falls du Fragen hast, meld dich einfach!
+              </>
+            ) : (
+              recommendations.map((r) => <span key={r.id}>{r.text}</span>)
+            )}
           </span>
           {!showWelcome && recommendations.length > 0 && (
             <button
@@ -232,11 +254,13 @@ clearTutorRecommendations();
                 cursor: "pointer",
                 lineHeight: 1,
                 padding: 0,
-                alignSelf: "flex-start"
+                alignSelf: "flex-start",
               }}
               aria-label="Empfehlung schließen"
               title="Empfehlung schließen"
-            >×</button>
+            >
+              ×
+            </button>
           )}
         </div>
       )}

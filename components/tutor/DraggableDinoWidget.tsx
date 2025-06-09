@@ -2,8 +2,11 @@ import React, { useState, useRef } from "react";
 
 // Die drei fixen Positionen am rechten Rand (oben, mitte, unten)
 const positions = [
-  { name: "top",    style: { top: 32,   right: 32 } },
-  { name: "middle", style: { top: "50%", right: 32, transform: "translateY(-50%)" } },
+  { name: "top", style: { top: 32, right: 32 } },
+  {
+    name: "middle",
+    style: { top: "50%", right: 32, transform: "translateY(-50%)" },
+  },
   { name: "bottom", style: { bottom: 32, right: 32 } },
 ];
 
@@ -84,9 +87,7 @@ const DraggableDinoWidget: React.FC = () => {
     cursor: isDragging ? "grabbing" : "grab",
     transition: isDragging ? "none" : "all 0.25s cubic-bezier(.4,2,.6,1)",
     // Während Drag absolute Position, sonst an Dock-Position
-    ...(isDragging
-      ? { left: dragPos.x, top: dragPos.y }
-      : dockPosition.style),
+    ...(isDragging ? { left: dragPos.x, top: dragPos.y } : dockPosition.style),
   };
 
   // Simpler Chat-Toggle

@@ -12,7 +12,7 @@ const TutorAvatar: React.FC = () => (
         borderRadius: "50%",
         objectFit: "cover",
         userSelect: "none",
-        pointerEvents: "none"  // wichtig: blockiert Events auf dem Bild selbst!
+        pointerEvents: "none", // wichtig: blockiert Events auf dem Bild selbst!
       }}
     />
     <style jsx>{`
@@ -30,12 +30,24 @@ const TutorAvatar: React.FC = () => (
         animation-iteration-count: 1;
       }
       @keyframes shake {
-        0% { transform: translateX(0); }
-        20% { transform: translateX(-5px); }
-        40% { transform: translateX(5px); }
-        60% { transform: translateX(-5px); }
-        80% { transform: translateX(5px); }
-        100% { transform: translateX(0); }
+        0% {
+          transform: translateX(0);
+        }
+        20% {
+          transform: translateX(-5px);
+        }
+        40% {
+          transform: translateX(5px);
+        }
+        60% {
+          transform: translateX(-5px);
+        }
+        80% {
+          transform: translateX(5px);
+        }
+        100% {
+          transform: translateX(0);
+        }
       }
     `}</style>
   </div>

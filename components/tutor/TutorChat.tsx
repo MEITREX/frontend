@@ -28,7 +28,8 @@ const TutorChat: React.FC = () => {
 
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
+      textareaRef.current.style.height =
+        textareaRef.current.scrollHeight + "px";
     }
   };
 
@@ -53,7 +54,8 @@ const TutorChat: React.FC = () => {
     // /api/llm muss den Prompt an das LLM (z.B. Ollama) weiterleiten und { answer } zurückgeben.
     try {
       // Anfrage an den Bot (API ggf. anpassen!)
-      const response = await fetch("/api/llm", { // z.B. const response = await fetch('http://localhost:8000/api/classify_and_preprocess', {
+      const response = await fetch("/api/llm", {
+        // z.B. const response = await fetch('http://localhost:8000/api/classify_and_preprocess', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
@@ -70,7 +72,7 @@ const TutorChat: React.FC = () => {
         setChatHistory((prev) => {
           const updated = [...prev];
           // Ersetze die letzte Bot-Nachricht durch die echte Antwort
-          const lastBotIdx = updated.map(m => m.sender).lastIndexOf("bot");
+          const lastBotIdx = updated.map((m) => m.sender).lastIndexOf("bot");
           if (lastBotIdx !== -1) {
             updated[lastBotIdx] = {
               sender: "bot",
@@ -87,7 +89,6 @@ const TutorChat: React.FC = () => {
         setLoading(false);
         sendTimestamp.current = null; // <- wichtig!
       }, waitMore);
-
     } catch (error) {
       // Fehlerbehandlung mit Mindestwartezeit
       const elapsed = Date.now() - (sendTimestamp.current ?? 0);
@@ -96,7 +97,7 @@ const TutorChat: React.FC = () => {
       setTimeout(() => {
         setChatHistory((prev) => {
           const updated = [...prev];
-          const lastBotIdx = updated.map(m => m.sender).lastIndexOf("bot");
+          const lastBotIdx = updated.map((m) => m.sender).lastIndexOf("bot");
           if (lastBotIdx !== -1) {
             updated[lastBotIdx] = {
               sender: "bot",
@@ -166,7 +167,8 @@ const TutorChat: React.FC = () => {
                 wordBreak: "break-word",
                 textAlign: msg.sender === "user" ? "left" : "right",
                 opacity: msg.text === "Dino Tutor denkt nach..." ? 0.7 : 1,
-                fontStyle: msg.text === "Dino Tutor denkt nach..." ? "italic" : "normal",
+                fontStyle:
+                  msg.text === "Dino Tutor denkt nach..." ? "italic" : "normal",
               }}
             >
               {msg.text}
@@ -177,7 +179,10 @@ const TutorChat: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
       {/* Eingabefeld und Button */}
-      <form onSubmit={handleSend} style={{ display: "flex", gap: 6, alignItems: "flex-end" }}>
+      <form
+        onSubmit={handleSend}
+        style={{ display: "flex", gap: 6, alignItems: "flex-end" }}
+      >
         <textarea
           ref={textareaRef}
           value={input}
