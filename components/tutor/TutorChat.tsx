@@ -48,6 +48,9 @@ const TutorChat: React.FC = () => {
     setLoading(true);
     sendTimestamp.current = Date.now();
 
+    // TutorChat API-Schnittstelle (/api/llm als Bsp. --> noch nicht vorhanden):
+    // Sendet POST an /api/llm mit { prompt }, erwartet Antwort { answer }.
+    // /api/llm muss den Prompt an das LLM (z.B. Ollama) weiterleiten und { answer } zurückgeben.
     try {
       // Anfrage an den Bot (API ggf. anpassen!)
       const response = await fetch("/api/llm", {
