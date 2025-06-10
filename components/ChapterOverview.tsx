@@ -97,7 +97,7 @@ export function ChapterOverview({
   const height = 300;
   const amplitude = 50;
   const spacing = 180;
-  const waves = 2; // Number of sine waves
+  const waves = Math.round(numberOfChapters / 4); // Number of sine waves
   const totalWidth = spacing * (numberOfChapters - 1);
 
   const points = Array.from({ length: numberOfChapters }, (_, i) => {
