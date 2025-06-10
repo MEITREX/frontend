@@ -1,7 +1,7 @@
 "use client";
 import { ChapterHeaderFragment$key } from "@/__generated__/ChapterHeaderFragment.graphql";
-import { Done, DoneRounded, ExpandLess, ExpandMore } from "@mui/icons-material";
-import { Chip, CircularProgress, IconButton, Typography } from "@mui/material";
+import { DoneRounded, ExpandLess, ExpandMore } from "@mui/icons-material";
+import { CircularProgress, IconButton, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { ReactNode } from "react";
 import { graphql, useFragment } from "react-relay";
@@ -67,17 +67,17 @@ export function ChapterHeader({
 
   return (
     <div
-      className="flex flex-row justify-start items-center p-6 rounded-3xl gap-16"
+      className="flex flex-row justify-start items-center py-6 pr-4 rounded-3xl gap-16"
       onClick={onExpandClick}
     >
       <div className="flex flex-row items-center justify-center flex-grow">
         {(expandable === undefined || expandable) && expanded !== undefined && (
-          <IconButton className="!-ml-2 !mr-2">
+          <IconButton className="ml-4 mr-2">
             {expanded ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         )}
         <div className="flex flex-col items-start flex-grow gap-5">
-          <div className="flex flex-col flex-grow gap-1">
+          <div className="flex flex-row flex-grow gap-1">
             <Typography variant="h2" onClick={(e) => e.stopPropagation()}>
               {chapter.title}
             </Typography>
