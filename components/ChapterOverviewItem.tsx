@@ -75,7 +75,7 @@ export function ChapterOverviewItem({
         {(disabled && (
           <LockOutlined className="absolute w-9 h-9 text-gray-300" />
         )) ||
-          (progress >= 0 && progress < 100 && (
+          (progress < 100 && (
             <div
               className="absolute text-sm font-bold"
               style={{ color: selected ? "#F27900" : "#84BFE6" }}
