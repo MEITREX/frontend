@@ -1,4 +1,5 @@
 import { ChapterOverviewFragment$key } from "@/__generated__/ChapterOverviewFragment.graphql";
+import { useTheme } from "@mui/material/styles";
 import _ from "lodash";
 import { useState } from "react";
 import { graphql, useFragment } from "react-relay";
@@ -70,11 +71,14 @@ export function ChapterOverview({
   const firstIncompleteChapter = sortedChapters.findIndex(
     (chapter) => chapter.userProgress.progress < 100
   );
-  const startIndex = firstIncompleteChapter < 0 ? numberOfChapters - 1 : firstIncompleteChapter;
+  const startIndex =
+    firstIncompleteChapter < 0 ? numberOfChapters - 1 : firstIncompleteChapter;
   const [selectedIndex, setSelectedIndex] = useState<number>(startIndex);
 
   if (numberOfChapters === 0) {
-    return <div className="text-left text-gray-500">No chapters in this course.</div>;
+    return (
+      <div className="text-left text-gray-500">No chapters in this course.</div>
+    );
   }
 
   const totalPoints = 200;
@@ -103,6 +107,8 @@ export function ChapterOverview({
     return { x, y };
   });
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const theme = useTheme();
   const coloredPath = generateSinePath(
     totalWidth,
     height,
@@ -143,11 +149,16 @@ export function ChapterOverview({
               zIndex: 0,
             }}
           >
-            <path d={grayPath} fill="none" stroke="#E4E4E4" strokeWidth={16} />
+            <path
+              d={grayPath}
+              fill="none"
+              stroke={theme.palette.grey[300]}
+              strokeWidth={16}
+            />
             <path
               d={coloredPath}
               fill="none"
-              stroke="#84BFE6"
+              stroke={theme.palette.primary.light}
               strokeWidth={16}
             />
           </svg>

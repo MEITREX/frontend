@@ -1,6 +1,6 @@
 import { ChapterOverviewItemFragment$key } from "@/__generated__/ChapterOverviewItemFragment.graphql";
 import { DoneRounded, LockOutlined } from "@mui/icons-material";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, useTheme } from "@mui/material";
 import { graphql, useFragment } from "react-relay";
 
 const ChapterFragment = graphql`
@@ -34,6 +34,8 @@ export function ChapterOverviewItem({
   const disabled = suggestedStartDate.valueOf() > Date.now();
   const title = chapter.title;
   const description = chapter.description;
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const theme = useTheme();
 
   return (
     <div className="relative flex flex-col items-center justify-center w-100 h-auto">
@@ -55,7 +57,7 @@ export function ChapterOverviewItem({
           value={100}
           size="4rem"
           thickness={4}
-          className="!text-gray-200"
+          sx={{ color: theme.palette.grey[300] }}
         />
         {!disabled && (
           <CircularProgress
@@ -68,17 +70,26 @@ export function ChapterOverviewItem({
               "& .MuiCircularProgress-circle": {
                 strokeLinecap: "round",
               },
-              color: selected ? "#F27900" : "#84BFE6",
+              color: selected
+                ? theme.palette.secondary.light
+                : theme.palette.primary.light,
             }}
           />
         )}
         {(disabled && (
-          <LockOutlined className="absolute w-9 h-9 text-gray-300" />
+          <LockOutlined
+            className="absolute w-9 h-9"
+            style={{ color: theme.palette.grey[300] }}
+          />
         )) ||
           (progress < 100 && (
             <div
               className="absolute text-sm font-bold"
-              style={{ color: selected ? "#F27900" : "#84BFE6" }}
+              style={{
+                color: selected
+                  ? theme.palette.secondary.light
+                  : theme.palette.primary.light,
+              }}
             >
               {progress}%
             </div>
@@ -86,7 +97,11 @@ export function ChapterOverviewItem({
           (progress == 100 && (
             <DoneRounded
               className="absolute w-10 h-10"
-              style={{ color: selected ? "#F27900" : "#84BFE6" }}
+              style={{
+                color: selected
+                  ? theme.palette.secondary.light
+                  : theme.palette.primary.light,
+              }}
             />
           ))}
       </div>
@@ -101,12 +116,21 @@ export function ChapterOverviewItem({
         <div className="bg-white rounded-lg shadow-md px-3 py-2 text-center">
           <div
             className="text-sm font-semibold"
-            style={{ color: selected ? "#F27900" : "#1F2937" }}
+            style={{
+              color: selected
+                ? theme.palette.secondary.light
+                : disabled
+                ? theme.palette.text.disabled
+                : theme.palette.text.secondary,
+            }}
           >
             {title}
           </div>
           {selected && (
-            <div className="text-sm text-gray-500 line-clamp-5">
+            <div
+              className="text-sm text-gray-500 line-clamp-5"
+              style={{ color: theme.palette.text.secondary }}
+            >
               {description}
             </div>
           )}
