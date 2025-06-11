@@ -73,7 +73,7 @@ body {
   border-radius: 20px 0 0 20px;
 }
 
-.login-left>* {
+.login-left > * {
   position: relative;
   z-index: 1;
 }
