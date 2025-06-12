@@ -1,16 +1,35 @@
 "use client";
 import { ChapterHeaderFragment$key } from "@/__generated__/ChapterHeaderFragment.graphql";
-import { Done, ExpandLess, ExpandMore } from "@mui/icons-material";
+import { DoneRounded, ExpandLess, ExpandMore } from "@mui/icons-material";
 import { CircularProgress, IconButton, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { ReactNode } from "react";
 import { graphql, useFragment } from "react-relay";
-import { SkillLevels } from "./SkillLevels";
-import { Skill } from "./Skill";
+
+export function stringToColor(string: string): string {
+  let hash = 0;
+  let i;
+
+  /* eslint-disable no-bitwise */
+  for (i = 0; i < string.length; i += 1) {
+    hash = string.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  let color = "#";
+
+  for (i = 0; i < 3; i += 1) {
+    const value = (hash >> (i * 8)) & 0xff;
+    color += `00${value.toString(16)}`.slice(-2);
+  }
+  /* eslint-enable no-bitwise */
+
+  return color;
+}
 
 export function ChapterHeader({
   _chapter,
   expanded,
+  expandable,
   action,
   onExpandClick,
   courseId,
@@ -18,6 +37,7 @@ export function ChapterHeader({
 }: {
   _chapter: ChapterHeaderFragment$key;
   expanded?: boolean;
+  expandable?: boolean;
   action?: ReactNode;
   onExpandClick?: () => void;
   courseId: string;
@@ -37,8 +57,8 @@ export function ChapterHeader({
         }
         description
         skills {
-          ...SkillFragment
-          ...SkillLevelsFragment
+          skillName
+          skillCategory
         }
       }
     `,
@@ -47,46 +67,42 @@ export function ChapterHeader({
 
   return (
     <div
-      className="flex items-center py-4 pl-8 pr-12 -mx-8 mb-8 bg-gradient-to-r from-slate-100 to-slate-50"
+      className="flex flex-row justify-start items-center py-6 pr-4 rounded-3xl gap-16"
       onClick={onExpandClick}
     >
-      {expanded !== undefined && (
-        <IconButton className="!-ml-2 !mr-4">
-          {expanded ? <ExpandLess /> : <ExpandMore />}
-        </IconButton>
-      )}
-      <div className="mr-8">
-        <ChapterProgress progress={chapter.userProgress.progress} />
-      </div>
-      <div className="flex justify-between items-center flex-grow">
-        <div className="pr-8 flex flex-col items-start">
-          <div className="flex gap-2 items-center">
+      <div className="flex flex-row items-center justify-center flex-grow">
+        {(expandable === undefined || expandable) && expanded !== undefined && (
+          <IconButton className="ml-4 mr-2">
+            {expanded ? <ExpandLess /> : <ExpandMore />}
+          </IconButton>
+        )}
+        <div className="flex flex-col items-start flex-grow gap-5">
+          <div className="flex flex-row flex-grow gap-1">
             <Typography variant="h2" onClick={(e) => e.stopPropagation()}>
               {chapter.title}
             </Typography>
             {action}
           </div>
-          {chapter.suggestedEndDate && chapter.suggestedStartDate && (
-            <Typography
-              variant="subtitle1"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {dayjs(chapter.suggestedStartDate).format("D. MMMM")} –{" "}
-              {dayjs(chapter.suggestedEndDate).format("D. MMMM")}
-            </Typography>
-          )}
-          <Typography variant="caption" onClick={(e) => e.stopPropagation()}>
-            {chapter.description}
+        </div>
+      </div>
+      {chapter.suggestedEndDate && chapter.suggestedStartDate && (
+        <div className="min-w-[200px] justify-start">
+          <Typography
+            variant="subtitle1"
+            color="text.secondary"
+            style={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "clip",
+            }}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+          >
+            {dayjs(chapter.suggestedStartDate).format("D. MMMM")} -{" "}
+            {dayjs(chapter.suggestedEndDate).format("D. MMMM")}
           </Typography>
         </div>
-        {student && (
-          <span>
-            {chapter.skills.map(
-              (c, index) => c !== null && <Skill key={index} _skill={c} />
-            )}
-          </span>
-        )}
-      </div>
+      )}
+      <ChapterProgress progress={chapter.userProgress.progress} />
     </div>
   );
 }
@@ -94,26 +110,41 @@ export function ChapterHeader({
 export function ChapterProgress({ progress }: { progress: number }) {
   return (
     <div className="relative flex justify-center items-center">
-      <div className="absolute h-12 w-12 rounded-full shadow-lg shadow-slate-100"></div>
-      <div className="absolute h-10 w-10 rounded-full shadow-inner shadow-slate-100"></div>
       <CircularProgress
         variant="determinate"
         value={100}
         size="3rem"
         thickness={4}
-        className="!text-white"
+        className="!text-gray-200"
       />
       <CircularProgress
         className="absolute"
         variant="determinate"
-        color="success"
         value={progress}
         thickness={4}
         size="3rem"
+        sx={{
+          "& .MuiCircularProgress-circle": {
+            strokeLinecap: "round",
+          },
+          color: "#84BFE6",
+        }}
       />
-      {progress == 100 && (
-        <Done fontSize="large" className="absolute text-green-600" />
-      )}
+      {(progress >= 0 && progress < 100 && (
+        <Typography
+          variant="body2"
+          fontWeight="bold"
+          style={{ color: "#84BFE6", position: "absolute" }}
+        >
+          {Math.round(progress)}%
+        </Typography>
+      )) ||
+        (progress == 100 && (
+          <DoneRounded
+            className="absolute w-6 h-6"
+            style={{ color: "#84BFE6" }}
+          />
+        ))}
     </div>
   );
 }
