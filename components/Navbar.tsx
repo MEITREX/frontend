@@ -39,7 +39,7 @@ import {
   Paper,
   TextField,
   Tooltip,
-  Typography
+  Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { chain, debounce } from "lodash";
@@ -487,7 +487,6 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-
   return (
     <div className="sticky bottom-0 py-6 -mt-6 bg-gradient-to-t from-slate-200 from-75% to-transparent">
       <NavbarSection>
@@ -541,7 +540,12 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
             <SwitchPageViewButton />
           </>
         )}
-        <NotificationPopOver anchorEl={anchorEl} setAnchorEl={setAnchorEl} setNotifications={setNotifications} notifications={notifications} />
+        <NotificationPopOver
+          anchorEl={anchorEl}
+          setAnchorEl={setAnchorEl}
+          setNotifications={setNotifications}
+          notifications={notifications}
+        />
       </NavbarSection>
     </div>
   );
