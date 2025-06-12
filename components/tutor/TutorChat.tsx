@@ -1,37 +1,54 @@
 import React, { useState, useRef, useEffect } from "react";
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 
-// Mindestzeit, wie lange "Dino Tutor denkt nach..." stehen bleibt (in Millisekunden)
+// ----------- Globale Konstanten für fixe Strings -----------
 const MIN_WAIT_TIME = 800;
+const BOT_THINKS_TEXT = "Dino Tutor denkt nach...";
+const BOT_ERROR_TEXT = "Es gab ein Problem bei der Kommunikation mit dem Tutor.";
+const BOT_PLACEHOLDER = "Hallo! Ich bin dein Lern-Dino 🦖. Stell mir eine Frage!";
 
-// Message-Typ für den Chatverlauf
+// ----------- Message-Typ für den Chatverlauf -----------
 type Message = {
   sender: "user" | "bot";
   text: string;
 };
 
-const TutorChat: React.FC = () => {
+export default function TutorChat() {
   const [input, setInput] = useState("");
   const [chatHistory, setChatHistory] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const sendTimestamp = useRef<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const sendTimestamp = useRef<number | null>(null);
 
   // Automatisches Scrollen zum unteren Ende des Chatverlaufs
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatHistory]);
 
-  // Automatisches Anpassen der textarea-Höhe (Auto-Resize)
+  // Textarea-Auto-Resize
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
-
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height =
-        textareaRef.current.scrollHeight + "px";
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
     }
   };
+
+  // Hilfsfunktion: Ersetze letzte Bot-Nachricht
+  function replaceLoadingMessage(text: string) {
+    setChatHistory((prev) => {
+      const updated = [...prev];
+      updated[updated.length - 1] = {
+        sender: "bot",
+        text,
+      };
+      return updated;
+    });
+    setLoading(false);
+    sendTimestamp.current = null; // <- wichtig!
+  }
 
   // Nachricht senden
   const handleSend = async (e: React.FormEvent) => {
@@ -43,76 +60,48 @@ const TutorChat: React.FC = () => {
     setChatHistory((prev) => [
       ...prev,
       { sender: "user", text: prompt },
-      { sender: "bot", text: "Dino Tutor denkt nach..." },
+      { sender: "bot", text: BOT_THINKS_TEXT },
     ]);
     setInput("");
     setLoading(true);
     sendTimestamp.current = Date.now();
 
-    // TutorChat API-Schnittstelle (/api/llm als Bsp. --> noch nicht vorhanden):
-    // Sendet POST an /api/llm mit { prompt }, erwartet Antwort { answer }.
-    // /api/llm muss den Prompt an das LLM (z.B. Ollama) weiterleiten und { answer } zurückgeben.
     try {
-      // Anfrage an den Bot (API ggf. anpassen!)
-      const response = await fetch("/api/llm", {
-        // z.B. const response = await fetch('http://localhost:8000/api/classify_and_preprocess', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+      // GraphQL Mutation via fetch
+      const response = await fetch('/api/graphql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: `
+            mutation LlmRequest($prompt: String!) {
+              llmRequest(prompt: $prompt) {
+                answer
+                otherField
+              }
+            }
+          `,
+          variables: { prompt },
+        }),
       });
-      const data = await response.json();
-      console.log(data);
 
-      // Berechne, wie lange die "denkt nach..."-Nachricht schon angezeigt wird
+      const { data, errors } = await response.json();
+
       const elapsed = Date.now() - (sendTimestamp.current ?? 0);
       const waitMore = Math.max(MIN_WAIT_TIME - elapsed, 0);
 
-      // Warte ggf. noch, damit die Nachricht lang genug sichtbar bleibt
       setTimeout(() => {
-        setChatHistory((prev) => {
-          const updated = [...prev];
-          // Ersetze die letzte Bot-Nachricht durch die echte Antwort
-          const lastBotIdx = updated.map((m) => m.sender).lastIndexOf("bot");
-          if (lastBotIdx !== -1) {
-            updated[lastBotIdx] = {
-              sender: "bot",
-              text: data.answer ?? "Fehler oder keine Antwort erhalten.",
-            };
-          } else {
-            updated.push({
-              sender: "bot",
-              text: data.answer ?? "Fehler oder keine Antwort erhalten.",
-            });
-          }
-          return updated;
-        });
-        setLoading(false);
-        sendTimestamp.current = null; // <- wichtig!
+        if (errors) {
+          replaceLoadingMessage(BOT_ERROR_TEXT);
+        } else {
+          replaceLoadingMessage(data?.llmRequest?.answer ?? "Fehler oder keine Antwort erhalten.");
+        }
       }, waitMore);
     } catch (error) {
-      // Fehlerbehandlung mit Mindestwartezeit
       const elapsed = Date.now() - (sendTimestamp.current ?? 0);
       const waitMore = Math.max(MIN_WAIT_TIME - elapsed, 0);
 
       setTimeout(() => {
-        setChatHistory((prev) => {
-          const updated = [...prev];
-          const lastBotIdx = updated.map((m) => m.sender).lastIndexOf("bot");
-          if (lastBotIdx !== -1) {
-            updated[lastBotIdx] = {
-              sender: "bot",
-              text: "Es gab ein Problem bei der Kommunikation mit dem Tutor.",
-            };
-          } else {
-            updated.push({
-              sender: "bot",
-              text: "Es gab ein Problem bei der Kommunikation mit dem Tutor.",
-            });
-          }
-          return updated;
-        });
-        setLoading(false);
-        sendTimestamp.current = null; // <- wichtig!
+        replaceLoadingMessage(BOT_ERROR_TEXT);
       }, waitMore);
     }
   };
@@ -123,9 +112,8 @@ const TutorChat: React.FC = () => {
       e.preventDefault();
       if (!loading && input.trim()) {
         (document.activeElement as HTMLElement).blur();
-        // Form-Submit explizit auslösen:
-        const form = e.currentTarget.closest("form");
-        if (form) form.requestSubmit();
+        const form = (e.target as HTMLElement).closest("form");
+        if (form) (form as HTMLFormElement).requestSubmit();
       }
     }
   };
@@ -135,46 +123,48 @@ const TutorChat: React.FC = () => {
       {/* Chatverlauf */}
       <div
         style={{
-          maxHeight: 180,
+          maxHeight: 300,
           overflowY: "auto",
           marginBottom: 10,
-          width: "100%",
-          paddingRight: 2,
+          paddingRight: 5,
         }}
       >
         {chatHistory.length === 0 && (
           <div style={{ color: "#aaa", textAlign: "right" }}>
-            Hallo! Ich bin dein Lern-Dino 🦖. Stell mir eine Frage!
+            {BOT_PLACEHOLDER}
           </div>
         )}
-        {chatHistory.map((msg, idx) => (
-          <div
-            key={idx}
-            style={{
-              display: "flex",
-              justifyContent: msg.sender === "user" ? "flex-start" : "flex-end",
-              margin: "6px 0",
-              width: "100%",
-            }}
-          >
-            <span
+        {chatHistory.map((msg, idx) => {
+          const isThinking =
+            loading && idx === chatHistory.length - 1 && msg.sender !== "user";
+          return (
+            <div
+              key={idx}
               style={{
-                display: "inline-block",
-                background: msg.sender === "user" ? "#e3f2fd" : "#f0f4c3",
-                borderRadius: 12,
-                padding: "6px 10px",
-                maxWidth: 200,
-                wordBreak: "break-word",
-                textAlign: msg.sender === "user" ? "left" : "right",
-                opacity: msg.text === "Dino Tutor denkt nach..." ? 0.7 : 1,
-                fontStyle:
-                  msg.text === "Dino Tutor denkt nach..." ? "italic" : "normal",
+                display: "flex",
+                justifyContent: msg.sender === "user" ? "flex-start" : "flex-end",
+                margin: "6px 0",
               }}
             >
-              {msg.text}
-            </span>
-          </div>
-        ))}
+              <span
+                style={{
+                  display: "inline-block",
+                  background: msg.sender === "user" ? "#e3f2fd" : "#f0f4c3",
+                  borderRadius: 12,
+                  padding: "6px 10px",
+                  maxWidth: 200,
+                  wordBreak: "break-word",
+                  textAlign: msg.sender === "user" ? "left" : "right",
+                  opacity: isThinking ? 0.7 : 1,
+                  fontStyle: isThinking ? "italic" : "normal",
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {msg.text}
+              </span>
+            </div>
+          );
+        })}
         {/* Dummy-Element fürs automatische Scrollen */}
         <div ref={messagesEndRef} />
       </div>
@@ -183,48 +173,47 @@ const TutorChat: React.FC = () => {
         onSubmit={handleSend}
         style={{ display: "flex", gap: 6, alignItems: "flex-end" }}
       >
-        <textarea
-          ref={textareaRef}
+        <TextField
+          inputRef={textareaRef}
           value={input}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder="Frage eingeben..."
-          style={{
-            flex: 1,
-            borderRadius: 4,
-            border: "1px solid #eee",
-            padding: 8,
-            outline: "none",
-            textAlign: "left",
-            resize: "none",
-            minHeight: 36,
-            maxHeight: 90,
-            overflowY: "auto",
-            fontFamily: "inherit",
-            fontSize: 15,
-          }}
           disabled={loading}
-          rows={1}
+          multiline
+          minRows={1}
+          maxRows={4}
+          variant="outlined"
+          fullWidth
+          InputProps={{
+            sx: {
+              borderRadius: 4,
+              fontFamily: "inherit",
+              fontSize: 15,
+              textAlign: "left",
+              padding: "8px",
+            },
+          }}
         />
-        <button
+
+        <Button
           type="submit"
+          variant="contained"
           disabled={loading || !input.trim()}
-          style={{
-            background: "#81d4fa",
-            color: "#222",
-            border: "none",
+          sx={{
             borderRadius: 4,
-            padding: "8px 14px",
-            cursor: loading || !input.trim() ? "not-allowed" : "pointer",
             height: 38,
             fontWeight: 600,
+            backgroundColor: "#81d4fa",
+            color: "#222",
+            '&:hover': {
+              backgroundColor: "#4fc3f7",
+            },
           }}
         >
           Senden
-        </button>
+        </Button>
       </form>
     </div>
   );
-};
-
-export default TutorChat;
+}
