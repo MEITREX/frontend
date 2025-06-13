@@ -67,7 +67,7 @@ export function ChapterHeader({
 
   return (
     <div
-      className="flex flex-row justify-start items-center py-6 pr-4 rounded-3xl gap-16"
+      className="flex flex-row justify-start items-center py-4 pr-4 rounded-3xl gap-16"
       onClick={onExpandClick}
     >
       <div className="flex flex-row items-center justify-center flex-grow">
