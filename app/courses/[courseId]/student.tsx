@@ -14,6 +14,8 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 
 import { studentCourseLeaveMutation } from "@/__generated__/studentCourseLeaveMutation.graphql";
+import { stringToColor } from "@/components/ChapterHeader";
+import CompetencyProgressbar from "@/components/CompetencyProgressbar";
 import { FormErrors } from "@/components/FormErrors";
 import { LightTooltip } from "@/components/LightTooltip";
 import { PageError } from "@/components/PageError";
@@ -22,21 +24,23 @@ import { RewardScoresHelpButton } from "@/components/RewardScoresHelpButton";
 import { StudentChapter } from "@/components/StudentChapter";
 import { Suggestion } from "@/components/Suggestion";
 import { Info, Repeat } from "@mui/icons-material";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
 import { useState } from "react";
-import CompetencyProgressbar from "@/components/CompetencyProgressbar";
-import { stringToColor } from "@/components/ChapterHeader";
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 import { ChapterOverview } from "@/components/ChapterOverview";
 
-import * as React from "react";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import * as React from "react";
+
+import { achievementsData } from "@/components/profile/AchievementData";
+import AchievementPopUp from "@/components/profile/achievements/AchievementPopUp";
+import AchievementWidget from "./achievements/AchievementWidget";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -245,6 +249,19 @@ export default function StudentCoursePage() {
     }
   };
 
+  const [selectedAchievement, setSelectedAchievement] = useState<any | null>(
+    null
+  );
+  const [openAchievementDialog, setOpenDialog] = useState(false);
+
+  const handleOpenAchievement = (achievement: any) => {
+    setSelectedAchievement(achievement);
+    setOpenDialog(true);
+  };
+  const handleCloseAchievement = () => {
+    setOpenDialog(false);
+  };
+
   return (
     <main>
       <FormErrors error={error} onClose={() => setError(null)} />
@@ -296,6 +313,12 @@ export default function StudentCoursePage() {
           </Typography>
         )}
       </div>
+
+      <AchievementWidget achievements={achievementsData} openAchievements={handleOpenAchievement} />
+      <AchievementPopUp
+        open={openAchievementDialog}
+        onClose={handleCloseAchievement}
+        selectedAchievement={selectedAchievement} />
 
       {/* Tabs for Learning Progress and Chapters */}
       <Box sx={{ width: "100%" }}>
