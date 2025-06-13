@@ -127,9 +127,9 @@ body {
 
 .login-right .form {
   width: 100%;
-  max-width: 320px;
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .register-link {
