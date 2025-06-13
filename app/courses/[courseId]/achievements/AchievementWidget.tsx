@@ -59,6 +59,11 @@ export default function LatestAchievements({
                             p: 2,
                             borderRadius: 2,
                             boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                            cursor: "pointer",
+                            transition: "transform 0.3s ease",
+                            "&:hover": {
+                                transform: "scale(1.1)",
+                            },
                         }}>
                             <Typography sx={{
                                 display: "flex",
@@ -75,11 +80,7 @@ export default function LatestAchievements({
                                         flexDirection: "column",
                                         alignItems: "center",
                                         justifyContent: "center",
-                                        cursor: "pointer",
-                                        transition: "transform 0.3s ease",
-                                        "&:hover": {
-                                            transform: "scale(1.1)",
-                                        },
+
 
                                     }}
                                 >
