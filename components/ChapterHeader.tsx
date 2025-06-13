@@ -7,23 +7,32 @@ import { ReactNode } from "react";
 import { graphql, useFragment } from "react-relay";
 
 export function stringToColor(string: string): string {
-  let hash = 0;
-  let i;
+  const nameColorMap: Record<string, string> = {
+    "Algorithmic Foundations": "#AEC6CF", // pastel blue
+    "Architecture and Organization": "#C3D9C4", // pastel sage
+    "Artificial Intelligence": "#D6EFED", // pale sea blue
+    "Data Management": "#D5F6FB", // pastel aqua
+    "Foundations of Programming Languages": "#F49AC2", // pastel pink
+    "Graphics and Interactive Techniques": "#EBCCFF", // pastel mauve
+    "Human-Computer Interaction": "#CFCFC4", // pastel grey
+    "Mathematical and Statistical Foundations": "#FFFACD", // pastel lemon
+    "Networking and Communication": "#E0BBE4", // pastel lavender
+    "Operating Systems": "#D5E8D4", // pastel mint
+    "Parallel and Distributed Computing": "#FDDDE6", // pastel rose
+    Security: "#FDFD96", // pastel yellow
+    "Society, Ethics, and the Profession": "#B0E0E6", // pastel turquoise
+    "Software Development Fundamentals": "#C1E1C1", // pastel light green
+    "Software Engineering": "#FFDAB9", // pastel peach
+    "Specialized Platform Development": "#E6E6FA", // lavender
+    "Systems Fundamentals": "#E0FFFF", // light cyan
+  };
 
-  /* eslint-disable no-bitwise */
-  for (i = 0; i < string.length; i += 1) {
-    hash = string.charCodeAt(i) + ((hash << 5) - hash);
+  for (const [key, color] of Object.entries(nameColorMap)) {
+    if (key === string) {
+      return color;
+    }
   }
-
-  let color = "#";
-
-  for (i = 0; i < 3; i += 1) {
-    const value = (hash >> (i * 8)) & 0xff;
-    color += `00${value.toString(16)}`.slice(-2);
-  }
-  /* eslint-enable no-bitwise */
-
-  return color;
+  return "#D3D3D3"; // light gray as default color
 }
 
 export function ChapterHeader({

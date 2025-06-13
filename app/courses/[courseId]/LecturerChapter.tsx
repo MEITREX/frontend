@@ -6,7 +6,6 @@ import { ChapterHeader, stringToColor } from "@/components/ChapterHeader";
 import EditChapterButton from "@/components/EditChapterButton";
 import { LightTooltip } from "@/components/LightTooltip";
 import { OtherContent } from "@/components/OtherContent";
-import { getReadableTextColor } from "@/components/StudentChapter";
 import { Chip, Divider, Typography } from "@mui/material";
 import { graphql, useFragment } from "react-relay";
 import { LecturerSection } from "./LecturerSection";
@@ -93,7 +92,6 @@ export function LecturerChapter({
             whiteSpace: "nowrap",
             overflow: "hidden",
             backgroundColor: stringToColor(category),
-            color: getReadableTextColor(stringToColor(category)),
           }}
           label={category}
         />
