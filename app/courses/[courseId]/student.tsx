@@ -530,14 +530,14 @@ export default function StudentCoursePage() {
                     (x) => new Date(x.startDate).getTime(),
                     "number",
                   ]).map((chapter, i) => (
-                    <>
+                    <React.Fragment key={chapter.id}>
                       <StudentChapter
                         key={chapter.id}
                         _chapter={chapter}
                         standardExpand={false}
                       />
                       {i < course.chapters.elements.length - 1 && <Divider />}
-                    </>
+                    </React.Fragment>
                   ))}
                 </div>
               </div>
