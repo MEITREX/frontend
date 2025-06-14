@@ -106,8 +106,9 @@ export default function TutorChat() {
     }
   };
 
-  // Optional: Mit Enter senden, mit Shift+Enter Zeilenumbruch
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  // Mit Enter senden, mit Shift+Enter Zeilenumbruch
+  // ACHTUNG: Typ MUSS HTMLDivElement sein, da MUI TextField multiline intern einen div verwendet!
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (!loading && input.trim()) {

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import TutorAvatar from "./tutorAvatar";
+import TutorAvatar from "./TutorAvatar";
 import TutorChat from "./TutorChat";
 
 const AVATAR_WIDTH = 60;
@@ -54,6 +54,32 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [showWelcome, setShowWelcome] = useState(true);
 
+  // API call for recommendations (on mount)
+  useEffect(() => {
+    fetch('/api/graphql', { // Pfad anpassen
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: `
+          query {
+            recommendations {
+              id
+              text
+            }
+          }
+        `
+      })
+    })
+      .then(res => res.json())
+      .then(res => {
+        if (res.data?.recommendations) {
+          setRecommendations(res.data.recommendations);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Welcome Bubble auto-hide timer
   useEffect(() => {
     if (!showWelcome) return;
     const timeout = setTimeout(() => setShowWelcome(false), 8000);
@@ -155,9 +181,13 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
     setRecommendations([]);
   }
 
+  function handleCloseWelcome() {
+    setShowWelcome(false);
+  }
+
   return (
     <div ref={widgetRef} style={style}>
-      {/* Recommendation Bubble (auch für Welcome) */}
+      {/* Recommendation/Welcome Bubble */}
       {(showWelcome || recommendations.length > 0) && (
         <div
           style={{
@@ -169,11 +199,31 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
         >
           <span style={bubbleArrowStyle as any}></span>
           {showWelcome ? (
-            <span>
-              Hallo, willkommen bei Meitrex!
-              <br />
-              Falls du Fragen hast, meld dich einfach!
-            </span>
+            <div style={{ display: "flex", alignItems: "flex-start", width: "100%" }}>
+              <span style={{ flex: 1 }}>
+                Hallo, willkommen bei Meitrex!
+                <br />
+                Falls du Fragen hast, meld dich einfach!
+              </span>
+              <button
+                onClick={handleCloseWelcome}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#888",
+                  fontSize: 20,
+                  marginLeft: 8,
+                  cursor: "pointer",
+                  lineHeight: 1,
+                  padding: 0,
+                  alignSelf: "flex-start",
+                }}
+                aria-label="Willkommensnachricht schließen"
+                title="Willkommensnachricht schließen"
+              >
+                ×
+              </button>
+            </div>
           ) : (
             <div
               style={{
