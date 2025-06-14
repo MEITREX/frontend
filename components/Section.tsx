@@ -24,9 +24,9 @@ export function SectionHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className={`flex gap-2 items-center ${children ? "mb-4" : "mb-1"}`}>
+    <div className={`flex gap-2 items-center mb-1`}>
       {children && (
-        <div className="bg-gray-200 px-12 py-2 h-full rounded-xl text-center self-start">
+        <div className="py-2 h-full text-center font-medium self-start">
           {children}
         </div>
       )}
