@@ -145,8 +145,25 @@ export default function TutorChat() {
                 display: "flex",
                 justifyContent: msg.sender === "user" ? "flex-start" : "flex-end",
                 margin: "6px 0",
+                flexDirection: "column",
+                alignItems: msg.sender === "user" ? "flex-start" : "flex-end",
               }}
             >
+              {isThinking && (
+                <img
+                  src="/DinoTutor.png"
+                  alt="Dino denkt nach"
+                  style={{
+                    width: 70,
+                    height: 70,
+                    marginBottom: 4,
+                    display: "block",
+                    marginLeft: "auto",
+                    marginRight: 0,
+                    filter: "drop-shadow(0 1px 4px rgba(80,80,80,0.13))"
+                  }}
+                />
+              )}
               <span
                 style={{
                   display: "inline-block",
