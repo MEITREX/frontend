@@ -1,6 +1,6 @@
 body,
 html {
-  display: flex;
+display: flex;
   flex-direction: column;
   flex: 1;
   overflow: hidden;
@@ -13,21 +13,21 @@ html {
 }
 
 body {
-  margin: 0;
+margin: 0;
 }
 
 .login-content {
-  background-size: cover;
+background-size: cover;
   background-position: center;
   min-height: 100%;
   min-width: 320px;
   display: flex;
   justify-content: center;
-  flex-direction: column;
+flex-direction: row;
 }
 
 .login-content .box {
-  width: 85%;
+width: 85%;
   height: 90%;
   background-color: black;
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.24), 0 0 2px 0 rgba(0, 0, 0, 0.12);
@@ -40,7 +40,7 @@ body {
 }
 
 .login-content .box .box-container {
-  display: flex;
+display: flex;
   flex-direction: row;
   width: 100%;
   min-height: 400px;
@@ -52,7 +52,7 @@ body {
 }
 
 .login-left {
-  position: relative;
+position: relative;
   overflow: hidden;
   flex: 1;
   display: flex;
@@ -63,7 +63,7 @@ body {
 }
 
 .login-left::before {
-  content: "";
+content: "";
   position: absolute;
   inset: 0;
   background: url("../img/background.png") no-repeat center center;
@@ -74,18 +74,18 @@ body {
 }
 
 .login-left > * {
-  position: relative;
+position: relative;
   z-index: 1;
 }
 
 .login-left .logo {
-  width: 200px;
+width: 200px;
   height: 200px;
   display: block;
 }
 
 .login-left .application-welcome-text {
-  font-size: 2rem;
+font-size: clamp(1rem, 3vh, 2rem);
   font-family: Muli;
   font-weight: bold;
   color: white;
@@ -95,7 +95,27 @@ body {
 }
 
 .login-left .application-name {
-  font-size: 4rem;
+  font-size: clamp(2rem, 5vh, 4rem);
+    font-family: "Quicksand", sans-serif;
+    font-weight: bold;
+    color: white;
+    margin-top: 0.2em;
+    text-align: center;
+    text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
+  }
+  
+  .register-left .application-welcome-text {
+    font-size: clamp(1rem, 2vh, 2rem);
+    font-family: Muli;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 0.2em;
+    text-align: center;
+    text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
+  }
+  
+  .register-left .application-name {
+    font-size: clamp(2rem, 4vh, 4rem);
   font-family: "Quicksand", sans-serif;
   font-weight: bold;
   color: white;
@@ -104,8 +124,40 @@ body {
   text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
 }
 
+.register-left {
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px 0 0 20px;
+}
+
+.register-left::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../img/background.png") no-repeat center center;
+  background-size: cover;
+  opacity: 0.3;
+  z-index: 0;
+  border-radius: 20px 0 0 20px;
+}
+
+.register-left>* {
+  position: relative;
+  z-index: 1;
+}
+
+.register-left .logo {
+  width: 200px;
+  height: 200px;
+  display: block;
+}
 .login-right {
-  flex: 0 0 40%;
+flex: 0 0 40%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -116,52 +168,53 @@ body {
 
 .login-title,
 .register-title {
-  font-size: 1.5rem;
-  font-family: "Muli", sans-serif;
+font-size: 1.5rem;
+font-family: Muli;
   font-weight: 600;
   margin-top: 0;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   color: #222;
   text-align: center;
 }
 
 .login-right .form {
-  width: 100%;
+width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .register-link {
-  margin-top: 16px;
+margin-top: 16px;
   text-align: center;
   font-family: Muli;
 }
 
 .register-link a {
-  color: #089cdc;
+color: #089cdc;
   text-decoration: none;
 }
 
 .register-link a:hover {
-  text-decoration: underline;
+text-decoration: underline;
 }
 
 .login-content .box .logo {
-  display: block;
+display: block;
   margin-left: auto;
   margin-right: auto;
   margin-top: 30px;
 }
 
 .login-content .box .form {
-  margin-left: auto;
+margin-left: auto;
   margin-right: auto;
   margin-top: 55px;
 }
 
 .login-content .box .login-field {
-  width: 320px;
+width: 95%;
+  max-width: 360px;
   height: 24px;
   font-family: Muli;
   font-size: 14px;
@@ -176,7 +229,8 @@ body {
 }
 
 .login-content .box .register-field {
-  width: 320px;
+width: 95%;
+  max-width: 360px;
   height: 24px;
   font-family: Muli;
   font-size: 14px;
@@ -190,21 +244,22 @@ body {
 }
 
 .input-error {
-  border-bottom: 2px solid #b8082a !important;
+border-bottom: 2px solid #b8082a !important;
 }
 
 .login-content .box input[type="text"]:focus,
 .login-content .box input[type="password"]:focus {
-  border-bottom: 2px solid #089cdc;
+border-bottom: 2px solid #089cdc;
 }
 
 .login-content .box input[type="text"]:-webkit-autofill,
 .login-content .box input[type="password"]:-webkit-autofill {
-  box-shadow: 0 0 0px 1000px white inset;
+box-shadow: 0 0 0px 1000px white inset;
 }
 
 .login-content .box .submit {
-  width: 320px;
+width: 95%;
+  max-width: 320px;
   height: 36px;
   border-radius: 2px;
   background-color: #089cdc;
@@ -217,7 +272,8 @@ body {
 }
 
 .login-content .box .register-submit {
-  width: 320px;
+width: 95%;
+  max-width: 320px;
   height: 36px;
   border-radius: 2px;
   background-color: #089cdc;
@@ -231,7 +287,7 @@ body {
 }
 
 .login-content .box .visibility {
-  position: relative;
+position: relative;
   left: 296px;
   top: 20px;
   width: 24px;
@@ -240,17 +296,8 @@ body {
   border: none;
 }
 
-.login-content .box .copyright {
-  min-width: 320px;
-  text-align: center;
-  font-size: 14px;
-  opacity: 0.54;
-  position: relative;
-  top: 50px;
-}
-
 .error-area {
-  min-height: 24px;
+min-height: 24px;
   height: 24px;
   display: flex;
   align-items: center;
@@ -260,7 +307,7 @@ body {
 }
 
 .login-error-text {
-  display: block;
+display: block;
   width: 322px;
   font-family: Muli;
   font-size: 14px;
@@ -272,7 +319,7 @@ body {
 }
 
 .register-error-text {
-  display: block;
+display: block;
   width: 322px;
   font-family: Muli;
   font-size: 12px;
@@ -282,7 +329,7 @@ body {
 }
 
 .message-text {
-  display: block;
+display: block;
   width: 360px;
   font-family: Muli;
   font-size: 16px;
@@ -297,7 +344,7 @@ body {
 }
 
 .identity-providers {
-  width: 270px;
+width: 270px;
   font-family: Muli;
   font-size: 16px;
   font-weight: bold;
@@ -310,7 +357,7 @@ body {
 }
 
 .login-content .box .social-link-style {
-  width: 320px;
+width: 320px;
   height: 36px;
   border-radius: 2px;
   background-color: var(--white);
@@ -326,7 +373,97 @@ body {
 }
 
 .login-content .box .para {
-  font-family: Muli;
+font-family: Muli;
   font-size: 14px;
   margin-left: 30px;
+}
+
+@media (max-width: 1250px) {
+  .login-content {
+    position: relative;
+    background-color: transparent;
+    background: url("../img/background.png") no-repeat center center;
+    background-size: cover;
+    min-height: 100vh;
+  }
+
+  .login-content::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 0;
+  }
+
+  .login-content .box {
+    position: relative;
+    z-index: 1;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .login-right {
+    width: 90%;
+    padding: 10px;
+    margin: 0 auto;
+    border-radius: 16px;
+  }
+
+  .login-right .form {
+    max-width: 100%;
+  }
+
+  .login-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: none;
+  }
+
+  .login-left::before {
+    display: none;
+  }
+
+  .login-left .logo {
+    width: 120px;
+    height: auto;
+    margin-bottom: 12px;
+  }
+
+  .register-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: none;
+  }
+
+  .register-left::before {
+    display: none;
+  }
+
+  .register-left .logo {
+    width: 120px;
+    height: auto;
+    margin-bottom: 12px;
+  }
+
+  .login-content .box {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .login-content .box,
+  .login-content .box {
+    width: 100%;
+  }
+
+  @media (max-height: 800px) {
+    .register-left {
+      display: none !important;
+    }
+  }
 }
