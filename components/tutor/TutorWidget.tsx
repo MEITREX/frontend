@@ -56,9 +56,10 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
 
   // API call for recommendations (on mount)
   useEffect(() => {
-    fetch('/api/graphql', { // Pfad anpassen
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch("/api/graphql", {
+      // Pfad anpassen
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         query: `
           query {
@@ -67,11 +68,11 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
               text
             }
           }
-        `
-      })
+        `,
+      }),
     })
-      .then(res => res.json())
-      .then(res => {
+      .then((res) => res.json())
+      .then((res) => {
         if (res.data?.recommendations) {
           setRecommendations(res.data.recommendations);
         }
@@ -199,7 +200,13 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
         >
           <span style={bubbleArrowStyle as any}></span>
           {showWelcome ? (
-            <div style={{ display: "flex", alignItems: "flex-start", width: "100%" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                width: "100%",
+              }}
+            >
               <span style={{ flex: 1 }}>
                 Hallo, willkommen bei Meitrex!
                 <br />
@@ -336,7 +343,7 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
       {open && (
         <div
           style={{
-            background: "#fff",
+            //  background: "#fff",
             borderRadius: "18px 18px 0 18px",
             border: "0.5px solid lightgrey",
             boxShadow: "0 4px 24px rgba(80,80,80,0.13)",

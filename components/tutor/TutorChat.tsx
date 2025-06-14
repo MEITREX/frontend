@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
 
 // ----------- Globale Konstanten für fixe Strings -----------
 const MIN_WAIT_TIME = 800;
 const BOT_THINKS_TEXT = "Dino Tutor denkt nach...";
-const BOT_ERROR_TEXT = "Es gab ein Problem bei der Kommunikation mit dem Tutor.";
-const BOT_PLACEHOLDER = "Hallo! Ich bin dein Lern-Dino 🦖. Stell mir eine Frage!";
+const BOT_ERROR_TEXT =
+  "Es gab ein Problem bei der Kommunikation mit dem Tutor.";
+const BOT_PLACEHOLDER =
+  "Hallo! Ich bin dein Lern-Dino 🦖. Stell mir eine Frage!";
 
 // ----------- Message-Typ für den Chatverlauf -----------
 type Message = {
@@ -32,7 +34,8 @@ export default function TutorChat() {
     setInput(e.target.value);
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
+      textareaRef.current.style.height =
+        textareaRef.current.scrollHeight + "px";
     }
   };
 
@@ -68,9 +71,9 @@ export default function TutorChat() {
 
     try {
       // GraphQL Mutation via fetch
-      const response = await fetch('/api/graphql', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/graphql", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query: `
             mutation LlmRequest($prompt: String!) {
@@ -93,7 +96,9 @@ export default function TutorChat() {
         if (errors) {
           replaceLoadingMessage(BOT_ERROR_TEXT);
         } else {
-          replaceLoadingMessage(data?.llmRequest?.answer ?? "Fehler oder keine Antwort erhalten.");
+          replaceLoadingMessage(
+            data?.llmRequest?.answer ?? "Fehler oder keine Antwort erhalten."
+          );
         }
       }, waitMore);
     } catch (error) {
@@ -143,7 +148,8 @@ export default function TutorChat() {
               key={idx}
               style={{
                 display: "flex",
-                justifyContent: msg.sender === "user" ? "flex-start" : "flex-end",
+                justifyContent:
+                  msg.sender === "user" ? "flex-start" : "flex-end",
                 margin: "6px 0",
                 flexDirection: "column",
                 alignItems: msg.sender === "user" ? "flex-start" : "flex-end",
@@ -160,7 +166,7 @@ export default function TutorChat() {
                     display: "block",
                     marginLeft: "auto",
                     marginRight: 0,
-                    filter: "drop-shadow(0 1px 4px rgba(80,80,80,0.13))"
+                    filter: "drop-shadow(0 1px 4px rgba(80,80,80,0.13))",
                   }}
                 />
               )}
@@ -224,7 +230,7 @@ export default function TutorChat() {
             fontWeight: 600,
             backgroundColor: "#81d4fa",
             color: "#222",
-            '&:hover': {
+            "&:hover": {
               backgroundColor: "#4fc3f7",
             },
           }}
