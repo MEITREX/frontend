@@ -1,6 +1,6 @@
 body,
 html {
-display: flex;
+  display: flex;
   flex-direction: column;
   flex: 1;
   overflow: hidden;
@@ -13,21 +13,21 @@ display: flex;
 }
 
 body {
-margin: 0;
+  margin: 0;
 }
 
 .login-content {
-background-size: cover;
+  background-size: cover;
   background-position: center;
   min-height: 100%;
   min-width: 320px;
   display: flex;
   justify-content: center;
-flex-direction: row;
+  flex-direction: row;
 }
 
 .login-content .box {
-width: 85%;
+  width: 85%;
   height: 90%;
   background-color: black;
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.24), 0 0 2px 0 rgba(0, 0, 0, 0.12);
@@ -40,7 +40,7 @@ width: 85%;
 }
 
 .login-content .box .box-container {
-display: flex;
+  display: flex;
   flex-direction: row;
   width: 100%;
   min-height: 400px;
@@ -52,7 +52,7 @@ display: flex;
 }
 
 .login-left {
-position: relative;
+  position: relative;
   overflow: hidden;
   flex: 1;
   display: flex;
@@ -63,7 +63,7 @@ position: relative;
 }
 
 .login-left::before {
-content: "";
+  content: "";
   position: absolute;
   inset: 0;
   background: url("../img/background.png") no-repeat center center;
@@ -74,18 +74,18 @@ content: "";
 }
 
 .login-left > * {
-position: relative;
+  position: relative;
   z-index: 1;
 }
 
 .login-left .logo {
-width: 200px;
+  width: 200px;
   height: 200px;
   display: block;
 }
 
 .login-left .application-welcome-text {
-font-size: clamp(1rem, 3vh, 2rem);
+  font-size: clamp(1rem, 3vh, 2rem);
   font-family: Muli;
   font-weight: bold;
   color: white;
@@ -96,26 +96,26 @@ font-size: clamp(1rem, 3vh, 2rem);
 
 .login-left .application-name {
   font-size: clamp(2rem, 5vh, 4rem);
-    font-family: "Quicksand", sans-serif;
-    font-weight: bold;
-    color: white;
-    margin-top: 0.2em;
-    text-align: center;
-    text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
-  }
-  
-  .register-left .application-welcome-text {
-    font-size: clamp(1rem, 2vh, 2rem);
-    font-family: Muli;
-    font-weight: bold;
-    color: white;
-    margin-bottom: 0.2em;
-    text-align: center;
-    text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
-  }
-  
-  .register-left .application-name {
-    font-size: clamp(2rem, 4vh, 4rem);
+  font-family: "Quicksand", sans-serif;
+  font-weight: bold;
+  color: white;
+  margin-top: 0.2em;
+  text-align: center;
+  text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
+}
+
+.register-left .application-welcome-text {
+  font-size: clamp(1rem, 2vh, 2rem);
+  font-family: Muli;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 0.2em;
+  text-align: center;
+  text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
+}
+
+.register-left .application-name {
+  font-size: clamp(2rem, 4vh, 4rem);
   font-family: "Quicksand", sans-serif;
   font-weight: bold;
   color: white;
@@ -146,7 +146,7 @@ font-size: clamp(1rem, 3vh, 2rem);
   border-radius: 20px 0 0 20px;
 }
 
-.register-left>* {
+.register-left > * {
   position: relative;
   z-index: 1;
 }
@@ -157,7 +157,7 @@ font-size: clamp(1rem, 3vh, 2rem);
   display: block;
 }
 .login-right {
-flex: 0 0 40%;
+  flex: 0 0 40%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -168,8 +168,8 @@ flex: 0 0 40%;
 
 .login-title,
 .register-title {
-font-size: 1.5rem;
-font-family: Muli;
+  font-size: 1.5rem;
+  font-family: Muli;
   font-weight: 600;
   margin-top: 0;
   margin-bottom: 4px;
@@ -178,42 +178,42 @@ font-family: Muli;
 }
 
 .login-right .form {
-width: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .register-link {
-margin-top: 16px;
+  margin-top: 16px;
   text-align: center;
   font-family: Muli;
 }
 
 .register-link a {
-color: #089cdc;
+  color: #089cdc;
   text-decoration: none;
 }
 
 .register-link a:hover {
-text-decoration: underline;
+  text-decoration: underline;
 }
 
 .login-content .box .logo {
-display: block;
+  display: block;
   margin-left: auto;
   margin-right: auto;
   margin-top: 30px;
 }
 
 .login-content .box .form {
-margin-left: auto;
+  margin-left: auto;
   margin-right: auto;
   margin-top: 55px;
 }
 
 .login-content .box .login-field {
-width: 95%;
+  width: 95%;
   max-width: 360px;
   height: 24px;
   font-family: Muli;
@@ -229,7 +229,7 @@ width: 95%;
 }
 
 .login-content .box .register-field {
-width: 95%;
+  width: 95%;
   max-width: 360px;
   height: 24px;
   font-family: Muli;
@@ -244,21 +244,21 @@ width: 95%;
 }
 
 .input-error {
-border-bottom: 2px solid #b8082a !important;
+  border-bottom: 2px solid #b8082a !important;
 }
 
 .login-content .box input[type="text"]:focus,
 .login-content .box input[type="password"]:focus {
-border-bottom: 2px solid #089cdc;
+  border-bottom: 2px solid #089cdc;
 }
 
 .login-content .box input[type="text"]:-webkit-autofill,
 .login-content .box input[type="password"]:-webkit-autofill {
-box-shadow: 0 0 0px 1000px white inset;
+  box-shadow: 0 0 0px 1000px white inset;
 }
 
 .login-content .box .submit {
-width: 95%;
+  width: 95%;
   max-width: 320px;
   height: 36px;
   border-radius: 2px;
@@ -272,7 +272,7 @@ width: 95%;
 }
 
 .login-content .box .register-submit {
-width: 95%;
+  width: 95%;
   max-width: 320px;
   height: 36px;
   border-radius: 2px;
@@ -287,7 +287,7 @@ width: 95%;
 }
 
 .login-content .box .visibility {
-position: relative;
+  position: relative;
   left: 296px;
   top: 20px;
   width: 24px;
@@ -297,7 +297,7 @@ position: relative;
 }
 
 .error-area {
-min-height: 24px;
+  min-height: 24px;
   height: 24px;
   display: flex;
   align-items: center;
@@ -307,7 +307,7 @@ min-height: 24px;
 }
 
 .login-error-text {
-display: block;
+  display: block;
   width: 322px;
   font-family: Muli;
   font-size: 14px;
@@ -319,7 +319,7 @@ display: block;
 }
 
 .register-error-text {
-display: block;
+  display: block;
   width: 322px;
   font-family: Muli;
   font-size: 12px;
@@ -329,7 +329,7 @@ display: block;
 }
 
 .message-text {
-display: block;
+  display: block;
   width: 360px;
   font-family: Muli;
   font-size: 16px;
@@ -344,7 +344,7 @@ display: block;
 }
 
 .identity-providers {
-width: 270px;
+  width: 270px;
   font-family: Muli;
   font-size: 16px;
   font-weight: bold;
@@ -357,7 +357,7 @@ width: 270px;
 }
 
 .login-content .box .social-link-style {
-width: 320px;
+  width: 320px;
   height: 36px;
   border-radius: 2px;
   background-color: var(--white);
@@ -373,7 +373,7 @@ width: 320px;
 }
 
 .login-content .box .para {
-font-family: Muli;
+  font-family: Muli;
   font-size: 14px;
   margin-left: 30px;
 }
