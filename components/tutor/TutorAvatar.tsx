@@ -9,7 +9,7 @@ export default function TutorAvatar() {
         className="avatar-img"
         style={{
           userSelect: "none",
-          pointerEvents: "none", // blockiert Events auf dem Bild selbst!
+          pointerEvents: "none", // blockiert Events auf dem Bild selbst
         }}
       />
       <style jsx>{`

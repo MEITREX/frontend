@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import TutorAvatar from "./TutorAvatar";
+import TutorAvatar from "./tutorAvatar";
 import TutorChat from "./TutorChat";
 
 const AVATAR_WIDTH = 60;
