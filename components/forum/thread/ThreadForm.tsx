@@ -1,0 +1,196 @@
+'use client';
+
+import { useState } from 'react';
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Stack,
+  ToggleButton,
+  ToggleButtonGroup,
+  Snackbar,
+} from "@mui/material";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  ForumApiCreateInfoThreadMutation,
+  InputInfoThread
+} from "@/__generated__/ForumApiCreateInfoThreadMutation.graphql";
+import {
+  ForumApiCreateQuestionThreadMutation,
+  InputQuestionThread
+} from "@/__generated__/ForumApiCreateQuestionThreadMutation.graphql";
+import {
+  forumApiCreateInfoThreadMutation,
+  forumApiCreateQuestionThreadMutation,
+  forumApiForumIdQuery
+} from "../api/ForumApi";
+import { useLazyLoadQuery, useMutation } from "react-relay";
+import { ForumApiForumIdQuery } from "@/__generated__/ForumApiForumIdQuery.graphql";
+
+export default function ThreadForm() {
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const router = useRouter();
+  const params = useParams();
+  const courseId = params.courseId as string;
+
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [threadType, setThreadType] = useState<'QUESTION' | 'INFO'>('QUESTION');
+
+  const [titleError, setTitleError] = useState('');
+  const [contentError, setContentError] = useState('');
+
+  const [commitQuestion] = useMutation<ForumApiCreateQuestionThreadMutation>(forumApiCreateQuestionThreadMutation);
+  const [commitInfo] = useMutation<ForumApiCreateInfoThreadMutation>(forumApiCreateInfoThreadMutation);
+
+  const data = useLazyLoadQuery<ForumApiForumIdQuery>(
+    forumApiForumIdQuery,
+    { id: courseId },
+  );
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setTitleError('');
+    setContentError('');
+
+    let valid = true;
+
+    const trimmedTitle = title.trim();
+    const trimmedContent = content.trim();
+
+
+    // TODO: Somehow this is not working?
+    if (trimmedTitle === '') {
+      setTitleError('Title is required.');
+      valid = false;
+    } else if (trimmedTitle.length > 50) {
+      setTitleError('Title must be under 50 characters.');
+      valid = false;
+    }
+
+    if (trimmedContent === '') {
+      setContentError('Content is required.');
+      valid = false;
+    } else if (trimmedContent.length > 500) {
+      setContentError('Content must be under 500 characters.');
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    if (threadType === 'QUESTION') {
+      const questionThreadInput: InputQuestionThread = {
+        forumId: data.forumByCourseId?.id as string,
+        title: title.trim(),
+        question: { content: content.trim() },
+      };
+      commitQuestion({
+        variables: { thread: questionThreadInput },
+        onCompleted(data) {
+          setSnackbarOpen(true);
+          router.push(`/courses/${courseId}/forum`);
+        },
+        onError(error) {
+          console.error("Question Thread failed:", error);
+        },
+      });
+    } else {
+      const infoThreadInput: InputInfoThread = {
+        forumId: data.forumByCourseId?.id as string,
+        title: title.trim(),
+        info: { content: content.trim() },
+      };
+      commitInfo({
+        variables: { thread: infoThreadInput },
+        onCompleted(data) {
+          setSnackbarOpen(true);
+          router.push(`/courses/${courseId}/forum`);
+        },
+        onError(error) {
+          console.error("Info Thread failed:", error);
+        },
+      });
+    }
+  };
+
+  return (
+    <>
+      <Link href={`/courses/${courseId}/forum`} passHref>
+        <Button
+          component="a"
+          variant="text"
+          startIcon={<ArrowBackIcon />}
+          sx={{ mb: 2 }}
+        >
+          Back
+        </Button>
+      </Link>
+
+      <Box sx={{ backgroundColor: "#f5f7fa", borderRadius: 2,
+        maxWidth: "800px", mx: "auto", px: 2, py: 2 }}>
+        <Typography variant="h5" fontWeight={600} mb={2}>
+          Create new Thread
+        </Typography>
+
+        <form onSubmit={handleSubmit}>
+          <Box mb={2}>
+            <ToggleButtonGroup
+              value={threadType}
+              exclusive
+              onChange={(_, newType) => {
+                if (newType) setThreadType(newType);
+              }}
+              color="primary"
+              size="small"
+            >
+              <ToggleButton value="QUESTION">Question</ToggleButton>
+              <ToggleButton value="INFO">Information</ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
+
+          <Stack spacing={3}>
+            <TextField
+              label="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              fullWidth
+              error={!!titleError}
+              helperText={titleError}
+              inputProps={{ maxLength: 100 }}
+            />
+
+            <TextField
+              label="Content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              required
+              fullWidth
+              multiline
+              minRows={6}
+              error={!!contentError}
+              helperText={contentError}
+              inputProps={{ maxLength: 1000 }}
+            />
+
+            <Button type="submit" variant="contained" size="large">
+              Create Thread
+            </Button>
+          </Stack>
+        </form>
+      </Box>
+      <Snackbar
+        sx={{ width: '100%' }}
+        open={snackbarOpen}
+        autoHideDuration={5000}
+        onClose={()=> setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        message="Thread was created!"
+      />
+    </>
+  );
+}
