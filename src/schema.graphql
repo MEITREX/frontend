@@ -847,7 +847,7 @@ type Query {
   findPublicUserInfos(ids: [UUID!]!): [PublicUserInfo]!
   findQuizzesByAssessmentIds(assessmentIds: [UUID!]!): [Quiz]!
   findUserInfos(ids: [UUID!]!): [UserInfo]!
-  findUserSettings(userId: UUID): Settings!
+  findUserSettings(userId: UUID!): Settings!
   flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
   getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
   getSemanticallySimilarEntities(count: Int! = 10, courseWhitelist: [UUID!], excludeEntitiesWithSameParent: Boolean, segmentId: UUID!): [SemanticSearchResult!]!

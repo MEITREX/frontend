@@ -86,7 +86,7 @@ body {
 
 .login-left .application-welcome-text {
   font-size: clamp(1rem, 3vh, 2rem);
-  font-family: Muli;
+  font-family: "Quicksand", sans-serif;
   font-weight: bold;
   color: white;
   margin-bottom: 0.2em;
