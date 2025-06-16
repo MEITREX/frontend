@@ -9,14 +9,15 @@ import {
   Button,
 } from '@mui/material';
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { ForumApiThreadDetailQuery$data } from "@/__generated__/ForumApiThreadDetailQuery.graphql";
-import { format } from "date-fns";
 import Link from "next/link";
 import PostList from "../post/PostList";
 import { useMutation } from "react-relay";
 import { forumApiAddPostMutation } from "@/components/forum/api/ForumApi";
 import { ForumApiAddPostMutation, InputPost } from "@/__generated__/ForumApiAddPostMutation.graphql";
 import UpvoteDownvote from "@/components/forum/shared/UpvoteDownvote";
+import UserPostInformation from "@/components/forum/shared/UserPostInformation";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 type Props = {
   thread: any; // Change type
@@ -27,12 +28,6 @@ export default function ThreadDetail({thread, courseId}: Props) {
 
   const [replyText, setReplyText] = useState('');
 
-  const creationTime =
-    thread?.question?.creationTime ?? thread?.info?.creationTime;
-
-  const formattedDate = creationTime
-    ? format(new Date(creationTime), "MMMM d, yyyy, hh:mm a")
-    : "Unbekanntes Datum";
 
   const [commitPost] = useMutation<ForumApiAddPostMutation>(forumApiAddPostMutation);
 
@@ -56,6 +51,7 @@ export default function ThreadDetail({thread, courseId}: Props) {
     })
     setReplyText('');
   };
+
 
   return (
     <>
@@ -103,20 +99,25 @@ export default function ThreadDetail({thread, courseId}: Props) {
                 "No content"}
             </Typography>
 
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Avatar sx={{ width: 24, height: 24 }}>A</Avatar>
-              <Typography variant="caption">Der Autor</Typography>
-              <Typography variant="caption" color="text.secondary">
-                • {formattedDate}
-              </Typography>
-
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              {thread.creationTime && <UserPostInformation
+                creationTime={thread.creationTime}
+                numberOfPosts={thread.numberOfPosts}
+                creatorId={thread.creatorId}
+              />}
+              {thread.info && (
+                <InfoOutlinedIcon sx={{ fontSize: 28, color: "#1976d2" }} />
+              )}
+              {thread.question && (
+                <HelpOutlineIcon sx={{ fontSize: 28, color: "#ff9800" }} />
+              )}
             </Stack>
           </Box>
         </Stack>
 
         <Divider sx={{ my: 2 }} />
 
-        <PostList posts={thread?.posts}></PostList>
+        <PostList threadCreatorId={thread?.creatorId} posts={thread?.posts ?? []} ></PostList>
 
         <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
           <TextField

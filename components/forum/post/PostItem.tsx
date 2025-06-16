@@ -2,27 +2,40 @@ import {
   Box,
   Typography,
   Stack,
-  Avatar,
 } from "@mui/material";
-import { ForumApiThreadDetailQuery$data } from "@/__generated__/ForumApiThreadDetailQuery.graphql";
-import { format } from "date-fns";
 import UpvoteDownvote from "@/components/forum/shared/UpvoteDownvote";
-
+import UserPostInformation from "@/components/forum/shared/UserPostInformation";
+import { PostsType, ThreadType } from "@/components/forum/types";
+import { useLazyLoadQuery } from "react-relay";
+import { ForumApiUserInfoQuery } from "@/__generated__/ForumApiUserInfoQuery.graphql";
+import { forumApiUserInfoQuery } from "@/components/forum/api/ForumApi";
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 type Props = {
-  post: NonNullable<ForumApiThreadDetailQuery$data["thread"]>["posts"][number];
+  post: PostsType[number];
+  threadCreatorId: ThreadType["creatorId"];
+  bestAnswerId?: string | null;
+  onMarkAsBest: () => void;
 };
 
-export default function PostItem({ post }: Props) {
+export default function PostItem({ post, threadCreatorId, bestAnswerId, onMarkAsBest }: Props) {
 
+  const loggedInUser = useLazyLoadQuery<ForumApiUserInfoQuery>(
+    forumApiUserInfoQuery,
+    {}
+  );
+
+  const isBestAnswer = bestAnswerId === post.id;
+  const isThreadAuthor = loggedInUser.currentUserInfo.id === threadCreatorId;
 
   return (
     <Box
       sx={{
         border: '1px solid #e0e0e0',
+        borderColor: isBestAnswer ? '#00c853' : '#e0e0e0',
         borderRadius: 2,
         p: 2,
         mb: 2,
-        backgroundColor: '#fafafa',
+        backgroundColor: isBestAnswer ? '#e8f5e9' : '#fafafa',
       }}
     >
       <Stack direction="row" spacing={2}>
@@ -35,17 +48,26 @@ export default function PostItem({ post }: Props) {
           <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
             {post.content}
           </Typography>
-
-          <Stack direction="row" alignItems="center" spacing={1} mt="auto" mb="5px">
-            <Avatar sx={{ width: 24, height: 24 }}>
-              A
-            </Avatar>
-            <Typography variant="caption" fontWeight="bold">Toller Author</Typography>
-            <Typography variant="caption" color="text.secondary">
-              • {format(new Date(post.creationTime as string), "MMMM d, yyyy, hh:mm a")}
-            </Typography>
-          </Stack>
+          <UserPostInformation creationTime={post.creationTime} creatorId={post.authorId}></UserPostInformation>
         </Box>
+        {isThreadAuthor && (
+          <CheckCircleOutlineOutlinedIcon
+            onClick={onMarkAsBest}
+            sx={{
+              color: isBestAnswer ? 'green' : 'gray',
+              cursor: 'pointer',
+              fontSize: 28,
+              alignSelf: 'start',
+            }}
+            titleAccess={
+              isBestAnswer ? 'Beste Answer' : 'Mark as best Answer'
+            }
+          />
+        )}
+
+        {!isThreadAuthor && isBestAnswer && (
+          <CheckCircleOutlineOutlinedIcon sx={{ color: 'green', fontSize: 28 }} titleAccess="Best Answer" />
+        )}
       </Stack>
     </Box>
   );

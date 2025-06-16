@@ -6,14 +6,13 @@ export const forumApiThreadDetailQuery = graphql`
       id
       title
       creatorId
-
+      creationTime
       ... on InfoThread {
         info {
           id
           content
           downvotedByUsers
           upvotedByUsers
-          creationTime
         }
       }
 
@@ -23,7 +22,6 @@ export const forumApiThreadDetailQuery = graphql`
           content
           downvotedByUsers
           upvotedByUsers
-          creationTime
         }
         selectedAnswer {
           id
@@ -52,6 +50,7 @@ export const forumApiThreadListQuery = graphql`
         title
         creationTime
         creatorId
+        numberOfPosts
         ... on InfoThread {
           info {
             id
@@ -136,3 +135,19 @@ export const forumApiDownvotePostMutation = graphql`
         }
     }
 `;
+
+export const forumApiUserInfoByIdQuery = graphql`
+    query ForumApiUserInfoByIdQuery($id: UUID!) {
+        findUserInfos(ids: [$id]) {
+            id
+            userName
+        }
+    }
+`;
+
+export const forumApiSelectBestAnswerMutation = graphql`
+    mutation ForumApiSelectBestAnswerMutation($postId: UUID!) {
+      selectAnswer(postId: $postId) {
+          id
+        }
+}`

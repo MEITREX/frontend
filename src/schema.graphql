@@ -559,6 +559,12 @@ input FlashcardSideInput {
   text: JSON!
 }
 
+type Forum {
+  courseId: UUID!
+  id: UUID!
+  threads: [Thread!]!
+}
+
 enum Gamification {
   ADAPTIVE_GAMIFICATION_ENABLED
   ALL_GAMIFICATION_DISABLED
@@ -574,8 +580,49 @@ enum GlobalUserRole {
   SUPER_USER
 }
 
+type InfoThread implements Thread {
+  creationTime: DateTime!
+  creatorId: UUID!
+  id: UUID!
+  info: Post!
+  numberOfPosts: Int!
+  posts: [Post!]!
+  title: String!
+}
+
 input IngestMediaRecordInput {
   id: UUID!
+}
+
+input InputForum {
+  courseId: UUID!
+  id: UUID!
+}
+
+input InputInfoThread {
+  forumId: UUID!
+  info: InputPost!
+  title: String!
+}
+
+input InputPost {
+  content: String!
+  id: UUID
+  threadId: UUID
+}
+
+input InputQuestionThread {
+  answer: InputPost
+  forumId: UUID!
+  question: InputPost!
+  title: String!
+}
+
+input InputThreadMediaRecordReference {
+  mediaRecordId: UUID!
+  pageNumber: Int
+  threadId: UUID!
+  timeStampSeconds: Int
 }
 
 input IntFilter {
@@ -707,12 +754,16 @@ type MultipleChoiceQuestion implements Question {
 }
 
 type Mutation {
+  addPost(post: InputPost!): Post
+  addThreadToMediaRecord(threadMediaRecordReference: InputThreadMediaRecordReference!): ThreadMediaRecordReference
   createChapter(input: CreateChapterInput!): Chapter!
   createCourse(input: CreateCourseInput!): Course!
   createFlashcardSetAssessment(assessmentInput: CreateAssessmentInput!, flashcardSetInput: CreateFlashcardSetInput!): FlashcardSetAssessment
+  createInfoThread(thread: InputInfoThread!): InfoThread
   createMediaContentAndLinkRecords(contentInput: CreateMediaContentInput!, mediaRecordIds: [UUID!]!): MediaContent!
   createMediaRecord(input: CreateMediaRecordInput!): MediaRecord!
   createMembership(input: CourseMembershipInput!): CourseMembership!
+  createQuestionThread(thread: InputQuestionThread!): QuestionThread
   createQuizAssessment(assessmentInput: CreateAssessmentInput!, quizInput: CreateQuizInput!): QuizAssessment!
   createSection(input: CreateSectionInput!): Section!
   defaultSettings(userId: UUID!): Settings!
@@ -721,7 +772,9 @@ type Mutation {
   deleteFlashcardSet(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the flashcard set and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
   deleteMediaRecord(id: UUID!): UUID!
   deleteMembership(input: CourseMembershipInput!): CourseMembership!
+  deletePost(postId: UUID!): Post
   deleteQuiz(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the quiz and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
+  downvotePost(postId: UUID!): Post
   evaluatePlayerHexadScore(input: PlayerAnswerInput!, userId: UUID!): PlayerHexadScore!
   joinCourse(courseId: UUID!): CourseMembership!
   leaveCourse(courseId: UUID!): CourseMembership!
@@ -734,13 +787,16 @@ type Mutation {
   mutateSection(sectionId: UUID!): SectionMutation!
   recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
   recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
+  selectAnswer(postId: UUID!): QuestionThread!
   setLinkedMediaRecordsForContent(contentId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
   setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
   updateChapter(input: UpdateChapterInput!): Chapter!
   updateCourse(input: UpdateCourseInput!): Course!
   updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
   updateMembership(input: CourseMembershipInput!): CourseMembership!
+  updatePost(post: InputPost!): Post
   updateSettings(input: SettingsInput!, userId: UUID!): Settings!
+  upvotePost(postId: UUID!): Post
 }
 
 directive @Negative(message: String = "graphql.validation.Negative.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
@@ -818,6 +874,15 @@ directive @Positive(message: String = "graphql.validation.Positive.message") on 
 
 directive @PositiveOrZero(message: String = "graphql.validation.PositiveOrZero.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
+type Post {
+  authorId: UUID!
+  content: String!
+  creationTime: DateTime!
+  downvotedByUsers: [UUID]!
+  id: UUID!
+  upvotedByUsers: [UUID]!
+}
+
 type ProgressLogItem {
   correctness: Float!
   hintsUsed: Int!
@@ -847,8 +912,10 @@ type Query {
   findPublicUserInfos(ids: [UUID!]!): [PublicUserInfo]!
   findQuizzesByAssessmentIds(assessmentIds: [UUID!]!): [Quiz]!
   findUserInfos(ids: [UUID!]!): [UserInfo]!
-  findUserSettings(userId: UUID): Settings!
+  findUserSettings(userId: UUID!): Settings!
   flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
+  forum(id: UUID!): Forum
+  forumByCourseId(id: UUID!): Forum
   getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
   getSemanticallySimilarEntities(count: Int! = 10, courseWhitelist: [UUID!], excludeEntitiesWithSameParent: Boolean, segmentId: UUID!): [SemanticSearchResult!]!
   mediaRecords: [MediaRecord!]! @deprecated(reason: "In production there should probably be no way to get all media records of the system.")
@@ -860,6 +927,8 @@ type Query {
   scoreboard(courseId: UUID!): [ScoreboardItem!]!
   semanticSearch(count: Int! = 10, courseWhitelist: [UUID!], queryText: String!): [SemanticSearchResult!]!
   suggestionsByChapterIds(amount: Int!, chapterIds: [UUID!]!, skillTypes: [SkillType!]! = []): [Suggestion!]!
+  thread(id: UUID!): Thread
+  threadsByMediaRecord(id: UUID!): [Thread!]!
   userCourseRewardScores(courseId: UUID!): RewardScores!
   userMediaRecords: [MediaRecord!]!
 }
@@ -886,6 +955,17 @@ input QuestionInput {
 enum QuestionPoolingMode {
   ORDERED
   RANDOM
+}
+
+type QuestionThread implements Thread {
+  creationTime: DateTime!
+  creatorId: UUID!
+  id: UUID!
+  numberOfPosts: Int!
+  posts: [Post!]!
+  question: Post!
+  selectedAnswer: Post
+  title: String!
 }
 
 enum QuestionType {
@@ -1133,6 +1213,22 @@ type Suggestion {
 enum SuggestionType {
   NEW_CONTENT
   REPETITION
+}
+
+interface Thread {
+  creationTime: DateTime
+  creatorId: UUID!
+  id: UUID!
+  numberOfPosts: Int!
+  posts: [Post!]!
+  title: String!
+}
+
+type ThreadMediaRecordReference {
+  mediaRecordId: UUID!
+  pageNumber: Int
+  threadId: UUID!
+  timeStampSeconds: Int
 }
 
 scalar Time
