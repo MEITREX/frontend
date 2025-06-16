@@ -424,13 +424,14 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
               <IconButton
                 edge="end"
                 aria-label="logout"
-                onClick={() =>
+                onClick={() => {
+                  window.localStorage.removeItem("meitrex-welcome-shown");
                   auth.signoutRedirect({
                     post_logout_redirect_uri:
                       process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ??
                       "http://localhost:3005",
                   })
-                }
+                }}
               >
                 <Logout />
               </IconButton>
