@@ -41,7 +41,7 @@ export default function OAuthCallback() {
     }
 
     if (!code) {
-      toast.error("Failed to generate access token.");
+      toast.error("Failed to authorize.");
       router.replace(returnTo.current);
       return;
     }
@@ -55,14 +55,14 @@ export default function OAuthCallback() {
       },
       onCompleted: (response) => {
         if (response?.generateAccessToken) {
-          toast.success("Access token generated successfully.");
+          toast.success("Authorized successfully.");
         } else {
-          toast.error("Failed to generate access token.");
+          toast.error("Failed to authorize.");
         }
         router.replace(returnTo.current);
       },
       onError: (err) => {
-        toast.error("Failed to generate access token.");
+        toast.error("Failed to authorize.");
         console.error("Token error:", err);
         router.replace(returnTo.current);
       },
