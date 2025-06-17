@@ -430,7 +430,7 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
                     post_logout_redirect_uri:
                       process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ??
                       "http://localhost:3005",
-                  })
+                  });
                 }}
               >
                 <Logout />

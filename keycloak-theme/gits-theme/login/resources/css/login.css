@@ -23,7 +23,7 @@ body {
   min-width: 320px;
   display: flex;
   justify-content: center;
-  flex-direction: column;
+  flex-direction: row;
 }
 
 .login-content .box {
@@ -85,8 +85,8 @@ body {
 }
 
 .login-left .application-welcome-text {
-  font-size: 2rem;
-  font-family: Muli;
+  font-size: clamp(1rem, 3vh, 2rem);
+  font-family: "Quicksand", sans-serif;
   font-weight: bold;
   color: white;
   margin-bottom: 0.2em;
@@ -95,7 +95,7 @@ body {
 }
 
 .login-left .application-name {
-  font-size: 4rem;
+  font-size: clamp(2rem, 5vh, 4rem);
   font-family: "Quicksand", sans-serif;
   font-weight: bold;
   color: white;
@@ -104,6 +104,58 @@ body {
   text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
 }
 
+.register-left .application-welcome-text {
+  font-size: clamp(1rem, 2vh, 2rem);
+  font-family: Muli;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 0.2em;
+  text-align: center;
+  text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
+}
+
+.register-left .application-name {
+  font-size: clamp(2rem, 4vh, 4rem);
+  font-family: "Quicksand", sans-serif;
+  font-weight: bold;
+  color: white;
+  margin-top: 0.2em;
+  text-align: center;
+  text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
+}
+
+.register-left {
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px 0 0 20px;
+}
+
+.register-left::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../img/background.png") no-repeat center center;
+  background-size: cover;
+  opacity: 0.3;
+  z-index: 0;
+  border-radius: 20px 0 0 20px;
+}
+
+.register-left > * {
+  position: relative;
+  z-index: 1;
+}
+
+.register-left .logo {
+  width: 200px;
+  height: 200px;
+  display: block;
+}
 .login-right {
   flex: 0 0 40%;
   display: flex;
@@ -117,19 +169,19 @@ body {
 .login-title,
 .register-title {
   font-size: 1.5rem;
-  font-family: "Muli", sans-serif;
+  font-family: Muli;
   font-weight: 600;
   margin-top: 0;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   color: #222;
   text-align: center;
 }
 
 .login-right .form {
   width: 100%;
-  max-width: 320px;
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .register-link {
@@ -161,7 +213,8 @@ body {
 }
 
 .login-content .box .login-field {
-  width: 320px;
+  width: 95%;
+  max-width: 360px;
   height: 24px;
   font-family: Muli;
   font-size: 14px;
@@ -176,7 +229,8 @@ body {
 }
 
 .login-content .box .register-field {
-  width: 320px;
+  width: 95%;
+  max-width: 360px;
   height: 24px;
   font-family: Muli;
   font-size: 14px;
@@ -204,7 +258,8 @@ body {
 }
 
 .login-content .box .submit {
-  width: 320px;
+  width: 95%;
+  max-width: 320px;
   height: 36px;
   border-radius: 2px;
   background-color: #089cdc;
@@ -217,7 +272,8 @@ body {
 }
 
 .login-content .box .register-submit {
-  width: 320px;
+  width: 95%;
+  max-width: 320px;
   height: 36px;
   border-radius: 2px;
   background-color: #089cdc;
@@ -238,15 +294,6 @@ body {
   height: 24px;
   opacity: 0.54;
   border: none;
-}
-
-.login-content .box .copyright {
-  min-width: 320px;
-  text-align: center;
-  font-size: 14px;
-  opacity: 0.54;
-  position: relative;
-  top: 50px;
 }
 
 .error-area {
@@ -329,4 +376,94 @@ body {
   font-family: Muli;
   font-size: 14px;
   margin-left: 30px;
+}
+
+@media (max-width: 1250px) {
+  .login-content {
+    position: relative;
+    background-color: transparent;
+    background: url("../img/background.png") no-repeat center center;
+    background-size: cover;
+    min-height: 100vh;
+  }
+
+  .login-content::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 0;
+  }
+
+  .login-content .box {
+    position: relative;
+    z-index: 1;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .login-right {
+    width: 90%;
+    padding: 10px;
+    margin: 0 auto;
+    border-radius: 16px;
+  }
+
+  .login-right .form {
+    max-width: 100%;
+  }
+
+  .login-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: none;
+  }
+
+  .login-left::before {
+    display: none;
+  }
+
+  .login-left .logo {
+    width: 120px;
+    height: auto;
+    margin-bottom: 12px;
+  }
+
+  .register-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: none;
+  }
+
+  .register-left::before {
+    display: none;
+  }
+
+  .register-left .logo {
+    width: 120px;
+    height: auto;
+    margin-bottom: 12px;
+  }
+
+  .login-content .box {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .login-content .box,
+  .login-content .box {
+    width: 100%;
+  }
+
+  @media (max-height: 800px) {
+    .register-left {
+      display: none !important;
+    }
+  }
 }
