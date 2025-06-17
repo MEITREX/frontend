@@ -139,14 +139,11 @@ export function AddCodeAssignmentModal({
     `);
 
   const [syncAssignments, isSyncing] =
-  useMutation<AddCodeAssignmentModalSyncAssignmentsMutation>(graphql`
-    mutation AddCodeAssignmentModalSyncAssignmentsMutation(
-      $courseId: UUID!
-    ) {
-      syncAssignmentsForCourse(courseId: $courseId)
-    }
-  `);
-
+    useMutation<AddCodeAssignmentModalSyncAssignmentsMutation>(graphql`
+      mutation AddCodeAssignmentModalSyncAssignmentsMutation($courseId: UUID!) {
+        syncAssignmentsForCourse(courseId: $courseId)
+      }
+    `);
 
   const handleSubmit = () => {
     createAssignment({

@@ -39,11 +39,13 @@ export function EditAssignmentModal({
   onError,
   contentRef,
   allSkillsQueryRef,
+  onCompleted,
 }: {
   onClose: () => void;
   onError: (e: any) => void;
   contentRef: EditAssignmentModalFragment$key;
   allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery> | undefined | null;
+  onCompleted?: (percentage: number | null) => void;
 }) {
   const content = useFragment(
     graphql`
@@ -159,12 +161,57 @@ export function EditAssignmentModal({
             },
           },
           onError,
-          onCompleted: onClose,
+          onCompleted: () => {
+            onCompleted?.(requiredPercentage/ 100);
+            onClose();
+          },
         });
       },
       updater: (store) => {
         const contentRecord = store.get(content.id);
         if (!contentRecord) return;
+
+        if (metadata) {
+          const metadataRecord = contentRecord.getLinkedRecord("metadata");
+          if (metadataRecord) {
+            metadataRecord.setValue(metadata.suggestedDate, "suggestedDate");
+            metadataRecord.setValue(metadata.rewardPoints, "rewardPoints");
+            metadataRecord.setValue([...metadata.tagNames], "tagNames");
+          }
+        }
+
+        if (assessmentMetadata) {
+          const assessmentMetadataRecord =
+            contentRecord.getLinkedRecord("assessmentMetadata");
+          if (assessmentMetadataRecord) {
+            assessmentMetadataRecord.setValue(
+              [...assessmentMetadata.skillTypes],
+              "skillTypes"
+            );
+
+            assessmentMetadataRecord.setValue(
+              assessmentMetadata.skillPoints,
+              "skillPoints"
+            );
+
+            assessmentMetadataRecord.setValue(
+              assessmentMetadata.initialLearningInterval,
+              "initialLearningInterval"
+            );
+          }
+        }
+
+        const assignmentRecord = contentRecord.getLinkedRecord("assignment");
+        if (
+          assignmentRecord &&
+          requiredPercentage !== null &&
+          requiredPercentage !== undefined
+        ) {
+          assignmentRecord.setValue(
+            requiredPercentage / 100,
+            "requiredPercentage"
+          );
+        }
 
         const newItemId = `client:newItem:${crypto.randomUUID()}`;
         const newItemRecord = store.create(newItemId, "Item");

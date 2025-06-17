@@ -133,19 +133,19 @@ export function EditContentModal({
       }
     `);
 
-    const provider = providerConfig[codeAssessmentProvider];
+  const provider = providerConfig[codeAssessmentProvider];
 
-    const data = useLazyLoadQuery<EditContentModalExternalCourseQuery>(
-        graphql`
-          query EditContentModalExternalCourseQuery($courseId: UUID!) {
-            getExternalCourse(courseId: $courseId) {
-              url
-              courseTitle
-            }
-          }
-        `,
-        { courseId }
-      );
+  const data = useLazyLoadQuery<EditContentModalExternalCourseQuery>(
+    graphql`
+      query EditContentModalExternalCourseQuery($courseId: UUID!) {
+        getExternalCourse(courseId: $courseId) {
+          url
+          courseTitle
+        }
+      }
+    `,
+    { courseId }
+  );
 
   useEffect(() => {
     setOptionalRecords(_optionalRecords);
@@ -200,7 +200,7 @@ export function EditContentModal({
     //   loadAllSkillsQuery({ courseId });
     // }
     setOpenCodeAssignmentModal(true);
-  }
+  };
   return (
     <>
       <Button startIcon={<EditNote />} onClick={() => setOpenModal(true)}>
@@ -406,7 +406,10 @@ export function EditContentModal({
         />
       )}
 
-      <Dialog open={openCodeAssignmentModal && !data.getExternalCourse} onClose={() => setOpenCodeAssignmentModal(false)}>
+      <Dialog
+        open={openCodeAssignmentModal && !data.getExternalCourse}
+        onClose={() => setOpenCodeAssignmentModal(false)}
+      >
         <DialogTitle>{provider.name} Action Required</DialogTitle>
         <DialogContent>
           <Alert severity="warning">
@@ -414,7 +417,10 @@ export function EditContentModal({
           </Alert>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenCodeAssignmentModal(false)} color="primary">
+          <Button
+            onClick={() => setOpenCodeAssignmentModal(false)}
+            color="primary"
+          >
             Cancel
           </Button>
           <Button

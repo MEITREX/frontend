@@ -123,10 +123,12 @@ export default function LecturerCodeAssignment({
   }
 
   const studentGrades = getGradingsForAssignment;
+  const [localRequiredPercentage, setLocalRequiredPercentage] = useState(assignment.requiredPercentage);
   const requiredPoints =
-    assignment.totalCredits !== null && assignment.requiredPercentage != null
-      ? Math.round(assignment.totalCredits * assignment.requiredPercentage)
+    assignment.totalCredits !== null && localRequiredPercentage != null
+      ? Math.round(assignment.totalCredits * localRequiredPercentage)
       : null;
+
 
   const passedCount =
     requiredPoints != null
@@ -236,6 +238,10 @@ export default function LecturerCodeAssignment({
           onError={setError}
           contentRef={content}
           allSkillsQueryRef={allSkillsQueryRef}
+          onCompleted={(newPercentage) => {
+    setEditSetOpen(false);
+    setLocalRequiredPercentage(newPercentage);
+  }}
         />
       )}
 
@@ -299,12 +305,11 @@ export default function LecturerCodeAssignment({
               Required Credits
             </Typography>
             <Typography variant="body2">
-              {assignment.totalCredits !== null
-                ? Math.round(
-                    assignment.requiredPercentage! * assignment.totalCredits!
-                  )
-                : "N/A"}
-            </Typography>
+  {assignment.totalCredits !== null && localRequiredPercentage !== null
+    ? Math.round(localRequiredPercentage * assignment.totalCredits)
+    : "N/A"}
+</Typography>
+
           </Box>
 
           <Box>
