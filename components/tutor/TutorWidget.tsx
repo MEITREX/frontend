@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import TutorAvatar from "./TutorAvatar";
 import TutorChat from "./TutorChat";
+import { graphql, useMutation } from "react-relay";
+import { TutorWidget_sendMessage_Mutation } from "./__generated__/TutorWidgetSendMessageMutation.graphql";
 
 const AVATAR_WIDTH = 60;
 const CHAT_WIDTH = 500;
@@ -37,6 +39,21 @@ type TutorWidgetProps = {
   isAuthenticated: boolean;
 };
 
+type Message = {
+  message: string;
+  sender: "user" | "ai";
+  timestamp: string;
+};
+
+const sendMessageMutation = graphql`
+  mutation TutorWidgetSendMessageMutation($userInput: String!) {
+    sendMessage(userInput: $userInput) {
+      message
+      timestamp
+    }
+  }
+`;
+
 export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
   const [dockPosition, setDockPosition] = useState<(typeof positions)[number]>(
     positions[2]
@@ -53,6 +70,11 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
 
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [showWelcome, setShowWelcome] = useState(true);
+
+  // Chat state
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [commit, isInFlight] = useMutation<TutorWidget_sendMessage_Mutation>(sendMessageMutation);
 
   // API call for recommendations (on mount)
   useEffect(() => {
@@ -185,6 +207,42 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
   function handleCloseWelcome() {
     setShowWelcome(false);
   }
+
+  // Chat handlers
+  const handleSend = () => {
+    if (!input.trim()) return;
+
+    // User message (frontend timestamp)
+    setMessages((prev) => [
+      ...prev,
+      {
+        message: input,
+        sender: "user",
+        timestamp: new Date().toISOString(),
+      },
+    ]);
+
+    commit({
+      variables: { userInput: input },
+      onCompleted: (res) => {
+        if (res.sendMessage) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              message: res.sendMessage.message,
+              sender: "ai",
+              timestamp: res.sendMessage.timestamp,
+            },
+          ]);
+        }
+      },
+      onError: (err) => {
+        alert("Fehler beim Senden der Nachricht: " + err.message);
+      },
+    });
+
+    setInput("");
+  };
 
   return (
     <div ref={widgetRef} style={style}>
@@ -343,7 +401,6 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
       {open && (
         <div
           style={{
-            //  background: "#fff",
             borderRadius: "18px 18px 0 18px",
             border: "0.5px solid lightgrey",
             boxShadow: "0 4px 24px rgba(80,80,80,0.13)",
@@ -359,7 +416,66 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
             zIndex: 1,
           }}
         >
-          <TutorChat />
+          {/* Chat messages */}
+          <div style={{ maxHeight: 320, overflowY: "auto", width: "100%", marginBottom: 12 }}>
+            {messages.map((msg, idx) => (
+              <div
+                key={idx}
+                style={{
+                  margin: "8px 0",
+                  alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
+                  background: msg.sender === "user" ? "#e6f2ff" : "#f7f7f7",
+                  borderRadius: 12,
+                  padding: "8px 12px",
+                  maxWidth: 340,
+                  boxShadow: "0 1px 3px rgba(80,80,80,0.06)",
+                }}
+              >
+                <div style={{ fontWeight: 500 }}>
+                  {msg.sender === "user" ? "Du" : "Tutor"}
+                </div>
+                <div>{msg.message}</div>
+                <div style={{ fontSize: "0.8em", color: "#888", marginTop: 2 }}>
+                  {new Date(msg.timestamp).toLocaleTimeString()}
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Input */}
+          <div style={{ display: "flex", width: "100%" }}>
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              disabled={isInFlight}
+              style={{
+                width: "100%",
+                borderRadius: 8,
+                border: "1px solid #ddd",
+                padding: "8px 12px",
+                fontSize: 15,
+                marginRight: 6,
+              }}
+              placeholder="Nachricht an den Tutor eingeben..."
+              aria-label="Nachricht an den Tutor eingeben"
+            />
+            <button
+              onClick={handleSend}
+              disabled={isInFlight || !input.trim()}
+              style={{
+                background: "#1b7fff",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                padding: "8px 14px",
+                fontWeight: 500,
+                fontSize: 15,
+                cursor: isInFlight || !input.trim() ? "not-allowed" : "pointer",
+              }}
+            >
+              Senden
+            </button>
+          </div>
         </div>
       )}
     </div>

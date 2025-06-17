@@ -1297,3 +1297,13 @@ enum YearDivision {
   THIRD_QUARTER
   THIRD_TRIMESTER
 }
+
+# Chat-Funktion des AI Tutor
+type ChatMessage {
+  message: String!
+  timestamp: String! # ISO-8601 Format, z.B. "2025-06-17T13:12:00Z"
+}
+
+type Mutation {
+  sendMessage(userInput: String!): ChatMessage!
+}
