@@ -48,7 +48,6 @@ import toast from "react-hot-toast";
 import { useAccessTokenCheck } from "./useAccessTokenCheck";
 import { AddCodeAssignmentModalExternalAssignmentsQuery } from "@/__generated__/AddCodeAssignmentModalExternalAssignmentsQuery.graphql";
 import { AddCodeAssignmentModalSyncAssignmentsMutation } from "@/__generated__/AddCodeAssignmentModalSyncAssignmentsMutation.graphql";
-import { AddCodeAssignmentModalExternalCourseQuery } from "@/__generated__/AddCodeAssignmentModalExternalCourseQuery.graphql";
 import { CreateItem } from "./form-sections/item/ItemFormSection";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
@@ -139,26 +138,15 @@ export function AddCodeAssignmentModal({
       }
     `);
 
-  const data = useLazyLoadQuery<AddCodeAssignmentModalExternalCourseQuery>(
-    graphql`
-      query AddCodeAssignmentModalExternalCourseQuery($courseId: UUID!) {
-        getExternalCourse(courseId: $courseId) {
-          url
-          courseTitle
-        }
-      }
-    `,
-    { courseId }
-  );
-
   const [syncAssignments, isSyncing] =
-    useMutation<AddCodeAssignmentModalSyncAssignmentsMutation>(graphql`
-      mutation AddCodeAssignmentModalSyncAssignmentsMutation(
-        $courseTitle: String!
-      ) {
-        syncAssignmentsForCourse(courseTitle: $courseTitle)
-      }
-    `);
+  useMutation<AddCodeAssignmentModalSyncAssignmentsMutation>(graphql`
+    mutation AddCodeAssignmentModalSyncAssignmentsMutation(
+      $courseId: UUID!
+    ) {
+      syncAssignmentsForCourse(courseId: $courseId)
+    }
+  `);
+
 
   const handleSubmit = () => {
     createAssignment({
@@ -204,10 +192,8 @@ export function AddCodeAssignmentModal({
   };
 
   const handleSync = async () => {
-    if (!data.getExternalCourse) return;
-
     syncAssignments({
-      variables: { courseTitle: data.getExternalCourse.courseTitle },
+      variables: { courseId: courseId },
       onCompleted: (res) => {
         if (!res.syncAssignmentsForCourse) {
           toast.error(`${provider.name} sync failed.`);

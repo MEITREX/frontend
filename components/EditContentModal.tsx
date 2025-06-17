@@ -28,6 +28,7 @@ import {
   graphql,
   PreloadedQuery,
   useFragment,
+  useLazyLoadQuery,
   useMutation,
   useQueryLoader,
 } from "react-relay";
@@ -36,6 +37,8 @@ import { QuizModal } from "./QuizModal";
 import { AddCodeAssignmentModal } from "./AddCodeAssignmentModal";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
+import { EditContentModalExternalCourseQuery } from "@/__generated__/EditContentModalExternalCourseQuery.graphql";
+import { providerConfig, codeAssessmentProvider } from "./ProviderConfig";
 
 export function EditContentModal({
   chapterId,
@@ -66,12 +69,6 @@ export function EditContentModal({
 
   const [allSkillsQueryRef, loadAllSkillsQuery] =
     useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
-
-  useEffect(() => {
-    if (!allSkillsQueryRef) {
-      loadAllSkillsQuery({ courseId });
-    }
-  }, [courseId, loadAllSkillsQuery, allSkillsQueryRef]);
 
   const chapter = useFragment(
     graphql`
@@ -136,6 +133,20 @@ export function EditContentModal({
       }
     `);
 
+    const provider = providerConfig[codeAssessmentProvider];
+
+    const data = useLazyLoadQuery<EditContentModalExternalCourseQuery>(
+        graphql`
+          query EditContentModalExternalCourseQuery($courseId: UUID!) {
+            getExternalCourse(courseId: $courseId) {
+              url
+              courseTitle
+            }
+          }
+        `,
+        { courseId }
+      );
+
   useEffect(() => {
     setOptionalRecords(_optionalRecords);
   }, [_optionalRecords]);
@@ -184,6 +195,12 @@ export function EditContentModal({
     });
   };
 
+  const openCodeAssignment = () => {
+    // if (!allSkillsQueryRef) {
+    //   loadAllSkillsQuery({ courseId });
+    // }
+    setOpenCodeAssignmentModal(true);
+  }
   return (
     <>
       <Button startIcon={<EditNote />} onClick={() => setOpenModal(true)}>
@@ -347,7 +364,7 @@ export function EditContentModal({
             Add Quiz
           </Button>
           <Button
-            onClick={() => setOpenCodeAssignmentModal(true)}
+            onClick={openCodeAssignment}
             variant="text"
             className="mt-4"
             startIcon={<Add />}
@@ -380,7 +397,7 @@ export function EditContentModal({
           _chapter={chapter}
         />
       )}
-      {openCodeAssignmentModal && (
+      {openCodeAssignmentModal && data.getExternalCourse && (
         <AddCodeAssignmentModal
           onClose={() => setOpenCodeAssignmentModal(false)}
           chapterId={chapterId}
@@ -388,6 +405,29 @@ export function EditContentModal({
           allSkillsQueryRef={allSkillsQueryRef}
         />
       )}
+
+      <Dialog open={openCodeAssignmentModal && !data.getExternalCourse} onClose={() => setOpenCodeAssignmentModal(false)}>
+        <DialogTitle>{provider.name} Action Required</DialogTitle>
+        <DialogContent>
+          <Alert severity="warning">
+            You must ensure a matching course exists on GitHub Classroom.
+          </Alert>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCodeAssignmentModal(false)} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              setOpenCodeAssignmentModal(false);
+              window.open("https://classroom.github.com/classrooms", "_blank");
+            }}
+            color="primary"
+          >
+            Go to {provider.name}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
