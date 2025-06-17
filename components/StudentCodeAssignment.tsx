@@ -179,7 +179,7 @@ export default function StudentCodeAssignment({
                 lineHeight: 1.6,
               },
               "& code": {
-                backgroundColor: "#f5f5f5",
+                backgroundColor: "#d6d6d6",
                 padding: "2px 4px",
                 borderRadius: "4px",
                 fontSize: "0.875rem",
