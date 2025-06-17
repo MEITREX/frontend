@@ -81,6 +81,23 @@ export default function LecturerCodeAssignment({
     }
   }, [courseId, loadAllSkillsQuery, allSkillsQueryRef]);
 
+  const { getGradingsForAssignment } =
+    useLazyLoadQuery<LecturerCodeAssignmentGradingQuery>(
+      graphql`
+        query LecturerCodeAssignmentGradingQuery($assessmentId: UUID!) {
+          getGradingsForAssignment(assessmentId: $assessmentId) {
+            studentId
+            achievedCredits
+            student {
+              id
+              userName
+            }
+          }
+        }
+      `,
+      { assessmentId: assignmentId }
+    );
+
   const { findAssignmentsByAssessmentIds } =
     useLazyLoadQuery<LecturerCodeAssignmentQuery>(
       graphql`
@@ -100,35 +117,20 @@ export default function LecturerCodeAssignment({
       { assessmentId: assignmentId }
     );
 
-  const { getGradingsForAssignment } =
-    useLazyLoadQuery<LecturerCodeAssignmentGradingQuery>(
-      graphql`
-        query LecturerCodeAssignmentGradingQuery($assessmentId: UUID!) {
-          getGradingsForAssignment(assessmentId: $assessmentId) {
-            studentId
-            achievedCredits
-            student {
-              id
-              userName
-            }
-          }
-        }
-      `,
-      { assessmentId: assignmentId }
-    );
-
   const assignment = findAssignmentsByAssessmentIds[0];
   if (!assignment) {
+    // should never happen
     return <PageError message="No assignment found with given id." />;
   }
 
   const studentGrades = getGradingsForAssignment;
-  const [localRequiredPercentage, setLocalRequiredPercentage] = useState(assignment.requiredPercentage);
+  const [localRequiredPercentage, setLocalRequiredPercentage] = useState(
+    assignment.requiredPercentage
+  );
   const requiredPoints =
     assignment.totalCredits !== null && localRequiredPercentage != null
       ? Math.round(assignment.totalCredits * localRequiredPercentage)
       : null;
-
 
   const passedCount =
     requiredPoints != null
@@ -239,9 +241,9 @@ export default function LecturerCodeAssignment({
           contentRef={content}
           allSkillsQueryRef={allSkillsQueryRef}
           onCompleted={(newPercentage) => {
-    setEditSetOpen(false);
-    setLocalRequiredPercentage(newPercentage);
-  }}
+            setEditSetOpen(false);
+            setLocalRequiredPercentage(newPercentage);
+          }}
         />
       )}
 
@@ -253,7 +255,6 @@ export default function LecturerCodeAssignment({
           <Box
             className="prose prose-sm max-w-none"
             sx={{
-              // Removed grey box and border
               "& h1, & h2, & h3": {
                 marginTop: 2,
                 marginBottom: 1,
@@ -273,6 +274,20 @@ export default function LecturerCodeAssignment({
               "& a": {
                 color: "#1976d2",
                 textDecoration: "underline",
+              },
+
+              "& ul": {
+                paddingLeft: "1.25rem",
+                listStyleType: "disc",
+                marginBottom: "1rem",
+              },
+              "& ol": {
+                paddingLeft: "1.25rem",
+                listStyleType: "decimal",
+                marginBottom: "1rem",
+              },
+              "& li": {
+                marginBottom: "0.25rem",
               },
             }}
             dangerouslySetInnerHTML={{
@@ -305,11 +320,11 @@ export default function LecturerCodeAssignment({
               Required Credits
             </Typography>
             <Typography variant="body2">
-  {assignment.totalCredits !== null && localRequiredPercentage !== null
-    ? Math.round(localRequiredPercentage * assignment.totalCredits)
-    : "N/A"}
-</Typography>
-
+              {assignment.totalCredits !== null &&
+              localRequiredPercentage !== null
+                ? Math.round(localRequiredPercentage * assignment.totalCredits)
+                : "N/A"}
+            </Typography>
           </Box>
 
           <Box>

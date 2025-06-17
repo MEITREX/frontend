@@ -59,6 +59,25 @@ export default function StudentCodeAssignment({
     contentRef
   );
 
+  const { getGradingsForAssignment } =
+    useLazyLoadQuery<StudentCodeAssignmentGradingQuery>(
+      graphql`
+        query StudentCodeAssignmentGradingQuery($assessmentId: UUID!) {
+          getGradingsForAssignment(assessmentId: $assessmentId) {
+            date
+            achievedCredits
+            studentId
+            codeAssignmentGradingMetadata {
+              repoLink
+              status
+              feedbackTableHtml
+            }
+          }
+        }
+      `,
+      { assessmentId: assignmentId }
+    );
+
   const { findAssignmentsByAssessmentIds } =
     useLazyLoadQuery<StudentCodeAssignmentQuery>(
       graphql`
@@ -79,27 +98,9 @@ export default function StudentCodeAssignment({
       { assessmentId: assignmentId }
     );
 
-  const { getGradingsForAssignment } =
-    useLazyLoadQuery<StudentCodeAssignmentGradingQuery>(
-      graphql`
-        query StudentCodeAssignmentGradingQuery($assessmentId: UUID!) {
-          getGradingsForAssignment(assessmentId: $assessmentId) {
-            date
-            achievedCredits
-            studentId
-            codeAssignmentGradingMetadata {
-              repoLink
-              status
-              feedbackTableHtml
-            }
-          }
-        }
-      `,
-      { assessmentId: assignmentId }
-    );
-
   const assignment = findAssignmentsByAssessmentIds[0];
   if (!assignment) {
+    // should never happen
     return <PageError message="No assignment found with given id." />;
   }
 
@@ -167,7 +168,6 @@ export default function StudentCodeAssignment({
           <Box
             className="prose prose-sm max-w-none"
             sx={{
-              // Removed grey box and border
               "& h1, & h2, & h3": {
                 marginTop: 2,
                 marginBottom: 1,
@@ -187,6 +187,19 @@ export default function StudentCodeAssignment({
               "& a": {
                 color: "#1976d2",
                 textDecoration: "underline",
+              },
+              "& ul": {
+                paddingLeft: "1.25rem",
+                listStyleType: "disc",
+                marginBottom: "1rem",
+              },
+              "& ol": {
+                paddingLeft: "1.25rem",
+                listStyleType: "decimal",
+                marginBottom: "1rem",
+              },
+              "& li": {
+                marginBottom: "0.25rem",
               },
             }}
             dangerouslySetInnerHTML={{

@@ -162,7 +162,7 @@ export function EditAssignmentModal({
           },
           onError,
           onCompleted: () => {
-            onCompleted?.(requiredPercentage/ 100);
+            onCompleted?.(requiredPercentage / 100);
             onClose();
           },
         });
