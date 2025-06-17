@@ -76,7 +76,6 @@ export default function App({ children }: { children: React.ReactNode }) {
             </DndProvider>
           </LocalizationProvider>
         </AuthProvider>
-      
       </body>
     </html>
   );
