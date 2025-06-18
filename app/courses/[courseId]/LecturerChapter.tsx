@@ -6,7 +6,8 @@ import { ChapterHeader, stringToColor } from "@/components/ChapterHeader";
 import EditChapterButton from "@/components/EditChapterButton";
 import { LightTooltip } from "@/components/LightTooltip";
 import { OtherContent } from "@/components/OtherContent";
-import { Chip, Divider, Typography } from "@mui/material";
+import { Chip, Collapse, Divider, Typography } from "@mui/material";
+import { useState } from "react";
 import { graphql, useFragment } from "react-relay";
 import { LecturerSection } from "./LecturerSection";
 
@@ -50,6 +51,7 @@ export function LecturerChapter({
     `,
     _chapter
   );
+  const [expanded, setExpanded] = useState(true);
   const skillCategoryMap = new Map<string, string[]>();
 
   chapter.skills
@@ -102,40 +104,43 @@ export function LecturerChapter({
       <ChapterHeader
         courseId={chapter.course.id}
         _chapter={chapter}
+        expanded={expanded}
+        onExpandClick={() => setExpanded((curr) => !curr)}
         action={
           <EditChapterButton _chapter={chapter} courseId={chapter.course.id} />
         }
         student={false}
       />
+      <Collapse in={expanded}>
+        <div className="flex flex-col gap-6">
+          {chapter.description && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {chapter.description}
+            </Typography>
+          )}
 
-      <div className="flex flex-col gap-6">
-        {chapter.description && (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {chapter.description}
-          </Typography>
-        )}
+          {chapter.skills.length > 0 && (
+            <div className="flex items-start flex-wrap gap-2">{skillChips}</div>
+          )}
+          <Divider />
+          <div className="flex gap-12 items-start overflow-x-auto thin-scrollbar">
+            {chapter.sections.map((section) => (
+              <LecturerSection
+                _mediaRecords={_mediaRecords}
+                _section={section}
+                key={section.id}
+              />
+            ))}
+            <AddSectionButton chapterId={chapter.id} />
+          </div>
 
-        {chapter.skills.length > 0 && (
-          <div className="flex items-start flex-wrap gap-2">{skillChips}</div>
-        )}
-        <Divider />
-        <div className="flex gap-12 items-start overflow-x-auto thin-scrollbar">
-          {chapter.sections.map((section) => (
-            <LecturerSection
-              _mediaRecords={_mediaRecords}
-              _section={section}
-              key={section.id}
-            />
-          ))}
-          <AddSectionButton chapterId={chapter.id} />
+          <OtherContent _chapter={chapter} courseId={chapter.course.id} />
         </div>
-
-        <OtherContent _chapter={chapter} courseId={chapter.course.id} />
-      </div>
+      </Collapse>
     </section>
   );
 }
