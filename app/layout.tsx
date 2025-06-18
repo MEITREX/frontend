@@ -25,6 +25,7 @@ import {
 } from "react-oidc-context";
 import { RelayEnvironmentProvider } from "react-relay";
 import PageLoading from "./loading";
+import TutorWidget from "@/components/tutor/TutorWidget"; // Import the TutorWidget component
 
 dayjs.extend(isBetween);
 
@@ -123,7 +124,10 @@ function SigninContent({ children }: { children: React.ReactNode }) {
   if (auth.isAuthenticated) {
     return (
       <RelayEnvironmentProvider environment={environment}>
-        <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        <ThemeProvider theme={theme}>
+          <TutorWidget isAuthenticated={auth.isAuthenticated} />
+          {children}
+        </ThemeProvider>
       </RelayEnvironmentProvider>
     );
   }
