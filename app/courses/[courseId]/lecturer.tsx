@@ -121,16 +121,18 @@ export default function LecturerCoursePage() {
         {course.description}
       </Typography>
 
-      {orderBy(course.chapters.elements, [
-        (x) => new Date(x.startDate).getTime(),
-        "number",
-      ]).map((chapter) => (
-        <LecturerChapter
-          _mediaRecords={query}
-          _chapter={chapter}
-          key={chapter.id}
-        />
-      ))}
+      <div className="flex flex-col gap-12">
+        {orderBy(course.chapters.elements, [
+          (x) => new Date(x.startDate).getTime(),
+          "number",
+        ]).map((chapter) => (
+          <LecturerChapter
+            _mediaRecords={query}
+            _chapter={chapter}
+            key={chapter.id}
+          />
+        ))}
+      </div>
     </main>
   );
 }
