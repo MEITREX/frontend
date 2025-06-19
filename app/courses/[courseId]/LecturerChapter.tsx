@@ -52,16 +52,14 @@ export function LecturerChapter({
     _chapter
   );
   const [expanded, setExpanded] = useState(true);
-  const skillCategoryMap = new Map<string, string[]>();
-
-  chapter.skills
-    .filter((c) => c !== null)
-    .forEach((c) => {
-      if (!skillCategoryMap.has(c!.skillCategory)) {
-        skillCategoryMap.set(c!.skillCategory, []);
-      }
-      skillCategoryMap.get(c!.skillCategory)!.push(c!.skillName);
-    });
+  const skillCategoryMap = chapter.skills.reduce((acc, c) => {
+    if (!c) return acc;
+    if (!acc.has(c.skillCategory)) {
+      acc.set(c.skillCategory, []);
+    }
+    acc.get(c.skillCategory)!.push(c.skillName);
+    return acc;
+  }, new Map<string, string[]>());
 
   for (const key of skillCategoryMap.keys()) {
     skillCategoryMap.get(key)!.sort();
