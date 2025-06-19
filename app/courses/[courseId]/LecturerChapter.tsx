@@ -7,7 +7,7 @@ import EditChapterButton from "@/components/EditChapterButton";
 import { LightTooltip } from "@/components/LightTooltip";
 import { OtherContent } from "@/components/OtherContent";
 import { Chip, Collapse, Divider, Typography } from "@mui/material";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { graphql, useFragment } from "react-relay";
 import { LecturerSection } from "./LecturerSection";
 
@@ -52,18 +52,22 @@ export function LecturerChapter({
     _chapter
   );
   const [expanded, setExpanded] = useState(true);
-  const skillCategoryMap = chapter.skills.reduce((acc, c) => {
-    if (!c) return acc;
-    if (!acc.has(c.skillCategory)) {
-      acc.set(c.skillCategory, []);
-    }
-    acc.get(c.skillCategory)!.push(c.skillName);
-    return acc;
-  }, new Map<string, string[]>());
+  const skillCategoryMap = useMemo(() => {
+    const map = chapter.skills.reduce((acc, c) => {
+      if (!c) return acc;
+      if (!acc.has(c.skillCategory)) {
+        acc.set(c.skillCategory, []);
+      }
+      acc.get(c.skillCategory)!.push(c.skillName);
+      return acc;
+    }, new Map<string, string[]>());
 
-  for (const key of skillCategoryMap.keys()) {
-    skillCategoryMap.get(key)!.sort();
-  }
+    for (const key of map.keys()) {
+      map.get(key)!.sort();
+    }
+
+    return map;
+  }, [chapter.skills]);
   const skillChips = Array.from(skillCategoryMap.entries())
     .sort()
     .map(([category, skillNames], index) => (
