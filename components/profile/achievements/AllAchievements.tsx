@@ -143,8 +143,19 @@ export default function AllAchievements({
 
       {Object.entries(groupedAchievements).map(
         ([course, courseAchievements]: any) => {
-          const visibleAchievements = courseAchievements.slice(0, 11);
-          const hasMore = courseAchievements.length > 11;
+          const sortedAchievements = courseAchievements.sort((a: any, b: any) => {
+            const dateA = a.achievedAt ? new Date(a.achievedAt).getTime() : null;
+            const dateB = b.achievedAt ? new Date(b.achievedAt).getTime() : null;
+
+            if (dateA === null && dateB === null) return 0;
+            if (dateA === null) return 1; // a ist "schlechter", kommt später
+            if (dateB === null) return -1; // b ist "schlechter", kommt später
+
+            return dateB - dateA; // neuestes zuerst
+          });
+
+          const visibleAchievements = sortedAchievements.slice(0, 11);
+          const hasMore = sortedAchievements.length > 11;
 
           console.log(filter, selectedCourse, course);
 
@@ -156,7 +167,7 @@ export default function AllAchievements({
                   {courses.find((c) => c.id === course)?.name ?? course}
                 </Typography>
                 <Grid container spacing={1}>
-                  {courseAchievements.map((a: any) => (
+                  {sortedAchievements.map((a: any) => (
                     <Grid item xs={2} key={a.id}>
                       {" "}
                       {/* 6 Elemente pro Zeile */}

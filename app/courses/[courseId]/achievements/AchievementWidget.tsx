@@ -26,6 +26,68 @@ export default function LatestAchievements({
 
     }
 
+    function getFilteredAchievements(achievements: any[], courseId: string) {
+        const courseAchievements = achievements.filter(a => a.courseId === courseId);
+
+        const completed = courseAchievements
+            .filter(a => a.achievedAt)
+            .sort((a, b) => new Date(b.achievedAt!).getTime() - new Date(a.achievedAt!).getTime());
+
+        const usedIds = new Set<string>();
+        const lastCompleted = completed[0] || null;
+        if (lastCompleted) usedIds.add(lastCompleted.id);
+
+
+
+        const unlockedButNotCompleted = courseAchievements
+            .filter(a => a.unlockedAt && !a.achievedAt && !usedIds.has(a.id))
+            .sort((a, b) => new Date(b.unlockedAt!).getTime() - new Date(a.unlockedAt!).getTime());
+
+        const lastUnlocked = unlockedButNotCompleted[0] || null;
+        if (lastUnlocked) usedIds.add(lastUnlocked.id);
+
+        const firstUnlockedPending = unlockedButNotCompleted
+            .slice()
+            .reverse()
+            .find(a => !usedIds.has(a.id)) || null;
+        if (firstUnlockedPending) usedIds.add(firstUnlockedPending.id);
+
+        const notCompleted = courseAchievements.filter(
+            a => !a.achieved && !usedIds.has(a.id)
+        );
+        const randomNotCompleted = notCompleted.length > 0
+            ? notCompleted[Math.floor(Math.random() * notCompleted.length)]
+            : null;
+        if (randomNotCompleted) usedIds.add(randomNotCompleted.id);
+
+        // Rückgabe: Nur Achievements, die existieren
+        return [
+            lastCompleted && {
+                key: 'lastCompleted',
+                title: 'Zuletzt abgeschlossen',
+                achievement: lastCompleted,
+            },
+            randomNotCompleted && {
+                key: 'randomNotCompleted',
+                title: 'Zufällig noch nicht abgeschlossen',
+                achievement: randomNotCompleted,
+            },
+            lastUnlocked && {
+                key: 'lastUnlocked',
+                title: 'Zuletzt freigeschaltet (nicht abgeschlossen)',
+                achievement: lastUnlocked,
+            },
+            firstUnlockedPending && {
+                key: 'firstUnlockedPending',
+                title: 'Frühestes freigeschaltet (nicht abgeschlossen)',
+                achievement: firstUnlockedPending,
+            }
+        ].filter(Boolean); // entfernt alle null-Einträge
+    }
+
+
+
+
     return (
         <Box
             sx={{
@@ -53,8 +115,8 @@ export default function LatestAchievements({
                 </Link>
             </Box>
             <Grid container spacing={2}>
-                {top4Achievements.map((a, index) => (
-                    <Grid item xs={6} key={a.id}>
+                {getFilteredAchievements(achievements, "course1").map((a, index) => (
+                    <Grid item xs={6} key={a.key}>
                         <Box sx={{
                             p: 2,
                             borderRadius: 2,
@@ -71,9 +133,9 @@ export default function LatestAchievements({
                                 justifyContent: "center",
                             }}
                                 fontWeight={"bold"}>{doHeadings(index)}</Typography>
-                            <Tooltip title={a.title}>
+                            <Tooltip title={a.achievement.title}>
                                 <Box
-                                    onClick={() => openAchievements(a)}
+                                    onClick={() => openAchievements(a.achievement)}
                                     sx={{
                                         fontSize: 40,
                                         display: "flex",
@@ -84,7 +146,7 @@ export default function LatestAchievements({
 
                                     }}
                                 >
-                                    {a.icon}
+                                    {a.achievement.icon}
                                 </Box>
                             </Tooltip>
                         </Box>
