@@ -1,3 +1,13 @@
+@font-face {
+    font-family: Quicksand;
+    src: url(Quicksand-DinAYkjp.woff2) format("woff2");
+}
+
+@font-face {
+    font-family: Roboto;
+    src: url(roboto-v48-latin-regular.woff2) format("woff2");
+}
+
 body,
 html {
   display: flex;
@@ -106,7 +116,7 @@ body {
 
 .register-left .application-welcome-text {
   font-size: clamp(1rem, 2vh, 2rem);
-  font-family: Muli;
+  font-family: Roboto;
   font-weight: bold;
   color: white;
   margin-bottom: 0.2em;
@@ -169,7 +179,7 @@ body {
 .login-title,
 .register-title {
   font-size: 1.5rem;
-  font-family: Muli;
+  font-family: Roboto;
   font-weight: 600;
   margin-top: 0;
   margin-bottom: 4px;
@@ -187,7 +197,7 @@ body {
 .register-link {
   margin-top: 16px;
   text-align: center;
-  font-family: Muli;
+  font-family: Roboto;
 }
 
 .register-link a {
@@ -216,7 +226,7 @@ body {
   width: 95%;
   max-width: 360px;
   height: 24px;
-  font-family: Muli;
+  font-family: Roboto;
   font-size: 14px;
   letter-spacing: -0.4px;
   text-align: left;
@@ -232,7 +242,7 @@ body {
   width: 95%;
   max-width: 360px;
   height: 24px;
-  font-family: Muli;
+  font-family: Roboto;
   font-size: 14px;
   letter-spacing: -0.4px;
   text-align: left;
@@ -263,7 +273,7 @@ body {
   height: 36px;
   border-radius: 2px;
   background-color: #089cdc;
-  font-family: Muli;
+  font-family: Roboto;
   font-size: 14px;
   font-weight: bold;
   text-align: center;
@@ -277,7 +287,7 @@ body {
   height: 36px;
   border-radius: 2px;
   background-color: #089cdc;
-  font-family: Muli;
+  font-family: Roboto;
   font-size: 14px;
   font-weight: bold;
   text-align: center;
@@ -309,7 +319,7 @@ body {
 .login-error-text {
   display: block;
   width: 322px;
-  font-family: Muli;
+  font-family: Roboto;
   font-size: 14px;
   line-height: 1.3;
   letter-spacing: -0.4px;
@@ -321,7 +331,7 @@ body {
 .register-error-text {
   display: block;
   width: 322px;
-  font-family: Muli;
+  font-family: Roboto;
   font-size: 12px;
   letter-spacing: -0.4px;
   color: #b8082a;
@@ -331,7 +341,7 @@ body {
 .message-text {
   display: block;
   width: 360px;
-  font-family: Muli;
+  font-family: Roboto;
   font-size: 16px;
   line-height: 1.3;
   padding: 2px;
@@ -345,7 +355,7 @@ body {
 
 .identity-providers {
   width: 270px;
-  font-family: Muli;
+  font-family: Roboto;
   font-size: 16px;
   font-weight: bold;
   line-height: 0.83;
@@ -361,7 +371,7 @@ body {
   height: 36px;
   border-radius: 2px;
   background-color: var(--white);
-  font-family: Muli;
+  font-family: Roboto;
   font-size: 14px;
   font-weight: bold;
   text-align: center;
@@ -373,7 +383,7 @@ body {
 }
 
 .login-content .box .para {
-  font-family: Muli;
+  font-family: Roboto;
   font-size: 14px;
   margin-left: 30px;
 }
