@@ -177,6 +177,7 @@ export function ChapterOverview({
                 _chapter={sortedChapters[i]}
                 selected={i === selectedIndex}
                 onClick={() => setSelectedIndex(i)}
+                anyContent={sortedChapters[i].contents.length > 0}
               />
             </div>
           ))}
