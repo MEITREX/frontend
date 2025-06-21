@@ -96,7 +96,7 @@ export function ChapterOverview({
 
   const height = 300;
   const amplitude = 50;
-  const spacing = 180;
+  const spacing = 270;
   const waves = Math.round(numberOfChapters / 4); // Number of sine waves
   const totalWidth = spacing * (numberOfChapters - 1);
 
@@ -130,7 +130,7 @@ export function ChapterOverview({
 
   return (
     <div className="w-full">
-      <div className="w-full overflow-y-hidden overflow-x-auto px-24 pb-10 mb-8">
+      <div className="w-full overflow-y-hidden overflow-x-auto px-32 pb-32 mb-8">
         <div
           style={{
             position: "relative",
