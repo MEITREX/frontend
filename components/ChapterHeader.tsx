@@ -108,7 +108,7 @@ export function ChapterHeader({
           </Typography>
         </div>
       )}
-      <ChapterProgress progress={chapter.userProgress.progress} />
+      {student && <ChapterProgress progress={chapter.userProgress.progress} />}
     </div>
   );
 }
