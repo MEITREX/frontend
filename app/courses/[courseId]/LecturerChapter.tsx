@@ -6,7 +6,7 @@ import { ChapterHeader, stringToColor } from "@/components/ChapterHeader";
 import EditChapterButton from "@/components/EditChapterButton";
 import { LightTooltip } from "@/components/LightTooltip";
 import { OtherContent } from "@/components/OtherContent";
-import { Chip, Collapse, Divider, Typography } from "@mui/material";
+import { Alert, Chip, Collapse, Divider, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
 import { graphql, useFragment } from "react-relay";
 import { LecturerSection } from "./LecturerSection";
@@ -114,6 +114,11 @@ export function LecturerChapter({
         student={false}
       />
       <div className="flex flex-col pl-16 pb-6 pr-6 gap-6">
+        {chapter.sections.length === 0 && (
+          <Alert className="m-5" variant="outlined" severity="warning">
+            Empty Chapter!
+          </Alert>
+        )}
         {chapter.description && (
           <Typography
             variant="body2"
