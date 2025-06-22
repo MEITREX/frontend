@@ -134,6 +134,12 @@ export function ChapterOverviewItem({
         <div className="flex flex-col gap-1  bg-white rounded-lg shadow-md px-3 py-2 text-start w-full">
           <Typography
             variant="subtitle2"
+            sx={{
+              display: "-webkit-box",
+              overflow: "hidden",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+            }}
             color={
               selected
                 ? theme.palette.secondary.light
