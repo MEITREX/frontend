@@ -1,5 +1,5 @@
 import { ChapterOverviewItemFragment$key } from "@/__generated__/ChapterOverviewItemFragment.graphql";
-import { DoneRounded, LockOutlined } from "@mui/icons-material";
+import { ContentPasteOffRounded, DoneRounded, LockOutlined } from "@mui/icons-material";
 import {
   Chip,
   CircularProgress,
@@ -28,10 +28,12 @@ export function ChapterOverviewItem({
   _chapter,
   selected,
   onClick,
+  anyContent,
 }: {
   _chapter: ChapterOverviewItemFragment$key;
   selected: boolean;
   onClick: () => void;
+  anyContent: boolean;
 }) {
   const chapter = useFragment(ChapterFragment, _chapter);
   const progress = Math.round(chapter.userProgress.progress);
@@ -112,7 +114,7 @@ export function ChapterOverviewItem({
               {progress}%
             </div>
           )) ||
-          (progress == 100 && (
+          (anyContent && progress == 100 && (
             <DoneRounded
               className="absolute w-10 h-10"
               style={{
@@ -120,6 +122,12 @@ export function ChapterOverviewItem({
                   ? theme.palette.secondary.light
                   : theme.palette.primary.light,
               }}
+            />
+          )) ||
+          (!anyContent && (
+            <ContentPasteOffRounded
+              className="absolute w-9 h-9"
+              style={{ color: theme.palette.grey[300] }}
             />
           ))}
       </div>
@@ -135,6 +143,7 @@ export function ChapterOverviewItem({
           <Typography
             variant="subtitle2"
             sx={{
+              textAlign: "center",
               display: "-webkit-box",
               overflow: "hidden",
               WebkitLineClamp: 2,
@@ -163,52 +172,55 @@ export function ChapterOverviewItem({
                   : theme.palette.text.disabled,
               }}
             >
-              {dayjs(chapter.suggestedStartDate).format("D. MMM")} -{" "}
-              {dayjs(chapter.suggestedEndDate).format("D. MMM")}
+              {anyContent
+                ? `${dayjs(suggestedStartDate).format("D. MMM")} - ${dayjs(suggestedEndDate).format("D. MMM")}`
+                : "No assessments available yet."}
             </Typography>
-            <Chip
-              sx={{
-                fontSize: "0.75rem",
-                height: "1.25rem",
-                maxWidth: "250px",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                outline: "solid 1px",
-                outlineColor: done
-                  ? theme.palette.grey[500]
-                  : catchUp
-                  ? "#E6B78C" // dark peach
-                  : inFocus
-                  ? "#2ca2b0" // blue
-                  : upComing
-                  ? theme.palette.grey[500]
-                  : theme.palette.grey[300],
-                backgroundColor: "#FFFFFF",
-                color: done
-                  ? theme.palette.text.secondary
-                  : catchUp
-                  ? "#BE5505" // ginger
-                  : inFocus
-                  ? "#007B8A" // blue
-                  : upComing
-                  ? theme.palette.text.secondary
-                  : theme.palette.text.disabled,
-              }}
-              label={
-                done
-                  ? "Done"
-                  : catchUp
-                  ? "Catch Up"
-                  : inFocus
-                  ? "In Focus"
-                  : upComing
-                  ? "Upcoming"
-                  : disabled
-                  ? "Locked"
-                  : "Unknown"
-              }
-            />
+            {anyContent && (
+              <Chip
+                sx={{
+                  fontSize: "0.75rem",
+                  height: "1.25rem",
+                  maxWidth: "250px",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  outline: "solid 1px",
+                  outlineColor: done
+                    ? theme.palette.grey[500]
+                    : catchUp
+                    ? "#E6B78C" // dark peach
+                    : inFocus
+                    ? "#2ca2b0" // blue
+                    : upComing
+                    ? theme.palette.grey[500]
+                    : theme.palette.grey[300],
+                  backgroundColor: "#FFFFFF",
+                  color: done
+                    ? theme.palette.text.secondary
+                    : catchUp
+                    ? "#BE5505" // ginger
+                    : inFocus
+                    ? "#007B8A" // blue
+                    : upComing
+                    ? theme.palette.text.secondary
+                    : theme.palette.text.disabled,
+                }}
+                label={
+                  done
+                    ? "Done"
+                    : catchUp
+                    ? "Catch Up"
+                    : inFocus
+                    ? "In Focus"
+                    : upComing
+                    ? "Upcoming"
+                    : disabled
+                    ? "Locked"
+                    : "Unknown"
+                }
+              />
+            )}
           </div>
           {selected && (
             <div
