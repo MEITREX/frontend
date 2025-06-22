@@ -130,7 +130,7 @@ export function ChapterOverview({
 
   return (
     <div className="w-full">
-      <div className="w-full overflow-y-hidden overflow-x-auto px-32 pb-32 mb-8">
+      <div className="w-full overflow-y-hidden overflow-x-auto px-32 pb-36 mb-8">
         <div
           style={{
             position: "relative",
