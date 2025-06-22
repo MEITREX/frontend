@@ -1,5 +1,9 @@
 import { ChapterOverviewItemFragment$key } from "@/__generated__/ChapterOverviewItemFragment.graphql";
-import { ContentPasteOffRounded, DoneRounded, LockOutlined } from "@mui/icons-material";
+import {
+  ContentPasteOffRounded,
+  DoneRounded,
+  LockOutlined,
+} from "@mui/icons-material";
 import {
   Chip,
   CircularProgress,
