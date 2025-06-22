@@ -51,7 +51,7 @@ export function LecturerChapter({
     `,
     _chapter
   );
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const skillCategoryMap = useMemo(() => {
     const map = chapter.skills.reduce((acc, c) => {
       if (!c) return acc;
@@ -102,7 +102,7 @@ export function LecturerChapter({
       </LightTooltip>
     ));
   return (
-    <section key={chapter.id}>
+    <section key={chapter.id} className="w-full">
       <ChapterHeader
         courseId={chapter.course.id}
         _chapter={chapter}
@@ -113,21 +113,23 @@ export function LecturerChapter({
         }
         student={false}
       />
-      <Collapse in={expanded}>
-        <div className="flex flex-col gap-6">
-          {chapter.description && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {chapter.description}
-            </Typography>
-          )}
+      <div className="flex flex-col pl-16 pb-6 pr-6 gap-6">
+        {chapter.description && (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {chapter.description}
+          </Typography>
+        )}
 
-          {chapter.skills.length > 0 && (
-            <div className="flex items-start flex-wrap gap-2">{skillChips}</div>
-          )}
+        {chapter.skills.length > 0 && (
+          <div className="flex items-start flex-wrap gap-2">{skillChips}</div>
+        )}
+      </div>
+      <Collapse in={expanded}>
+        <div className="flex flex-col pl-16 pr-6 gap-6">
           <Divider />
           <div className="flex gap-12 items-start overflow-x-auto thin-scrollbar">
             {chapter.sections.map((section) => (
