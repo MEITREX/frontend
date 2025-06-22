@@ -8,23 +8,23 @@ import { graphql, useFragment } from "react-relay";
 
 export function stringToColor(string: string): string {
   const nameColorMap: Record<string, string> = {
-    "Algorithmic Foundations": "#AEC6CF", // pastel blue
-    "Architecture and Organization": "#C3D9C4", // pastel sage
-    "Artificial Intelligence": "#D6EFED", // pale sea blue
-    "Data Management": "#D5F6FB", // pastel aqua
-    "Foundations of Programming Languages": "#F49AC2", // pastel pink
-    "Graphics and Interactive Techniques": "#EBCCFF", // pastel mauve
-    "Human-Computer Interaction": "#CFCFC4", // pastel grey
-    "Mathematical and Statistical Foundations": "#FFFACD", // pastel lemon
-    "Networking and Communication": "#E0BBE4", // pastel lavender
-    "Operating Systems": "#D5E8D4", // pastel mint
-    "Parallel and Distributed Computing": "#FDDDE6", // pastel rose
+    "Algorithmic Foundations": "#F49AC2", // pastel pink
+    "Architecture and Organization": "#FDDDE6", // pastel rose
+    "Artificial Intelligence": "#E0BBE4", // pastel lavender
+    "Data Management": "#EBCCFF", // pastel mauve
+    "Foundations of Programming Languages": "#E6E6FA", // lavender
+    "Graphics and Interactive Techniques": "#D6EFED", // pale sea blue
+    "Human-Computer Interaction": "#D5F6FB", // pastel aqua
+    "Mathematical and Statistical Foundations": "#B0E0E6", // pastel turquoise
+    "Networking and Communication": "#E0FFFF", // light cyan
+    "Operating Systems": "#AEC6CF", // pastel blue
+    "Parallel and Distributed Computing": "#FFDAB9", // pastel peach
     Security: "#FDFD96", // pastel yellow
-    "Society, Ethics, and the Profession": "#B0E0E6", // pastel turquoise
-    "Software Development Fundamentals": "#C1E1C1", // pastel light green
-    "Software Engineering": "#FFDAB9", // pastel peach
-    "Specialized Platform Development": "#E6E6FA", // lavender
-    "Systems Fundamentals": "#E0FFFF", // light cyan
+    "Society, Ethics, and the Profession": "#FFFACD", // pastel lemon
+    "Software Development Fundamentals": "#D5E8D4", // pastel mint
+    "Software Engineering": "#C1E1C1", // pastel light green
+    "Specialized Platform Development": "#C3D9C4", // pastel sage
+    "Systems Fundamentals": "#CFCFC4", // pastel grey
   };
 
   for (const [key, color] of Object.entries(nameColorMap)) {
@@ -75,13 +75,10 @@ export function ChapterHeader({
   );
 
   return (
-    <div
-      className="flex flex-row justify-start items-center py-4 pr-4 rounded-3xl gap-16"
-      onClick={onExpandClick}
-    >
+    <div className="flex flex-row justify-start items-center py-4 pr-4 rounded-3xl gap-16">
       <div className="flex flex-row items-center justify-center flex-grow">
         {(expandable === undefined || expandable) && expanded !== undefined && (
-          <IconButton className="ml-4 mr-2">
+          <IconButton className="ml-4 mr-2" onClick={onExpandClick}>
             {expanded ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         )}
@@ -111,7 +108,7 @@ export function ChapterHeader({
           </Typography>
         </div>
       )}
-      <ChapterProgress progress={chapter.userProgress.progress} />
+      {student && <ChapterProgress progress={chapter.userProgress.progress} />}
     </div>
   );
 }

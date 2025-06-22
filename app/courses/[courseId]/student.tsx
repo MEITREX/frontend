@@ -14,6 +14,8 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 
 import { studentCourseLeaveMutation } from "@/__generated__/studentCourseLeaveMutation.graphql";
+import { stringToColor } from "@/components/ChapterHeader";
+import CompetencyProgressbar from "@/components/CompetencyProgressbar";
 import { FormErrors } from "@/components/FormErrors";
 import { LightTooltip } from "@/components/LightTooltip";
 import { PageError } from "@/components/PageError";
@@ -22,21 +24,19 @@ import { RewardScoresHelpButton } from "@/components/RewardScoresHelpButton";
 import { StudentChapter } from "@/components/StudentChapter";
 import { Suggestion } from "@/components/Suggestion";
 import { Info, Repeat } from "@mui/icons-material";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
 import { useState } from "react";
-import CompetencyProgressbar from "@/components/CompetencyProgressbar";
-import { stringToColor } from "@/components/ChapterHeader";
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 import { ChapterOverview } from "@/components/ChapterOverview";
 
-import * as React from "react";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import * as React from "react";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -525,7 +525,7 @@ export default function StudentCoursePage() {
               </div>
               <div className="flex flex-col w-full gap-4">
                 <Typography variant="h2">Chapters</Typography>
-                <div className="border border-2 border-gray-300 rounded-3xl w-full overflow-hidden">
+                <div className="border-2 border-gray-300 rounded-3xl w-full overflow-hidden">
                   {orderBy(course.chapters.elements, [
                     (x) => new Date(x.startDate).getTime(),
                     "number",
