@@ -126,8 +126,8 @@ export function ChapterOverviewItem({
           )) ||
           (!anyContent && (
             <ContentPasteOffRounded
-              className="absolute w-9 h-9"
-              style={{ color: theme.palette.grey[300] }}
+              className="absolute w-8 h-8"
+              style={{ color: theme.palette.grey[500] }}
             />
           ))}
       </div>
@@ -173,7 +173,9 @@ export function ChapterOverviewItem({
               }}
             >
               {anyContent
-                ? `${dayjs(suggestedStartDate).format("D. MMM")} - ${dayjs(suggestedEndDate).format("D. MMM")}`
+                ? `${dayjs(suggestedStartDate).format("D. MMM")} - ${dayjs(
+                    suggestedEndDate
+                  ).format("D. MMM")}`
                 : "No assessments available yet."}
             </Typography>
             {anyContent && (
