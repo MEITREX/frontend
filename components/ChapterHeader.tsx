@@ -75,13 +75,10 @@ export function ChapterHeader({
   );
 
   return (
-    <div
-      className="flex flex-row justify-start items-center py-4 pr-4 rounded-3xl gap-16"
-      onClick={onExpandClick}
-    >
+    <div className="flex flex-row justify-start items-center py-4 pr-4 rounded-3xl gap-16">
       <div className="flex flex-row items-center justify-center flex-grow">
         {(expandable === undefined || expandable) && expanded !== undefined && (
-          <IconButton className="ml-4 mr-2">
+          <IconButton className="ml-4 mr-2" onClick={onExpandClick}>
             {expanded ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         )}
@@ -111,7 +108,7 @@ export function ChapterHeader({
           </Typography>
         </div>
       )}
-      <ChapterProgress progress={chapter.userProgress.progress} />
+      {student && <ChapterProgress progress={chapter.userProgress.progress} />}
     </div>
   );
 }
