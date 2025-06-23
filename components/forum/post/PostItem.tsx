@@ -51,8 +51,9 @@ export default function PostItem({ post, threadCreatorId, bestAnswerId, onMarkAs
         />
         <Box flex={1} display="flex" flexDirection="column" justifyContent="space-between">
 
-          <EditableContent authorId={post?.authorId} initialContent={post.content} postId={post?.id}></EditableContent>
-
+          <Box sx={{ mb:1}}>
+            <EditableContent authorId={post?.authorId} initialContent={post.content} postId={post?.id}></EditableContent>
+          </Box>
           <UserPostInformation creationTime={post.creationTime} creatorId={post.authorId}></UserPostInformation>
         </Box>
         {isThreadAuthor && (

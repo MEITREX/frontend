@@ -14,7 +14,6 @@ type Props = {
 export default function ThreadItem({ thread }: Props) {
   return (
     <Box
-      component="a"
       sx={{
         border: "1px solid #e0e0e0",
         borderRadius: 2,

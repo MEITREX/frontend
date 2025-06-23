@@ -71,8 +71,6 @@ export default function ThreadDetail({thread, courseId}: Props) {
     setReplyText('');
   };
 
-
-  // TODO: Use suspense and skeleton later
   if (!thread) {
     return <div>Loading..</div>;
   }
@@ -81,7 +79,6 @@ export default function ThreadDetail({thread, courseId}: Props) {
     <PostsContext.Provider value={{ deletePostContext: deletePostFromState }}>
     <Link href={`/courses/${courseId}/forum`} passHref>
         <Button
-          component="a"
           variant="text"
           startIcon={<ArrowBackIcon />}
           sx={{ mb: 2 }}

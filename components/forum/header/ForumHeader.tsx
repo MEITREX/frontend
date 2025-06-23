@@ -65,7 +65,7 @@ export default function ForumHeader({ sortBy, setSortBy, categoryFilter, setCate
       </Stack>
 
       <Link href={`${pathname}/new`} passHref>
-        <Button component="a" variant="contained" color="primary" size="medium">
+        <Button component="div" variant="contained" color="primary" size="medium">
           + Create Thread
         </Button>
       </Link>
