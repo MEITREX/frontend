@@ -1,9 +1,11 @@
-import { Box, Typography, Stack } from "@mui/material";
+import { Box, Typography, Stack, Tooltip } from "@mui/material";
 import UpvoteDownvote from "../shared/UpvoteDownvote";
 import UserPostInformation from "../shared/UserPostInformation";
 import { ThreadType } from "@/components/forum/types";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import React from "react";
+import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
 
 type Props = {
   thread: ThreadType;
@@ -45,9 +47,10 @@ export default function ThreadItem({ thread }: Props) {
               {thread.title}
             </Typography>
 
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              {thread.question?.content ?? thread.info?.content}
-            </Typography>
+            <Box sx={{overflow: "hidden",height:"1.5em"}}>
+              <ContentViewer htmlContent={thread.question?.content ?? thread.info?.content!}></ContentViewer>
+            </Box>
+
           </Box>
 
           <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -57,10 +60,14 @@ export default function ThreadItem({ thread }: Props) {
               creatorId={thread.creatorId}
             />
             {thread.info && (
-              <InfoOutlinedIcon sx={{ fontSize: 28, color: "#1976d2" }} />
+              <Tooltip title="Info Thread">
+                <InfoOutlinedIcon sx={{ fontSize: 28, color: "#1976d2" }} />
+              </Tooltip>
             )}
             {thread.question && (
-              <HelpOutlineIcon sx={{ fontSize: 28, color: "#ff9800" }} />
+              <Tooltip title="Question Thread">
+                <HelpOutlineIcon sx={{ fontSize: 28, color: "#ff9800" }} />
+              </Tooltip>
             )}
           </Stack>
         </Stack>

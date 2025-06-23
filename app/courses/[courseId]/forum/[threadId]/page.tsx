@@ -1,24 +1,37 @@
-'use client'
-import { useParams } from "next/navigation";
+'use client';
+
+import { useParams } from 'next/navigation';
+import { useLazyLoadQuery } from 'react-relay';
+
+import { ForumApiThreadDetailQuery } from '@/__generated__/ForumApiThreadDetailQuery.graphql';
+import { forumApiThreadDetailQuery } from '@/components/forum/api/ForumApi';
 import ThreadDetail from "@/components/forum/thread/ThreadDetail";
-import { useLazyLoadQuery } from "react-relay";
-import { ForumApiThreadDetailQuery } from "@/__generated__/ForumApiThreadDetailQuery.graphql";
-import { forumApiThreadDetailQuery } from "@/components/forum/api/ForumApi";
+import { ThreadDetailType } from "@/components/forum/types";
 
 export default function ThreadDetailPage() {
   const params = useParams();
   const threadId = params?.threadId as string;
   const courseId = params?.courseId as string;
 
+
+
   const data = useLazyLoadQuery<ForumApiThreadDetailQuery>(
     forumApiThreadDetailQuery,
     { id: threadId },
-    { fetchPolicy: 'network-only' }
+    {
+      fetchPolicy: 'network-only',
+    }
   );
+
+  console.log(data);
+
+  if(!data){
+    return (<div>Loading</div>)
+  }
 
   return (
     <main>
-      <ThreadDetail courseId={courseId} thread={data.thread}/>
+        <ThreadDetail courseId={courseId} thread={{...data.thread} as ThreadDetailType}/>
     </main>
   );
 }

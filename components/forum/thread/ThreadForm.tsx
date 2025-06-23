@@ -10,6 +10,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Snackbar,
+  Paper
 } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useParams, useRouter } from "next/navigation";
@@ -29,6 +30,7 @@ import {
 } from "../api/ForumApi";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { ForumApiForumIdQuery } from "@/__generated__/ForumApiForumIdQuery.graphql";
+import TextEditor from "@/components/forum/richTextEditor/TextEditor";
 
 export default function ThreadForm() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -153,6 +155,8 @@ export default function ThreadForm() {
           </Box>
 
           <Stack spacing={3}>
+            <Paper elevation={1} sx={{ p: 2, borderRadius: 3, bgcolor: '#fff' }}>
+
             <TextField
               label="Title"
               value={title}
@@ -163,19 +167,10 @@ export default function ThreadForm() {
               helperText={titleError}
               inputProps={{ maxLength: 100 }}
             />
+            </Paper>
 
-            <TextField
-              label="Content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              required
-              fullWidth
-              multiline
-              minRows={6}
-              error={!!contentError}
-              helperText={contentError}
-              inputProps={{ maxLength: 1000 }}
-            />
+
+            <TextEditor onContentChange={(html) =>  setContent(html)}></TextEditor>
 
             <Button type="submit" variant="contained" size="large">
               Create Thread

@@ -34,9 +34,9 @@ export default function PostList({posts,threadCreatorId, bestAnswerId }: Props) 
   }
 
   return (
-    <Box sx={{overflowY:'scroll'}}>
+    <Box>
       {posts.map((post) => (
-        <PostItem onMarkAsBest={() => handleMarkAsBest(post.id)} bestAnswerId={bestAnswerLocalId} threadCreatorId={threadCreatorId} key={post.id} post={post} />
+        <PostItem key={post.id} onMarkAsBest={() => handleMarkAsBest(post.id)} bestAnswerId={bestAnswerLocalId} threadCreatorId={threadCreatorId} post={post} />
       ))}
     </Box>
   );

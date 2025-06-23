@@ -3,11 +3,10 @@ import {
   Box,
   Typography,
   Divider,
-  Avatar,
+  Tooltip,
   Stack,
-  TextField,
   Button,
-} from '@mui/material';
+} from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Link from "next/link";
 import PostList from "../post/PostList";
@@ -18,9 +17,13 @@ import UpvoteDownvote from "@/components/forum/shared/UpvoteDownvote";
 import UserPostInformation from "@/components/forum/shared/UserPostInformation";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import EditableContent from "@/components/forum/richTextEditor/EditableContent";
+import TextEditor from "@/components/forum/richTextEditor/TextEditor";
+import { Post, ThreadDetailType } from "@/components/forum/types";
+import PostsContext from "../context/PostsContext";
 
 type Props = {
-  thread: any; // Change type
+  thread: ThreadDetailType;
   courseId: string;
 };
 
@@ -28,8 +31,17 @@ export default function ThreadDetail({thread, courseId}: Props) {
 
   const [replyText, setReplyText] = useState('');
 
+  const [displayTextEditor, setDisplayTextEditor] = useState(false);
 
   const [commitPost] = useMutation<ForumApiAddPostMutation>(forumApiAddPostMutation);
+
+  const [localPosts, setLocalPosts] = useState<ThreadDetailType["posts"]>(thread.posts ?? []);
+
+  const deletePostFromState = (postIdToDelete:string) => {
+    setLocalPosts(currentPosts =>
+      currentPosts.filter(post => post.id !== postIdToDelete)
+    );
+  };
 
   const handleSubmit = () => {
     const replyTextTrimmed = replyText.trim();
@@ -43,7 +55,14 @@ export default function ThreadDetail({thread, courseId}: Props) {
     commitPost({
       variables:{post: post},
       onCompleted(data) {
-       // set post for refresh?!?!?!
+        const newPost = data.addPost;
+        if (newPost) {
+          setLocalPosts([
+            ...localPosts,
+            newPost as Post
+          ]);
+          setDisplayTextEditor(false);
+        }
       },
       onError(error) {
         console.error("Replay failed:", error);
@@ -53,9 +72,14 @@ export default function ThreadDetail({thread, courseId}: Props) {
   };
 
 
+  // TODO: Use suspense and skeleton later
+  if (!thread) {
+    return <div>Loading..</div>;
+  }
+
   return (
-    <>
-      <Link href={`/courses/${courseId}/forum`} passHref>
+    <PostsContext.Provider value={{ deletePostContext: deletePostFromState }}>
+    <Link href={`/courses/${courseId}/forum`} passHref>
         <Button
           component="a"
           variant="text"
@@ -68,13 +92,14 @@ export default function ThreadDetail({thread, courseId}: Props) {
       <Box
         sx={{
           height: "70vh",
-          overflow: "hidden",
+          overflowY: "scroll",
           display: "flex",
           flexDirection: "column",
           px: 1,
           pt: 1,
           backgroundColor: "#fff",
           borderRadius: 2,
+          position:"relative",
         }}
       >
         <Stack
@@ -93,12 +118,9 @@ export default function ThreadDetail({thread, courseId}: Props) {
               {thread?.title}
             </Typography>
 
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-              {thread?.question?.content ??
-                thread?.info?.content ??
-                "No content"}
-            </Typography>
-
+            <Box sx={{mb:1}}>
+               <EditableContent authorId={thread.question?.authorId ?? thread.info?.authorId!} initialContent={thread.question?.content ?? thread.info?.content!} postId={thread.question?.id ?? thread.info?.id!}></EditableContent>
+            </Box>
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               {thread.creationTime && <UserPostInformation
                 creationTime={thread.creationTime}
@@ -106,10 +128,14 @@ export default function ThreadDetail({thread, courseId}: Props) {
                 creatorId={thread.creatorId}
               />}
               {thread.info && (
-                <InfoOutlinedIcon sx={{ fontSize: 28, color: "#1976d2" }} />
+                <Tooltip title="Info Thread">
+                  <InfoOutlinedIcon sx={{ fontSize: 28, color: "#1976d2" }} />
+                </Tooltip>
               )}
               {thread.question && (
-                <HelpOutlineIcon sx={{ fontSize: 28, color: "#ff9800" }} />
+                <Tooltip title="Question Thread">
+                 <HelpOutlineIcon sx={{ fontSize: 28, color: "#ff9800" }} />
+                </Tooltip>
               )}
             </Stack>
           </Box>
@@ -117,29 +143,36 @@ export default function ThreadDetail({thread, courseId}: Props) {
 
         <Divider sx={{ my: 2 }} />
 
-        <PostList threadCreatorId={thread?.creatorId} posts={thread?.posts ?? []} ></PostList>
+        <PostList threadCreatorId={thread?.creatorId} posts={localPosts ?? []} ></PostList>
 
-        <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
-          <TextField
-            label="Answer"
-            multiline
-            minRows={1}
-            maxRows={6}
-            value={replyText}
-            onChange={(e) => setReplyText(e.target.value)}
-            variant="outlined"
-            sx={{ flexGrow: 1 }}
-          />
-          <Button
-            variant="contained"
-            onClick={handleSubmit}
-            disabled={!replyText.trim()}
-            sx={{ height: "fit-content" }}
-          >
-            Answer
-          </Button>
+
+        <Box sx={{ display: "flex", gap: 1, flexDirection:"column", alignItems:"start" }}>
+          <Button onClick={()=> setDisplayTextEditor(!displayTextEditor)} variant="text" color="primary">Answer</Button>
+          {displayTextEditor && (
+            <Box sx={{width:"100%"}}>
+              <TextEditor  onContentChange={(html) =>  setReplyText(html)} />
+              <Box sx={{ display:"flex", mt: 1, gap:1, justifyContent:"flex-end"}}>
+              <Button
+                color="warning"
+                variant="contained"
+                onClick={()=> setDisplayTextEditor(!displayTextEditor)}
+                sx={{ height: "fit-content" }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleSubmit}
+                disabled={!replyText.trim()}
+                sx={{ height: "fit-content" }}
+              >
+                Post
+              </Button>
+              </Box>
+            </Box>
+          )}
         </Box>
       </Box>
-    </>
+    </PostsContext.Provider>
   );
 }

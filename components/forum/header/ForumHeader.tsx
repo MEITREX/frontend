@@ -2,66 +2,73 @@
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import InputAdornment from "@mui/material/InputAdornment";
-import SearchIcon from "@mui/icons-material/Search";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import { ToggleButton, ToggleButtonGroup, Typography, alpha } from '@mui/material';
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
 
-
-export default function ForumHeader() {
+export default function ForumHeader({ sortBy, setSortBy, categoryFilter, setCategoryFilter }) {
   const pathname = usePathname();
+
+  const handleCategoryChange = (event, newCategory) => {
+    if (newCategory !== null) {
+      setCategoryFilter(newCategory);
+    }
+  };
+
   return (
     <Box
       sx={{
-        p: 2,
-        display: "flex",
-        flexWrap: "wrap",
-        alignItems: "center",
-        justifyContent: "space-between",
-        backgroundColor: "#f5f7fa",
-        borderRadius: 2,
-        mb: 3,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
         gap: 2,
+        p: 2,
+        borderRadius: 2,
+        bgcolor: (theme) => alpha(theme.palette.primary.main, 0.05),
+        border: '1px solid',
+        borderColor: (theme) => alpha(theme.palette.primary.main, 0.1),
       }}
     >
-      <Stack
-        direction={{ sm: "row" }}
-        spacing={2}
-        alignItems="center"
-        sx={{ flexGrow: 1, minWidth: 250 }}
-      >
-        <TextField
-          size="small"
-          placeholder="Search Threads"
-          variant="outlined"
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon color="action" />
-              </InputAdornment>
-            ),
-          }}
-          sx={{ minWidth: 200 }}
-        />
+      <Stack direction="row" spacing={2} alignItems="center" sx={{ flexWrap: 'wrap', gap: 2 }}>
 
-        <Select size="small" defaultValue="" displayEmpty sx={{ minWidth: 150 }}>
-          <MenuItem value="Latest">
-            <em>Latest</em>
-          </MenuItem>
-          <MenuItem value="Oldest">Oldest</MenuItem>
-          <MenuItem value="Rating">Rating</MenuItem>
-        </Select>
+        <ToggleButtonGroup
+          value={categoryFilter}
+          exclusive
+          onChange={handleCategoryChange}
+          aria-label="thread type filter"
+          size="small"
+        >
+          <ToggleButton value="ALL" aria-label="all threads">All</ToggleButton>
+          <ToggleButton value="QUESTION" aria-label="question threads">Questions</ToggleButton>
+          <ToggleButton value="INFO" aria-label="info threads">Infos</ToggleButton>
+        </ToggleButtonGroup>
+
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Typography variant="body2" color="text.secondary">Sort by:</Typography>
+          <Select
+            size="small"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            sx={{
+              minWidth: 120,
+              backgroundColor: 'background.paper'
+            }}
+          >
+            <MenuItem value="Latest">Latest</MenuItem>
+            <MenuItem value="Oldest">Oldest</MenuItem>
+          </Select>
+        </Stack>
 
       </Stack>
 
-        <Link href={`${pathname}/new`} passHref>
-          <Button component="a" variant="contained" color="primary" size="medium">
-            + Create Thread
-          </Button>
-        </Link>
+      <Link href={`${pathname}/new`} passHref>
+        <Button component="a" variant="contained" color="primary" size="medium">
+          + Create Thread
+        </Button>
+      </Link>
     </Box>
   );
 }

@@ -7,12 +7,14 @@ export const forumApiThreadDetailQuery = graphql`
       title
       creatorId
       creationTime
+      numberOfPosts
       ... on InfoThread {
         info {
           id
           content
           downvotedByUsers
           upvotedByUsers
+          authorId
         }
       }
 
@@ -22,6 +24,7 @@ export const forumApiThreadDetailQuery = graphql`
           content
           downvotedByUsers
           upvotedByUsers
+          authorId
         }
         selectedAnswer {
           id
@@ -51,6 +54,7 @@ export const forumApiThreadListQuery = graphql`
         creationTime
         creatorId
         numberOfPosts
+        __typename
         ... on InfoThread {
           info {
             id
@@ -98,6 +102,8 @@ mutation ForumApiAddPostMutation($post: InputPost!) {
     content
     creationTime
     authorId
+    downvotedByUsers
+    upvotedByUsers
   }
 }`
 
@@ -151,3 +157,18 @@ export const forumApiSelectBestAnswerMutation = graphql`
           id
         }
 }`
+
+export const forumApiUpdatePostMutation =   graphql`
+  mutation ForumApiUpdatePostMutation($post: InputPost!) {
+    updatePost(post: $post) {
+      id
+    }
+  }
+`
+export const forumApiDeletePostMutation =   graphql`
+  mutation ForumApiDeletePostMutation($postId: UUID!) {
+    deletePost(postId: $postId) {
+      id
+    }
+  }
+`
