@@ -59,6 +59,8 @@ export const achievementsData = [
     achievedAt: null,
     unlockedAt: new Date("2025-06-07T10:00:00"),
     courseId: "course1",
+    currentCount: 4,
+    targetCount: 5,
   },
   {
     id: 7,
@@ -69,6 +71,8 @@ export const achievementsData = [
     achievedAt: new Date("2025-06-12T10:00:00"),
     unlockedAt: new Date("2025-06-09T10:00:00"),
     courseId: "course1",
+    currentCount: 5,
+    targetCount: 5,
   },
   {
     id: 8,
@@ -79,6 +83,8 @@ export const achievementsData = [
     achievedAt: new Date("2025-06-13T10:00:00"),
     unlockedAt: new Date("2025-06-12T10:00:00"),
     courseId: "course1",
+    currentCount: 10,
+    targetCount: 10,
   },
   {
     id: 9,
@@ -109,6 +115,8 @@ export const achievementsData = [
     achievedAt: new Date("2025-06-16T10:00:00"),
     unlockedAt: new Date("2025-06-13T10:00:00"),
     courseId: "course1",
+    currentCount: 20,
+    targetCount: 20,
   },
   {
     id: 12,
@@ -139,6 +147,8 @@ export const achievementsData = [
     achievedAt: new Date("2025-06-19T10:00:00"),
     unlockedAt: new Date("2025-06-16T10:00:00"),
     courseId: "course1",
+    currentCount: 50,
+    targetCount: 50,
   },
   {
     id: 15,
@@ -149,6 +159,8 @@ export const achievementsData = [
     achievedAt: null,
     unlockedAt: new Date("2025-06-06T10:00:00"),
     courseId: "course1",
+    currentCount: 3,
+    targetCount: 5,
   },
   {
     id: 16,
@@ -169,6 +181,8 @@ export const achievementsData = [
     achievedAt: new Date("2025-06-12T10:00:00"),
     unlockedAt: new Date("2025-06-09T10:00:00"),
     courseId: "course2",
+    currentCount: 5,
+    targetCount: 5,
   },
   {
     id: 18,
@@ -189,6 +203,8 @@ export const achievementsData = [
     achievedAt: new Date("2025-06-24T10:00:00"),
     unlockedAt: new Date("2025-06-19T10:00:00"),
     courseId: "course1",
+    currentCount: 100,
+    targetCount: 100,
   },
   {
     id: 20,
@@ -199,6 +215,8 @@ export const achievementsData = [
     achievedAt: new Date("2025-06-13T10:00:00"),
     unlockedAt: new Date("2025-06-12T10:00:00"),
     courseId: "course2",
+    currentCount: 10,
+    targetCount: 10,
   },
   {
     id: 21,
@@ -206,9 +224,11 @@ export const achievementsData = [
     description: "You have finished 20 flashcards.",
     icon: "👽",
     achieved: false,
-    achievedAt: new Date("2025-06-16T10:00:00"),
+    achievedAt: null,
     unlockedAt: new Date("2025-06-13T10:00:00"),
     courseId: "course2",
+    currentCount: 15,
+    targetCount: 20,
   },
   {
     id: 22,

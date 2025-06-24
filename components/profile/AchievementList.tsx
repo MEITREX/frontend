@@ -11,21 +11,22 @@ const AchievementList = ({ achievements }: any) => {
     ) // neueste zuerst
     .slice(0, 5); // z.B. 5 letzte
 
-  const [selectedCourse, setSelectedCourse] = useState("all");
 
-  const courses = [
-    { id: "all", name: "All" },
-    { id: "course1", name: "Physics 202" },
-    { id: "course2", name: "Informatik" },
-  ];
+  const courseIDs = [...new Set(achievements.map((a: any) => a.courseId))]
+
+  const [selectedCourse, setSelectedCourse] = useState(courseIDs[0]);
+
+  const handleChangeCourse = (_event: React.SyntheticEvent, newValue: string) => {
+    setSelectedCourse(newValue);
+  };
 
   const [filter, setFilter] = useState<"achieved" | "not-achieved" | null>(
-    "achieved"
+    "not-achieved"
   );
 
   const filteredAchievements = achievements
     .filter(
-      (a: any) => selectedCourse === "all" || a.courseId === selectedCourse
+      (a: any) => a.courseId === selectedCourse
     )
     .filter((a: any) => {
       if (filter === "achieved") return a.achieved;
@@ -62,13 +63,13 @@ const AchievementList = ({ achievements }: any) => {
       ></LatestAchievements>
 
       <AllAchievements
-        courses={courses}
+        courses={courseIDs}
         filter={filter}
         filteredAchievements={filteredAchievements}
         achievements={achievements}
         handleOpenAchievement={handleOpenAchievement}
         selectedCourse={selectedCourse}
-        setSelectedCourse={setSelectedCourse}
+        handleChangeCourse={handleChangeCourse}
         handleChange={handleChange}
       ></AllAchievements>
 

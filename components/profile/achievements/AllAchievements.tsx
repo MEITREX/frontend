@@ -2,16 +2,14 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import {
   Box,
-  Button,
-  FormControl,
+  Card,
   Grid,
-  InputLabel,
-  MenuItem,
-  Select,
+  LinearProgress,
+  Tab,
+  Tabs,
   ToggleButton,
   ToggleButtonGroup,
-  Tooltip,
-  Typography,
+  Typography
 } from "@mui/material";
 
 interface AllAchievementsProps {
@@ -23,7 +21,7 @@ interface AllAchievementsProps {
   ) => void;
   achievements: any[];
   selectedCourse: any;
-  setSelectedCourse: (value: any) => void;
+  handleChangeCourse: (event: any, value: any) => void;
   filteredAchievements: any[];
   handleOpenAchievement: (a: any) => void;
 }
@@ -33,7 +31,7 @@ export default function AllAchievements({
   filter,
   handleChange,
   selectedCourse,
-  setSelectedCourse,
+  handleChangeCourse,
   filteredAchievements,
   handleOpenAchievement,
   achievements,
@@ -49,6 +47,17 @@ export default function AllAchievements({
     },
     {} as Record<string, any[]>
   );
+
+  const coursesNames = [
+    { id: "course1", name: "Physics 202" },
+    { id: "course2", name: "Informatik" },
+    { id: "course3", name: "DSA" },
+    { id: "course4", name: "PSE" },
+    { id: "course5", name: "Theo I" },
+    { id: "course6", name: "Mathe II" },
+    { id: "course7", name: "MCI" },
+    { id: "course8", name: "Mathe I" },
+  ];
 
   return (
     <Box
@@ -121,31 +130,34 @@ export default function AllAchievements({
               Not Achieved
             </ToggleButton>
           </ToggleButtonGroup>
-
-          {/* Dropdown für Kurse */}
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel id="course-select-label">Course</InputLabel>
-            <Select
-              labelId="course-select-label"
-              value={selectedCourse}
-              label="Course"
-              onChange={(e) => setSelectedCourse(e.target.value)}
-            >
-              {courses.map((course) => (
-                <MenuItem key={course.id} value={course.id}>
-                  {course.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
         </Box>
+      </Box>
+
+      <Box mt={0} mb={4}>
+        <Tabs
+          value={selectedCourse}
+          onChange={handleChangeCourse}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
+          {courses.map((courseId) => {
+            const course = coursesNames.find(c => c.id === courseId);
+            return (
+              <Tab
+                key={courseId}
+                value={courseId}
+                label={course ? course.name : courseId}
+              />
+            );
+          })}
+        </Tabs>
       </Box>
 
       {Object.entries(groupedAchievements).map(
         ([course, courseAchievements]: any) => {
           const sortedAchievements = courseAchievements.sort((a: any, b: any) => {
-            const dateA = a.achievedAt ? new Date(a.achievedAt).getTime() : null;
-            const dateB = b.achievedAt ? new Date(b.achievedAt).getTime() : null;
+            const dateA = a.achieved ? new Date(a.achievedAt).getTime() : null;
+            const dateB = b.achieved ? new Date(b.achievedAt).getTime() : null;
 
             if (dateA === null && dateB === null) return 0;
             if (dateA === null) return 1; // a ist "schlechter", kommt später
@@ -159,103 +171,77 @@ export default function AllAchievements({
 
           console.log(filter, selectedCourse, course);
 
-          if (selectedCourse != "all" && selectedCourse == course) {
-            console.log("HIIIIIIIIIIIIIIIIIIIs");
-            return (
-              <Box key={course} mb={4} px={2}>
-                <Typography variant="h6" fontWeight="bold" mb={2}>
-                  {courses.find((c) => c.id === course)?.name ?? course}
-                </Typography>
-                <Grid container spacing={1}>
-                  {sortedAchievements.map((a: any) => (
-                    <Grid item xs={2} key={a.id}>
-                      {" "}
-                      {/* 6 Elemente pro Zeile */}
-                      <Tooltip title={a.title} arrow>
-                        <Box
-                          key={a.id}
-                          sx={{
-                            fontSize: 40, // Icon-Größe
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            cursor: a.achieved ? "pointer" : "default",
-                            opacity: a.achieved ? 1 : 0.3,
-                            transition: "transform 0.3s ease",
-                            "&:hover": {
-                              transform: a.achieved ? "scale(1.1)" : "none",
-                            },
-                            position: "relative",
-                          }}
-                          onClick={() => handleOpenAchievement(a)}
-                        >
-                          {a.icon}
-                        </Box>
-                      </Tooltip>
+          return (
+            <Box sx={{ px: 2, pt: 2, mb: 2 }}>
+              <Grid
+                container
+                spacing={2}
+                sx={{
+                  marginLeft: 0,
+                  marginRight: 0,
+                  width: '100%',
+                  paddingLeft: 0
+                }}
+              >
+
+                {sortedAchievements.map((a: any, index: any) => {
+                  const isCountable = a.targetCount !== undefined && a.currentCount !== undefined;
+                  const showProgress = isCountable && !a.achieved;
+                  const progressValue = isCountable
+                    ? Math.min((a.currentCount / a.targetCount) * 100, 100)
+                    : 0;
+
+                  return (
+                    <Grid
+                      item
+                      xs={12}
+                      sm={6}
+                      key={a.id}
+                      onClick={() => handleOpenAchievement(a)}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <Card variant="outlined" sx={{ p: 2 }}>
+                        <Grid container spacing={2} alignItems="center">
+                          <Grid item>
+                            <Box
+                              fontSize="2.5rem"
+                              sx={{ opacity: a.achieved ? 1 : 0.4 }}
+                            >
+                              {a.icon}
+                            </Box>
+                          </Grid>
+                          <Grid item xs>
+                            <Typography variant="subtitle1" fontWeight="bold">
+                              {a.title}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {a.description}
+                            </Typography>
+
+                            {/* Fortschrittsbalken einfügen */}
+                            {showProgress && (
+                              <Box mt={1}>
+                                <LinearProgress
+                                  variant="determinate"
+                                  value={progressValue}
+                                  sx={{ height: 8, borderRadius: 4 }}
+                                />
+                                <Typography variant="caption" color="text.secondary">
+                                  {a.currentCount}/{a.targetCount}
+                                </Typography>
+                              </Box>
+                            )}
+                          </Grid>
+                        </Grid>
+                      </Card>
                     </Grid>
-                  ))}
-                </Grid>
-              </Box>
-            );
-          } else {
-            return (
-              <Box key={course} mb={4} px={2}>
-                <Typography variant="h6" fontWeight="bold" mb={2}>
-                  {courses.find((c) => c.id === course)?.name ?? course}
-                </Typography>
-                <Grid container spacing={1}>
-                  {visibleAchievements.map((a: any) => (
-                    <Grid item xs={2} key={a.id}>
-                      {" "}
-                      {/* 6 Elemente pro Zeile */}
-                      <Tooltip title={a.title} arrow>
-                        <Box
-                          key={a.id}
-                          sx={{
-                            fontSize: 40, // Icon-Größe
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            cursor: a.achieved ? "pointer" : "default",
-                            opacity: a.achieved ? 1 : 0.3,
-                            transition: "transform 0.3s ease",
-                            "&:hover": {
-                              transform: a.achieved ? "scale(1.1)" : "none",
-                            },
-                            position: "relative",
-                          }}
-                          onClick={() => handleOpenAchievement(a)}
-                        >
-                          {a.icon}
-                        </Box>
-                      </Tooltip>
-                    </Grid>
-                  ))}
-                  {hasMore && (
-                    <Grid item xs={2}>
-                      <Box
-                        display="flex"
-                        justifyContent="center"
-                        alignItems="center"
-                        height="100%"
-                      >
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          sx={{ minWidth: 100 }}
-                          onClick={() => setSelectedCourse(course)}
-                        >
-                          Show all
-                        </Button>
-                      </Box>
-                    </Grid>
-                  )}
-                </Grid>
-              </Box>
-            );
-          }
+                  );
+                })}
+
+              </Grid>
+            </Box>
+
+          );
         }
       )}
     </Box>
