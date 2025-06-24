@@ -47,7 +47,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ReactElement, useCallback, useState, useTransition } from "react";
 import { useAuth } from "react-oidc-context";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
-import NotificationPopOver from "./navbar/notifications/NotificationPopOver";
+import NotificationsWithArrow from "./navbar/notifications/NotificationsWithArrow";
 
 function useIsTutor(_frag: NavbarIsTutor$key) {
   const { realmRoles, courseMemberships } = useFragment(
@@ -520,6 +520,9 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
                 color="error"
                 max={99}
                 overlap="circular"
+                sx={{
+                  zIndex: 2
+                }}
               >
                 <Notifications />
               </Badge>
@@ -540,7 +543,7 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
             <SwitchPageViewButton />
           </>
         )}
-        <NotificationPopOver
+        <NotificationsWithArrow
           anchorEl={anchorEl}
           setAnchorEl={setAnchorEl}
           setNotifications={setNotifications}

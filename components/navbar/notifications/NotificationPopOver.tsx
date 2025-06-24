@@ -1,12 +1,10 @@
-import CloseIcon from "@mui/icons-material/Close";
 import {
   Box,
   Button,
-  IconButton,
   Link,
   Popover,
   Tooltip,
-  Typography,
+  Typography
 } from "@mui/material";
 
 interface NotificationPopOverProps {
@@ -77,6 +75,7 @@ export default function NotificationPopOver({
     }
   }
 
+
   // Dummy data, will be reomoved later
 
   return (
@@ -98,13 +97,18 @@ export default function NotificationPopOver({
             minWidth: 600,
             maxWidth: 700,
             maxHeight: 500,
-            overflowY: "auto",
             p: 2,
             borderRadius: 3,
+            marginLeft: 1,
+            backgroundColor: 'white',
+            boxShadow: 'none',
+            border: "1px solid #009bde"
           },
         },
       }}
     >
+
+
       <Box sx={{ p: 2, minWidth: 250 }}>
         <Box
           display="flex"
@@ -115,10 +119,29 @@ export default function NotificationPopOver({
           <Typography variant="h6" fontWeight="bold">
             Notifications
           </Typography>
-          <IconButton onClick={handleCloseNotifications} size="small">
-            <CloseIcon />
-          </IconButton>
+          <Box display="flex" gap={1}>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() =>
+                setNotifications((prev: any[]) =>
+                  prev.map((n) => ({ ...n, read: true }))
+                )
+              }
+            >
+              MARK ALL AS READ
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              color="error"
+              onClick={() => setNotifications([])}
+            >
+              DELETE ALL
+            </Button>
+          </Box>
         </Box>
+
         {/* Beispiel-Inhalte */}
         {notifications.length === 0 ? (
           <Typography variant="body2" color="text.secondary">
