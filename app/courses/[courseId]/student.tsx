@@ -192,6 +192,11 @@ export default function StudentCoursePage() {
 
   const [currentPage, setCurrentPage] = useState(0);
 
+  const [selectedAchievement, setSelectedAchievement] = useState<any | null>(
+    null
+  );
+  const [openAchievementDialog, setOpenDialog] = useState(false);
+
   // Show 404 error page if id was not found
   if (coursesByIds.length == 0) {
     return <PageError message="No course found with given id." />;
@@ -247,11 +252,6 @@ export default function StudentCoursePage() {
       setCurrentPage(currentPage + 1);
     }
   };
-
-  const [selectedAchievement, setSelectedAchievement] = useState<any | null>(
-    null
-  );
-  const [openAchievementDialog, setOpenDialog] = useState(false);
 
   const handleOpenAchievement = (achievement: any) => {
     setSelectedAchievement(achievement);
@@ -313,11 +313,15 @@ export default function StudentCoursePage() {
         )}
       </div>
 
-      <AchievementWidget achievements={achievementsData} openAchievements={handleOpenAchievement} />
+      <AchievementWidget
+        achievements={achievementsData}
+        openAchievements={handleOpenAchievement}
+      />
       <AchievementPopUp
         open={openAchievementDialog}
         onClose={handleCloseAchievement}
-        selectedAchievement={selectedAchievement} />
+        selectedAchievement={selectedAchievement}
+      />
 
       {/* Tabs for Learning Progress and Chapters */}
       <Box sx={{ width: "100%" }}>
@@ -463,7 +467,7 @@ export default function StudentCoursePage() {
                   const categoryProgressValue = Math.floor(
                     Math.min(
                       (totalCategoryProgress * 100) /
-                      uniqueSkillsInCategory.length,
+                        uniqueSkillsInCategory.length,
                       100
                     )
                   );
@@ -475,8 +479,9 @@ export default function StudentCoursePage() {
                     >
                       <div className="flex items-center gap-2 w-full mb-2">
                         <CompetencyProgressbar
-                          competencyName={`${uniqueSkill.skillCategory
-                            } - ${Math.floor(categoryProgressValue)}%`}
+                          competencyName={`${
+                            uniqueSkill.skillCategory
+                          } - ${Math.floor(categoryProgressValue)}%`}
                           heightValue={15}
                           progressValue={categoryProgressValue}
                           color={stringToColor(uniqueSkill.skillCategory)}

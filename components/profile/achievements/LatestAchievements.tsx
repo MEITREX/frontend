@@ -25,7 +25,10 @@ export default function LatestAchievements({
       <Grid container spacing={2}>
         {achievements.map((a, index) => (
           <Grid item xs={6} key={index}>
-            <AchievementCard achievement={a} onClick={() => openAchievements(a)} />
+            <AchievementCard
+              achievement={a}
+              onClick={() => openAchievements(a)}
+            />
           </Grid>
         ))}
       </Grid>

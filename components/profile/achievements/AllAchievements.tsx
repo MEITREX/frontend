@@ -7,7 +7,7 @@ import {
   Tabs,
   ToggleButton,
   ToggleButtonGroup,
-  Typography
+  Typography,
 } from "@mui/material";
 import AchievementCard from "./AchievementCard";
 
@@ -139,30 +139,36 @@ export default function AllAchievements({
           variant="scrollable"
           scrollButtons="auto"
           sx={{
-            '.MuiTabs-indicator': {
-              display: 'none', // Unterstrich ausblenden
+            ".MuiTabs-indicator": {
+              display: "none", // Unterstrich ausblenden
             },
           }}
         >
           {courses.map((courseId) => {
-            const course = coursesNames.find(c => c.id === courseId);
+            const course = coursesNames.find((c) => c.id === courseId);
             return (
               <Tab
                 key={courseId}
                 value={courseId}
                 label={course ? course.name : courseId}
                 sx={{
-                  textTransform: 'none',
+                  textTransform: "none",
                   fontWeight: 500,
-                  color: 'text.primary',
+                  color: "text.primary",
                   px: 2,
                   py: 1,
-                  borderRadius: '10px',
-                  border: selectedCourse === courseId ? '2px solid #00a9d6' : '2px solid transparent',
-                  backgroundColor: selectedCourse === courseId ? 'rgba(0, 169, 214, 0.1)' : 'transparent',
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    backgroundColor: 'rgba(0, 169, 214, 0.1)'
+                  borderRadius: "10px",
+                  border:
+                    selectedCourse === courseId
+                      ? "2px solid #00a9d6"
+                      : "2px solid transparent",
+                  backgroundColor:
+                    selectedCourse === courseId
+                      ? "rgba(0, 169, 214, 0.1)"
+                      : "transparent",
+                  transition: "all 0.2s ease-in-out",
+                  "&:hover": {
+                    backgroundColor: "rgba(0, 169, 214, 0.1)",
                   },
                 }}
               />
@@ -173,16 +179,22 @@ export default function AllAchievements({
 
       {Object.entries(groupedAchievements).map(
         ([course, courseAchievements]: any) => {
-          const sortedAchievements = courseAchievements.sort((a: any, b: any) => {
-            const dateA = a.achieved ? new Date(a.achievedAt).getTime() : null;
-            const dateB = b.achieved ? new Date(b.achievedAt).getTime() : null;
+          const sortedAchievements = courseAchievements.sort(
+            (a: any, b: any) => {
+              const dateA = a.achieved
+                ? new Date(a.achievedAt).getTime()
+                : null;
+              const dateB = b.achieved
+                ? new Date(b.achievedAt).getTime()
+                : null;
 
-            if (dateA === null && dateB === null) return 0;
-            if (dateA === null) return 1; // a ist "schlechter", kommt später
-            if (dateB === null) return -1; // b ist "schlechter", kommt später
+              if (dateA === null && dateB === null) return 0;
+              if (dateA === null) return 1; // a ist "schlechter", kommt später
+              if (dateB === null) return -1; // b ist "schlechter", kommt später
 
-            return dateB - dateA; // neuestes zuerst
-          });
+              return dateB - dateA; // neuestes zuerst
+            }
+          );
 
           const visibleAchievements = sortedAchievements.slice(0, 11);
           const hasMore = sortedAchievements.length > 11;
@@ -190,36 +202,33 @@ export default function AllAchievements({
           console.log(filter, selectedCourse, course);
 
           return (
-            <Box sx={{ px: 2, pt: 2, mb: 2 }}>
+            <Box key={course} sx={{ px: 2, pt: 2, mb: 2 }}>
               <Grid
                 container
                 spacing={2}
                 sx={{
                   marginLeft: 0,
                   marginRight: 0,
-                  width: '100%',
-                  paddingLeft: 0
+                  width: "100%",
+                  paddingLeft: 0,
                 }}
               >
-
                 {sortedAchievements.map((a: any, index: any) => {
-                  const isCountable = a.targetCount !== undefined && a.currentCount !== undefined;
+                  const isCountable =
+                    a.targetCount !== undefined && a.currentCount !== undefined;
 
                   return (
-                    <Grid
-                      item
-                      xs={12}
-                      sm={6}
-                      key={a.id}
-                    >
-                      <AchievementCard achievement={a} showProgress={isCountable && !a.achieved} onClick={() => handleOpenAchievement(a)} />
+                    <Grid item xs={12} sm={6} key={a.id}>
+                      <AchievementCard
+                        achievement={a}
+                        showProgress={isCountable && !a.achieved}
+                        onClick={() => handleOpenAchievement(a)}
+                      />
                     </Grid>
                   );
                 })}
-
               </Grid>
             </Box>
-
           );
         }
       )}
