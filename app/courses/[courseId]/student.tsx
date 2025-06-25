@@ -33,14 +33,10 @@ import { useState } from "react";
 
 import { ChapterOverview } from "@/components/ChapterOverview";
 
-import Box from "@mui/material/Box";
-import Tab from "@mui/material/Tab";
-import Tabs from "@mui/material/Tabs";
 import * as React from "react";
-
-import { achievementsData } from "@/components/profile/AchievementData";
-import AchievementPopUp from "@/components/profile/achievements/AchievementPopUp";
-import AchievementWidget from "./achievements/AchievementWidget";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Box from "@mui/material/Box";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -464,7 +460,7 @@ export default function StudentCoursePage() {
                   const categoryProgressValue = Math.floor(
                     Math.min(
                       (totalCategoryProgress * 100) /
-                        uniqueSkillsInCategory.length,
+                      uniqueSkillsInCategory.length,
                       100
                     )
                   );
@@ -476,9 +472,8 @@ export default function StudentCoursePage() {
                     >
                       <div className="flex items-center gap-2 w-full mb-2">
                         <CompetencyProgressbar
-                          competencyName={`${
-                            uniqueSkill.skillCategory
-                          } - ${Math.floor(categoryProgressValue)}%`}
+                          competencyName={`${uniqueSkill.skillCategory
+                            } - ${Math.floor(categoryProgressValue)}%`}
                           heightValue={15}
                           progressValue={categoryProgressValue}
                           color={stringToColor(uniqueSkill.skillCategory)}
@@ -548,7 +543,7 @@ export default function StudentCoursePage() {
               </div>
               <div className="flex flex-col w-full gap-4">
                 <Typography variant="h2">Chapters</Typography>
-                <div className="border border-2 border-gray-300 rounded-3xl w-full overflow-hidden">
+                <div className="border-2 border-gray-300 rounded-3xl w-full overflow-hidden">
                   {orderBy(course.chapters.elements, [
                     (x) => new Date(x.startDate).getTime(),
                     "number",

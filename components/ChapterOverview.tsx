@@ -96,7 +96,7 @@ export function ChapterOverview({
 
   const height = 300;
   const amplitude = 50;
-  const spacing = 180;
+  const spacing = 270;
   const waves = Math.round(numberOfChapters / 4); // Number of sine waves
   const totalWidth = spacing * (numberOfChapters - 1);
 
@@ -130,7 +130,7 @@ export function ChapterOverview({
 
   return (
     <div className="w-full">
-      <div className="w-full overflow-y-hidden overflow-x-auto px-24 pb-10 mb-8">
+      <div className="w-full overflow-y-hidden overflow-x-auto px-32 pb-36 mb-8">
         <div
           style={{
             position: "relative",
@@ -177,6 +177,7 @@ export function ChapterOverview({
                 _chapter={sortedChapters[i]}
                 selected={i === selectedIndex}
                 onClick={() => setSelectedIndex(i)}
+                anyContent={sortedChapters[i].contents.length > 0}
               />
             </div>
           ))}

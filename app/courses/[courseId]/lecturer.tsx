@@ -1,7 +1,7 @@
 "use client";
 
 import { lecturerLecturerCourseIdQuery } from "@/__generated__/lecturerLecturerCourseIdQuery.graphql";
-import { Button, IconButton, Typography } from "@mui/material";
+import { Button, Divider, IconButton, Typography } from "@mui/material";
 import { useParams } from "next/navigation";
 import { graphql, useLazyLoadQuery } from "react-relay";
 
@@ -12,7 +12,7 @@ import { PageError } from "@/components/PageError";
 import { Add, People, Settings } from "@mui/icons-material";
 import { orderBy } from "lodash";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import React, { useState } from "react";
 import { LecturerChapter } from "./LecturerChapter";
 
 graphql`
@@ -121,16 +121,21 @@ export default function LecturerCoursePage() {
         {course.description}
       </Typography>
 
-      {orderBy(course.chapters.elements, [
-        (x) => new Date(x.startDate).getTime(),
-        "number",
-      ]).map((chapter) => (
-        <LecturerChapter
-          _mediaRecords={query}
-          _chapter={chapter}
-          key={chapter.id}
-        />
-      ))}
+      <div className="border-2 border-gray-300 rounded-3xl w-full overflow-hidden">
+        {orderBy(course.chapters.elements, [
+          (x) => new Date(x.startDate).getTime(),
+          "number",
+        ]).map((chapter, i) => (
+          <React.Fragment key={chapter.id}>
+            <LecturerChapter
+              _mediaRecords={query}
+              _chapter={chapter}
+              key={chapter.id}
+            />
+            {i < course.chapters.elements.length - 1 && <Divider />}
+          </React.Fragment>
+        ))}
+      </div>
     </main>
   );
 }

@@ -7,23 +7,32 @@ import { ReactNode } from "react";
 import { graphql, useFragment } from "react-relay";
 
 export function stringToColor(string: string): string {
-  let hash = 0;
-  let i;
+  const nameColorMap: Record<string, string> = {
+    "Algorithmic Foundations": "#F49AC2", // pastel pink
+    "Architecture and Organization": "#FDDDE6", // pastel rose
+    "Artificial Intelligence": "#E0BBE4", // pastel lavender
+    "Data Management": "#EBCCFF", // pastel mauve
+    "Foundations of Programming Languages": "#E6E6FA", // lavender
+    "Graphics and Interactive Techniques": "#D6EFED", // pale sea blue
+    "Human-Computer Interaction": "#D5F6FB", // pastel aqua
+    "Mathematical and Statistical Foundations": "#B0E0E6", // pastel turquoise
+    "Networking and Communication": "#E0FFFF", // light cyan
+    "Operating Systems": "#AEC6CF", // pastel blue
+    "Parallel and Distributed Computing": "#FFDAB9", // pastel peach
+    Security: "#FDFD96", // pastel yellow
+    "Society, Ethics, and the Profession": "#FFFACD", // pastel lemon
+    "Software Development Fundamentals": "#D5E8D4", // pastel mint
+    "Software Engineering": "#C1E1C1", // pastel light green
+    "Specialized Platform Development": "#C3D9C4", // pastel sage
+    "Systems Fundamentals": "#CFCFC4", // pastel grey
+  };
 
-  /* eslint-disable no-bitwise */
-  for (i = 0; i < string.length; i += 1) {
-    hash = string.charCodeAt(i) + ((hash << 5) - hash);
+  for (const [key, color] of Object.entries(nameColorMap)) {
+    if (key === string) {
+      return color;
+    }
   }
-
-  let color = "#";
-
-  for (i = 0; i < 3; i += 1) {
-    const value = (hash >> (i * 8)) & 0xff;
-    color += `00${value.toString(16)}`.slice(-2);
-  }
-  /* eslint-enable no-bitwise */
-
-  return color;
+  return "#D3D3D3"; // light gray as default color
 }
 
 export function ChapterHeader({
@@ -66,13 +75,10 @@ export function ChapterHeader({
   );
 
   return (
-    <div
-      className="flex flex-row justify-start items-center py-6 pr-4 rounded-3xl gap-16"
-      onClick={onExpandClick}
-    >
+    <div className="flex flex-row justify-start items-center py-4 pr-4 rounded-3xl gap-16">
       <div className="flex flex-row items-center justify-center flex-grow">
         {(expandable === undefined || expandable) && expanded !== undefined && (
-          <IconButton className="ml-4 mr-2">
+          <IconButton className="ml-4 mr-2" onClick={onExpandClick}>
             {expanded ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         )}
@@ -102,7 +108,7 @@ export function ChapterHeader({
           </Typography>
         </div>
       )}
-      <ChapterProgress progress={chapter.userProgress.progress} />
+      {student && <ChapterProgress progress={chapter.userProgress.progress} />}
     </div>
   );
 }
