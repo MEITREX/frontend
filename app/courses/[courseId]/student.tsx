@@ -33,10 +33,13 @@ import { useState } from "react";
 
 import { ChapterOverview } from "@/components/ChapterOverview";
 
-import * as React from "react";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
+import { achievementsData } from "@/components/profile/AchievementData";
+import AchievementPopUp from "@/components/profile/achievements/AchievementPopUp";
 import Box from "@mui/material/Box";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import * as React from "react";
+import AchievementWidget from "./achievements/AchievementWidget";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;

@@ -1,4 +1,5 @@
-import { Box, Tooltip, Typography } from "@mui/material";
+import { Box, Grid, Typography } from "@mui/material";
+import AchievementCard from "./AchievementCard";
 
 interface LatestAchievementsProps {
   openAchievements: (achievement: any) => void;
@@ -21,46 +22,13 @@ export default function LatestAchievements({
       <Typography variant="h6" gutterBottom>
         Latest Achievements
       </Typography>
-      <Box
-        sx={{
-          display: "flex",
-          gap: 2,
-          overflowX: "auto",
-          overflow: "visible",
-          cursor: "pointer",
-        }}
-      >
-        {achievements.map((a) => (
-          <Tooltip
-            onClick={() => {
-              openAchievements(a);
-            }}
-            title={a.title}
-            key={a.id}
-          >
-            <Box
-              key={a.id}
-              sx={{
-                fontSize: 40, // Icon-Größe
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: a.achieved ? "pointer" : "default",
-                opacity: a.achieved ? 1 : 0.3,
-                transition: "transform 0.3s ease",
-                "&:hover": {
-                  transform: a.achieved ? "scale(1.1)" : "none",
-                },
-                position: "relative",
-              }}
-              onClick={() => a.achieved && openAchievements(a)}
-            >
-              {a.icon}
-            </Box>
-          </Tooltip>
+      <Grid container spacing={2}>
+        {achievements.map((a, index) => (
+          <Grid item xs={6} key={index}>
+            <AchievementCard achievement={a} onClick={() => openAchievements(a)} />
+          </Grid>
         ))}
-      </Box>
+      </Grid>
     </Box>
   );
 }

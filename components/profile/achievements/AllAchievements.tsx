@@ -2,15 +2,14 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import {
   Box,
-  Card,
   Grid,
-  LinearProgress,
   Tab,
   Tabs,
   ToggleButton,
   ToggleButtonGroup,
   Typography
 } from "@mui/material";
+import AchievementCard from "./AchievementCard";
 
 interface AllAchievementsProps {
   courses: any[];
@@ -136,9 +135,14 @@ export default function AllAchievements({
       <Box mt={0} mb={4}>
         <Tabs
           value={selectedCourse}
-          onChange={handleChangeCourse}
+          onChange={(e, newValue) => handleChangeCourse(e, newValue)}
           variant="scrollable"
           scrollButtons="auto"
+          sx={{
+            '.MuiTabs-indicator': {
+              display: 'none', // Unterstrich ausblenden
+            },
+          }}
         >
           {courses.map((courseId) => {
             const course = coursesNames.find(c => c.id === courseId);
@@ -147,6 +151,20 @@ export default function AllAchievements({
                 key={courseId}
                 value={courseId}
                 label={course ? course.name : courseId}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  color: 'text.primary',
+                  px: 2,
+                  py: 1,
+                  borderRadius: '10px',
+                  border: selectedCourse === courseId ? '2px solid #00a9d6' : '2px solid transparent',
+                  backgroundColor: selectedCourse === courseId ? 'rgba(0, 169, 214, 0.1)' : 'transparent',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 169, 214, 0.1)'
+                  },
+                }}
               />
             );
           })}
@@ -186,10 +204,6 @@ export default function AllAchievements({
 
                 {sortedAchievements.map((a: any, index: any) => {
                   const isCountable = a.targetCount !== undefined && a.currentCount !== undefined;
-                  const showProgress = isCountable && !a.achieved;
-                  const progressValue = isCountable
-                    ? Math.min((a.currentCount / a.targetCount) * 100, 100)
-                    : 0;
 
                   return (
                     <Grid
@@ -197,43 +211,8 @@ export default function AllAchievements({
                       xs={12}
                       sm={6}
                       key={a.id}
-                      onClick={() => handleOpenAchievement(a)}
-                      sx={{ cursor: 'pointer' }}
                     >
-                      <Card variant="outlined" sx={{ p: 2 }}>
-                        <Grid container spacing={2} alignItems="center">
-                          <Grid item>
-                            <Box
-                              fontSize="2.5rem"
-                              sx={{ opacity: a.achieved ? 1 : 0.4 }}
-                            >
-                              {a.icon}
-                            </Box>
-                          </Grid>
-                          <Grid item xs>
-                            <Typography variant="subtitle1" fontWeight="bold">
-                              {a.title}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {a.description}
-                            </Typography>
-
-                            {/* Fortschrittsbalken einfügen */}
-                            {showProgress && (
-                              <Box mt={1}>
-                                <LinearProgress
-                                  variant="determinate"
-                                  value={progressValue}
-                                  sx={{ height: 8, borderRadius: 4 }}
-                                />
-                                <Typography variant="caption" color="text.secondary">
-                                  {a.currentCount}/{a.targetCount}
-                                </Typography>
-                              </Box>
-                            )}
-                          </Grid>
-                        </Grid>
-                      </Card>
+                      <AchievementCard achievement={a} showProgress={isCountable && !a.achieved} onClick={() => handleOpenAchievement(a)} />
                     </Grid>
                   );
                 })}

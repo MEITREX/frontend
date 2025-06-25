@@ -9,7 +9,7 @@ const AchievementList = ({ achievements }: any) => {
     .sort(
       (a: any, b: any) => b.achievedAt?.getTime()! - a.achievedAt?.getTime()!
     ) // neueste zuerst
-    .slice(0, 5); // z.B. 5 letzte
+    .slice(0, 4); // z.B. 5 letzte
 
 
   const courseIDs = [...new Set(achievements.map((a: any) => a.courseId))]
