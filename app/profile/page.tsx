@@ -21,7 +21,7 @@ export default function ProfilePage() {
     setTabIndex(newValue);
   };
 
-  const tabs = ['General', 'Achievements']
+  const tabs = ['General', "Achievements", "Forum", "Progress", "Badges"]
 
 
   return (

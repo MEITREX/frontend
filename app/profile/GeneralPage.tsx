@@ -16,13 +16,17 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
 
     const [newStudentData, setStudentData] = useState(studentData);
 
-    const handleChange = (field: keyof typeof studentData) => (e: React.ChangeEvent<HTMLInputElement>) => {
-        setStudentData({ ...studentData, [field]: e.target.value });
+    const handleChange = (field: keyof typeof studentData) => (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        setStudentData({ ...newStudentData, [field]: e.target.value });
     };
+
 
     const toggleEditMode = () => {
         if (editMode) {
             // Optional: hier speichern (API call etc.)
+            console.log(newStudentData)
         }
         setEditMode(!editMode);
     };
@@ -52,28 +56,28 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
             <Box flex={1} display="flex" flexDirection="column" gap={2}>
                 <TextField
                     label="First Name"
-                    value={studentData.firstName}
+                    value={newStudentData.firstName}
                     onChange={handleChange("firstName")}
                     fullWidth
                     disabled={!editMode}
                 />
                 <TextField
                     label="Last Name"
-                    value={studentData.lastName}
+                    value={newStudentData.lastName}
                     onChange={handleChange("lastName")}
                     fullWidth
                     disabled={!editMode}
                 />
                 <TextField
                     label="Email"
-                    value={studentData.email}
+                    value={newStudentData.email}
                     onChange={handleChange("email")}
                     fullWidth
                     disabled={!editMode}
                 />
                 <TextField
                     label="Nickname"
-                    value={studentData.nickname}
+                    value={newStudentData.nickname}
                     onChange={handleChange("nickname")}
                     fullWidth
                     disabled={!editMode}
