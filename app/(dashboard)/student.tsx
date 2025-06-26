@@ -179,7 +179,6 @@ export default function StudentPage() {
     console.log(settings);
   }, [settings]);
 
-
   /**
    *  if (!settings) {
     return (
@@ -194,7 +193,6 @@ export default function StudentPage() {
     );
   }
    */
-
 
   return (
     <main>

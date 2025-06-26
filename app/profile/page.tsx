@@ -12,7 +12,7 @@ export default function ProfilePage() {
     firstName: "Max",
     lastName: "Mustermann",
     email: "max.mustermann@example.com",
-    nickname: "nickname"
+    nickname: "nickname",
   };
 
   const [tabIndex, setTabIndex] = useState(0);
@@ -21,16 +21,14 @@ export default function ProfilePage() {
     setTabIndex(newValue);
   };
 
-  const tabs = ['General', "Achievements", "Forum", "Progress", "Badges"]
-
+  const tabs = ["General", "Achievements", "Forum", "Progress", "Badges"];
 
   return (
     <>
-
       <Box sx={{ p: 2 }}>
         <Typography variant="h4" gutterBottom>
-        Hi, {profileData.firstName}
-      </Typography>
+          Hi, {profileData.firstName}
+        </Typography>
         {/* Tabs oben */}
         <Tabs
           value={tabIndex}
@@ -72,22 +70,20 @@ export default function ProfilePage() {
                     backgroundColor: "rgba(0, 169, 214, 0.1)",
                   },
                 }}
-
               />
-            )
+            );
           })}
         </Tabs>
 
         {/* Inhalt abhängig vom Tab */}
         {tabIndex === 0 && <GeneralPage studentData={profileData} />}
-        {tabIndex === 1 && <AchievementList achievements={achievementsData} profileTypeSortString={"not-achieved"} />}
-
+        {tabIndex === 1 && (
+          <AchievementList
+            achievements={achievementsData}
+            profileTypeSortString={"not-achieved"}
+          />
+        )}
       </Box>
-
-
-
-
-
     </>
   );
 }

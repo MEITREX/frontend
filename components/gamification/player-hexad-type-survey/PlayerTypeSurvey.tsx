@@ -162,13 +162,28 @@ const SurveyPopup = ({ id }: { id: string }) => {
   const progress = (answeredCount / totalQuestions) * 100;
 
   const adjectives = [
-    "Swift", "Brave", "Clever", "Fierce", "Tiny", "Giant", "Happy", "Wild", "Cunning", "Lazy"
+    "Swift",
+    "Brave",
+    "Clever",
+    "Fierce",
+    "Tiny",
+    "Giant",
+    "Happy",
+    "Wild",
+    "Cunning",
+    "Lazy",
   ];
 
   const dinos = [
-    "T-Rex", "Velociraptor", "Triceratops", "Stegosaurus", "Spinosaurus", "Brachiosaurus", "Pachycephalosaurus", "Ankylosaurus"
+    "T-Rex",
+    "Velociraptor",
+    "Triceratops",
+    "Stegosaurus",
+    "Spinosaurus",
+    "Brachiosaurus",
+    "Pachycephalosaurus",
+    "Ankylosaurus",
   ];
-
 
   function generateRandomNickname() {
     const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
@@ -177,7 +192,6 @@ const SurveyPopup = ({ id }: { id: string }) => {
 
     return `${adj}${dino}${number}`;
   }
-
 
   const [nickname, setNickname] = useState(generateRandomNickname());
 
