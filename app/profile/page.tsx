@@ -80,7 +80,7 @@ export default function ProfilePage() {
 
         {/* Inhalt abhängig vom Tab */}
         {tabIndex === 0 && <GeneralPage studentData={profileData} />}
-        {tabIndex === 1 && <AchievementList achievements={achievementsData} />}
+        {tabIndex === 1 && <AchievementList achievements={achievementsData} profileTypeSortString={"not-achieved"} />}
 
       </Box>
 

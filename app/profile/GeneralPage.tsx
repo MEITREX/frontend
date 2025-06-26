@@ -1,5 +1,8 @@
+import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
 import { Avatar, Box, Button, TextField } from "@mui/material";
 import { useState } from "react";
+
 
 interface GeneralPageProps {
     studentData: {
@@ -47,9 +50,16 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
                 <Box mt={1} color="text.secondary">
                     Profile picture
                 </Box>
-                <Button onClick={toggleEditMode} sx={{ mt: 2 }} variant="outlined">
+                <Button
+                    onClick={toggleEditMode}
+                    sx={{ mt: 2 }}
+                    variant={editMode ? "contained" : "outlined"}
+                    color={editMode ? "warning" : "primary"}
+                    startIcon={editMode ? <SaveIcon /> : <EditIcon />}
+                >
                     {editMode ? "Save" : "Edit"}
                 </Button>
+
             </Box>
 
             {/* Eingabefelder */}

@@ -3,7 +3,7 @@ import AchievementPopUp from "./achievements/AchievementPopUp";
 import AllAchievements from "./achievements/AllAchievements";
 import LatestAchievements from "./achievements/LatestAchievements";
 
-const AchievementList = ({ achievements }: any) => {
+const AchievementList = ({ achievements, profileTypeSortString }: any) => {
   const achieved = achievements
     .filter((a: any) => a.achieved)
     .sort(
@@ -23,7 +23,7 @@ const AchievementList = ({ achievements }: any) => {
   };
 
   const [filter, setFilter] = useState<"achieved" | "not-achieved" | null>(
-    "not-achieved"
+    profileTypeSortString
   );
 
   const filteredAchievements = achievements

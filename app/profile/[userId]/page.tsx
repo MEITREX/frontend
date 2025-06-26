@@ -64,7 +64,7 @@ export default function PublicProfilePage() {
 
             {/* Tab-Inhalte */}
             <Box>
-                {tabIndex === 0 && <AchievementList achievements={achievementsData} />}
+                {tabIndex === 0 && <AchievementList achievements={achievementsData} profileTypeSortString={"achieved"} />}
 
             </Box>
         </Box>
