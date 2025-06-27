@@ -171,7 +171,7 @@ export function ContentLink({
   const gap = size == "small" ? "gap-2" : "gap-4";
 
   const cursor = !disabled ? "cursor-pointer" : "cursor-default";
-  const frameSize = size == "small" ? "w-10 h-10" : "w-16 h-16";
+  const frameSize = size == "small" ? "w-10 h-10" : "w-12 h-12";
 
   let icon =
     content.__typename === "MediaContent" ? (
@@ -266,39 +266,32 @@ export function ContentLink({
             _progress={content.userProgressData}
           />
 
-          <div className="absolute flex justify-center items-center">
-            {icon}
-          </div>
+        <div className="absolute flex justify-center items-center">{icon}</div>
+      </div>
+      <div className="group-hover:group-enabled:translate-x-0.5">
+        <div
+          className={`flex pb-1 items-center ${
+            size == "small" ? "gap-1 -ml-0.5" : "gap-1.5 -ml-1"
+          }`}
+        >
+          {chips.map((chip) => (
+            <Chip
+              key={chip.key}
+              className={"!h-4 px-0 !text-[0.6rem]"}
+              label={chip.label}
+              sx={{ backgroundColor: chip.color }}
+            />
+          ))}
         </div>
-        <div className="group-hover:group-enabled:translate-x-0.5">
-          <div
-            className={`flex items-center ${
-              size == "small" ? "gap-1 -ml-0.5" : "gap-1.5 -ml-1"
-            }`}
-          >
-            {chips.map((chip) => (
-              <Chip
-                key={chip.key}
-                className={"!h-4 px-0 !text-[0.6rem]"}
-                label={chip.label}
-                sx={{ backgroundColor: chip.color }}
-                classes={{ label: size == "small" ? "!px-2 mt-[0.1rem]" : "" }}
-              />
-            ))}
-          </div>
-          <Typography
-            variant="subtitle1"
-            fontSize={size == "small" ? "0.8rem" : "1.25rem"}
-            fontWeight="500"
-            color={disabled ? "text.disabled" : ""}
-            sx={size == "small" ? { lineHeight: 1.5 } : { marginBottom: -0.5 }}
-          >
-            {content.metadata.name}
-          </Typography>
-        </div>
-        <div className="flex-1"></div>
-      </button>
-    </>
+        <Typography
+          variant="body2"
+          color={disabled ? "text.disabled" : "text.secondary"}
+        >
+          {content.metadata.name}
+        </Typography>
+      </div>
+      <div className="flex-1"></div>
+    </button>
   );
 
   if (content.mediaRecords?.some((x) => true)) {

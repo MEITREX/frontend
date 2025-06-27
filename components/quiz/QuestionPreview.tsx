@@ -5,11 +5,20 @@ import {
   QuestionPreviewFragment$key,
 } from "@/__generated__/QuestionPreviewFragment.graphql";
 import { Edit } from "@mui/icons-material";
-import { Box, Button } from "@mui/material";
+import { Button } from "@mui/material";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { PreloadedQuery, useFragment } from "react-relay";
 import { graphql } from "relay-runtime";
+import { Item } from "../form-sections/item/ItemFormSection";
+import ItemFormSectionPreview from "../form-sections/item/ItemFormSectionPreview";
 import { RenderRichText } from "../RichTextEditor";
 import { AssociationQuestionPreview } from "./AssociationQuestionPreview";
 import { ClozeQuestionPreview } from "./ClozeQuestionPreview";
@@ -18,8 +27,6 @@ import { EditAssociationQuestion } from "./EditAssociationQuestion";
 import { EditClozeQuestion } from "./EditClozeQuestion";
 import { EditMultipleChoiceQuestion } from "./EditMultipleChoiceQuestion";
 import { MultipleChoiceQuestionPreview } from "./MultipleChoiceQuestionPreview";
-import ItemFormSectionPreview from "../form-sections/item/ItemFormSectionPreview";
-import { Item } from "../form-sections/item/ItemFormSection";
 
 const QuestionFragment = graphql`
   fragment QuestionPreviewFragment on Question {
@@ -127,7 +134,7 @@ const QuestionPreview = ({
   const sectionBelowHeading = useRef<HTMLDivElement>(null);
 
   const toggleInlineItemFormSection = useCallback(() => {
-    if (sectionInHeading.current) {
+    if (sectionInHeading.current && sectionBelowHeading.current) {
       const test = sectionInHeading.current.getBoundingClientRect();
       // should roughly fit one BloomLevel & one skill
       if (test.width > 350) {
@@ -142,9 +149,13 @@ const QuestionPreview = ({
     }
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     toggleInlineItemFormSection();
+  }, [toggleInlineItemFormSection]);
+
+  useEffect(() => {
     window.addEventListener("resize", toggleInlineItemFormSection);
+
     return () => {
       window.removeEventListener("resize", toggleInlineItemFormSection);
     };
@@ -204,16 +215,6 @@ const QuestionPreview = ({
             <ClozeQuestionPreview question={data} />
           ) : null}
         </div>
-
-        <Box
-          key="ruler"
-          sx={{
-            height: "2px",
-            backgroundColor: "divider",
-            margin: "0.5rem 0",
-            width: "100%",
-          }}
-        />
       </div>
 
       {openEditModal === "MULTIPLE_CHOICE" && (

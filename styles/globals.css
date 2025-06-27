@@ -1,5 +1,9 @@
 @import "preflight.css";
-@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap");
+
+@font-face {
+    font-family: Quicksand;
+    src: url(../keycloak-theme/gits-theme/login/resources/css/Quicksand-DinAYkjp.woff2) format("woff2");
+}
 
 @tailwind base;
 @tailwind components;
@@ -24,6 +28,7 @@
     https://github.com/tailwindlabs/tailwindcss/pull/5732
 */
 @layer utilities {
+
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
     display: none;

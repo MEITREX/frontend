@@ -125,8 +125,10 @@ function SigninContent({ children }: { children: React.ReactNode }) {
     return (
       <RelayEnvironmentProvider environment={environment}>
         <ThemeProvider theme={theme}>
-          <ClientToaster />
-          {children}
+          <ThemeProvider theme={theme}>
+            <ClientToaster />
+            {children}
+          </ThemeProvider>
         </ThemeProvider>
       </RelayEnvironmentProvider>
     );

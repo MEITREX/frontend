@@ -1,32 +1,24 @@
 "use client";
 
 import { lecturerLecturerCourseIdQuery } from "@/__generated__/lecturerLecturerCourseIdQuery.graphql";
-import { Button, IconButton, Typography } from "@mui/material";
-import { useParams, usePathname, useSearchParams } from "next/navigation";
-import {
-  graphql,
-  useLazyLoadQuery,
-  useMutation,
-  useQueryLoader,
-} from "react-relay";
+import { Button, Divider, IconButton, Typography } from "@mui/material";
+import { useParams } from "next/navigation";
+import { graphql, useLazyLoadQuery } from "react-relay";
+
 import { AddChapterModal } from "@/components/AddChapterModal";
+import { CodeAssessmentProviderCourseButton } from "@/components/CodeAssessmentProviderCourseButton";
 import { EditCourseModal } from "@/components/EditCourseModal";
 import { Heading } from "@/components/Heading";
 import { PageError } from "@/components/PageError";
-import { Add, People, Settings, Sync } from "@mui/icons-material";
-import { orderBy } from "lodash";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { LecturerChapter } from "./LecturerChapter";
-import toast from "react-hot-toast";
-import { useEffect } from "react";
-import { useRelayEnvironment, fetchQuery } from "react-relay";
-import { ProviderAuthorizationDialog } from "@/components/ProviderAuthorizationDialog";
 import {
   codeAssessmentProvider,
   providerConfig,
 } from "@/components/ProviderConfig";
-import { CodeAssessmentProviderCourseButton } from "@/components/CodeAssessmentProviderCourseButton";
+import { Add, People, Settings } from "@mui/icons-material";
+import { orderBy } from "lodash";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+import { LecturerChapter } from "./LecturerChapter";
 
 graphql`
   fragment lecturerCourseFragment on Course {
@@ -144,16 +136,21 @@ export default function LecturerCoursePage() {
         {course.description}
       </Typography>
 
-      {orderBy(course.chapters?.elements ?? [], [
-        (x) => new Date(x.startDate).getTime(),
-        "number",
-      ]).map((chapter) => (
-        <LecturerChapter
-          _mediaRecords={query}
-          _chapter={chapter}
-          key={chapter.id}
-        />
-      ))}
+      <div className="border-2 border-gray-300 rounded-3xl w-full overflow-hidden">
+        {orderBy(course.chapters.elements, [
+          (x) => new Date(x.startDate).getTime(),
+          "number",
+        ]).map((chapter, i) => (
+          <React.Fragment key={chapter.id}>
+            <LecturerChapter
+              _mediaRecords={query}
+              _chapter={chapter}
+              key={chapter.id}
+            />
+            {i < course.chapters.elements.length - 1 && <Divider />}
+          </React.Fragment>
+        ))}
+      </div>
     </main>
   );
 }

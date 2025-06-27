@@ -1,6 +1,7 @@
 {
   "id": "1d75c2e1-55cb-471a-a89c-d81ea87e1646",
   "realm": "GITS",
+  "loginTheme": "gits-theme",
   "notBefore": 0,
   "defaultSignatureAlgorithm": "RS256",
   "revokeRefreshToken": false,

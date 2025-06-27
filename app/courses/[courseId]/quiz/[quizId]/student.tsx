@@ -22,11 +22,12 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Stack,
   Typography,
 } from "@mui/material";
 import useResizeObserver from "@react-hook/resize-observer";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Confetti from "react-confetti";
 import {
   graphql,
@@ -36,6 +37,9 @@ import {
 } from "react-relay";
 import { dispatch } from "use-bus";
 import { SimilarSegments } from "../../media/[mediaId]/SimilarSegments";
+import ItemFormSectionPreview from "@/components/form-sections/item/ItemFormSectionPreview";
+import { BloomLevel } from "@/__generated__/QuestionPreviewFragment.graphql";
+import { Item } from "@/components/form-sections/item/ItemFormSection";
 
 export default function StudentQuiz() {
   // Get course id from url
@@ -55,19 +59,15 @@ export default function StudentQuiz() {
   }, [currentIndex]);
 
   const [trackCompleted, loading] =
-    useMutation<studentQuizTrackCompletedMutation>(
-      graphql`
-        mutation studentQuizTrackCompletedMutation(
-          $input: QuizCompletedInput!
-        ) {
-          logQuizCompleted(input: $input) {
-            correctness
-            hintsUsed
-            success
-          }
+    useMutation<studentQuizTrackCompletedMutation>(graphql`
+      mutation studentQuizTrackCompletedMutation($input: QuizCompletedInput!) {
+        logQuizCompleted(input: $input) {
+          correctness
+          hintsUsed
+          success
         }
-      `
-    );
+      }
+    `);
 
   const [completedInput, setCompletedInput] = useState<
     QuestionCompletedInput[]
@@ -94,6 +94,16 @@ export default function StudentQuiz() {
                 ...studentQuestionFragment
               }
             }
+            items {
+              id
+              associatedSkills {
+                id
+                skillName
+                skillCategory
+                isCustomSkill
+              }
+              associatedBloomLevels
+            }
           }
         }
       }
@@ -101,11 +111,27 @@ export default function StudentQuiz() {
     { id: [quizId] }
   );
 
+  const quiz = contentsByIds[0].quiz;
+  const currentQuestion = quiz?.selectedQuestions[currentIndex];
+  const currentItem = contentsByIds[0].items!.find(
+    (item) => item.id === currentQuestion?.itemId
+  )!;
+
+  const currentItemForPreview = useMemo<Item>(
+    () => ({
+      id: currentItem.id,
+      associatedSkills: currentItem.associatedSkills.map((skill) => ({
+        ...skill,
+      })),
+      associatedBloomLevels: currentItem.associatedBloomLevels as BloomLevel[],
+    }),
+    [currentItem]
+  );
+
   if (contentsByIds.length == 0) {
     return <PageError message="No quiz found with given id." />;
   }
 
-  const quiz = contentsByIds[0].quiz;
   if (quiz == null) {
     return (
       <PageError
@@ -115,7 +141,6 @@ export default function StudentQuiz() {
     );
   }
 
-  const currentQuestion = quiz.selectedQuestions[currentIndex];
   if (!currentQuestion) {
     return (
       <PageError title={contentsByIds[0].metadata.name} message="Empty quiz." />
@@ -172,6 +197,19 @@ export default function StudentQuiz() {
         </div>
         <div className="border-b border-b-gray-300 grow"></div>
       </div>
+
+      <Stack
+        id="skills-selected"
+        direction="row"
+        sx={{
+          marginBottom: "1.5rem",
+          flexWrap: "wrap",
+          gap: 1,
+          justifyContent: "center",
+        }}
+      >
+        <ItemFormSectionPreview item={currentItemForPreview} />
+      </Stack>
 
       <Question
         _question={currentQuestion}
