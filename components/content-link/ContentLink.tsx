@@ -8,8 +8,6 @@ import {
 import { PageView, usePageView } from "@/src/currentView";
 import {
   ArrowRight,
-  Assignment,
-  Code,
   Description,
   Earbuds,
   Image,
@@ -21,14 +19,14 @@ import {
 } from "@mui/icons-material";
 import { Chip, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { graphql, useFragment } from "react-relay";
 import colors from "tailwindcss/colors";
-import { NoMaxWidthTooltip } from "../search/SearchResultItem";
-import { ProgressFrame } from "./ProgressFrame";
-import { useAccessTokenCheck } from "../useAccessTokenCheck";
-import { useEffect, useState } from "react";
 import { ProviderAuthorizationDialog } from "../ProviderAuthorizationDialog";
 import { codeAssessmentProvider, providerConfig } from "../ProviderConfig";
+import { NoMaxWidthTooltip } from "../search/SearchResultItem";
+import { useAccessTokenCheck } from "../useAccessTokenCheck";
+import { ProgressFrame } from "./ProgressFrame";
 
 export const ContentTypeToColor: Record<string, string> = {
   MediaContent: colors.violet[200],
@@ -266,32 +264,35 @@ export function ContentLink({
             _progress={content.userProgressData}
           />
 
-        <div className="absolute flex justify-center items-center">{icon}</div>
-      </div>
-      <div className="group-hover:group-enabled:translate-x-0.5">
-        <div
-          className={`flex pb-1 items-center ${
-            size == "small" ? "gap-1 -ml-0.5" : "gap-1.5 -ml-1"
-          }`}
-        >
-          {chips.map((chip) => (
-            <Chip
-              key={chip.key}
-              className={"!h-4 px-0 !text-[0.6rem]"}
-              label={chip.label}
-              sx={{ backgroundColor: chip.color }}
-            />
-          ))}
+          <div className="absolute flex justify-center items-center">
+            {icon}
+          </div>
         </div>
-        <Typography
-          variant="body2"
-          color={disabled ? "text.disabled" : "text.secondary"}
-        >
-          {content.metadata.name}
-        </Typography>
-      </div>
-      <div className="flex-1"></div>
-    </button>
+        <div className="group-hover:group-enabled:translate-x-0.5">
+          <div
+            className={`flex pb-1 items-center ${
+              size == "small" ? "gap-1 -ml-0.5" : "gap-1.5 -ml-1"
+            }`}
+          >
+            {chips.map((chip) => (
+              <Chip
+                key={chip.key}
+                className={"!h-4 px-0 !text-[0.6rem]"}
+                label={chip.label}
+                sx={{ backgroundColor: chip.color }}
+              />
+            ))}
+          </div>
+          <Typography
+            variant="body2"
+            color={disabled ? "text.disabled" : "text.secondary"}
+          >
+            {content.metadata.name}
+          </Typography>
+        </div>
+        <div className="flex-1"></div>
+      </button>
+    </>
   );
 
   if (content.mediaRecords?.some((x) => true)) {

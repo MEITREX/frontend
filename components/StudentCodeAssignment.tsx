@@ -257,7 +257,9 @@ export default function StudentCodeAssignment({
               <Typography variant="subtitle2" gutterBottom>
                 Required
               </Typography>
-              <Typography variant="body2" align="center">{required ?? "N/A"}</Typography>
+              <Typography variant="body2" align="center">
+                {required ?? "N/A"}
+              </Typography>
             </Box>
 
             <Box>
@@ -288,7 +290,7 @@ export default function StudentCodeAssignment({
                 <Typography
                   variant="body2"
                   color={passed ? "success.main" : "error.main"}
-                  fontWeight={500} 
+                  fontWeight={500}
                   align="center"
                 >
                   {passed ? "Passed" : "Not Passed"}
@@ -307,19 +309,18 @@ export default function StudentCodeAssignment({
             </Box>
           )}
 
-          {grading?.achievedCredits == null && !isCompleted && (
-  <Box mt={2}>
-    <Typography
-      variant="body2"
-      color="error.main"
-      fontWeight={500}
-      align="left"
-    >
-      Push your code to GitHub to trigger automated tests.
-    </Typography>
-  </Box>
-)}
-
+        {grading?.achievedCredits == null && !isCompleted && (
+          <Box mt={2}>
+            <Typography
+              variant="body2"
+              color="error.main"
+              fontWeight={500}
+              align="left"
+            >
+              Push your code to GitHub to trigger automated tests.
+            </Typography>
+          </Box>
+        )}
       </Box>
     </main>
   );
