@@ -6,8 +6,11 @@ import { FormErrors } from "./FormErrors";
 import { Heading } from "./Heading";
 import { PageError } from "./PageError";
 import { QuizModal } from "./QuizModal";
-import { Edit, GitHub } from "@mui/icons-material";
+import { Edit, ExpandMore, GitHub } from "@mui/icons-material";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Button,
   Divider,
@@ -100,7 +103,6 @@ export default function StudentCodeAssignment({
 
   const assignment = findAssignmentsByAssessmentIds[0];
   if (!assignment) {
-    // should never happen
     return <PageError message="No assignment found with given id." />;
   }
 
@@ -108,6 +110,14 @@ export default function StudentCodeAssignment({
     (g) => g.studentId === currentUserInfo.id
   );
   const repoLink = grading?.codeAssignmentGradingMetadata?.repoLink;
+
+  const isCompleted =
+    grading?.codeAssignmentGradingMetadata?.status === "completed";
+  const achieved = grading?.achievedCredits ?? 0;
+  const required = assignment.totalCredits
+    ? Math.round(assignment.requiredPercentage! * assignment.totalCredits!)
+    : null;
+  const passed = required != null ? achieved >= required : null;
 
   return (
     <main>
@@ -195,7 +205,6 @@ export default function StudentCodeAssignment({
               },
               "& ol": {
                 paddingLeft: "1.25rem",
-                listStyleType: "decimal",
                 marginBottom: "1rem",
               },
               "& li": {
@@ -216,79 +225,176 @@ export default function StudentCodeAssignment({
       <Divider sx={{ my: 4 }} />
 
       <Box mt={4}>
-        <Typography variant="h6" gutterBottom>
-          Automated Tests
-        </Typography>
-        <Typography>
-          <strong>Status:</strong> {/* in_progress to in progress */}
-          {grading?.codeAssignmentGradingMetadata?.status?.replace("_", " ") ??
-            "N/A"}
-        </Typography>
-        {grading?.codeAssignmentGradingMetadata?.status == "completed" &&
-          grading?.codeAssignmentGradingMetadata?.feedbackTableHtml && (
-            <Box
-              mt={2}
-              sx={{
-                overflowX: "auto",
-                border: "1px solid #e0e0e0",
-                borderRadius: 1,
-                padding: 2,
-              }}
-              dangerouslySetInnerHTML={{
-                __html: grading.codeAssignmentGradingMetadata.feedbackTableHtml,
-              }}
-            />
-          )}
-      </Box>
-
-      <Divider sx={{ my: 4 }} />
-
-      <Box mt={4} sx={{ "& > *:not(:last-child)": { mb: 2 } }}>
-        <Box
-          mt={4}
-          display="flex"
-          gap={6}
-          alignItems="flex-start"
-          flexWrap="wrap"
-        >
-          <Typography variant="h6" gutterBottom sx={{ minWidth: 120 }}>
+        <Box display="flex" alignItems="center" gap={10} mb={1}>
+          <Typography variant="h6" gutterBottom>
+            Automated Tests
+          </Typography>
+          <Typography variant="h6" gutterBottom>
             Grade
           </Typography>
+        </Box>
 
+        <Box
+          display="flex"
+          flexWrap="wrap"
+          gap={13}
+          alignItems="flex-start"
+          mb={2}
+          mt={1}
+        >
           <Box>
-            <Typography variant="subtitle2" gutterBottom>
-              Required
-            </Typography>
-            <Typography variant="body2">
-              {assignment.totalCredits
-                ? Math.round(
-                    assignment.requiredPercentage! * assignment.totalCredits!
-                  )
-                : "N/A"}
+            <Typography>
+              <strong>Status:</strong>{" "}
+              {grading?.codeAssignmentGradingMetadata?.status?.replace(
+                "_",
+                " "
+              ) ?? "N/A"}
             </Typography>
           </Box>
 
-          <Box>
-            <Typography variant="subtitle2" gutterBottom>
-              Total
-            </Typography>
-            <Typography variant="body2">
-              {assignment.totalCredits ? assignment.totalCredits : "N/A"}
-            </Typography>
-          </Box>
+          <Box display="flex" gap={6}>
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Required
+              </Typography>
+              <Typography variant="body2" align="center">{required ?? "N/A"}</Typography>
+            </Box>
 
-          <Box>
-            <Typography variant="subtitle2" gutterBottom>
-              Achieved
-            </Typography>
-            <Typography variant="body2">
-              {grading?.achievedCredits != null
-                ? grading.achievedCredits
-                : "N/A"}
-            </Typography>
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Total
+              </Typography>
+              <Typography variant="body2" align="center">
+                {assignment.totalCredits ?? "N/A"}
+              </Typography>
+            </Box>
+
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Achieved
+              </Typography>
+              <Typography variant="body2" align="center">
+                {grading?.achievedCredits != null
+                  ? grading.achievedCredits
+                  : "N/A"}
+              </Typography>
+            </Box>
+
+            {isCompleted && passed != null && (
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>
+                  Result
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color={passed ? "success.main" : "error.main"}
+                  fontWeight={500} 
+                  align="center"
+                >
+                  {passed ? "Passed" : "Not Passed"}
+                </Typography>
+              </Box>
+            )}
           </Box>
         </Box>
+
+        {isCompleted &&
+          grading?.codeAssignmentGradingMetadata?.feedbackTableHtml && (
+            <Box mt={2}>
+              {renderGroupedTestResults(
+                grading.codeAssignmentGradingMetadata.feedbackTableHtml
+              )}
+            </Box>
+          )}
+
+          {grading?.achievedCredits == null && !isCompleted && (
+  <Box mt={2}>
+    <Typography
+      variant="body2"
+      color="error.main"
+      fontWeight={500}
+      align="left"
+    >
+      Push your code to GitHub to trigger automated tests.
+    </Typography>
+  </Box>
+)}
+
       </Box>
     </main>
+  );
+}
+
+function renderGroupedTestResults(html: string) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+  const rows = Array.from(doc.querySelectorAll("tbody tr"));
+
+  const groups: Record<string, { name: string; score: string }[]> = {};
+
+  rows.forEach((row) => {
+    const cells = row.querySelectorAll("td");
+    if (cells.length >= 2) {
+      const fullName = cells[0].textContent?.trim() || "Unknown";
+      const score = cells[1].textContent?.trim() || "0";
+
+      const [rawPrefix, ...rest] = fullName.split(" - ");
+      const prefix = rawPrefix.trim();
+      const testName = rest.join(" - ").trim() || fullName;
+
+      if (!groups[prefix]) groups[prefix] = [];
+      groups[prefix].push({ name: testName, score });
+    }
+  });
+
+  const [expanded, setExpanded] = useState<string | false>(false);
+
+  const handleChange =
+    (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
+      setExpanded(isExpanded ? panel : false);
+    };
+
+  return (
+    <Box>
+      {Object.entries(groups).map(([prefix, tests]) => {
+        const totalTests = tests.length;
+        const passedTests = tests.filter((t) => t.score !== "0").length;
+
+        return (
+          <Accordion
+            key={prefix}
+            expanded={expanded === prefix}
+            onChange={handleChange(prefix)}
+            sx={{
+              borderRadius: 1,
+              mb: 1,
+              boxShadow: "none",
+              border: "1px solid #ddd",
+            }}
+          >
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography fontWeight="bold" sx={{ flexGrow: 1 }}>
+                {prefix}
+              </Typography>
+              <Typography color="text.secondary">
+                {passedTests}/{totalTests} passed
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Table size="small">
+                <TableBody>
+                  {tests.map(({ name, score }, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>{name}</TableCell>
+                      <TableCell align="center">{score}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </AccordionDetails>
+          </Accordion>
+        );
+      })}
+    </Box>
   );
 }

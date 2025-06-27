@@ -319,7 +319,7 @@ export default function LecturerCodeAssignment({
             <Typography variant="subtitle2" gutterBottom>
               Required Credits
             </Typography>
-            <Typography variant="body2">
+            <Typography variant="body2" align="center">
               {assignment.totalCredits !== null &&
               localRequiredPercentage !== null
                 ? Math.round(localRequiredPercentage * assignment.totalCredits)
@@ -331,7 +331,7 @@ export default function LecturerCodeAssignment({
             <Typography variant="subtitle2" gutterBottom>
               Total Credits
             </Typography>
-            <Typography variant="body2">
+            <Typography variant="body2" align="center">
               {assignment.totalCredits !== null
                 ? assignment.totalCredits
                 : "N/A"}
@@ -342,33 +342,48 @@ export default function LecturerCodeAssignment({
             <Typography variant="subtitle2" gutterBottom>
               Students Passed
             </Typography>
-            <Typography variant="body2">
-              {passedCount != null ? passedCount : "N/A"}
+            <Typography variant="body2" align="center">
+              {passedCount != null
+                ? `${passedCount}/${studentGrades.length}`
+                : "N/A"}
             </Typography>
           </Box>
         </Box>
       </Box>
       <Box mt={6}>
-        <Typography variant="h6" gutterBottom>
-          Grades
-        </Typography>
         <TableContainer component={Paper}>
           <Table size="small">
             <TableHead>
               <TableRow>
                 <TableCell>Student Name</TableCell>
                 <TableCell>Grade</TableCell>
+                <TableCell>Passed</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {studentGrades.map(({ studentId, achievedCredits, student }) => (
-                <TableRow key={studentId}>
-                  <TableCell>{student?.userName ?? "Unknown"}</TableCell>
-                  <TableCell>
-                    {achievedCredits != null ? achievedCredits : "-"}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {studentGrades.map(({ studentId, achievedCredits, student }) => {
+                const passed =
+                  requiredPoints != null &&
+                  (achievedCredits ?? -1) >= requiredPoints;
+
+                return (
+                  <TableRow key={studentId}>
+                    <TableCell>{student?.userName ?? "Unknown"}</TableCell>
+                    <TableCell>
+                      {achievedCredits != null ? achievedCredits : "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Typography
+                        variant="body2"
+                        color={passed ? "success.main" : "error.main"}
+                        fontWeight={500}
+                      >
+                        {passed ? "Passed" : "Not Passed"}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
