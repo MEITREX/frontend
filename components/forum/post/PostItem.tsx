@@ -55,23 +55,25 @@ export default function PostItem({ post, threadCreatorId, bestAnswerId, onMarkAs
           </Box>
           <UserPostInformation creationTime={post.creationTime} creatorId={post.authorId}></UserPostInformation>
         </Box>
-        {isThreadAuthor && (
-          <Tooltip title={isBestAnswer ? 'Best answer!' : 'Mark as best answer!'}>
-            <CheckCircleOutlineOutlinedIcon
-              onClick={onMarkAsBest}
-              sx={{
-                color: isBestAnswer ? 'green' : 'gray',
-                cursor: 'pointer',
-                fontSize: 28,
-                alignSelf: 'start',
-              }}
-            />
-          </Tooltip> )}
-        {!isThreadAuthor && isBestAnswer && (
-          <Tooltip title="Best answer!">
-            <CheckCircleOutlineOutlinedIcon sx={{ color: 'green', fontSize: 28 }} />
-          </Tooltip>
-        )}
+        <Box sx={{mr:"20px !important"}}>
+          {isThreadAuthor && (
+            <Tooltip title={isBestAnswer ? 'Best answer!' : 'Mark as best answer!'}>
+              <CheckCircleOutlineOutlinedIcon
+                onClick={onMarkAsBest}
+                sx={{
+                  color: isBestAnswer ? 'green' : 'gray',
+                  cursor: 'pointer',
+                  fontSize: 28,
+                  alignSelf: 'start',
+                }}
+              />
+            </Tooltip> )}
+          {!isThreadAuthor && isBestAnswer && (
+            <Tooltip title="Best answer!">
+              <CheckCircleOutlineOutlinedIcon sx={{ color: 'green', fontSize: 28 }} />
+            </Tooltip>
+          )}
+        </Box>
       </Stack>
     </Box>
   );

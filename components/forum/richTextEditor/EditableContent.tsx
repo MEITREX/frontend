@@ -16,6 +16,12 @@ import { ForumApiUserInfoQuery } from "@/__generated__/ForumApiUserInfoQuery.gra
 import { ForumApiDeletePostMutation } from "@/__generated__/ForumApiDeletePostMutation.graphql";
 import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
 import { usePostsActions } from "@/components/forum/context/PostsContext";
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+
 
 type Props = {
   initialContent: string,
@@ -39,6 +45,21 @@ export default function EditableContent({ initialContent, postId, authorId, cont
   const [isEditing, setIsEditing] = useState(false);
 
   const [currentContent, setCurrentContent] = useState(initialContent);
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const isMenuOpen = Boolean(anchorEl);
+
+  const handleMenuOpen = (event: any) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+    handleMenuClose();
+  };
 
   const [updatePost] = useMutation<ForumApiUpdatePostMutation>(forumApiUpdatePostMutation);
 
@@ -112,14 +133,36 @@ export default function EditableContent({ initialContent, postId, authorId, cont
           >
             (Edited)
           </Typography>}
-          {isAuthor && (<Box sx={{ mt: 2, position:"absolute", top:"-2px", right:"50px"}}>
-            <IconButton  onClick={() => handleDelete()} size="small" color={"warning"} aria-label="Edit">
-              <DeleteOutlineOutlinedIcon />
-            </IconButton>
-            <IconButton  onClick={() => setIsEditing(true)} size="small" color={"primary"} aria-label="Delete">
-              <ModeEditOutlineRoundedIcon  />
-            </IconButton>
-          </Box>)}
+          {isAuthor && (
+            <Box sx={{ position:"absolute", top:"13px", right:"8px"}}>
+              <IconButton
+                aria-label="Actions"
+                onClick={handleMenuOpen}
+                size="small"
+              >
+                <MoreVertIcon />
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={isMenuOpen}
+                onClose={handleMenuClose}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+              >
+                <MenuItem onClick={handleEditClick}>
+                  <ListItemIcon>
+                    <ModeEditOutlineRoundedIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Edit</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+                  <ListItemIcon>
+                    <DeleteOutlineOutlinedIcon fontSize="small" color="error" />
+                  </ListItemIcon>
+                  <ListItemText>Delete</ListItemText>
+                </MenuItem>
+              </Menu>
+            </Box>)}
         </>
       )}
     </Box>

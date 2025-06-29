@@ -62,7 +62,7 @@ export default function ThreadItem({ thread }: Props) {
             />
             <Box>
               {thread.info?.content && <Tooltip title="Thread is related to content!">
-                <PermMediaOutlinedIcon sx={{ color: 'black', fontSize: 24 }} />
+                <PermMediaOutlinedIcon sx={{ color: 'grey', fontSize: 24 }} />
               </Tooltip>}
 
               {thread.selectedAnswer?.id && <Tooltip title="Best answer selected!">
