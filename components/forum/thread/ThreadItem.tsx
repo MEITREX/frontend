@@ -10,6 +10,7 @@ import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutli
 import PermMediaOutlinedIcon from '@mui/icons-material/PermMediaOutlined';
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import ThreadStatusIcons from "@/components/forum/thread/ThreadStatusIcons";
 
 type Props = {
   thread: ThreadType;
@@ -67,25 +68,9 @@ export default function ThreadItem({ thread, onThreadClick }: Props) {
               numberOfPosts={thread.numberOfPosts}
               creatorId={thread.creatorId}
             />
-            <Box>
-              {thread.threadContentReference?.contentId && <Tooltip title="Thread is related to content!">
-                <PermMediaOutlinedIcon sx={{ color: 'grey', fontSize: 24 }} />
-              </Tooltip>}
 
-              {thread.selectedAnswer?.id && <Tooltip title="Best answer selected!">
-                <CheckCircleOutlineOutlinedIcon sx={{ color: 'green', fontSize: 28 }} />
-              </Tooltip>}
-              {thread.info && (
-                <Tooltip title="Info Thread">
-                  <InfoOutlinedIcon sx={{ fontSize: 28, color: "#1976d2" }} />
-                </Tooltip>
-              )}
-              {thread.question && (
-                <Tooltip title="Question Thread">
-                  <HelpOutlineIcon sx={{ fontSize: 28, color: "#ff9800" }} />
-                </Tooltip>
-              )}
-            </Box>
+            <ThreadStatusIcons thread={thread} />
+
           </Stack>
         </Stack>
       </Stack>

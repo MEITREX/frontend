@@ -149,6 +149,9 @@ export const forumApiThreadByMediaRecordQuery = graphql`
       creationTime
       creatorId
       numberOfPosts
+      threadContentReference {
+          contentId
+      }
       __typename
       ... on InfoThread {
         info {
