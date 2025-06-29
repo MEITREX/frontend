@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo, Suspense } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { useParams, usePathname } from "next/navigation";
 import ThreadList from "@/components/forum/thread/ThreadList";
@@ -10,6 +10,9 @@ import { forumApiThreadByMediaRecordQuery } from "@/components/forum/api/ForumAp
 import ThreadForm from "@/components/forum/thread/ThreadForm";
 import { ForumApiThreadsCombinedQuery } from "@/__generated__/ForumApiThreadsCombinedQuery.graphql";
 import ThreadDetail from "./thread/ThreadDetail";
+import SkeletonThreadForm from "@/components/forum/skeleton/SkeletonThreadForm";
+import SkeletonThreadDetail from "./skeleton/SkeletonThreadDetail";
+import SkeletonThreadList from "./skeleton/SkeletonThreadList";
 
 export default function ForumOverview() {
   const params = useParams();
@@ -120,23 +123,29 @@ export default function ForumOverview() {
                 All displayed Threads are related to this Content!
               </Typography>
             )}
-            <ThreadList
-              threads={filteredAndSortedThreads}
-              onThreadClick={handleThreadClick}
-            />
+            <Suspense fallback={<SkeletonThreadList/>}>
+              <ThreadList
+                threads={filteredAndSortedThreads}
+                onThreadClick={handleThreadClick}
+              />
+            </Suspense>
           </>
         )}
         {viewMode === "createNewThreadMediaContent" && (
           <Box sx={{ overflowY: "scroll" }}>
-            <ThreadForm redirect={() => handleCreationComplete()} />
+            <Suspense fallback={<SkeletonThreadForm/>}>
+              <ThreadForm redirect={() => handleCreationComplete()} />
+            </Suspense>
           </Box>
         )}
         {viewMode === "threadDetail" && (
           <Box sx={{ height: "78vh", overflowY: "auto", p: 2 }}>
-            <ThreadDetail
-              threadId={selectedThreadId}
-              redirect={() => handleCreationComplete()}
-            />
+            <Suspense fallback={<SkeletonThreadDetail/>}>
+              <ThreadDetail
+                threadId={selectedThreadId}
+                redirect={() => handleCreationComplete()}
+              />
+            </Suspense>
           </Box>
         )}
       </Box>
