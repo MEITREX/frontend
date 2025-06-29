@@ -38,42 +38,7 @@ export const forumApiThreadDetailQuery = graphql`
         authorId
         downvotedByUsers
         upvotedByUsers
-      }
-    }
-  }
-`;
-
-
-export const forumApiThreadListQuery = graphql`
-  query ForumApiThreadListQuery($id: UUID!) {
-    forumByCourseId(id: $id) {
-      id
-      threads {
-        id
-        title
-        creationTime
-        creatorId
-        numberOfPosts
-        __typename
-        ... on InfoThread {
-          info {
-            id
-            content
-            downvotedByUsers
-            upvotedByUsers
-          }
-        }
-        ... on QuestionThread{
-          question {
-            id
-            content
-            downvotedByUsers
-            upvotedByUsers
-          }
-          selectedAnswer{
-            id
-          }
-        }
+        edited
       }
     }
   }
@@ -169,6 +134,68 @@ export const forumApiDeletePostMutation =   graphql`
   mutation ForumApiDeletePostMutation($postId: UUID!) {
     deletePost(postId: $postId) {
       id
+    }
+  }
+`
+
+export const forumApiThreadByMediaRecordQuery = graphql`
+    query ForumApiThreadsCombinedQuery($courseId: UUID!, $contentId: UUID!, $hasContentId: Boolean!) {
+      threadsByContentId(id: $contentId) @include(if: $hasContentId) {
+      id
+      title
+      creationTime
+      creatorId
+      numberOfPosts
+      __typename
+      ... on InfoThread {
+        info {
+          id
+          content
+          downvotedByUsers
+          upvotedByUsers
+        }
+      }
+      ... on QuestionThread {
+        question {
+          id
+          content
+          downvotedByUsers
+          upvotedByUsers
+        }
+        selectedAnswer {
+          id
+        }
+      }
+    }
+      forumByCourseId(id: $courseId) @skip(if: $hasContentId) {
+      id
+      threads {
+        id
+        title
+        creationTime
+        creatorId
+        numberOfPosts
+        __typename
+        ... on InfoThread {
+          info {
+            id
+            content
+            downvotedByUsers
+            upvotedByUsers
+          }
+        }
+        ... on QuestionThread {
+          question {
+            id
+            content
+            downvotedByUsers
+            upvotedByUsers
+          }
+          selectedAnswer {
+            id
+          }
+        }
+      }
     }
   }
 `

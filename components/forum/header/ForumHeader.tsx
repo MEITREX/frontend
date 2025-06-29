@@ -8,8 +8,24 @@ import { ToggleButton, ToggleButtonGroup, Typography, alpha } from '@mui/materia
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
 
-export default function ForumHeader({ sortBy, setSortBy, categoryFilter, setCategoryFilter }) {
+type ForumHeaderProps = {
+  sortBy: string;
+  setSortBy: (value: string) => void;
+  categoryFilter: string;
+  setCategoryFilter: (value: string) => void;
+  createThreadOnMediaContent?: () => void;
+};
+
+export default function ForumHeader({
+                                      sortBy,
+                                      setSortBy,
+                                      categoryFilter,
+                                      setCategoryFilter,
+                                      createThreadOnMediaContent
+                                    }: ForumHeaderProps) {
   const pathname = usePathname();
+  const isMediaPage = pathname.includes('/media/');
+
 
   const handleCategoryChange = (event, newCategory) => {
     if (newCategory !== null) {
@@ -47,7 +63,7 @@ export default function ForumHeader({ sortBy, setSortBy, categoryFilter, setCate
         </ToggleButtonGroup>
 
         <Stack direction="row" spacing={1} alignItems="center">
-          <Typography variant="body2" color="text.secondary">Sort by:</Typography>
+          <Typography variant="body2" color="text.secondary"></Typography>
           <Select
             size="small"
             value={sortBy}
@@ -64,11 +80,21 @@ export default function ForumHeader({ sortBy, setSortBy, categoryFilter, setCate
 
       </Stack>
 
-      <Link href={`${pathname}/new`} passHref>
-        <Button component="div" variant="contained" color="primary" size="medium">
-          + Create Thread
+      {isMediaPage ? (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={createThreadOnMediaContent}
+        >
+          +
         </Button>
-      </Link>
+      ) : (
+        <Link href={`${pathname}/new`} passHref>
+          <Button component="div" variant="contained" color="primary">
+            +
+          </Button>
+        </Link>
+      )}
     </Box>
   );
 }

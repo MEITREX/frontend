@@ -32,11 +32,26 @@ import { useLazyLoadQuery, useMutation } from "react-relay";
 import { ForumApiForumIdQuery } from "@/__generated__/ForumApiForumIdQuery.graphql";
 import TextEditor from "@/components/forum/richTextEditor/TextEditor";
 
-export default function ThreadForm() {
+type Props = {
+  mediaContentViewMode?: boolean;
+  redirect?: () => void;
+}
+
+export default function ThreadForm({mediaContentViewMode = false, redirect}: Props) {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const router = useRouter();
   const params = useParams();
   const courseId = params.courseId as string;
+  const mediaId = params.mediaId as string
+
+
+  const contentReferenceData = {
+    contentId: mediaId,
+    /*
+    TODO add time stamps and page numbers
+    timeStampSeconds: 12,
+    pageNumber: "2"*/
+  };
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -51,7 +66,18 @@ export default function ThreadForm() {
   const data = useLazyLoadQuery<ForumApiForumIdQuery>(
     forumApiForumIdQuery,
     { id: courseId },
+    { fetchPolicy: 'network-only' }
   );
+  console.log(data);
+
+  const handleCreationSuccess = () => {
+    if (!mediaContentViewMode) {
+      router.push(`/courses/${courseId}/forum`);
+      return;
+    }
+    redirect?.();
+    setSnackbarOpen(true);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,12 +115,13 @@ export default function ThreadForm() {
         forumId: data.forumByCourseId?.id as string,
         title: title.trim(),
         question: { content: content.trim() },
+        ...(mediaContentViewMode && { threadContentReference: contentReferenceData }),
+
       };
       commitQuestion({
         variables: { thread: questionThreadInput },
         onCompleted(data) {
-          setSnackbarOpen(true);
-          router.push(`/courses/${courseId}/forum`);
+          handleCreationSuccess();
         },
         onError(error) {
           console.error("Question Thread failed:", error);
@@ -105,12 +132,13 @@ export default function ThreadForm() {
         forumId: data.forumByCourseId?.id as string,
         title: title.trim(),
         info: { content: content.trim() },
+        ...(mediaContentViewMode && { threadContentReference: contentReferenceData }),
+
       };
       commitInfo({
         variables: { thread: infoThreadInput },
         onCompleted(data) {
-          setSnackbarOpen(true);
-          router.push(`/courses/${courseId}/forum`);
+          handleCreationSuccess();
         },
         onError(error) {
           console.error("Info Thread failed:", error);
@@ -119,9 +147,10 @@ export default function ThreadForm() {
     }
   };
 
+
   return (
     <>
-      <Link href={`/courses/${courseId}/forum`} passHref>
+    {!mediaContentViewMode ? (<Link href={`/courses/${courseId}/forum`} passHref>
         <Button
           component="a"
           variant="text"
@@ -130,13 +159,32 @@ export default function ThreadForm() {
         >
           Back
         </Button>
-      </Link>
+      </Link>):
+      (
+        <Button
+          onClick={redirect}
+        component="a"
+        variant="text"
+        startIcon={<ArrowBackIcon />}
+        sx={{ mb: 2 }}
+      >
+        Back
+      </Button>)
+    }
 
       <Box sx={{ backgroundColor: "#f5f7fa", borderRadius: 2,
         maxWidth: "800px", mx: "auto", px: 2, py: 2 }}>
         <Typography variant="h5" fontWeight={600} mb={2}>
           Create new Thread
         </Typography>
+
+
+        {mediaContentViewMode && <Typography
+          variant="body2"
+          sx={{ color: 'success.main', mb:2}}
+        >
+          This Thread will be related to this content: {mediaId}
+        </Typography>}
 
         <form onSubmit={handleSubmit}>
           <Box mb={2}>

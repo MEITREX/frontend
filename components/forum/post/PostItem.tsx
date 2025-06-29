@@ -21,7 +21,6 @@ type Props = {
 };
 
 export default function PostItem({ post, threadCreatorId, bestAnswerId, onMarkAsBest }: Props) {
-  const [isEditing, setIsEditing] = useState(false);
 
   const loggedInUser = useLazyLoadQuery<ForumApiUserInfoQuery>(
     forumApiUserInfoQuery,

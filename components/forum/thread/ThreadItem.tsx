@@ -6,6 +6,8 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import React from "react";
 import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import PermMediaOutlinedIcon from '@mui/icons-material/PermMediaOutlined';
 
 type Props = {
   thread: ThreadType;
@@ -58,16 +60,25 @@ export default function ThreadItem({ thread }: Props) {
               numberOfPosts={thread.numberOfPosts}
               creatorId={thread.creatorId}
             />
-            {thread.info && (
-              <Tooltip title="Info Thread">
-                <InfoOutlinedIcon sx={{ fontSize: 28, color: "#1976d2" }} />
-              </Tooltip>
-            )}
-            {thread.question && (
-              <Tooltip title="Question Thread">
-                <HelpOutlineIcon sx={{ fontSize: 28, color: "#ff9800" }} />
-              </Tooltip>
-            )}
+            <Box>
+              {thread.info?.content && <Tooltip title="Thread is related to content!">
+                <PermMediaOutlinedIcon sx={{ color: 'black', fontSize: 24 }} />
+              </Tooltip>}
+
+              {thread.selectedAnswer?.id && <Tooltip title="Best answer selected!">
+                <CheckCircleOutlineOutlinedIcon sx={{ color: 'green', fontSize: 28 }} />
+              </Tooltip>}
+              {thread.info && (
+                <Tooltip title="Info Thread">
+                  <InfoOutlinedIcon sx={{ fontSize: 28, color: "#1976d2" }} />
+                </Tooltip>
+              )}
+              {thread.question && (
+                <Tooltip title="Question Thread">
+                  <HelpOutlineIcon sx={{ fontSize: 28, color: "#ff9800" }} />
+                </Tooltip>
+              )}
+            </Box>
           </Stack>
         </Stack>
       </Stack>

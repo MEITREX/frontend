@@ -587,6 +587,7 @@ type InfoThread implements Thread {
   info: Post!
   numberOfPosts: Int!
   posts: [Post!]!
+  threadContentReference: ThreadContentReference
   title: String!
 }
 
@@ -602,6 +603,7 @@ input InputForum {
 input InputInfoThread {
   forumId: UUID!
   info: InputPost!
+  threadContentReference: InputThreadContentReferenceOnCreate
   title: String!
 }
 
@@ -615,13 +617,20 @@ input InputQuestionThread {
   answer: InputPost
   forumId: UUID!
   question: InputPost!
+  threadContentReference: InputThreadContentReferenceOnCreate
   title: String!
 }
 
-input InputThreadMediaRecordReference {
-  mediaRecordId: UUID!
+input InputThreadContentReference {
+  contentId: UUID!
   pageNumber: Int
   threadId: UUID!
+  timeStampSeconds: Int
+}
+
+input InputThreadContentReferenceOnCreate {
+  contentId: UUID!
+  pageNumber: Int
   timeStampSeconds: Int
 }
 
@@ -755,7 +764,7 @@ type MultipleChoiceQuestion implements Question {
 
 type Mutation {
   addPost(post: InputPost!): Post
-  addThreadToMediaRecord(threadMediaRecordReference: InputThreadMediaRecordReference!): ThreadMediaRecordReference
+  addThreadToContent(threadContentReference: InputThreadContentReference!): ThreadContentReference
   createChapter(input: CreateChapterInput!): Chapter!
   createCourse(input: CreateCourseInput!): Course!
   createFlashcardSetAssessment(assessmentInput: CreateAssessmentInput!, flashcardSetInput: CreateFlashcardSetInput!): FlashcardSetAssessment
@@ -774,6 +783,7 @@ type Mutation {
   deleteMembership(input: CourseMembershipInput!): CourseMembership!
   deletePost(postId: UUID!): Post
   deleteQuiz(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the quiz and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
+  deleteThread(threadId: UUID!): Thread
   downvotePost(postId: UUID!): Post
   evaluatePlayerHexadScore(input: PlayerAnswerInput!, userId: UUID!): PlayerHexadScore!
   joinCourse(courseId: UUID!): CourseMembership!
@@ -879,6 +889,7 @@ type Post {
   content: String!
   creationTime: DateTime!
   downvotedByUsers: [UUID]!
+  edited: Boolean!
   id: UUID!
   upvotedByUsers: [UUID]!
 }
@@ -928,7 +939,7 @@ type Query {
   semanticSearch(count: Int! = 10, courseWhitelist: [UUID!], queryText: String!): [SemanticSearchResult!]!
   suggestionsByChapterIds(amount: Int!, chapterIds: [UUID!]!, skillTypes: [SkillType!]! = []): [Suggestion!]!
   thread(id: UUID!): Thread
-  threadsByMediaRecord(id: UUID!): [Thread!]!
+  threadsByContentId(id: UUID!): [Thread!]!
   userCourseRewardScores(courseId: UUID!): RewardScores!
   userMediaRecords: [MediaRecord!]!
 }
@@ -965,6 +976,7 @@ type QuestionThread implements Thread {
   posts: [Post!]!
   question: Post!
   selectedAnswer: Post
+  threadContentReference: ThreadContentReference
   title: String!
 }
 
@@ -1221,11 +1233,12 @@ interface Thread {
   id: UUID!
   numberOfPosts: Int!
   posts: [Post!]!
+  threadContentReference: ThreadContentReference
   title: String!
 }
 
-type ThreadMediaRecordReference {
-  mediaRecordId: UUID!
+type ThreadContentReference {
+  contentId: UUID!
   pageNumber: Int
   threadId: UUID!
   timeStampSeconds: Int
