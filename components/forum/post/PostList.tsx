@@ -17,8 +17,16 @@ export default function PostList({posts,threadCreatorId, bestAnswerId }: Props) 
   const [bestAnswerLocalId, setBestAnswerLocalId] = useState<string | null>(bestAnswerId?.id ?? null);
 
   if (posts.length === 0) {
-    return <Typography variant="body2" color="text.secondary">No Answers.</Typography>;
-  }
+    <Typography
+      variant="caption"
+      sx={{
+        p: 2,
+        fontStyle: 'italic',
+        color: 'text.secondary',
+      }}
+    >
+      There are currently no Answers
+    </Typography>  }
 
   const handleMarkAsBest = (id: string)=> {
     selectBestAnswer({
