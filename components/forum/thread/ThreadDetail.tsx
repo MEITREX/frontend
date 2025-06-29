@@ -128,7 +128,7 @@ export default function ThreadDetail({thread, courseId}: Props) {
               />}
 
               <Box>
-                {thread.info?.content && <Tooltip title="Thread is related to content!">
+                {thread.threadContentReference?.contentId && <Tooltip title="Thread is related to content!">
                   <PermMediaOutlinedIcon sx={{ color: 'grey', fontSize: 24 }} />
                 </Tooltip>}
                 {thread.selectedAnswer?.id && <Tooltip title="Best answer selected!">

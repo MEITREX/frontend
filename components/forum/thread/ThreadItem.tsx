@@ -68,7 +68,7 @@ export default function ThreadItem({ thread }: Props) {
               creatorId={thread.creatorId}
             />
             <Box>
-              {thread.info?.content && <Tooltip title="Thread is related to content!">
+              {thread.threadContentReference?.contentId && <Tooltip title="Thread is related to content!">
                 <PermMediaOutlinedIcon sx={{ color: 'grey', fontSize: 24 }} />
               </Tooltip>}
 
