@@ -8,12 +8,16 @@ import React from "react";
 import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import PermMediaOutlinedIcon from '@mui/icons-material/PermMediaOutlined';
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 type Props = {
   thread: ThreadType;
 };
 
 export default function ThreadItem({ thread }: Props) {
+  const pathname = usePathname();
+
   return (
     <Box
       sx={{
@@ -43,6 +47,8 @@ export default function ThreadItem({ thread }: Props) {
           justifyContent="space-between"
           sx={{ flexGrow: 1, overflow: "hidden", position: "relative" }}
         >
+          <Link href={`${pathname}/${thread.id}`} passHref>
+
           <Box>
             <Typography variant="h6" sx={{ color: "#089CDC", fontWeight: 600 }}>
               {thread.title}
@@ -53,6 +59,7 @@ export default function ThreadItem({ thread }: Props) {
             </Box>
 
           </Box>
+          </Link>
 
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <UserPostInformation
