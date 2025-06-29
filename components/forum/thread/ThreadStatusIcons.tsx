@@ -33,18 +33,17 @@ export default function ThreadStatusIcons({ thread }: ThreadStatusIconsProps) {
         </Tooltip>
       )}
       {thread.selectedAnswer?.id && (
-        <Tooltip title="Die Frage wurde beantwortet">
+        <Tooltip title="Best answer selected!">
           <CheckCircleOutlineOutlinedIcon color="success" sx={{ fontSize: '1.25rem' }} />
         </Tooltip>
       )}
       {thread.info && (
-        <Tooltip title="Info-Beitrag">
-          {/* `color="info"` verwendet das Standard-Blau Ihres Themes */}
+        <Tooltip title="Info Thread">
           <InfoOutlinedIcon color="info" sx={{ fontSize: '1.25rem' }} />
         </Tooltip>
       )}
       {thread.question && (
-        <Tooltip title="Frage">
+        <Tooltip title="Question Thread!">
           <HelpOutlineIcon color="warning" sx={{ fontSize: '1.25rem' }} />
         </Tooltip>
       )}
