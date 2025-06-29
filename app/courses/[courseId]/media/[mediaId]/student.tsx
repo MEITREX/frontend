@@ -6,13 +6,14 @@ import { ContentTags } from "@/components/ContentTags";
 import { Heading } from "@/components/Heading";
 import { PageError } from "@/components/PageError";
 import { Download } from "@mui/icons-material";
-import { Alert, Button } from "@mui/material";
+import { Alert, Box, Button, IconButton, Tooltip } from "@mui/material";
 import "@vidstack/react/player/styles/default/layouts/video.css";
 import "@vidstack/react/player/styles/default/theme.css";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import { clamp } from "lodash";
 import { DocumentSide } from "./DocumentSide";
+import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 
 dayjs.extend(duration);
 
@@ -22,8 +23,12 @@ import { useRef, useState } from "react";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
 import { SimilarSegments } from "./SimilarSegments";
 import { VideoSide } from "./VideoSide";
+import CloseIcon from "@mui/icons-material/Close";
+import ForumIcon from "@mui/icons-material/Forum";
+import ForumOverview from "@/components/forum/ForumOverview";
 
 export default function StudentMediaPage() {
+  const [displayForum, setDisplayForum] = useState<boolean>(false);
   const { mediaId } = useParams();
   const {
     contentsByIds: [content],
@@ -83,6 +88,12 @@ export default function StudentMediaPage() {
   return (
     <main className="flex flex-col h-full">
       <SimilarSegments />
+      <PanelGroup direction="horizontal" className="w-full h-full flex-grow">
+        <Panel
+          defaultSize={displayForum ? 50 : 100}
+          minSize={0}
+          className="flex flex-col h-full overflow-hidden p-4"
+        >
 
       <Heading
         title={content.metadata.name}
@@ -176,6 +187,48 @@ export default function StudentMediaPage() {
           <DocumentSide setError={setError} _content={content} />
         )}
       </div>
+        </Panel>
+
+        {displayForum && (
+          <>
+            <PanelResizeHandle className="w-2 bg-gray-200 hover:bg-gray-400 cursor-ew-resize flex items-center justify-center">
+              <div className="w-1 h-8 bg-gray-500 rounded-full" />
+            </PanelResizeHandle>
+            <Panel
+              defaultSize={displayForum ? 50 : 0}
+              minSize={displayForum ? 50 : 0}
+              className="h-full overflow-hidden"
+            >
+              <ForumOverview></ForumOverview>
+            </Panel>
+          </>
+        )}
+      </PanelGroup>
+      <Box sx={{ position: "fixed", bottom: 24, right: 24, zIndex: 10 }}>
+        <Tooltip title={displayForum ? "Close Forum" : "Open Forum"}>
+          <IconButton
+            onClick={() => setDisplayForum((prev) => !prev)}
+            color="primary"
+            aria-label={displayForum ? "Close Forum" : "Open Forum"}
+            sx={{
+              backgroundColor: "primary.main",
+              color: "white",
+              boxShadow: 3,
+              "&:hover": {
+                backgroundColor: "primary.dark",
+              },
+              width: "56",
+              height: "56",
+            }}
+          >
+            {displayForum ? (
+              <CloseIcon fontSize="large" />
+            ) : (
+              <ForumIcon fontSize="large" />
+            )}
+          </IconButton>
+        </Tooltip>
+      </Box>
     </main>
   );
 }
