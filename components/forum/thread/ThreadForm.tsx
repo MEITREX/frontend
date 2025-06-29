@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Box,
   TextField,
@@ -10,22 +10,22 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Snackbar,
-  Paper
+  Paper,
 } from "@mui/material";
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useParams, usePathname } from "next/navigation";
 import {
   ForumApiCreateInfoThreadMutation,
-  InputInfoThread
+  InputInfoThread,
 } from "@/__generated__/ForumApiCreateInfoThreadMutation.graphql";
 import {
   ForumApiCreateQuestionThreadMutation,
-  InputQuestionThread
+  InputQuestionThread,
 } from "@/__generated__/ForumApiCreateQuestionThreadMutation.graphql";
 import {
   forumApiCreateInfoThreadMutation,
   forumApiCreateQuestionThreadMutation,
-  forumApiForumIdQuery
+  forumApiForumIdQuery,
 } from "../api/ForumApi";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { ForumApiForumIdQuery } from "@/__generated__/ForumApiForumIdQuery.graphql";
@@ -33,17 +33,16 @@ import TextEditor from "@/components/forum/richTextEditor/TextEditor";
 
 type Props = {
   redirect: () => void;
-}
+};
 
-export default function ThreadForm({redirect}: Props) {
+export default function ThreadForm({ redirect }: Props) {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const params = useParams();
   const courseId = params.courseId as string;
-  const mediaId = params.mediaId as string
+  const mediaId = params.mediaId as string;
 
   const pathname = usePathname();
-  const isMediaPage = pathname.includes('/media/');
-
+  const isMediaPage = pathname.includes("/media/");
 
   const contentReferenceData = {
     contentId: mediaId,
@@ -53,20 +52,24 @@ export default function ThreadForm({redirect}: Props) {
     pageNumber: "2"*/
   };
 
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [threadType, setThreadType] = useState<'QUESTION' | 'INFO'>('QUESTION');
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [threadType, setThreadType] = useState<"QUESTION" | "INFO">("QUESTION");
 
-  const [titleError, setTitleError] = useState('');
-  const [contentError, setContentError] = useState('');
+  const [titleError, setTitleError] = useState("");
+  const [contentError, setContentError] = useState("");
 
-  const [commitQuestion] = useMutation<ForumApiCreateQuestionThreadMutation>(forumApiCreateQuestionThreadMutation);
-  const [commitInfo] = useMutation<ForumApiCreateInfoThreadMutation>(forumApiCreateInfoThreadMutation);
+  const [commitQuestion] = useMutation<ForumApiCreateQuestionThreadMutation>(
+    forumApiCreateQuestionThreadMutation
+  );
+  const [commitInfo] = useMutation<ForumApiCreateInfoThreadMutation>(
+    forumApiCreateInfoThreadMutation
+  );
 
   const data = useLazyLoadQuery<ForumApiForumIdQuery>(
     forumApiForumIdQuery,
     { id: courseId },
-    { fetchPolicy: 'network-only' }
+    { fetchPolicy: "network-only" }
   );
 
   const handleCreationSuccess = () => {
@@ -77,41 +80,39 @@ export default function ThreadForm({redirect}: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    setTitleError('');
-    setContentError('');
+    setTitleError("");
+    setContentError("");
 
     let valid = true;
 
     const trimmedTitle = title.trim();
     const trimmedContent = content.trim();
 
-
     // TODO: Somehow this is not working?
-    if (trimmedTitle === '') {
-      setTitleError('Title is required.');
+    if (trimmedTitle === "") {
+      setTitleError("Title is required.");
       valid = false;
     } else if (trimmedTitle.length > 50) {
-      setTitleError('Title must be under 50 characters.');
+      setTitleError("Title must be under 50 characters.");
       valid = false;
     }
 
-    if (trimmedContent === '') {
-      setContentError('Content is required.');
+    if (trimmedContent === "") {
+      setContentError("Content is required.");
       valid = false;
     } else if (trimmedContent.length > 500) {
-      setContentError('Content must be under 500 characters.');
+      setContentError("Content must be under 500 characters.");
       valid = false;
     }
 
     if (!valid) return;
 
-    if (threadType === 'QUESTION') {
+    if (threadType === "QUESTION") {
       const questionThreadInput: InputQuestionThread = {
         forumId: data.forumByCourseId?.id as string,
         title: title.trim(),
         question: { content: content.trim() },
         ...(isMediaPage && { threadContentReference: contentReferenceData }),
-
       };
       commitQuestion({
         variables: { thread: questionThreadInput },
@@ -128,7 +129,6 @@ export default function ThreadForm({redirect}: Props) {
         title: title.trim(),
         info: { content: content.trim() },
         ...(isMediaPage && { threadContentReference: contentReferenceData }),
-
       };
       commitInfo({
         variables: { thread: infoThreadInput },
@@ -142,32 +142,37 @@ export default function ThreadForm({redirect}: Props) {
     }
   };
 
-
   return (
     <>
       <Button
         onClick={redirect}
-      component="a"
-      variant="text"
-      startIcon={<ArrowBackIcon />}
-      sx={{ mb: 2 }}
-    >
-      Back
-    </Button>
+        component="a"
+        variant="text"
+        startIcon={<ArrowBackIcon />}
+        sx={{ mb: 2 }}
+      >
+        Back
+      </Button>
 
-      <Box sx={{ backgroundColor: "#f5f7fa", borderRadius: 2,
-        maxWidth: "800px", mx: "auto", px: 2, py: 2 }}>
+      <Box
+        sx={{
+          backgroundColor: "#f5f7fa",
+          borderRadius: 2,
+          maxWidth: "800px",
+          mx: "auto",
+          px: 2,
+          py: 2,
+        }}
+      >
         <Typography variant="h5" fontWeight={600} mb={2}>
           Create new Thread
         </Typography>
 
-
-        {isMediaPage && <Typography
-          variant="body2"
-          sx={{ color: 'success.main', mb:2}}
-        >
-          This Thread will be related to this content: {mediaId}
-        </Typography>}
+        {isMediaPage && (
+          <Typography variant="body2" sx={{ color: "success.main", mb: 2 }}>
+            This Thread will be related to this content: {mediaId}
+          </Typography>
+        )}
 
         <form onSubmit={handleSubmit}>
           <Box mb={2}>
@@ -186,22 +191,25 @@ export default function ThreadForm({redirect}: Props) {
           </Box>
 
           <Stack spacing={3}>
-            <Paper elevation={1} sx={{ p: 2, borderRadius: 3, bgcolor: '#fff' }}>
-
-            <TextField
-              label="Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              fullWidth
-              error={!!titleError}
-              helperText={titleError}
-              inputProps={{ maxLength: 100 }}
-            />
+            <Paper
+              elevation={1}
+              sx={{ p: 2, borderRadius: 3, bgcolor: "#fff" }}
+            >
+              <TextField
+                label="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                fullWidth
+                error={!!titleError}
+                helperText={titleError}
+                inputProps={{ maxLength: 100 }}
+              />
             </Paper>
 
-
-            <TextEditor onContentChange={(html) =>  setContent(html)}></TextEditor>
+            <TextEditor
+              onContentChange={(html) => setContent(html)}
+            ></TextEditor>
 
             <Button type="submit" variant="contained" size="large">
               Create Thread
@@ -210,11 +218,11 @@ export default function ThreadForm({redirect}: Props) {
         </form>
       </Box>
       <Snackbar
-        sx={{ width: '100%' }}
+        sx={{ width: "100%" }}
         open={snackbarOpen}
         autoHideDuration={5000}
-        onClose={()=> setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
         message="Thread was created!"
       />
     </>

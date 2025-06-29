@@ -1,7 +1,7 @@
 import { ForumApiThreadListQuery } from "@/__generated__/ForumApiThreadListQuery.graphql";
 import {
   ForumApiThreadDetailQuery,
-  ForumApiThreadDetailQuery$data
+  ForumApiThreadDetailQuery$data,
 } from "@/__generated__/ForumApiThreadDetailQuery.graphql";
 
 export type ThreadListType = NonNullable<
@@ -10,9 +10,11 @@ export type ThreadListType = NonNullable<
 
 export type ThreadType = ThreadListType[number];
 
-export type ThreadDetailType  = NonNullable<
+export type ThreadDetailType = NonNullable<
   NonNullable<ForumApiThreadDetailQuery["response"]["thread"]>
 >;
 
-export type PostsType = NonNullable<ForumApiThreadDetailQuery$data["thread"]>["posts"];
-export type Post = PostsType[number]
+export type PostsType = NonNullable<
+  ForumApiThreadDetailQuery$data["thread"]
+>["posts"];
+export type Post = PostsType[number];

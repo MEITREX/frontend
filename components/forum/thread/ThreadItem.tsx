@@ -7,7 +7,7 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import React from "react";
 import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
-import PermMediaOutlinedIcon from '@mui/icons-material/PermMediaOutlined';
+import PermMediaOutlinedIcon from "@mui/icons-material/PermMediaOutlined";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import ThreadStatusIcons from "@/components/forum/thread/ThreadStatusIcons";
@@ -15,11 +15,9 @@ import ThreadStatusIcons from "@/components/forum/thread/ThreadStatusIcons";
 type Props = {
   thread: ThreadType;
   onThreadClick?: (threadId: string) => void;
-
 };
 
 export default function ThreadItem({ thread, onThreadClick }: Props) {
-
   return (
     <Box
       sx={{
@@ -34,14 +32,18 @@ export default function ThreadItem({ thread, onThreadClick }: Props) {
         transition: "0.2s",
         "&:hover": {
           backgroundColor: "#f5f5f5",
-          cursor:"pointer"
+          cursor: "pointer",
         },
       }}
     >
       <Stack direction="row" spacing={2}>
         <UpvoteDownvote
-          upvotedByUsers={thread.info?.upvotedByUsers ?? thread.question?.upvotedByUsers}
-          downvotedByUsers={thread.info?.downvotedByUsers ?? thread.question?.downvotedByUsers}
+          upvotedByUsers={
+            thread.info?.upvotedByUsers ?? thread.question?.upvotedByUsers
+          }
+          downvotedByUsers={
+            thread.info?.downvotedByUsers ?? thread.question?.downvotedByUsers
+          }
           postId={thread.info?.id ?? thread.question?.id!}
         />
 
@@ -50,27 +52,28 @@ export default function ThreadItem({ thread, onThreadClick }: Props) {
           justifyContent="space-between"
           sx={{ flexGrow: 1, overflow: "hidden", position: "relative" }}
         >
-
-
           <Box onClick={() => onThreadClick?.(thread.id)}>
-              <Typography variant="h6" sx={{ color: "#089CDC", fontWeight: 600 }}>
-                {thread.title}
-              </Typography>
+            <Typography variant="h6" sx={{ color: "#089CDC", fontWeight: 600 }}>
+              {thread.title}
+            </Typography>
 
-              <Box sx={{overflow: "hidden",height:"1.5em"}}>
-                <ContentViewer htmlContent={thread.question?.content ?? thread.info?.content!}></ContentViewer>
-              </Box>
+            <Box sx={{ overflow: "hidden", height: "1.5em" }}>
+              <ContentViewer
+                htmlContent={thread.question?.content ?? thread.info?.content!}
+              ></ContentViewer>
             </Box>
-
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
+          </Box>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <UserPostInformation
               creationTime={thread.creationTime!}
               numberOfPosts={thread.numberOfPosts}
               creatorId={thread.creatorId}
             />
-
             <ThreadStatusIcons thread={thread} />
-
           </Stack>
         </Stack>
       </Stack>

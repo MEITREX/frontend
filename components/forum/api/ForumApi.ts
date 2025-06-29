@@ -9,8 +9,8 @@ export const forumApiThreadDetailQuery = graphql`
       creationTime
       numberOfPosts
       threadContentReference {
-            contentId       
-        }
+        contentId
+      }
       ... on InfoThread {
         info {
           id
@@ -64,16 +64,17 @@ export const forumApiCreateQuestionThreadMutation = graphql`
 `;
 
 export const forumApiAddPostMutation = graphql`
-mutation ForumApiAddPostMutation($post: InputPost!) {
-  addPost(post: $post) {
-    id
-    content
-    creationTime
-    authorId
-    downvotedByUsers
-    upvotedByUsers
+  mutation ForumApiAddPostMutation($post: InputPost!) {
+    addPost(post: $post) {
+      id
+      content
+      creationTime
+      authorId
+      downvotedByUsers
+      upvotedByUsers
+    }
   }
-}`
+`;
 
 export const forumApiCreateInfoThreadMutation = graphql`
   mutation ForumApiCreateInfoThreadMutation($thread: InputInfoThread!) {
@@ -83,74 +84,78 @@ export const forumApiCreateInfoThreadMutation = graphql`
   }
 `;
 
-
 export const forumApiUserInfoQuery = graphql`
-    query ForumApiUserInfoQuery {
-        currentUserInfo {
-            id
-            firstName
-            lastName
-        }
+  query ForumApiUserInfoQuery {
+    currentUserInfo {
+      id
+      firstName
+      lastName
     }
+  }
 `;
 
 export const forumApiUpvotePostMutation = graphql`
-    mutation ForumApiUpvotePostMutation($postId: UUID!) {
-        upvotePost(postId: $postId) {
-            id
-        }
+  mutation ForumApiUpvotePostMutation($postId: UUID!) {
+    upvotePost(postId: $postId) {
+      id
     }
+  }
 `;
 
 export const forumApiDownvotePostMutation = graphql`
-    mutation ForumApiDownvotePostMutation($postId: UUID!) {
-        downvotePost(postId: $postId) {
-            id
-        }
+  mutation ForumApiDownvotePostMutation($postId: UUID!) {
+    downvotePost(postId: $postId) {
+      id
     }
+  }
 `;
 
 export const forumApiUserInfoByIdQuery = graphql`
-    query ForumApiUserInfoByIdQuery($id: UUID!) {
-        findUserInfos(ids: [$id]) {
-            id
-            userName
-        }
+  query ForumApiUserInfoByIdQuery($id: UUID!) {
+    findUserInfos(ids: [$id]) {
+      id
+      userName
     }
+  }
 `;
 
 export const forumApiSelectBestAnswerMutation = graphql`
-    mutation ForumApiSelectBestAnswerMutation($postId: UUID!) {
-      selectAnswer(postId: $postId) {
-          id
-        }
-}`
+  mutation ForumApiSelectBestAnswerMutation($postId: UUID!) {
+    selectAnswer(postId: $postId) {
+      id
+    }
+  }
+`;
 
-export const forumApiUpdatePostMutation =   graphql`
+export const forumApiUpdatePostMutation = graphql`
   mutation ForumApiUpdatePostMutation($post: InputPost!) {
     updatePost(post: $post) {
       id
     }
   }
-`
-export const forumApiDeletePostMutation =   graphql`
+`;
+export const forumApiDeletePostMutation = graphql`
   mutation ForumApiDeletePostMutation($postId: UUID!) {
     deletePost(postId: $postId) {
       id
     }
   }
-`
+`;
 
 export const forumApiThreadByMediaRecordQuery = graphql`
-    query ForumApiThreadsCombinedQuery($courseId: UUID!, $contentId: UUID!, $hasContentId: Boolean!) {
-      threadsByContentId(id: $contentId) @include(if: $hasContentId) {
+  query ForumApiThreadsCombinedQuery(
+    $courseId: UUID!
+    $contentId: UUID!
+    $hasContentId: Boolean!
+  ) {
+    threadsByContentId(id: $contentId) @include(if: $hasContentId) {
       id
       title
       creationTime
       creatorId
       numberOfPosts
       threadContentReference {
-          contentId
+        contentId
       }
       __typename
       ... on InfoThread {
@@ -173,7 +178,7 @@ export const forumApiThreadByMediaRecordQuery = graphql`
         }
       }
     }
-      forumByCourseId(id: $courseId) @skip(if: $hasContentId) {
+    forumByCourseId(id: $courseId) @skip(if: $hasContentId) {
       id
       threads {
         id
@@ -181,6 +186,9 @@ export const forumApiThreadByMediaRecordQuery = graphql`
         creationTime
         creatorId
         numberOfPosts
+        threadContentReference {
+          contentId
+        }
         __typename
         ... on InfoThread {
           info {
@@ -204,4 +212,4 @@ export const forumApiThreadByMediaRecordQuery = graphql`
       }
     }
   }
-`
+`;

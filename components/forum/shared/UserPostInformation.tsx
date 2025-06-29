@@ -5,17 +5,23 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import { ThreadType } from "@/components/forum/types";
 import { useLazyLoadQuery } from "react-relay";
 import { ForumApiUserInfoQuery } from "@/__generated__/ForumApiUserInfoQuery.graphql";
-import { forumApiUserInfoByIdQuery, forumApiUserInfoQuery } from "@/components/forum/api/ForumApi";
+import {
+  forumApiUserInfoByIdQuery,
+  forumApiUserInfoQuery,
+} from "@/components/forum/api/ForumApi";
 import { ForumApiUserInfoByIdQuery } from "@/__generated__/ForumApiUserInfoByIdQuery.graphql";
 
 type Props = {
-  creatorId: ThreadType["creatorId"]
+  creatorId: ThreadType["creatorId"];
   creationTime: ThreadType["creationTime"];
   numberOfPosts?: ThreadType["numberOfPosts"] | undefined;
 };
 
-export default function UserPostInformation({creationTime, numberOfPosts, creatorId}:Props) {
-
+export default function UserPostInformation({
+  creationTime,
+  numberOfPosts,
+  creatorId,
+}: Props) {
   // TODO: Refactor: We should add the username in the backend to the post, so we don't have to fetch for it for every post
   const loggedInUser = useLazyLoadQuery<ForumApiUserInfoQuery>(
     forumApiUserInfoQuery,
@@ -29,16 +35,23 @@ export default function UserPostInformation({creationTime, numberOfPosts, creato
     }
   );
 
-   const userInfo = userInfos.findUserInfos[0];
+  const userInfo = userInfos.findUserInfos[0];
 
   return (
     <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-      <Avatar sx={{ width: 24, height: 24 }}>
-        A
-      </Avatar>
-      {userInfo && <Typography
-        color={loggedInUser.currentUserInfo.id === userInfo.id ? "#00a152" : "default"}
-        variant="caption">{userInfo.userName ?? "unknown"}</Typography>}
+      <Avatar sx={{ width: 24, height: 24 }}>A</Avatar>
+      {userInfo && (
+        <Typography
+          color={
+            loggedInUser.currentUserInfo.id === userInfo.id
+              ? "#00a152"
+              : "default"
+          }
+          variant="caption"
+        >
+          {userInfo.userName ?? "unknown"}
+        </Typography>
+      )}
 
       <Stack direction="row" spacing={0.5} alignItems="center">
         <CalendarTodayIcon fontSize="small" />

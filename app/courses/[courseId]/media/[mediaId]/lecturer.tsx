@@ -23,11 +23,11 @@ import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 import { ContentMediaDisplay } from "./ContentMediaDisplay";
 import { DownloadButton } from "./student";
 import ForumOverview from "@/components/forum/ForumOverview";
-import ForumIcon from '@mui/icons-material/Forum';
-import CloseIcon from '@mui/icons-material/Close';
+import ForumIcon from "@mui/icons-material/Forum";
+import CloseIcon from "@mui/icons-material/Close";
 
 export default function LecturerMediaPage() {
-  const [displayForum, setDisplayForum] = useState<boolean>(false)
+  const [displayForum, setDisplayForum] = useState<boolean>(false);
   const { mediaId, courseId } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -237,11 +237,15 @@ export default function LecturerMediaPage() {
               "&:hover": {
                 backgroundColor: "primary.dark",
               },
-              width:"56",
-              height:"56"
+              width: "56",
+              height: "56",
             }}
           >
-            {displayForum ? <CloseIcon fontSize="large" /> : <ForumIcon fontSize="large" />}
+            {displayForum ? (
+              <CloseIcon fontSize="large" />
+            ) : (
+              <ForumIcon fontSize="large" />
+            )}
           </IconButton>
         </Tooltip>
       </Box>

@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Box, Tooltip } from '@mui/material';
-import PermMediaOutlinedIcon from '@mui/icons-material/PermMediaOutlined';
-import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import React from "react";
+import { Box, Tooltip } from "@mui/material";
+import PermMediaOutlinedIcon from "@mui/icons-material/PermMediaOutlined";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { PageError } from "@/components/PageError";
 
 type ThreadForIcons = {
@@ -21,30 +21,37 @@ type ThreadStatusIconsProps = {
 
 export default function ThreadStatusIcons({ thread }: ThreadStatusIconsProps) {
   if (!thread) {
-    return <PageError message="Thread does not exist!"/>
+    return <PageError message="Thread does not exist!" />;
   }
 
   return (
-
-    <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+    <Box
+      component="span"
+      sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
+    >
       {thread.threadContentReference?.contentId && (
         <Tooltip title="Dieser Beitrag ist mit einem Lerninhalt verknüpft">
-          <PermMediaOutlinedIcon sx={{ color: 'text.secondary', fontSize: '1.25rem' }} />
+          <PermMediaOutlinedIcon
+            sx={{ color: "text.secondary", fontSize: "1.25rem" }}
+          />
         </Tooltip>
       )}
       {thread.selectedAnswer?.id && (
         <Tooltip title="Best answer selected!">
-          <CheckCircleOutlineOutlinedIcon color="success" sx={{ fontSize: '1.25rem' }} />
+          <CheckCircleOutlineOutlinedIcon
+            color="success"
+            sx={{ fontSize: "1.25rem" }}
+          />
         </Tooltip>
       )}
       {thread.info && (
         <Tooltip title="Info Thread">
-          <InfoOutlinedIcon color="info" sx={{ fontSize: '1.25rem' }} />
+          <InfoOutlinedIcon color="info" sx={{ fontSize: "1.25rem" }} />
         </Tooltip>
       )}
       {thread.question && (
         <Tooltip title="Question Thread!">
-          <HelpOutlineIcon color="warning" sx={{ fontSize: '1.25rem' }} />
+          <HelpOutlineIcon color="warning" sx={{ fontSize: "1.25rem" }} />
         </Tooltip>
       )}
     </Box>
