@@ -237,9 +237,11 @@ export default function LecturerMediaPage() {
               "&:hover": {
                 backgroundColor: "primary.dark",
               },
+              width:"56",
+              height:"56"
             }}
           >
-            {displayForum ? <CloseIcon /> : <ForumIcon />}
+            {displayForum ? <CloseIcon fontSize="large" /> : <ForumIcon fontSize="large" />}
           </IconButton>
         </Tooltip>
       </Box>

@@ -13,8 +13,6 @@ export default function ThreadDetailPage() {
   const threadId = params?.threadId as string;
   const courseId = params?.courseId as string;
 
-
-
   const data = useLazyLoadQuery<ForumApiThreadDetailQuery>(
     forumApiThreadDetailQuery,
     { id: threadId },
@@ -29,7 +27,5 @@ export default function ThreadDetailPage() {
 
   return (
     <main>
-        <ThreadDetail courseId={courseId} thread={{...data.thread} as ThreadDetailType}/>
-    </main>
-  );
+    </main>);
 }

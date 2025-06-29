@@ -13,7 +13,7 @@ type ForumHeaderProps = {
   setSortBy: (value: string) => void;
   categoryFilter: string;
   setCategoryFilter: (value: string) => void;
-  createThreadOnMediaContent?: () => void;
+  createThread?: () => void;
 };
 
 export default function ForumHeader({
@@ -21,12 +21,8 @@ export default function ForumHeader({
                                       setSortBy,
                                       categoryFilter,
                                       setCategoryFilter,
-                                      createThreadOnMediaContent
+                                      createThread
                                     }: ForumHeaderProps) {
-  const pathname = usePathname();
-  const isMediaPage = pathname.includes('/media/');
-
-
   const handleCategoryChange = (event, newCategory) => {
     if (newCategory !== null) {
       setCategoryFilter(newCategory);
@@ -80,21 +76,14 @@ export default function ForumHeader({
 
       </Stack>
 
-      {isMediaPage ? (
+
         <Button
           variant="contained"
           color="primary"
-          onClick={createThreadOnMediaContent}
+          onClick={createThread}
         >
           +
         </Button>
-      ) : (
-        <Link href={`${pathname}/new`} passHref>
-          <Button component="div" variant="contained" color="primary">
-            +
-          </Button>
-        </Link>
-      )}
     </Box>
   );
 }

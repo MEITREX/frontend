@@ -13,8 +13,7 @@ import {
   Paper
 } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import { useParams, usePathname } from "next/navigation";
 import {
   ForumApiCreateInfoThreadMutation,
   InputInfoThread
@@ -33,16 +32,17 @@ import { ForumApiForumIdQuery } from "@/__generated__/ForumApiForumIdQuery.graph
 import TextEditor from "@/components/forum/richTextEditor/TextEditor";
 
 type Props = {
-  mediaContentViewMode?: boolean;
-  redirect?: () => void;
+  redirect: () => void;
 }
 
-export default function ThreadForm({mediaContentViewMode = false, redirect}: Props) {
+export default function ThreadForm({redirect}: Props) {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const router = useRouter();
   const params = useParams();
   const courseId = params.courseId as string;
   const mediaId = params.mediaId as string
+
+  const pathname = usePathname();
+  const isMediaPage = pathname.includes('/media/');
 
 
   const contentReferenceData = {
@@ -68,15 +68,10 @@ export default function ThreadForm({mediaContentViewMode = false, redirect}: Pro
     { id: courseId },
     { fetchPolicy: 'network-only' }
   );
-  console.log(data);
 
   const handleCreationSuccess = () => {
-    if (!mediaContentViewMode) {
-      router.push(`/courses/${courseId}/forum`);
-      return;
-    }
-    redirect?.();
     setSnackbarOpen(true);
+    redirect();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -115,7 +110,7 @@ export default function ThreadForm({mediaContentViewMode = false, redirect}: Pro
         forumId: data.forumByCourseId?.id as string,
         title: title.trim(),
         question: { content: content.trim() },
-        ...(mediaContentViewMode && { threadContentReference: contentReferenceData }),
+        ...(isMediaPage && { threadContentReference: contentReferenceData }),
 
       };
       commitQuestion({
@@ -132,7 +127,7 @@ export default function ThreadForm({mediaContentViewMode = false, redirect}: Pro
         forumId: data.forumByCourseId?.id as string,
         title: title.trim(),
         info: { content: content.trim() },
-        ...(mediaContentViewMode && { threadContentReference: contentReferenceData }),
+        ...(isMediaPage && { threadContentReference: contentReferenceData }),
 
       };
       commitInfo({
@@ -150,27 +145,15 @@ export default function ThreadForm({mediaContentViewMode = false, redirect}: Pro
 
   return (
     <>
-    {!mediaContentViewMode ? (<Link href={`/courses/${courseId}/forum`} passHref>
-        <Button
-          component="a"
-          variant="text"
-          startIcon={<ArrowBackIcon />}
-          sx={{ mb: 2 }}
-        >
-          Back
-        </Button>
-      </Link>):
-      (
-        <Button
-          onClick={redirect}
-        component="a"
-        variant="text"
-        startIcon={<ArrowBackIcon />}
-        sx={{ mb: 2 }}
-      >
-        Back
-      </Button>)
-    }
+      <Button
+        onClick={redirect}
+      component="a"
+      variant="text"
+      startIcon={<ArrowBackIcon />}
+      sx={{ mb: 2 }}
+    >
+      Back
+    </Button>
 
       <Box sx={{ backgroundColor: "#f5f7fa", borderRadius: 2,
         maxWidth: "800px", mx: "auto", px: 2, py: 2 }}>
@@ -179,7 +162,7 @@ export default function ThreadForm({mediaContentViewMode = false, redirect}: Pro
         </Typography>
 
 
-        {mediaContentViewMode && <Typography
+        {isMediaPage && <Typography
           variant="body2"
           sx={{ color: 'success.main', mb:2}}
         >

@@ -10,8 +10,8 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Link from "next/link";
 import PostList from "../post/PostList";
-import { useMutation } from "react-relay";
-import { forumApiAddPostMutation } from "@/components/forum/api/ForumApi";
+import { useLazyLoadQuery, useMutation } from "react-relay";
+import { forumApiAddPostMutation, forumApiThreadDetailQuery } from "@/components/forum/api/ForumApi";
 import { ForumApiAddPostMutation, InputPost } from "@/__generated__/ForumApiAddPostMutation.graphql";
 import UpvoteDownvote from "@/components/forum/shared/UpvoteDownvote";
 import UserPostInformation from "@/components/forum/shared/UserPostInformation";
@@ -23,13 +23,25 @@ import { Post, ThreadDetailType } from "@/components/forum/types";
 import PostsContext from "../context/PostsContext";
 import PermMediaOutlinedIcon from "@mui/icons-material/PermMediaOutlined";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
+import { ForumApiThreadDetailQuery } from "@/__generated__/ForumApiThreadDetailQuery.graphql";
+import { PageError } from "@/components/PageError";
 
 type Props = {
-  thread: ThreadDetailType;
-  courseId: string;
+  threadId: string;
+  redirect: () => void;
 };
 
-export default function ThreadDetail({thread, courseId}: Props) {
+export default function ThreadDetail({threadId, redirect}: Props) {
+
+  const data = useLazyLoadQuery<ForumApiThreadDetailQuery>(
+    forumApiThreadDetailQuery,
+    { id: threadId },
+    {
+      fetchPolicy: 'network-only',
+    }
+  );
+
+  const thread = data?.thread;
 
   const [replyText, setReplyText] = useState('');
 
@@ -37,7 +49,7 @@ export default function ThreadDetail({thread, courseId}: Props) {
 
   const [commitPost] = useMutation<ForumApiAddPostMutation>(forumApiAddPostMutation);
 
-  const [localPosts, setLocalPosts] = useState<ThreadDetailType["posts"]>(thread.posts ?? []);
+  const [localPosts, setLocalPosts] = useState<ThreadDetailType["posts"]>(thread?.posts ?? []);
 
   const deletePostFromState = (postIdToDelete:string) => {
     setLocalPosts(currentPosts =>
@@ -74,20 +86,19 @@ export default function ThreadDetail({thread, courseId}: Props) {
   };
 
   if (!thread) {
-    return <div>Loading..</div>;
+    return <PageError message={`No Thread with ID: ${threadId}.`} />;
   }
 
   return (
     <PostsContext.Provider value={{ deletePostContext: deletePostFromState }}>
-    <Link href={`/courses/${courseId}/forum`} passHref>
         <Button
+          onClick={() => redirect()}
           variant="text"
           startIcon={<ArrowBackIcon />}
           sx={{ mb: 2 }}
         >
           Back
         </Button>
-      </Link>
       <Box
         sx={{
           height: "70vh",

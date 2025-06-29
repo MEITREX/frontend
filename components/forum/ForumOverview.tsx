@@ -9,6 +9,7 @@ import { Box } from "@mui/material";
 import { forumApiThreadByMediaRecordQuery } from "@/components/forum/api/ForumApi";
 import ThreadForm from "@/components/forum/thread/ThreadForm";
 import { ForumApiThreadsCombinedQuery } from "@/__generated__/ForumApiThreadsCombinedQuery.graphql";
+import ThreadDetail from "./thread/ThreadDetail";
 
 
 export default function ForumOverview() {
@@ -23,8 +24,13 @@ export default function ForumOverview() {
     1. Directly in the Forum which is a new route ../new
     2. Besides the media content therefore we cannot use routes and need to display the component
    */
-  const [viewMode, setViewMode] = useState<'mediaContent' | 'normal'>('normal')
+ const  [selectedThreadId, setSelectedThreadId] = useState<string>('');
+ const [viewMode, setViewMode] = useState<'threadDetail'| 'createNewThreadMediaContent' | 'headerThreadList'>('headerThreadList')
 
+  const handleThreadClick = (threadId: string) => {
+    setSelectedThreadId(threadId);
+    setViewMode('threadDetail');
+  };
 
   const [fetchKey, setFetchKey] = useState(0);
 
@@ -37,7 +43,7 @@ export default function ForumOverview() {
   );
 
   const handleCreationComplete = () => {
-    setViewMode('normal');
+    setViewMode('headerThreadList');
     setFetchKey(prevKey => prevKey + 1);
   };
 
@@ -75,20 +81,34 @@ export default function ForumOverview() {
   return (
     <>
       <Box sx={{height: '78vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', }}>
-        {viewMode === 'normal' ? (
+        {viewMode === 'headerThreadList' && (
           <>
             <ForumHeader
               sortBy={sortBy}
               setSortBy={setSortBy}
               categoryFilter={categoryFilter}
               setCategoryFilter={setCategoryFilter}
-              createThreadOnMediaContent={() => setViewMode('mediaContent')}
+              createThread={() => setViewMode('createNewThreadMediaContent')}
             />
-            <ThreadList threads={filteredAndSortedThreads} />
+            <ThreadList
+              threads={filteredAndSortedThreads}
+              onThreadClick={handleThreadClick}
+            />
           </>
-        ) : (
-          <Box sx={{ overflowY: 'scroll'}}>
-            <ThreadForm mediaContentViewMode={true} redirect={() => handleCreationComplete()} />
+        )}
+        {viewMode === 'createNewThreadMediaContent' && (
+          <Box sx={{overflowY: 'scroll'}}>
+            <ThreadForm
+              redirect={() => handleCreationComplete()}
+            />
+          </Box>
+        )}
+        {viewMode === 'threadDetail' && (
+          <Box  sx={{height: '78vh', overflowY: 'auto', p: 2 }}>
+          <ThreadDetail
+            threadId={selectedThreadId}
+            redirect={() => setViewMode("headerThreadList")}
+          />
           </Box>
         )}
       </Box>

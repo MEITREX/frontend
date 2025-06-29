@@ -2,9 +2,15 @@
 
 import Box from '@mui/material/Box';
 import ThreadItem from './ThreadItem';
-import { Typography } from "@mui/material";
+import { Link, Typography } from "@mui/material";
+import { usePathname } from "next/navigation";
 
-export default function ThreadList({ threads }) {
+type Props = {
+  threads:any,
+  onThreadClick?: (threadId: string) => void;
+}
+
+export default function ThreadList({threads, onThreadClick}:Props) {
 
   if(threads.length === 0){
     return (
@@ -23,8 +29,8 @@ export default function ThreadList({ threads }) {
 
   return (
     <Box sx={{ overflowY: 'auto', p: 1 }}>
-      {threads.map((thread) => (
-          <ThreadItem key={thread.id} thread={thread} />
+      {threads.map((thread:any) => (
+          <ThreadItem  onThreadClick={onThreadClick} key={thread.id} thread={thread} />
       ))}
     </Box>
   );

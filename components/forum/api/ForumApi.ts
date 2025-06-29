@@ -8,6 +8,9 @@ export const forumApiThreadDetailQuery = graphql`
       creatorId
       creationTime
       numberOfPosts
+      threadContentReference {
+            contentId       
+        }
       ... on InfoThread {
         info {
           id

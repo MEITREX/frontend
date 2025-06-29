@@ -13,10 +13,11 @@ import Link from "next/link";
 
 type Props = {
   thread: ThreadType;
+  onThreadClick?: (threadId: string) => void;
+
 };
 
-export default function ThreadItem({ thread }: Props) {
-  const pathname = usePathname();
+export default function ThreadItem({ thread, onThreadClick }: Props) {
 
   return (
     <Box
@@ -32,6 +33,7 @@ export default function ThreadItem({ thread }: Props) {
         transition: "0.2s",
         "&:hover": {
           backgroundColor: "#f5f5f5",
+          cursor:"pointer"
         },
       }}
     >
@@ -47,19 +49,17 @@ export default function ThreadItem({ thread }: Props) {
           justifyContent="space-between"
           sx={{ flexGrow: 1, overflow: "hidden", position: "relative" }}
         >
-          <Link href={`${pathname}/${thread.id}`} passHref>
 
-          <Box>
-            <Typography variant="h6" sx={{ color: "#089CDC", fontWeight: 600 }}>
-              {thread.title}
-            </Typography>
 
-            <Box sx={{overflow: "hidden",height:"1.5em"}}>
-              <ContentViewer htmlContent={thread.question?.content ?? thread.info?.content!}></ContentViewer>
+          <Box onClick={() => onThreadClick?.(thread.id)}>
+              <Typography variant="h6" sx={{ color: "#089CDC", fontWeight: 600 }}>
+                {thread.title}
+              </Typography>
+
+              <Box sx={{overflow: "hidden",height:"1.5em"}}>
+                <ContentViewer htmlContent={thread.question?.content ?? thread.info?.content!}></ContentViewer>
+              </Box>
             </Box>
-
-          </Box>
-          </Link>
 
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <UserPostInformation
