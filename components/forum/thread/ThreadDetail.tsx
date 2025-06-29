@@ -21,6 +21,8 @@ import EditableContent from "@/components/forum/richTextEditor/EditableContent";
 import TextEditor from "@/components/forum/richTextEditor/TextEditor";
 import { Post, ThreadDetailType } from "@/components/forum/types";
 import PostsContext from "../context/PostsContext";
+import PermMediaOutlinedIcon from "@mui/icons-material/PermMediaOutlined";
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 
 type Props = {
   thread: ThreadDetailType;
@@ -124,16 +126,25 @@ export default function ThreadDetail({thread, courseId}: Props) {
                 numberOfPosts={thread.numberOfPosts}
                 creatorId={thread.creatorId}
               />}
-              {thread.info && (
-                <Tooltip title="Info Thread">
-                  <InfoOutlinedIcon sx={{ fontSize: 28, color: "#1976d2" }} />
-                </Tooltip>
-              )}
-              {thread.question && (
-                <Tooltip title="Question Thread">
-                 <HelpOutlineIcon sx={{ fontSize: 28, color: "#ff9800" }} />
-                </Tooltip>
-              )}
+
+              <Box>
+                {thread.info?.content && <Tooltip title="Thread is related to content!">
+                  <PermMediaOutlinedIcon sx={{ color: 'grey', fontSize: 24 }} />
+                </Tooltip>}
+                {thread.selectedAnswer?.id && <Tooltip title="Best answer selected!">
+                  <CheckCircleOutlineOutlinedIcon sx={{ color: 'green', fontSize: 28 }} />
+                </Tooltip>}
+                {thread.info && (
+                  <Tooltip title="Info Thread">
+                    <InfoOutlinedIcon sx={{ fontSize: 28, color: "#1976d2" }} />
+                  </Tooltip>
+                )}
+                {thread.question && (
+                  <Tooltip title="Question Thread">
+                   <HelpOutlineIcon sx={{ fontSize: 28, color: "#ff9800" }} />
+                  </Tooltip>
+                )}
+              </Box>
             </Stack>
           </Box>
         </Stack>
