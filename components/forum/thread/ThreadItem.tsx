@@ -1,14 +1,9 @@
-import { Box, Typography, Stack, Tooltip } from "@mui/material";
+import { Box, Typography, Stack } from "@mui/material";
 import UpvoteDownvote from "../shared/UpvoteDownvote";
 import UserPostInformation from "../shared/UserPostInformation";
 import { ThreadType } from "@/components/forum/types";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import React from "react";
 import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
-import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
-import PermMediaOutlinedIcon from "@mui/icons-material/PermMediaOutlined";
-import { usePathname } from "next/navigation";
 import Link from "next/link";
 import ThreadStatusIcons from "@/components/forum/thread/ThreadStatusIcons";
 

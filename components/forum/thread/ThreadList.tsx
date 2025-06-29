@@ -2,8 +2,7 @@
 
 import Box from "@mui/material/Box";
 import ThreadItem from "./ThreadItem";
-import { Link, Typography } from "@mui/material";
-import { usePathname } from "next/navigation";
+import { Typography } from "@mui/material";
 
 type Props = {
   threads: any;

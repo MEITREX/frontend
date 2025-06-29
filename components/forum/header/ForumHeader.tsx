@@ -10,8 +10,6 @@ import {
   Typography,
   alpha,
 } from "@mui/material";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 type ForumHeaderProps = {
   sortBy: string;
@@ -28,7 +26,11 @@ export default function ForumHeader({
   setCategoryFilter,
   createThread,
 }: ForumHeaderProps) {
-  const handleCategoryChange = (event, newCategory) => {
+
+  const handleCategoryChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newCategory: string | null
+  ) => {
     if (newCategory !== null) {
       setCategoryFilter(newCategory);
     }

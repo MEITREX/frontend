@@ -1,4 +1,4 @@
-import { Box, Typography, Stack, Tooltip } from "@mui/material";
+import { Box, Stack, Tooltip } from "@mui/material";
 import UpvoteDownvote from "@/components/forum/shared/UpvoteDownvote";
 import UserPostInformation from "@/components/forum/shared/UserPostInformation";
 import { PostsType, ThreadType } from "@/components/forum/types";
@@ -6,7 +6,6 @@ import { useLazyLoadQuery } from "react-relay";
 import { ForumApiUserInfoQuery } from "@/__generated__/ForumApiUserInfoQuery.graphql";
 import { forumApiUserInfoQuery } from "@/components/forum/api/ForumApi";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
-import { useState } from "react";
 import EditableContent from "@/components/forum/richTextEditor/EditableContent";
 type Props = {
   post: PostsType[number];
