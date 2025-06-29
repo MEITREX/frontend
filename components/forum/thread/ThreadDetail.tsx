@@ -64,7 +64,7 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
   const deletePostFromState = (postIdToDelete: string) => {
     setLocalPosts((currentPosts) =>
       currentPosts.filter((post) => post.id !== postIdToDelete)
-    );
+  );
   };
 
   const handleSubmit = () => {
@@ -99,7 +99,9 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
   return (
     <PostsContext.Provider value={{ deletePostContext: deletePostFromState }}>
       <Button
-        onClick={() => redirect()}
+        onClick={() => {
+          redirect();
+        }}
         variant="text"
         startIcon={<ArrowBackIcon />}
         sx={{ mb: 2 }}
@@ -108,8 +110,6 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
       </Button>
       <Box
         sx={{
-          height: "70vh",
-          overflowY: "scroll",
           display: "flex",
           flexDirection: "column",
           px: 1,

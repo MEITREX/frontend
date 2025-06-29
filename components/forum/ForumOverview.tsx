@@ -22,6 +22,11 @@ export default function ForumOverview() {
   const isMediaPage = pathname.includes("/media/");
 
   const [selectedThreadId, setSelectedThreadId] = useState<string>("");
+  /*
+   The navigation is done by displaying the necessary components via 'viewMode'.
+   We cannot use Next.js folder routes because we also want to display the forum alongside the media content.
+   After CRUD operations we have to refetch, maybe we need to seperate components for the different views in the future
+ */
   const [viewMode, setViewMode] = useState<
     "threadDetail" | "createNewThreadMediaContent" | "headerThreadList"
   >("headerThreadList");
@@ -45,7 +50,11 @@ export default function ForumOverview() {
 
   const handleCreationComplete = () => {
     setViewMode("headerThreadList");
-    setFetchKey((prevKey) => prevKey + 1);
+    triggerRefetch();
+  };
+
+  const triggerRefetch = () => {
+    setFetchKey(prevKey => prevKey + 1);
   };
 
   const [sortBy, setSortBy] = useState("Latest");
@@ -126,7 +135,7 @@ export default function ForumOverview() {
           <Box sx={{ height: "78vh", overflowY: "auto", p: 2 }}>
             <ThreadDetail
               threadId={selectedThreadId}
-              redirect={() => setViewMode("headerThreadList")}
+              redirect={() => handleCreationComplete()}
             />
           </Box>
         )}
