@@ -2,7 +2,7 @@
 
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { useState } from 'react'
-import { Box, Button, IconButton, Stack,  } from "@mui/material";
+import { Box, Button, IconButton, Stack, Typography } from "@mui/material";
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import ModeEditOutlineRoundedIcon from '@mui/icons-material/ModeEditOutlineRounded';
 import TextEditor from './TextEditor'
@@ -20,10 +20,11 @@ import { usePostsActions } from "@/components/forum/context/PostsContext";
 type Props = {
   initialContent: string,
   postId: string,
-  authorId: string
+  authorId: string,
+  contentIsEdited?: boolean;
 }
 
-export default function EditableContent({ initialContent, postId, authorId }: Props) {
+export default function EditableContent({ initialContent, postId, authorId, contentIsEdited }: Props) {
   const user = useLazyLoadQuery<ForumApiUserInfoQuery>(
     forumApiUserInfoQuery,
     {}
@@ -32,6 +33,8 @@ export default function EditableContent({ initialContent, postId, authorId }: Pr
   const { deletePostContext } = usePostsActions();
 
   const isAuthor = user.currentUserInfo.id === authorId;
+
+  const [edited, setEdited] = useState(contentIsEdited);
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -51,6 +54,7 @@ export default function EditableContent({ initialContent, postId, authorId }: Pr
       },
         onCompleted(data) {
           setIsEditing(false);
+          setEdited(true);
           console.log("Update successful!")
         },
         onError(error) {
@@ -99,6 +103,15 @@ export default function EditableContent({ initialContent, postId, authorId }: Pr
       ) : (
         <>
           <ContentViewer htmlContent={currentContent} />
+          {edited && <Typography
+            variant="caption"
+            sx={{
+              fontStyle: 'italic',
+              color: 'text.secondary',
+            }}
+          >
+            (Edited)
+          </Typography>}
           {isAuthor && (<Box sx={{ mt: 2, position:"absolute", top:"-2px", right:"50px"}}>
             <IconButton  onClick={() => handleDelete()} size="small" color={"warning"} aria-label="Edit">
               <DeleteOutlineOutlinedIcon />
