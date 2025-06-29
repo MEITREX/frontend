@@ -140,7 +140,7 @@ export default function ThreadDetail({thread, courseId}: Props) {
 
         <Divider sx={{ my: 2 }} />
 
-        <PostList threadCreatorId={thread?.creatorId} posts={localPosts ?? []} ></PostList>
+        <PostList bestAnswerId={thread?.selectedAnswer} threadCreatorId={thread?.creatorId} posts={localPosts ?? []} ></PostList>
 
 
         <Box sx={{ display: "flex", gap: 1, flexDirection:"column", alignItems:"start" }}>
