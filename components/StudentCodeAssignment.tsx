@@ -62,6 +62,7 @@ export default function StudentCodeAssignment({
     contentRef
   );
 
+  // getGradings should be called before findAssignmentsByAssessmentIds because of a bug in GH Api, we need to set Total Credits of an assingment through the grading
   const { getGradingsForAssignment } =
     useLazyLoadQuery<StudentCodeAssignmentGradingQuery>(
       graphql`
