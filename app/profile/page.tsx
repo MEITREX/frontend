@@ -20,16 +20,15 @@ export default function ProfilePage() {
 
   const { currentUserInfo } = useLazyLoadQuery<pagePrivateProfileStudentQuery>(
     graphql`
-        query pagePrivateProfileStudentQuery {
-          currentUserInfo {
-            id
-            lastName
-            firstName
-            userName
-
-          }
+      query pagePrivateProfileStudentQuery {
+        currentUserInfo {
+          id
+          lastName
+          firstName
+          userName
         }
-      `,
+      }
+    `,
     {}
   );
 
@@ -63,7 +62,7 @@ export default function ProfilePage() {
           }}
         >
           {tabs.map((tab, index) => {
-            console.log(currentUserInfo)
+            console.log(currentUserInfo);
             return (
               <Tab
                 key={tab}

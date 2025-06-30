@@ -9,7 +9,6 @@ import { useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 
-
 export default function PublicProfilePage() {
   const publicTabs = ["Achievements", "Forum", "Progress", "Badges"];
   const [tabIndex, setTabIndex] = useState(0);
@@ -18,7 +17,6 @@ export default function PublicProfilePage() {
   const userId = params?.userId as string;
   console.log("User ID aus URL:", userId);
 
-
   const profileData = {
     firstName: "Max",
     lastName: "Mustermann",
@@ -26,16 +24,17 @@ export default function PublicProfilePage() {
     nickname: "nickname",
   };
 
-  const { findPublicUserInfos } = useLazyLoadQuery<pagePublicProfileStudentQuery>(
-    graphql`
-          query pagePublicProfileStudentQuery($id: [UUID!]!) {
-            findPublicUserInfos(ids: $id) {
-              userName
-            }
+  const { findPublicUserInfos } =
+    useLazyLoadQuery<pagePublicProfileStudentQuery>(
+      graphql`
+        query pagePublicProfileStudentQuery($id: [UUID!]!) {
+          findPublicUserInfos(ids: $id) {
+            userName
           }
-        `,
-    { id: [userId] }
-  );
+        }
+      `,
+      { id: [userId] }
+    );
 
   return (
     <Box sx={{ p: 4 }}>
@@ -45,7 +44,9 @@ export default function PublicProfilePage() {
           {findPublicUserInfos[0]?.userName}
         </Avatar>
         <Box>
-          <Typography variant="h5">@{findPublicUserInfos[0]?.userName}</Typography>
+          <Typography variant="h5">
+            @{findPublicUserInfos[0]?.userName}
+          </Typography>
         </Box>
       </Box>
 
