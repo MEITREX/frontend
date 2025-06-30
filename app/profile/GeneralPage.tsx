@@ -5,10 +5,11 @@ import { useState } from "react";
 
 interface GeneralPageProps {
   studentData: {
+    id: string;
     firstName: string;
     lastName: string;
-    email: string;
-    nickname: string;
+    //email: string;
+    userName: string;
   };
 }
 
@@ -74,17 +75,19 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
           fullWidth
           disabled={!editMode}
         />
+        {/*
         <TextField
           label="Email"
-          value={newStudentData.email}
+          value={'N.A.'}
           onChange={handleChange("email")}
           fullWidth
           disabled={!editMode}
         />
+         */}
         <TextField
           label="Nickname"
-          value={newStudentData.nickname}
-          onChange={handleChange("nickname")}
+          value={newStudentData.userName}
+          onChange={handleChange("userName")}
           fullWidth
           disabled={!editMode}
         />

@@ -1,8 +1,11 @@
 "use client";
 
+import { pagePrivateProfileStudentQuery } from "@/__generated__/pagePrivateProfileStudentQuery.graphql";
 import AchievementList from "@/components/profile/AchievementList";
 import { Box, Tab, Tabs, Typography } from "@mui/material";
 import { useState } from "react";
+import { useLazyLoadQuery } from "react-relay";
+import { graphql } from "relay-runtime";
 import { achievementsData } from "../../components/profile/AchievementData";
 import GeneralPage from "./GeneralPage";
 
@@ -14,6 +17,21 @@ export default function ProfilePage() {
     email: "max.mustermann@example.com",
     nickname: "nickname",
   };
+
+  const { currentUserInfo } = useLazyLoadQuery<pagePrivateProfileStudentQuery>(
+    graphql`
+        query pagePrivateProfileStudentQuery {
+          currentUserInfo {
+            id
+            lastName
+            firstName
+            userName
+
+          }
+        }
+      `,
+    {}
+  );
 
   const [tabIndex, setTabIndex] = useState(0);
 
@@ -27,7 +45,7 @@ export default function ProfilePage() {
     <>
       <Box sx={{ p: 2 }}>
         <Typography variant="h4" gutterBottom>
-          Hi, {profileData.firstName}
+          Hi, {currentUserInfo.firstName}
         </Typography>
         {/* Tabs oben */}
         <Tabs
@@ -45,6 +63,7 @@ export default function ProfilePage() {
           }}
         >
           {tabs.map((tab, index) => {
+            console.log(currentUserInfo)
             return (
               <Tab
                 key={tab}
@@ -76,7 +95,7 @@ export default function ProfilePage() {
         </Tabs>
 
         {/* Inhalt abhängig vom Tab */}
-        {tabIndex === 0 && <GeneralPage studentData={profileData} />}
+        {tabIndex === 0 && <GeneralPage studentData={currentUserInfo} />}
         {tabIndex === 1 && (
           <AchievementList
             achievements={achievementsData}
