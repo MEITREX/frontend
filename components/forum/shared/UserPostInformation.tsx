@@ -38,7 +38,7 @@ export default function UserPostInformation({
   const userInfo = userInfos.findUserInfos[0];
 
   return (
-    <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+    <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
       <Avatar sx={{ width: 24, height: 24 }}>A</Avatar>
       {userInfo && (
         <Typography

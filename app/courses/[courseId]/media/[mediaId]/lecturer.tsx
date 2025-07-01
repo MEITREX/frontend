@@ -224,7 +224,7 @@ export default function LecturerMediaPage() {
         _existingMediaContent={media.contentsByIds[0]}
         _mediaRecords={media}
       />
-      <Box sx={{ position: "fixed", bottom: 24, right: 24, zIndex: 10 }}>
+      <Box sx={{ position: "fixed", bottom: 124, right: 34, zIndex: 10 }}>
         <Tooltip title={displayForum ? "Close Forum" : "Open Forum"}>
           <IconButton
             onClick={() => setDisplayForum((prev) => !prev)}
