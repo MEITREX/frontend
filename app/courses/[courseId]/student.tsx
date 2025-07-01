@@ -29,7 +29,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 import { ChapterOverview } from "@/components/ChapterOverview";
 
@@ -37,6 +37,8 @@ import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import * as React from "react";
+import ForumOverview from "@/components/forum/ForumOverview";
+import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -308,6 +310,7 @@ export default function StudentCoursePage() {
             <Tab label="Course Overview" {...a11yProps(0)} />
             <Tab label="Learning Progress" {...a11yProps(1)} />
             <Tab label="Chapters" {...a11yProps(2)} />
+            <Tab label="Forum" {...a11yProps(3)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
@@ -543,6 +546,11 @@ export default function StudentCoursePage() {
               </div>
             </div>
           </div>
+        </CustomTabPanel>
+        <CustomTabPanel value={value} index={3}>
+          <Suspense fallback={<SkeletonThreadList/>}>
+            <ForumOverview/>
+          </Suspense>
         </CustomTabPanel>
       </Box>
     </main>
