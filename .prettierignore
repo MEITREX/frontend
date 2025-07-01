@@ -7,6 +7,12 @@ pnpm-lock.yaml
 next-env.d.ts
 styles/globals.css
 
+# keycloak-theme
+keycloak-theme/gits-theme/login/resources/css/login.css
+keycloak-theme/gits-theme/login/login.ftl
+keycloak-theme/gits-theme/login/register.ftl
+keycloak-theme/gits-theme/login/template.ftl
+
 # graphql codegen
 __generated__
 src/schema.graphql
