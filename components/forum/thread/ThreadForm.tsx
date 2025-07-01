@@ -69,7 +69,7 @@ export default function ThreadForm({ redirect }: Props) {
   const data = useLazyLoadQuery<ForumApiForumIdQuery>(
     forumApiForumIdQuery,
     { id: courseId },
-    { fetchPolicy: "network-only" }
+    { fetchPolicy: "store-or-network" }
   );
 
   const handleCreationSuccess = () => {
