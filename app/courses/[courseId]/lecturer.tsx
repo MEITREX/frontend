@@ -39,7 +39,6 @@ graphql`
   }
 `;
 
-
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
@@ -190,8 +189,8 @@ export default function LecturerCoursePage() {
         </div>
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
-        <Suspense fallback={<SkeletonThreadList/>}>
-          <ForumOverview/>
+        <Suspense fallback={<SkeletonThreadList />}>
+          <ForumOverview />
         </Suspense>
       </CustomTabPanel>
     </main>

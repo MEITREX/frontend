@@ -64,7 +64,7 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
   const deletePostFromState = (postIdToDelete: string) => {
     setLocalPosts((currentPosts) =>
       currentPosts.filter((post) => post.id !== postIdToDelete)
-  );
+    );
   };
 
   const handleSubmit = () => {

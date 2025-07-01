@@ -548,8 +548,8 @@ export default function StudentCoursePage() {
           </div>
         </CustomTabPanel>
         <CustomTabPanel value={value} index={3}>
-          <Suspense fallback={<SkeletonThreadList/>}>
-            <ForumOverview/>
+          <Suspense fallback={<SkeletonThreadList />}>
+            <ForumOverview />
           </Suspense>
         </CustomTabPanel>
       </Box>

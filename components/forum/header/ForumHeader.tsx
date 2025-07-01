@@ -26,7 +26,6 @@ export default function ForumHeader({
   setCategoryFilter,
   createThread,
 }: ForumHeaderProps) {
-
   const handleCategoryChange = (
     event: React.MouseEvent<HTMLElement>,
     newCategory: string | null

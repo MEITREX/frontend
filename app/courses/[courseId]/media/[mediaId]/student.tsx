@@ -94,28 +94,27 @@ export default function StudentMediaPage() {
           minSize={0}
           className="flex flex-col h-full overflow-hidden p-4"
         >
+          <Heading
+            title={content.metadata.name}
+            overline={content.metadata.name}
+            backButton
+          />
 
-      <Heading
-        title={content.metadata.name}
-        overline={content.metadata.name}
-        backButton
-      />
+          <ContentTags metadata={content.metadata} />
 
-      <ContentTags metadata={content.metadata} />
+          {error?.source.errors.map((err: any, i: number) => (
+            <Alert
+              key={i}
+              severity="error"
+              sx={{ minWidth: 400, maxWidth: 800, width: "fit-content" }}
+              onClose={() => setError(null)}
+            >
+              {err.message}
+            </Alert>
+          ))}
 
-      {error?.source.errors.map((err: any, i: number) => (
-        <Alert
-          key={i}
-          severity="error"
-          sx={{ minWidth: 400, maxWidth: 800, width: "fit-content" }}
-          onClose={() => setError(null)}
-        >
-          {err.message}
-        </Alert>
-      ))}
-
-      {/* TODO progress tracking */}
-      {/* <Dialog open={progress > 0.8 && !workedOnToday && !nagDismissed}>
+          {/* TODO progress tracking */}
+          {/* <Dialog open={progress > 0.8 && !workedOnToday && !nagDismissed}>
         <DialogTitle>Do you want to mark this as understood?</DialogTitle>
         <DialogContent>
           You&apos;ve completed more than 80% of this content - this could be a
@@ -139,54 +138,54 @@ export default function StudentMediaPage() {
         </DialogActions>
       </Dialog> */}
 
-      <div
-        ref={ref}
-        className="grid gap-4 w-full h-full"
-        style={
-          hasVideos && hasDocuments
-            ? {
-                gridTemplateColumns: `calc(${splitPercentage}% - 10px) 20px calc(${
-                  100 - splitPercentage
-                }% - 10px)`,
-              }
-            : { gridTemplateColumns: `100%` }
-        }
-      >
-        {hasVideos && <VideoSide setError={setError} _content={content} />}
-        {hasVideos && hasDocuments && (
           <div
-            onMouseDown={() => {
-              const l = (e: MouseEvent) => {
-                const dimensions = ref.current?.getBoundingClientRect();
-                if (!dimensions) return;
-
-                e.stopPropagation();
-
-                setSplitPercentage(
-                  clamp(
-                    (100 * (e.screenX - dimensions.x)) / dimensions.width,
-                    20,
-                    70
-                  )
-                );
-              };
-
-              window.addEventListener("mousemove", l);
-
-              window.onmouseup = () =>
-                window.removeEventListener("mousemove", l);
-            }}
-            className="group w-full flex items-center justify-center cursor-col-resize"
+            ref={ref}
+            className="grid gap-4 w-full h-full"
+            style={
+              hasVideos && hasDocuments
+                ? {
+                    gridTemplateColumns: `calc(${splitPercentage}% - 10px) 20px calc(${
+                      100 - splitPercentage
+                    }% - 10px)`,
+                  }
+                : { gridTemplateColumns: `100%` }
+            }
           >
-            <div className="w-[4px] flex items-center justify-center group-hover:w-[6px] group-active:w-[6px] transition-all h-full bg-slate-50 rounded-full group-hover:bg-slate-300 group-active:bg-slate-200">
-              <div className="bg-slate-300 transition-all group-hover:bg-slate-500 w-[2px] h-[20px] group-hover:h-[40px]"></div>
-            </div>
+            {hasVideos && <VideoSide setError={setError} _content={content} />}
+            {hasVideos && hasDocuments && (
+              <div
+                onMouseDown={() => {
+                  const l = (e: MouseEvent) => {
+                    const dimensions = ref.current?.getBoundingClientRect();
+                    if (!dimensions) return;
+
+                    e.stopPropagation();
+
+                    setSplitPercentage(
+                      clamp(
+                        (100 * (e.screenX - dimensions.x)) / dimensions.width,
+                        20,
+                        70
+                      )
+                    );
+                  };
+
+                  window.addEventListener("mousemove", l);
+
+                  window.onmouseup = () =>
+                    window.removeEventListener("mousemove", l);
+                }}
+                className="group w-full flex items-center justify-center cursor-col-resize"
+              >
+                <div className="w-[4px] flex items-center justify-center group-hover:w-[6px] group-active:w-[6px] transition-all h-full bg-slate-50 rounded-full group-hover:bg-slate-300 group-active:bg-slate-200">
+                  <div className="bg-slate-300 transition-all group-hover:bg-slate-500 w-[2px] h-[20px] group-hover:h-[40px]"></div>
+                </div>
+              </div>
+            )}
+            {hasDocuments && (
+              <DocumentSide setError={setError} _content={content} />
+            )}
           </div>
-        )}
-        {hasDocuments && (
-          <DocumentSide setError={setError} _content={content} />
-        )}
-      </div>
         </Panel>
 
         {displayForum && (

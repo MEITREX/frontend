@@ -57,7 +57,7 @@ export default function ForumOverview() {
   };
 
   const triggerRefetch = () => {
-    setFetchKey(prevKey => prevKey + 1);
+    setFetchKey((prevKey) => prevKey + 1);
   };
 
   const [sortBy, setSortBy] = useState("Latest");
@@ -123,7 +123,7 @@ export default function ForumOverview() {
                 All displayed Threads are related to this Content!
               </Typography>
             )}
-            <Suspense fallback={<SkeletonThreadList/>}>
+            <Suspense fallback={<SkeletonThreadList />}>
               <ThreadList
                 threads={filteredAndSortedThreads}
                 onThreadClick={handleThreadClick}
@@ -133,14 +133,14 @@ export default function ForumOverview() {
         )}
         {viewMode === "createNewThreadMediaContent" && (
           <Box sx={{ overflowY: "scroll" }}>
-            <Suspense fallback={<SkeletonThreadForm/>}>
+            <Suspense fallback={<SkeletonThreadForm />}>
               <ThreadForm redirect={() => handleCreationComplete()} />
             </Suspense>
           </Box>
         )}
         {viewMode === "threadDetail" && (
           <Box sx={{ height: "78vh", overflowY: "auto", p: 2 }}>
-            <Suspense fallback={<SkeletonThreadDetail/>}>
+            <Suspense fallback={<SkeletonThreadDetail />}>
               <ThreadDetail
                 threadId={selectedThreadId}
                 redirect={() => handleCreationComplete()}
