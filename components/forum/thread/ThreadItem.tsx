@@ -4,7 +4,6 @@ import UserPostInformation from "../shared/UserPostInformation";
 import { ThreadType } from "@/components/forum/types";
 import React from "react";
 import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
-import Link from "next/link";
 import ThreadStatusIcons from "@/components/forum/thread/ThreadStatusIcons";
 
 type Props = {

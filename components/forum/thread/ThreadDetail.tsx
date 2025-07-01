@@ -3,12 +3,10 @@ import {
   Box,
   Typography,
   Divider,
-  Tooltip,
   Stack,
   Button,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import Link from "next/link";
 import PostList from "../post/PostList";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import {
@@ -21,14 +19,10 @@ import {
 } from "@/__generated__/ForumApiAddPostMutation.graphql";
 import UpvoteDownvote from "@/components/forum/shared/UpvoteDownvote";
 import UserPostInformation from "@/components/forum/shared/UserPostInformation";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import EditableContent from "@/components/forum/richTextEditor/EditableContent";
 import TextEditor from "@/components/forum/richTextEditor/TextEditor";
 import { Post, ThreadDetailType } from "@/components/forum/types";
 import PostsContext from "../context/PostsContext";
-import PermMediaOutlinedIcon from "@mui/icons-material/PermMediaOutlined";
-import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import { ForumApiThreadDetailQuery } from "@/__generated__/ForumApiThreadDetailQuery.graphql";
 import { PageError } from "@/components/PageError";
 import ThreadStatusIcons from "./ThreadStatusIcons";
