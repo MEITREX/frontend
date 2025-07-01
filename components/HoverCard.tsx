@@ -15,7 +15,12 @@ export function HoverCard({
   cardStyle,
 }: HoverCardProps) {
   const [open, setOpen] = useState(false);
-  const [coords, setCoords] = useState<{top: number, left: number, width: number, height: number} | null>(null);
+  const [coords, setCoords] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
 
   // Berechne die Position des Triggers im Viewport
@@ -66,12 +71,13 @@ export function HoverCard({
         onMouseLeave={() => setOpen(false)}
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
-        onClick={() => setOpen(o => !o)}
+        onClick={() => setOpen((o) => !o)}
         tabIndex={0}
       >
         {children}
       </div>
-      {open && coords &&
+      {open &&
+        coords &&
         createPortal(
           <div
             style={{
@@ -86,13 +92,12 @@ export function HoverCard({
             }}
             onMouseEnter={() => setOpen(true)}
             onMouseLeave={() => setOpen(false)}
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             {card}
           </div>,
           document.body
-        )
-      }
+        )}
     </>
   );
 }

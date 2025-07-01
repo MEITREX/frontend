@@ -2,9 +2,24 @@ import React from "react";
 import { HoverCard } from "../HoverCard";
 
 const trophies = [
-  <svg width="32" height="32" viewBox="0 0 32 32" key="gold"><circle cx="16" cy="16" r="16" fill="#FFD700" /><text x="10" y="22" fontSize="14" fontWeight="bold" fill="#fff">🏆</text></svg>,
-  <svg width="32" height="32" viewBox="0 0 32 32" key="silver"><circle cx="16" cy="16" r="16" fill="#C0C0C0" /><text x="10" y="22" fontSize="14" fontWeight="bold" fill="#fff">🏆</text></svg>,
-  <svg width="32" height="32" viewBox="0 0 32 32" key="bronze"><circle cx="16" cy="16" r="16" fill="#C96F33" /><text x="10" y="22" fontSize="14" fontWeight="bold" fill="#fff">🏆</text></svg>,
+  <svg width="32" height="32" viewBox="0 0 32 32" key="gold">
+    <circle cx="16" cy="16" r="16" fill="#FFD700" />
+    <text x="10" y="22" fontSize="14" fontWeight="bold" fill="#fff">
+      🏆
+    </text>
+  </svg>,
+  <svg width="32" height="32" viewBox="0 0 32 32" key="silver">
+    <circle cx="16" cy="16" r="16" fill="#C0C0C0" />
+    <text x="10" y="22" fontSize="14" fontWeight="bold" fill="#fff">
+      🏆
+    </text>
+  </svg>,
+  <svg width="32" height="32" viewBox="0 0 32 32" key="bronze">
+    <circle cx="16" cy="16" r="16" fill="#C96F33" />
+    <text x="10" y="22" fontSize="14" fontWeight="bold" fill="#fff">
+      🏆
+    </text>
+  </svg>,
 ];
 
 export type User = {
@@ -33,8 +48,8 @@ export default function Leaderboard({
   currentUserId,
 }: LeaderboardProps) {
   // TOP 3 bleiben fix, Rest ist scrollbar
-  const topThree = users.filter(u => u.rank <= 3);
-  const others = users.filter(u => u.rank > 3);
+  const topThree = users.filter((u) => u.rank <= 3);
+  const others = users.filter((u) => u.rank > 3);
 
   return (
     <div
@@ -50,11 +65,13 @@ export default function Leaderboard({
       }}
     >
       {/* Buttonzeile */}
-      <div style={{
-        display: "flex",
-        justifyContent: "flex-start",
-        marginBottom: 8,
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-start",
+          marginBottom: 8,
+        }}
+      >
         <button
           onClick={onPrevious}
           style={{
@@ -70,27 +87,34 @@ export default function Leaderboard({
             gap: 6,
           }}
         >
-          <span role="img" aria-label="Clock">⏰</span> PREVIOUS
+          <span role="img" aria-label="Clock">
+            ⏰
+          </span>{" "}
+          PREVIOUS
         </button>
       </div>
 
       {/* Titel-Zeile wirklich zentriert */}
       <div style={{ textAlign: "center", marginBottom: 18 }}>
-        <div style={{
-          fontWeight: 700,
-          fontSize: 26,
-          letterSpacing: ".5px",
-          width: "100%",
-        }}>
+        <div
+          style={{
+            fontWeight: 700,
+            fontSize: 26,
+            letterSpacing: ".5px",
+            width: "100%",
+          }}
+        >
           {title}
         </div>
-        <div style={{
-          fontWeight: 500,
-          fontSize: 17,
-          letterSpacing: ".5px",
-          color: "#79869a",
-          width: "100%",
-        }}>
+        <div
+          style={{
+            fontWeight: 500,
+            fontSize: 17,
+            letterSpacing: ".5px",
+            color: "#79869a",
+            width: "100%",
+          }}
+        >
           {periodLabel}
         </div>
       </div>
@@ -118,7 +142,10 @@ export default function Leaderboard({
               card={
                 <div>
                   <img
-                    src={user.profileImage || "https://api.dicebear.com/7.x/adventurer/svg?seed=ghost"}
+                    src={
+                      user.profileImage ||
+                      "https://api.dicebear.com/7.x/adventurer/svg?seed=ghost"
+                    }
                     alt={user.name}
                     style={{
                       width: 54,
@@ -129,9 +156,17 @@ export default function Leaderboard({
                       display: "block",
                     }}
                   />
-                  <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{user.name}</div>
-                  <div style={{ fontSize: 16, color: "#79869a" }}>Points: {user.points}</div>
-                  <div style={{ fontSize: 14, color: "#a1a6b2", marginTop: 6 }}>Profilinfos folgen…</div>
+                  <div
+                    style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}
+                  >
+                    {user.name}
+                  </div>
+                  <div style={{ fontSize: 16, color: "#79869a" }}>
+                    Points: {user.points}
+                  </div>
+                  <div style={{ fontSize: 14, color: "#a1a6b2", marginTop: 6 }}>
+                    Profilinfos folgen…
+                  </div>
                 </div>
               }
               position="bottom"
@@ -148,30 +183,51 @@ export default function Leaderboard({
                   background: "#fff",
                   border: isCurrent ? "3px solid #222" : "1px solid #e1e6ea",
                   fontWeight: isCurrent ? 800 : 600,
-                  boxShadow: isCurrent ? "0 2px 8px rgba(60,60,60,0.11)" : undefined,
+                  boxShadow: isCurrent
+                    ? "0 2px 8px rgba(60,60,60,0.11)"
+                    : undefined,
                   position: "relative",
                   cursor: "pointer",
                   marginBottom: 8,
-                  backgroundImage: user.backgroundImage ? `url(${user.backgroundImage})` : undefined,
+                  backgroundImage: user.backgroundImage
+                    ? `url(${user.backgroundImage})`
+                    : undefined,
                   backgroundSize: user.backgroundImage ? "cover" : undefined,
                   backgroundRepeat: user.backgroundImage ? "repeat" : undefined,
                 }}
                 tabIndex={0}
               >
                 {/* Rang und Pokal */}
-                <div style={{ minWidth: 38, textAlign: "left", fontWeight: 700, fontSize: 22, display: "flex", alignItems: "center", gap: 4 }}>
+                <div
+                  style={{
+                    minWidth: 38,
+                    textAlign: "left",
+                    fontWeight: 700,
+                    fontSize: 22,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
                   {user.rank <= 3 ? (
-                    <span style={{ marginRight: 6 }}>{trophies[user.rank - 1]}</span>
+                    <span style={{ marginRight: 6 }}>
+                      {trophies[user.rank - 1]}
+                    </span>
                   ) : null}
                   <span>{user.rank}.</span>
                 </div>
 
                 {/* Profilbild */}
-                <div style={{
-                  marginRight: 14,
-                }}>
+                <div
+                  style={{
+                    marginRight: 14,
+                  }}
+                >
                   <img
-                    src={user.profileImage || "https://api.dicebear.com/7.x/adventurer/svg?seed=ghost"}
+                    src={
+                      user.profileImage ||
+                      "https://api.dicebear.com/7.x/adventurer/svg?seed=ghost"
+                    }
                     alt={user.name}
                     style={{
                       width: 40,
@@ -184,25 +240,29 @@ export default function Leaderboard({
                 </div>
 
                 {/* Username */}
-                <div style={{
-                  flex: 1,
-                  textAlign: "center",
-                  fontWeight: isCurrent ? 800 : 600,
-                  color: isCurrent ? "#000" : "#21262b",
-                  fontSize: isCurrent ? 21 : 20,
-                  letterSpacing: ".5px",
-                }}>
+                <div
+                  style={{
+                    flex: 1,
+                    textAlign: "center",
+                    fontWeight: isCurrent ? 800 : 600,
+                    color: isCurrent ? "#000" : "#21262b",
+                    fontSize: isCurrent ? 21 : 20,
+                    letterSpacing: ".5px",
+                  }}
+                >
                   {user.name}
                 </div>
 
                 {/* Punkte */}
-                <div style={{
-                  minWidth: 90,
-                  textAlign: "right",
-                  color: isCurrent ? "#222" : "#79869a",
-                  fontWeight: isCurrent ? 800 : 600,
-                  fontSize: isCurrent ? 20 : 19,
-                }}>
+                <div
+                  style={{
+                    minWidth: 90,
+                    textAlign: "right",
+                    color: isCurrent ? "#222" : "#79869a",
+                    fontWeight: isCurrent ? 800 : 600,
+                    fontSize: isCurrent ? 20 : 19,
+                  }}
+                >
                   {user.points} points
                 </div>
               </div>
@@ -242,7 +302,10 @@ export default function Leaderboard({
                 card={
                   <div>
                     <img
-                      src={user.profileImage || "https://api.dicebear.com/7.x/adventurer/svg?seed=ghost"}
+                      src={
+                        user.profileImage ||
+                        "https://api.dicebear.com/7.x/adventurer/svg?seed=ghost"
+                      }
                       alt={user.name}
                       style={{
                         width: 54,
@@ -253,9 +316,19 @@ export default function Leaderboard({
                         display: "block",
                       }}
                     />
-                    <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{user.name}</div>
-                    <div style={{ fontSize: 16, color: "#79869a" }}>Points: {user.points}</div>
-                    <div style={{ fontSize: 14, color: "#a1a6b2", marginTop: 6 }}>Profilinfos folgen…</div>
+                    <div
+                      style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}
+                    >
+                      {user.name}
+                    </div>
+                    <div style={{ fontSize: 16, color: "#79869a" }}>
+                      Points: {user.points}
+                    </div>
+                    <div
+                      style={{ fontSize: 14, color: "#a1a6b2", marginTop: 6 }}
+                    >
+                      Profilinfos folgen…
+                    </div>
                   </div>
                 }
                 position="bottom"
@@ -272,26 +345,47 @@ export default function Leaderboard({
                     background: "#fff",
                     border: isCurrent ? "3px solid #222" : "1px solid #e1e6ea",
                     fontWeight: isCurrent ? 700 : 500,
-                    boxShadow: isCurrent ? "0 2px 8px rgba(60,60,60,0.11)" : undefined,
+                    boxShadow: isCurrent
+                      ? "0 2px 8px rgba(60,60,60,0.11)"
+                      : undefined,
                     position: "relative",
                     cursor: "pointer",
-                    backgroundImage: user.backgroundImage ? `url(${user.backgroundImage})` : undefined,
+                    backgroundImage: user.backgroundImage
+                      ? `url(${user.backgroundImage})`
+                      : undefined,
                     backgroundSize: user.backgroundImage ? "cover" : undefined,
-                    backgroundRepeat: user.backgroundImage ? "repeat" : undefined,
+                    backgroundRepeat: user.backgroundImage
+                      ? "repeat"
+                      : undefined,
                   }}
                   tabIndex={0}
                 >
                   {/* Rang */}
-                  <div style={{ minWidth: 38, textAlign: "left", fontWeight: 700, fontSize: 20, display: "flex", alignItems: "center", gap: 4 }}>
+                  <div
+                    style={{
+                      minWidth: 38,
+                      textAlign: "left",
+                      fontWeight: 700,
+                      fontSize: 20,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
+                  >
                     <span>{user.rank}.</span>
                   </div>
 
                   {/* Profilbild */}
-                  <div style={{
-                    marginRight: 14,
-                  }}>
+                  <div
+                    style={{
+                      marginRight: 14,
+                    }}
+                  >
                     <img
-                      src={user.profileImage || "https://api.dicebear.com/7.x/adventurer/svg?seed=ghost"}
+                      src={
+                        user.profileImage ||
+                        "https://api.dicebear.com/7.x/adventurer/svg?seed=ghost"
+                      }
                       alt={user.name}
                       style={{
                         width: 34,
@@ -304,25 +398,29 @@ export default function Leaderboard({
                   </div>
 
                   {/* Username */}
-                  <div style={{
-                    flex: 1,
-                    textAlign: "center",
-                    fontWeight: isCurrent ? 700 : 500,
-                    color: isCurrent ? "#000" : "#21262b",
-                    fontSize: isCurrent ? 20 : 19,
-                    letterSpacing: ".5px",
-                  }}>
+                  <div
+                    style={{
+                      flex: 1,
+                      textAlign: "center",
+                      fontWeight: isCurrent ? 700 : 500,
+                      color: isCurrent ? "#000" : "#21262b",
+                      fontSize: isCurrent ? 20 : 19,
+                      letterSpacing: ".5px",
+                    }}
+                  >
                     {user.name}
                   </div>
 
                   {/* Punkte */}
-                  <div style={{
-                    minWidth: 90,
-                    textAlign: "right",
-                    color: isCurrent ? "#222" : "#79869a",
-                    fontWeight: isCurrent ? 700 : 500,
-                    fontSize: isCurrent ? 19 : 18,
-                  }}>
+                  <div
+                    style={{
+                      minWidth: 90,
+                      textAlign: "right",
+                      color: isCurrent ? "#222" : "#79869a",
+                      fontWeight: isCurrent ? 700 : 500,
+                      fontSize: isCurrent ? 19 : 18,
+                    }}
+                  >
                     {user.points} points
                   </div>
                 </div>
