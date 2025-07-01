@@ -43,7 +43,7 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
     forumApiThreadDetailQuery,
     { id: threadId },
     {
-      fetchPolicy: "store-or-network",
+      fetchPolicy: "network-only",
     }
   );
 

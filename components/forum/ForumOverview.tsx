@@ -48,7 +48,7 @@ export default function ForumOverview() {
       hasContentId: isMediaPage,
       contentId: contentIdForQuery,
     },
-    { fetchPolicy: "store-or-network", fetchKey: fetchKey }
+    { fetchPolicy: "network-only", fetchKey: fetchKey }
   );
 
   const handleCreationComplete = () => {
