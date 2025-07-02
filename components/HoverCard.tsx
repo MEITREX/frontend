@@ -39,7 +39,7 @@ export function HoverCard({
   // Positionierung der Card im Viewport
   let popupStyle: React.CSSProperties = {
     position: "absolute",
-    zIndex: 9999, // sehr hoch!
+    zIndex: 9999, 
     ...cardStyle,
   };
   if (coords) {
