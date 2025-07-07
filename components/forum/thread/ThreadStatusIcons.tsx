@@ -30,7 +30,7 @@ export default function ThreadStatusIcons({ thread }: ThreadStatusIconsProps) {
       sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
     >
       {thread.threadContentReference?.contentId && (
-        <Tooltip title="Dieser Beitrag ist mit einem Lerninhalt verknüpft">
+        <Tooltip title="This Thread refers to a Media Content!">
           <PermMediaOutlinedIcon
             sx={{ color: "text.secondary", fontSize: "1.25rem" }}
           />

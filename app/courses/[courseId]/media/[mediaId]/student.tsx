@@ -14,6 +14,7 @@ import duration from "dayjs/plugin/duration";
 import { clamp } from "lodash";
 import { DocumentSide } from "./DocumentSide";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 
 dayjs.extend(duration);
 
@@ -187,12 +188,37 @@ export default function StudentMediaPage() {
             )}
           </div>
         </Panel>
-
         {displayForum && (
           <>
-            <PanelResizeHandle className="w-2 bg-gray-200 hover:bg-gray-400 cursor-ew-resize flex items-center justify-center">
-              <div className="w-1 h-8 bg-gray-500 rounded-full" />
-            </PanelResizeHandle>
+            <div className="relative w-1 h-full">
+              <PanelResizeHandle className="w-2 h-full bg-gray-200 hover:bg-gray-400 cursor-ew-resize flex items-center justify-center"></PanelResizeHandle>
+              <Tooltip title={displayForum ? "Close Forum" : "Open Forum"}>
+                <IconButton
+                  onClick={() => setDisplayForum((prev) => !prev)}
+                  color="primary"
+                  aria-label={displayForum ? "Close Forum" : "Open Forum"}
+                  sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '-15px',
+                    transform: 'translateY(-50%)',
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    boxShadow: 3,
+                    cursor: 'pointer',
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                    },
+                    width: 36,
+                    height: 36,
+                    zIndex: 50,
+                  }}
+                >
+                   <ArrowForwardIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </div>
+
             <Panel
               defaultSize={displayForum ? 50 : 0}
               minSize={displayForum ? 50 : 0}
@@ -203,7 +229,8 @@ export default function StudentMediaPage() {
           </>
         )}
       </PanelGroup>
-      <Box sx={{ position: "fixed", bottom: 124, right: 34, zIndex: 10 }}>
+
+      {!displayForum && (<Box sx={{ position: "fixed", bottom: 124, right: 34, zIndex: 10 }}>
         <Tooltip title={displayForum ? "Close Forum" : "Open Forum"}>
           <IconButton
             onClick={() => setDisplayForum((prev) => !prev)}
@@ -216,18 +243,14 @@ export default function StudentMediaPage() {
               "&:hover": {
                 backgroundColor: "primary.dark",
               },
-              width: "56",
-              height: "56",
+              width: "60",
+              height: "60",
             }}
           >
-            {displayForum ? (
-              <CloseIcon fontSize="large" />
-            ) : (
-              <ForumIcon fontSize="large" />
-            )}
+            <ForumIcon fontSize="large" />
           </IconButton>
         </Tooltip>
-      </Box>
+      </Box>)}
     </main>
   );
 }

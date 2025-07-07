@@ -24,7 +24,7 @@ import { ContentMediaDisplay } from "./ContentMediaDisplay";
 import { DownloadButton } from "./student";
 import ForumOverview from "@/components/forum/ForumOverview";
 import ForumIcon from "@mui/icons-material/Forum";
-import CloseIcon from "@mui/icons-material/Close";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 export default function LecturerMediaPage() {
   const [displayForum, setDisplayForum] = useState<boolean>(false);
@@ -204,9 +204,34 @@ export default function LecturerMediaPage() {
 
         {displayForum && (
           <>
-            <PanelResizeHandle className="w-2 bg-gray-200 hover:bg-gray-400 cursor-ew-resize flex items-center justify-center">
-              <div className="w-1 h-8 bg-gray-500 rounded-full" />
-            </PanelResizeHandle>
+            <div className="relative w-1 h-full">
+              <PanelResizeHandle className="w-2 h-full bg-gray-200 hover:bg-gray-400 cursor-ew-resize flex items-center justify-center"></PanelResizeHandle>
+              <Tooltip title={displayForum ? "Close Forum" : "Open Forum"}>
+                <IconButton
+                  onClick={() => setDisplayForum((prev) => !prev)}
+                  color="primary"
+                  aria-label={displayForum ? "Close Forum" : "Open Forum"}
+                  sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '-15px',
+                    transform: 'translateY(-50%)',
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    boxShadow: 3,
+                    cursor: 'pointer',
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                    },
+                    width: 36,
+                    height: 36,
+                    zIndex: 50,
+                  }}
+                >
+                  <ArrowForwardIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </div>
             <Panel
               defaultSize={displayForum ? 50 : 0}
               minSize={displayForum ? 50 : 0}
@@ -224,7 +249,7 @@ export default function LecturerMediaPage() {
         _existingMediaContent={media.contentsByIds[0]}
         _mediaRecords={media}
       />
-      <Box sx={{ position: "fixed", bottom: 124, right: 34, zIndex: 10 }}>
+      {!displayForum && (<Box sx={{ position: "fixed", bottom: 124, right: 34, zIndex: 10 }}>
         <Tooltip title={displayForum ? "Close Forum" : "Open Forum"}>
           <IconButton
             onClick={() => setDisplayForum((prev) => !prev)}
@@ -237,18 +262,14 @@ export default function LecturerMediaPage() {
               "&:hover": {
                 backgroundColor: "primary.dark",
               },
-              width: "56",
-              height: "56",
+              width: "60",
+              height: "60",
             }}
           >
-            {displayForum ? (
-              <CloseIcon fontSize="large" />
-            ) : (
-              <ForumIcon fontSize="large" />
-            )}
+            <ForumIcon fontSize="large" />
           </IconButton>
         </Tooltip>
-      </Box>
+      </Box>)}
     </main>
   );
 }
