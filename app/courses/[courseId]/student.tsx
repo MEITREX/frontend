@@ -29,16 +29,17 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
-import { Suspense, useState } from "react";
+import { useState } from "react";
 
 import { ChapterOverview } from "@/components/ChapterOverview";
 
+import { achievementsData } from "@/components/profile/AchievementData";
+import AchievementPopUp from "@/components/profile/achievements/AchievementPopUp";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import * as React from "react";
-import ForumOverview from "@/components/forum/ForumOverview";
-import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
+import AchievementWidget from "./achievements/AchievementWidget";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -191,6 +192,11 @@ export default function StudentCoursePage() {
 
   const [currentPage, setCurrentPage] = useState(0);
 
+  const [selectedAchievement, setSelectedAchievement] = useState<any | null>(
+    null
+  );
+  const [openAchievementDialog, setOpenDialog] = useState(false);
+
   // Show 404 error page if id was not found
   if (coursesByIds.length == 0) {
     return <PageError message="No course found with given id." />;
@@ -247,6 +253,14 @@ export default function StudentCoursePage() {
     }
   };
 
+  const handleOpenAchievement = (achievement: any) => {
+    setSelectedAchievement(achievement);
+    setOpenDialog(true);
+  };
+  const handleCloseAchievement = () => {
+    setOpenDialog(false);
+  };
+
   return (
     <main>
       <FormErrors error={error} onClose={() => setError(null)} />
@@ -299,6 +313,16 @@ export default function StudentCoursePage() {
         )}
       </div>
 
+      <AchievementWidget
+        achievements={achievementsData}
+        openAchievements={handleOpenAchievement}
+      />
+      <AchievementPopUp
+        open={openAchievementDialog}
+        onClose={handleCloseAchievement}
+        selectedAchievement={selectedAchievement}
+      />
+
       {/* Tabs for Learning Progress and Chapters */}
       <Box sx={{ width: "100%" }}>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
@@ -310,7 +334,6 @@ export default function StudentCoursePage() {
             <Tab label="Course Overview" {...a11yProps(0)} />
             <Tab label="Learning Progress" {...a11yProps(1)} />
             <Tab label="Chapters" {...a11yProps(2)} />
-            <Tab label="Forum" {...a11yProps(3)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
@@ -546,11 +569,6 @@ export default function StudentCoursePage() {
               </div>
             </div>
           </div>
-        </CustomTabPanel>
-        <CustomTabPanel value={value} index={3}>
-          <Suspense fallback={<SkeletonThreadList />}>
-            <ForumOverview />
-          </Suspense>
         </CustomTabPanel>
       </Box>
     </main>
