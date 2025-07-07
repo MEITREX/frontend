@@ -212,16 +212,16 @@ export default function LecturerMediaPage() {
                   color="primary"
                   aria-label={displayForum ? "Close Forum" : "Open Forum"}
                   sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '-15px',
-                    transform: 'translateY(-50%)',
-                    backgroundColor: 'primary.main',
-                    color: 'white',
+                    position: "absolute",
+                    top: "50%",
+                    left: "-15px",
+                    transform: "translateY(-50%)",
+                    backgroundColor: "primary.main",
+                    color: "white",
                     boxShadow: 3,
-                    cursor: 'pointer',
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
+                    cursor: "pointer",
+                    "&:hover": {
+                      backgroundColor: "primary.dark",
                     },
                     width: 36,
                     height: 36,
@@ -249,27 +249,29 @@ export default function LecturerMediaPage() {
         _existingMediaContent={media.contentsByIds[0]}
         _mediaRecords={media}
       />
-      {!displayForum && (<Box sx={{ position: "fixed", bottom: 124, right: 34, zIndex: 10 }}>
-        <Tooltip title={displayForum ? "Close Forum" : "Open Forum"}>
-          <IconButton
-            onClick={() => setDisplayForum((prev) => !prev)}
-            color="primary"
-            aria-label={displayForum ? "Close Forum" : "Open Forum"}
-            sx={{
-              backgroundColor: "primary.main",
-              color: "white",
-              boxShadow: 3,
-              "&:hover": {
-                backgroundColor: "primary.dark",
-              },
-              width: "60",
-              height: "60",
-            }}
-          >
-            <ForumIcon fontSize="large" />
-          </IconButton>
-        </Tooltip>
-      </Box>)}
+      {!displayForum && (
+        <Box sx={{ position: "fixed", bottom: 124, right: 34, zIndex: 10 }}>
+          <Tooltip title={displayForum ? "Close Forum" : "Open Forum"}>
+            <IconButton
+              onClick={() => setDisplayForum((prev) => !prev)}
+              color="primary"
+              aria-label={displayForum ? "Close Forum" : "Open Forum"}
+              sx={{
+                backgroundColor: "primary.main",
+                color: "white",
+                boxShadow: 3,
+                "&:hover": {
+                  backgroundColor: "primary.dark",
+                },
+                width: "60",
+                height: "60",
+              }}
+            >
+              <ForumIcon fontSize="large" />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      )}
     </main>
   );
 }

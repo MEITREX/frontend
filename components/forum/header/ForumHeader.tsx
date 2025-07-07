@@ -10,7 +10,7 @@ import {
   Typography,
   alpha,
 } from "@mui/material";
-import AddIcon from '@mui/icons-material/Add';
+import AddIcon from "@mui/icons-material/Add";
 
 type ForumHeaderProps = {
   sortBy: string;
@@ -93,7 +93,7 @@ export default function ForumHeader({
       </Stack>
 
       <Button variant="contained" color="primary" onClick={createThread}>
-        <AddIcon/>
+        <AddIcon />
       </Button>
     </Box>
   );

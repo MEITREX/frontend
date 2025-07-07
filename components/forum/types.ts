@@ -5,7 +5,9 @@ import {
 import { ForumApiThreadsCombinedQuery } from "@/__generated__/ForumApiThreadsCombinedQuery.graphql";
 
 export type ThreadListType = NonNullable<
-  NonNullable<ForumApiThreadsCombinedQuery["response"]["forumByCourseId"]>["threads"]
+  NonNullable<
+    ForumApiThreadsCombinedQuery["response"]["forumByCourseId"]
+  >["threads"]
 >;
 
 export type ThreadType = ThreadListType[number];

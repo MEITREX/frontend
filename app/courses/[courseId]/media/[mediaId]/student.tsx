@@ -14,7 +14,7 @@ import duration from "dayjs/plugin/duration";
 import { clamp } from "lodash";
 import { DocumentSide } from "./DocumentSide";
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 dayjs.extend(duration);
 
@@ -198,23 +198,23 @@ export default function StudentMediaPage() {
                   color="primary"
                   aria-label={displayForum ? "Close Forum" : "Open Forum"}
                   sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '-15px',
-                    transform: 'translateY(-50%)',
-                    backgroundColor: 'primary.main',
-                    color: 'white',
+                    position: "absolute",
+                    top: "50%",
+                    left: "-15px",
+                    transform: "translateY(-50%)",
+                    backgroundColor: "primary.main",
+                    color: "white",
                     boxShadow: 3,
-                    cursor: 'pointer',
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
+                    cursor: "pointer",
+                    "&:hover": {
+                      backgroundColor: "primary.dark",
                     },
                     width: 36,
                     height: 36,
                     zIndex: 50,
                   }}
                 >
-                   <ArrowForwardIcon fontSize="small" />
+                  <ArrowForwardIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
             </div>
@@ -230,27 +230,29 @@ export default function StudentMediaPage() {
         )}
       </PanelGroup>
 
-      {!displayForum && (<Box sx={{ position: "fixed", bottom: 124, right: 34, zIndex: 10 }}>
-        <Tooltip title={displayForum ? "Close Forum" : "Open Forum"}>
-          <IconButton
-            onClick={() => setDisplayForum((prev) => !prev)}
-            color="primary"
-            aria-label={displayForum ? "Close Forum" : "Open Forum"}
-            sx={{
-              backgroundColor: "primary.main",
-              color: "white",
-              boxShadow: 3,
-              "&:hover": {
-                backgroundColor: "primary.dark",
-              },
-              width: "60",
-              height: "60",
-            }}
-          >
-            <ForumIcon fontSize="large" />
-          </IconButton>
-        </Tooltip>
-      </Box>)}
+      {!displayForum && (
+        <Box sx={{ position: "fixed", bottom: 124, right: 34, zIndex: 10 }}>
+          <Tooltip title={displayForum ? "Close Forum" : "Open Forum"}>
+            <IconButton
+              onClick={() => setDisplayForum((prev) => !prev)}
+              color="primary"
+              aria-label={displayForum ? "Close Forum" : "Open Forum"}
+              sx={{
+                backgroundColor: "primary.main",
+                color: "white",
+                boxShadow: 3,
+                "&:hover": {
+                  backgroundColor: "primary.dark",
+                },
+                width: "60",
+                height: "60",
+              }}
+            >
+              <ForumIcon fontSize="large" />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      )}
     </main>
   );
 }

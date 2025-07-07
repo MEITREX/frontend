@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Typography,
-  Divider,
-  Stack,
-  Button,
-} from "@mui/material";
+import { Box, Typography, Divider, Stack, Button } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PostList from "../post/PostList";
 import { useLazyLoadQuery, useMutation } from "react-relay";
