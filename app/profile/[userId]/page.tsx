@@ -10,7 +10,7 @@ import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 
 export default function PublicProfilePage() {
-  const publicTabs = ["Achievements", "Forum", "Progress", "Badges"];
+  const publicTabs = ["Achievements", "Forum", "Badges"];
   const [tabIndex, setTabIndex] = useState(0);
 
   const params = useParams();
@@ -90,7 +90,7 @@ export default function PublicProfilePage() {
       <Box>
         {tabIndex === 0 && (
           <AchievementList
-            achievements={achievementsData}
+            achievements={achievementsData.filter((a) => a.achieved)}
             profileTypeSortString={"achieved"}
           />
         )}

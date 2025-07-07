@@ -38,7 +38,7 @@ export default function ProfilePage() {
     setTabIndex(newValue);
   };
 
-  const tabs = ["General", "Achievements", "Forum", "Progress", "Badges"];
+  const tabs = ["General", "Achievements", "Forum", "Badges"];
 
   return (
     <>

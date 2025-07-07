@@ -23,6 +23,7 @@ interface AllAchievementsProps {
   handleChangeCourse: (event: any, value: any) => void;
   filteredAchievements: any[];
   handleOpenAchievement: (a: any) => void;
+  profileTypeSortString: string;
 }
 
 export default function AllAchievements({
@@ -34,6 +35,7 @@ export default function AllAchievements({
   filteredAchievements,
   handleOpenAchievement,
   achievements,
+  profileTypeSortString
 }: AllAchievementsProps) {
   const groupedAchievements = filteredAchievements.reduce(
     (acc, achievement) => {
@@ -89,7 +91,7 @@ export default function AllAchievements({
           All Achievements
         </Typography>
 
-        <Box sx={{ display: "flex", gap: 2 }}>
+        {profileTypeSortString === "not-achieved" && <Box sx={{ display: "flex", gap: 2 }}>
           {/* Filter: Achieved / Not Achieved */}
           <ToggleButtonGroup
             value={filter}
@@ -129,7 +131,7 @@ export default function AllAchievements({
               Not Achieved
             </ToggleButton>
           </ToggleButtonGroup>
-        </Box>
+        </Box>}
       </Box>
 
       <Box mt={0} mb={4}>

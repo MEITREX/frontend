@@ -71,6 +71,7 @@ const AchievementList = ({ achievements, profileTypeSortString }: any) => {
         selectedCourse={selectedCourse}
         handleChangeCourse={handleChangeCourse}
         handleChange={handleChange}
+        profileTypeSortString={profileTypeSortString}
       ></AllAchievements>
 
       <AchievementPopUp
