@@ -1,6 +1,6 @@
 "use client";
 import { studentCourseIdQuery } from "@/__generated__/studentCourseIdQuery.graphql";
-import { Button, Divider, IconButton, Typography } from "@mui/material";
+import { Button, Divider, Grid, IconButton, Typography } from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
@@ -29,7 +29,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 import { ChapterOverview } from "@/components/ChapterOverview";
 
@@ -40,6 +40,10 @@ import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import * as React from "react";
 import AchievementWidget from "./achievements/AchievementWidget";
+import ForumOverview from "@/components/forum/ForumOverview";
+import OpenQuestionWidget from "@/components/widgets/OpenQuestionWidget";
+import ForumActivityWidget from "@/components/widgets/ForumActivityWidget";
+import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -313,15 +317,31 @@ export default function StudentCoursePage() {
         )}
       </div>
 
-      <AchievementWidget
-        achievements={achievementsData}
-        openAchievements={handleOpenAchievement}
-      />
-      <AchievementPopUp
-        open={openAchievementDialog}
-        onClose={handleCloseAchievement}
-        selectedAchievement={selectedAchievement}
-      />
+      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+        <Grid item xs={6}>
+          <AchievementWidget
+            achievements={achievementsData}
+            openAchievements={handleOpenAchievement}
+          />
+          <AchievementPopUp
+            open={openAchievementDialog}
+            onClose={handleCloseAchievement}
+            selectedAchievement={selectedAchievement}
+          />
+        </Grid>
+
+        <Grid item xs={6}>
+          <OpenQuestionWidget />
+        </Grid>
+
+        <Grid item xs={6}>
+          <ForumActivityWidget />
+        </Grid>
+
+        <Grid item xs={6}>
+        </Grid>
+      </Grid>
+
 
       {/* Tabs for Learning Progress and Chapters */}
       <Box sx={{ width: "100%" }}>
@@ -334,6 +354,7 @@ export default function StudentCoursePage() {
             <Tab label="Course Overview" {...a11yProps(0)} />
             <Tab label="Learning Progress" {...a11yProps(1)} />
             <Tab label="Chapters" {...a11yProps(2)} />
+            <Tab label="Forum" {...a11yProps(3)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
@@ -569,6 +590,11 @@ export default function StudentCoursePage() {
               </div>
             </div>
           </div>
+        </CustomTabPanel>
+        <CustomTabPanel value={value} index={3}>
+          <Suspense fallback={<SkeletonThreadList/>}>
+            <ForumOverview/>
+          </Suspense>
         </CustomTabPanel>
       </Box>
     </main>
