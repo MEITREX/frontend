@@ -67,6 +67,7 @@ function _ScoreboardPage() {
       query pageScoreboardQuery($courseId: UUID!) {
         scoreboard(courseId: $courseId) {
           user {
+            id
             userName
           }
           powerScore

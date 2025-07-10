@@ -102,6 +102,7 @@ export default function StudentCoursePage() {
       query studentCourseIdQuery($id: UUID!) {
         scoreboard(courseId: $id) {
           user {
+            id
             userName
           }
           powerScore
@@ -338,7 +339,7 @@ export default function StudentCoursePage() {
                   </Button>
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
+              {/* <div className="flex flex-col gap-2">
                 <TableContainer component={Paper}>
                   <Table size="small">
                     <TableHead>
@@ -376,7 +377,7 @@ export default function StudentCoursePage() {
                     </Button>
                   </Link>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex flex-col gap-2">
