@@ -98,6 +98,7 @@ export default function LatestAchievements({
         borderRadius: 2,
         p: 2,
         mb: 4,
+        minHeight: 400,
         maxWidth: 450,
         maxHeight: 400,
       }}

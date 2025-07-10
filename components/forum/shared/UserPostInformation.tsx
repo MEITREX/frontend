@@ -15,11 +15,15 @@ type Props = {
   creatorId: ThreadType["creatorId"];
   creationTime: ThreadType["creationTime"];
   numberOfPosts?: ThreadType["numberOfPosts"] | undefined;
+  displayDate?:boolean;
+  displayPB?:boolean;
 };
 
 export default function UserPostInformation({
   creationTime,
   numberOfPosts,
+  displayDate = true,
+  displayPB = true,
   creatorId,
 }: Props) {
   // TODO: Refactor: We should add the username in the backend to the post, so we don't have to fetch for it for every post
@@ -39,7 +43,7 @@ export default function UserPostInformation({
 
   return (
     <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-      <Avatar sx={{ width: 24, height: 24 }}>A</Avatar>
+      {displayPB && <Avatar sx={{ width: 24, height: 24 }}>A</Avatar>}
       {userInfo && (
         <Typography
           color={
@@ -53,12 +57,12 @@ export default function UserPostInformation({
         </Typography>
       )}
 
-      <Stack direction="row" spacing={0.5} alignItems="center">
+      {displayDate && <Stack direction="row" spacing={0.5} alignItems="center">
         <CalendarTodayIcon fontSize="small" />
         <Typography variant="caption">
           {format(new Date(creationTime as string), "MMMM d, yyyy, hh:mm a")}
         </Typography>
-      </Stack>
+      </Stack>}
 
       {numberOfPosts !== undefined && (
         <Stack direction="row" spacing={0.5} alignItems="center">

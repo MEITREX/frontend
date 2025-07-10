@@ -119,6 +119,46 @@ export const forumApiUserInfoByIdQuery = graphql`
   }
 `;
 
+export const forumApiOpenQuestionQuery = graphql`
+  query ForumApiOpenQuestionQuery($id: UUID!) {
+    openQuestionByCourseId(id: $id) {
+      id
+      title
+      creationTime
+      creatorId
+      numberOfPosts
+      threadContentReference {
+        contentId
+      }
+      ... on QuestionThread {
+        question {
+          id
+          content
+          downvotedByUsers
+          upvotedByUsers
+        }
+      }
+    }
+  }
+`;
+
+export const forumApiForumActivityQuery = graphql`
+    query ForumApiForumActivityQuery($id: UUID!) {
+        forumActivity(id: $id) {
+        creationTime
+        thread {
+          id
+          creatorId
+          title
+        }
+        post {
+          content
+          authorId
+        }
+    }
+    }
+`
+
 export const forumApiSelectBestAnswerMutation = graphql`
   mutation ForumApiSelectBestAnswerMutation($postId: UUID!) {
     selectAnswer(postId: $postId) {

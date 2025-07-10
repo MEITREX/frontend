@@ -1,3 +1,8 @@
+type AccessToken {
+  accessToken: String!
+  externalUserId: String
+}
+
 type AiEntityProcessingProgress {
   entityId: UUID!
   queuePosition: Int
@@ -46,6 +51,16 @@ type AssessmentSemanticSearchResult implements SemanticSearchResult {
   assessment: Assessment!
   assessmentId: UUID!
   score: Float!
+}
+
+type AssignmentAssessment implements Assessment & Content {
+  assessmentMetadata: AssessmentMetadata!
+  id: UUID!
+  isAvailableToBeWorkedOn: Boolean!
+  items: [Item!]!
+  metadata: ContentMetadata!
+  progressDataForUser(userId: UUID!): UserProgressData!
+  userProgressData: UserProgressData!
 }
 
 input AssociationInput {
@@ -192,6 +207,7 @@ type ContentPayload {
 }
 
 enum ContentType {
+  ASSIGNMENT
   FLASHCARDS
   MEDIA
   QUIZ
@@ -484,6 +500,15 @@ type ExactAnswerQuestion implements Question {
 
 directive @experimental_disableErrorPropagation on QUERY | MUTATION | SUBSCRIPTION
 
+enum ExternalServiceProviderDto {
+  GITHUB
+}
+
+type ExternalUserIdWithUser {
+  externalUserId: String!
+  userId: UUID!
+}
+
 type Flashcard {
   item: Item!
   itemId: UUID!
@@ -565,10 +590,21 @@ type Forum {
   threads: [Thread!]!
 }
 
+type ForumActivityEntry {
+  creationTime: DateTime!
+  post: Post
+  thread: Thread!
+}
+
 enum Gamification {
   ADAPTIVE_GAMIFICATION_ENABLED
   ALL_GAMIFICATION_DISABLED
   GAMIFICATION_ENABLED
+}
+
+input GenerateAccessTokenInput {
+  authorizationCode: String!
+  provider: ExternalServiceProviderDto!
 }
 
 input GenerateMediaRecordLinksInput {
@@ -786,6 +822,7 @@ type Mutation {
   deleteThread(threadId: UUID!): Thread
   downvotePost(postId: UUID!): Post
   evaluatePlayerHexadScore(input: PlayerAnswerInput!, userId: UUID!): PlayerHexadScore!
+  generateAccessToken(input: GenerateAccessTokenInput!): Boolean!
   joinCourse(courseId: UUID!): CourseMembership!
   leaveCourse(courseId: UUID!): CourseMembership!
   logFlashcardLearned(input: LogFlashcardLearnedInput!): FlashcardLearnedFeedback!
@@ -923,17 +960,21 @@ type Query {
   findPublicUserInfos(ids: [UUID!]!): [PublicUserInfo]!
   findQuizzesByAssessmentIds(assessmentIds: [UUID!]!): [Quiz]!
   findUserInfos(ids: [UUID!]!): [UserInfo]!
-  findUserSettings(userId: UUID!): Settings!
+  findUserSettings(userId: UUID): Settings!
+  findUsersSettings(usersIds: [UUID]!): [Settings]!
   flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
   forum(id: UUID!): Forum
+  forumActivity(id: UUID!): [ForumActivityEntry]
   forumByCourseId(id: UUID!): Forum
   getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
   getSemanticallySimilarEntities(count: Int! = 10, courseWhitelist: [UUID!], excludeEntitiesWithSameParent: Boolean, segmentId: UUID!): [SemanticSearchResult!]!
+  isAccessTokenAvailable(provider: ExternalServiceProviderDto!): Boolean!
   mediaRecords: [MediaRecord!]! @deprecated(reason: "In production there should probably be no way to get all media records of the system.")
   mediaRecordsByContentIds(contentIds: [UUID!]!): [[MediaRecord!]!]!
   mediaRecordsByIds(ids: [UUID!]!): [MediaRecord!]!
   mediaRecordsForCourses(courseIds: [UUID!]!): [[MediaRecord!]!]!
   mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
+  openQuestionByCourseId(id: UUID!): [Thread!]!
   PlayerHexadScoreExists(userId: UUID!): Boolean!
   scoreboard(courseId: UUID!): [ScoreboardItem!]!
   semanticSearch(count: Int! = 10, courseWhitelist: [UUID!], queryText: String!): [SemanticSearchResult!]!
@@ -1053,7 +1094,7 @@ type QuizOutput {
 
 directive @Range(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Range.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @resolveTo(requiredSelectionSet: String, sourceName: String!, sourceTypeName: String!, sourceFieldName: String!, sourceSelectionSet: String, sourceArgs: ResolveToSourceArgs, keyField: String, keysArg: String, pubsubTopic: String, filterBy: String, additionalArgs: ResolveToSourceArgs, result: String, resultType: String) on FIELD_DEFINITION
+directive @resolveTo(requiredSelectionSet: String, sourceName: String, sourceTypeName: String, sourceFieldName: String, sourceSelectionSet: String, sourceArgs: ResolveToSourceArgs, keyField: String, keysArg: String, pubsubTopic: String, filterBy: String, additionalArgs: ResolveToSourceArgs, result: String, resultType: String) on FIELD_DEFINITION
 
 scalar ResolveToSourceArgs
 
