@@ -32,7 +32,6 @@ type Recommendation = {
   id: string;
   text: string;
 };
-
 type TutorWidgetProps = {
   isAuthenticated: boolean;
 };
