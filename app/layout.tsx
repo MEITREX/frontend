@@ -62,8 +62,8 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
   const [pageView] = usePageView();
   const auth = useAuth();
   return (
-    <>‚
-      <PageLayout>{children}</PageLayout>
+    <>
+      ‚<PageLayout>{children}</PageLayout>
       {pageView === PageView.Student && (
         <TutorWidget isAuthenticated={auth.isAuthenticated} />
       )}
@@ -137,9 +137,7 @@ function SigninContent({ children }: { children: React.ReactNode }) {
   if (auth.isAuthenticated) {
     return (
       <RelayEnvironmentProvider environment={environment}>
-        <ThemeProvider theme={theme}>
-          {children}
-        </ThemeProvider>
+        <ThemeProvider theme={theme}>{children}</ThemeProvider>
       </RelayEnvironmentProvider>
     );
   }
