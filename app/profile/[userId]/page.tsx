@@ -1,7 +1,7 @@
 "use client";
 
 import { pagePublicProfileStudentQuery } from "@/__generated__/pagePublicProfileStudentQuery.graphql";
-import { achievementsData } from "@/components/profile/AchievementData";
+import { pageUserAchievementsPublicQuery } from "@/__generated__/pageUserAchievementsPublicQuery.graphql";
 import AchievementList from "@/components/profile/AchievementList";
 import { Avatar, Box, Tab, Tabs, Typography } from "@mui/material";
 import { useParams } from "next/navigation";
@@ -35,6 +35,27 @@ export default function PublicProfilePage() {
       `,
       { id: [userId] }
     );
+
+  const { achievementsByUserId } = useLazyLoadQuery<pageUserAchievementsPublicQuery>(
+    graphql`
+          query pageUserAchievementsPublicQuery($id: UUID!) {
+            achievementsByUserId(userId: $id) {
+              id
+              name
+              imageUrl
+              description
+              courseId
+              userId
+              completed
+              requiredCount
+              completedCount
+              trackingStartTime
+              trackingEndTime
+            }
+          }
+        `,
+    { id: userId }
+  );
 
   return (
     <Box sx={{ p: 4 }}>
@@ -90,7 +111,7 @@ export default function PublicProfilePage() {
       <Box>
         {tabIndex === 0 && (
           <AchievementList
-            achievements={achievementsData.filter((a) => a.achieved)}
+            achievements={achievementsByUserId.filter((a) => a.completed)}
             profileTypeSortString={"achieved"}
           />
         )}

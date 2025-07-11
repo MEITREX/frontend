@@ -29,11 +29,12 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ChapterOverview } from "@/components/ChapterOverview";
 
-import { achievementsData } from "@/components/profile/AchievementData";
+import { studentUserAchievementsWidgetQuery } from "@/__generated__/studentUserAchievementsWidgetQuery.graphql";
+import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
 import AchievementPopUp from "@/components/profile/achievements/AchievementPopUp";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
@@ -261,6 +262,49 @@ export default function StudentCoursePage() {
     setOpenDialog(false);
   };
 
+  const [studentUserLogin] = useMutation<studentUserLoginMutation>(graphql`
+  mutation studentUserLoginMutation($id: UUID!) {
+    loginUser(courseId: $id)
+  }
+`);
+
+  const { achievementsByUserId } = useLazyLoadQuery<studentUserAchievementsWidgetQuery>(
+    graphql`
+      query studentUserAchievementsWidgetQuery($id: UUID!) {
+        achievementsByUserId(userId: $id) {
+          id
+          name
+          imageUrl
+          description
+          courseId
+          userId
+          completed
+          requiredCount
+          completedCount
+          trackingStartTime
+          trackingEndTime
+        }
+      }
+    `,
+    { id: userId }
+  );
+
+  const mutableAchievements = [...achievementsByUserId]
+
+  useEffect(() => {
+    if (course.id) {
+      studentUserLogin({
+        variables: { id: course.id },
+        onCompleted: () => {
+          console.log('Login registered');
+        },
+        onError: (e) => {
+          console.error('Login error:', e);
+        },
+      });
+    }
+  }, [course.id])
+
   return (
     <main>
       <FormErrors error={error} onClose={() => setError(null)} />
@@ -314,7 +358,7 @@ export default function StudentCoursePage() {
       </div>
 
       <AchievementWidget
-        achievements={achievementsData}
+        achievements={mutableAchievements}
         openAchievements={handleOpenAchievement}
       />
       <AchievementPopUp

@@ -1,9 +1,10 @@
+import { Achievement } from "@/components/profile/achievements/types";
 import { Box, Button, Grid, Tooltip, Typography } from "@mui/material";
 import Link from "next/link";
 
 interface LatestAchievementsProps {
-  openAchievements: (achievement: any) => void;
-  achievements: any[];
+  openAchievements: (achievement: Achievement) => void;
+  achievements: Achievement[];
 }
 
 export default function LatestAchievements({
@@ -24,47 +25,47 @@ export default function LatestAchievements({
     }
   }
 
-  function getFilteredAchievements(achievements: any[], courseId: string) {
+  function getFilteredAchievements(achievements: Achievement[], courseId: string) {
     const courseAchievements = achievements.filter(
       (a) => a.courseId === courseId
     );
 
     const completed = courseAchievements
-      .filter((a) => a.achievedAt)
+      .filter((a) => a.trackingEndTime)
       .sort(
         (a, b) =>
-          new Date(b.achievedAt!).getTime() - new Date(a.achievedAt!).getTime()
+          new Date(b.trackingEndTime!).getTime() - new Date(a.trackingEndTime!).getTime()
       );
 
     const usedIds = new Set<string>();
     const lastCompleted = completed[0] || null;
-    if (lastCompleted) usedIds.add(lastCompleted.id);
+    if (lastCompleted) usedIds.add(lastCompleted.id!);
 
     const unlockedButNotCompleted = courseAchievements
-      .filter((a) => a.unlockedAt && !a.achievedAt && !usedIds.has(a.id))
+      .filter((a: Achievement) => a.trackingStartTime && !a.trackingEndTime && !usedIds.has(a.id!))
       .sort(
         (a, b) =>
-          new Date(b.unlockedAt!).getTime() - new Date(a.unlockedAt!).getTime()
+          new Date(b.trackingStartTime!).getTime() - new Date(a.trackingStartTime!).getTime()
       );
 
     const lastUnlocked = unlockedButNotCompleted[0] || null;
-    if (lastUnlocked) usedIds.add(lastUnlocked.id);
+    if (lastUnlocked) usedIds.add(lastUnlocked.id!);
 
     const firstUnlockedPending =
       unlockedButNotCompleted
         .slice()
         .reverse()
-        .find((a) => !usedIds.has(a.id)) || null;
-    if (firstUnlockedPending) usedIds.add(firstUnlockedPending.id);
+        .find((a) => !usedIds.has(a.id!)) || null;
+    if (firstUnlockedPending) usedIds.add(firstUnlockedPending.id!);
 
     const notCompleted = courseAchievements.filter(
-      (a) => !a.achieved && !usedIds.has(a.id)
+      (a) => !a.completed && !usedIds.has(a.id!)
     );
     const randomNotCompleted =
       notCompleted.length > 0
         ? notCompleted[Math.floor(Math.random() * notCompleted.length)]
         : null;
-    if (randomNotCompleted) usedIds.add(randomNotCompleted.id);
+    if (randomNotCompleted) usedIds.add(randomNotCompleted.id!);
 
     // Rückgabe: Nur Achievements, die existieren
     return [
@@ -127,7 +128,7 @@ export default function LatestAchievements({
       </Box>
       <Grid container spacing={2}>
         {getFilteredAchievements(achievements, "course1").map((a, index) => (
-          <Grid item xs={6} key={a.key}>
+          <Grid item xs={6} key={a!.key}>
             <Box
               sx={{
                 p: 2,
@@ -150,9 +151,9 @@ export default function LatestAchievements({
               >
                 {doHeadings(index)}
               </Typography>
-              <Tooltip title={a.achievement.title}>
+              <Tooltip title={a!.achievement.name}>
                 <Box
-                  onClick={() => openAchievements(a.achievement)}
+                  onClick={() => openAchievements(a!.achievement)}
                   sx={{
                     fontSize: 40,
                     display: "flex",
@@ -161,7 +162,7 @@ export default function LatestAchievements({
                     justifyContent: "center",
                   }}
                 >
-                  {a.achievement.icon}
+                  {a!.achievement.imageUrl}
                 </Box>
               </Tooltip>
             </Box>

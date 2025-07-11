@@ -1,9 +1,10 @@
 import { Box, Grid, Typography } from "@mui/material";
 import AchievementCard from "./AchievementCard";
+import { Achievement } from "./types";
 
 interface LatestAchievementsProps {
-  openAchievements: (achievement: any) => void;
-  achievements: any[];
+  openAchievements: (achievement: Achievement) => void;
+  achievements: Achievement[];
 }
 
 export default function LatestAchievements({

@@ -1,3 +1,4 @@
+import { AllAchievementsCourseNamesQuery } from "@/__generated__/AllAchievementsCourseNamesQuery.graphql";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import {
@@ -9,7 +10,10 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
+import { useLazyLoadQuery } from "react-relay";
+import { graphql } from "relay-runtime";
 import AchievementCard from "./AchievementCard";
+import { Achievement } from "./types";
 
 interface AllAchievementsProps {
   courses: any[];
@@ -18,12 +22,12 @@ interface AllAchievementsProps {
     event: React.MouseEvent<HTMLElement>,
     newFilter: "achieved" | "not-achieved" | null
   ) => void;
-  achievements: any[];
+  achievements: Achievement[];
   selectedCourse: any;
   handleChangeCourse: (event: any, value: any) => void;
-  filteredAchievements: any[];
+  filteredAchievements: Achievement[];
   handleOpenAchievement: (a: any) => void;
-  profileTypeSortString: string;
+  profileTypeSortString: 'achieved' | 'not-achieved' | null;
 }
 
 export default function AllAchievements({
@@ -48,6 +52,23 @@ export default function AllAchievements({
     },
     {} as Record<string, any[]>
   );
+
+  console.log(groupedAchievements, 'GGGGGGGGGGGRRRRRRRPOU')
+  const coursesInAchievements = Object.keys(groupedAchievements)
+  console.log(coursesInAchievements, 'courses')
+
+  const { coursesByIds } =
+    useLazyLoadQuery<AllAchievementsCourseNamesQuery>(
+      graphql`
+        query AllAchievementsCourseNamesQuery($id: [UUID!]!) {
+          coursesByIds(ids: $id) {
+            id
+            title
+          }
+        }
+      `,
+      { id: coursesInAchievements }
+    );
 
   const coursesNames = [
     { id: "course1", name: "Physics 202" },
@@ -147,12 +168,12 @@ export default function AllAchievements({
           }}
         >
           {courses.map((courseId) => {
-            const course = coursesNames.find((c) => c.id === courseId);
+            const course = coursesByIds.find((c) => c.id === courseId);
             return (
               <Tab
                 key={courseId}
                 value={courseId}
-                label={course ? course.name : courseId}
+                label={course ? course.title : courseId}
                 sx={{
                   textTransform: "none",
                   fontWeight: 500,
@@ -180,14 +201,14 @@ export default function AllAchievements({
       </Box>
 
       {Object.entries(groupedAchievements).map(
-        ([course, courseAchievements]: any) => {
+        ([course, courseAchievements]: [any, Achievement[]]) => {
           const sortedAchievements = courseAchievements.sort(
-            (a: any, b: any) => {
-              const dateA = a.achieved
-                ? new Date(a.achievedAt).getTime()
+            (a: Achievement, b: Achievement) => {
+              const dateA = a.completed
+                ? new Date(a.trackingEndTime!).getTime()
                 : null;
-              const dateB = b.achieved
-                ? new Date(b.achievedAt).getTime()
+              const dateB = b.completed
+                ? new Date(b.trackingEndTime!).getTime()
                 : null;
 
               if (dateA === null && dateB === null) return 0;
@@ -201,7 +222,7 @@ export default function AllAchievements({
           const visibleAchievements = sortedAchievements.slice(0, 11);
           const hasMore = sortedAchievements.length > 11;
 
-          console.log(filter, selectedCourse, course);
+          console.log(filter, courseAchievements[0].id, courseAchievements[1].id);
 
           return (
             <Box key={course} sx={{ px: 2, pt: 2, mb: 2 }}>
@@ -215,15 +236,14 @@ export default function AllAchievements({
                   paddingLeft: 0,
                 }}
               >
-                {sortedAchievements.map((a: any, index: any) => {
-                  const isCountable =
-                    a.targetCount !== undefined && a.currentCount !== undefined;
+                {sortedAchievements.map((a: Achievement, index: any) => {
+                  const isCountable = a.requiredCount != null && a.completedCount != null;
 
                   return (
                     <Grid item xs={12} sm={6} key={a.id}>
                       <AchievementCard
                         achievement={a}
-                        showProgress={isCountable && !a.achieved}
+                        showProgress={isCountable && !a.completed}
                         onClick={() => handleOpenAchievement(a)}
                       />
                     </Grid>

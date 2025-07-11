@@ -2,16 +2,26 @@ import { useState } from "react";
 import AchievementPopUp from "./achievements/AchievementPopUp";
 import AllAchievements from "./achievements/AllAchievements";
 import LatestAchievements from "./achievements/LatestAchievements";
+import { Achievement } from "./achievements/types";
 
-const AchievementList = ({ achievements, profileTypeSortString }: any) => {
+type AchievementListProps = {
+  achievements: Achievement[];
+  profileTypeSortString: 'achieved' | 'not-achieved' | null;
+};
+
+const AchievementList = ({ achievements, profileTypeSortString }: AchievementListProps) => {
   const achieved = achievements
-    .filter((a: any) => a.achieved)
+    .filter((a: Achievement) => a.completed)
     .sort(
-      (a: any, b: any) => b.achievedAt?.getTime()! - a.achievedAt?.getTime()!
+      (a: Achievement, b: Achievement) => {
+        const dateA = a.trackingEndTime ? new Date(a.trackingEndTime).getTime() : 0;
+        const dateB = b.trackingEndTime ? new Date(b.trackingEndTime).getTime() : 0;
+        return dateB - dateA;
+      }
     ) // neueste zuerst
     .slice(0, 4); // z.B. 5 letzte
 
-  const courseIDs = [...new Set(achievements.map((a: any) => a.courseId))];
+  const courseIDs = [...new Set(achievements.map((a: Achievement) => a.courseId))];
 
   const [selectedCourse, setSelectedCourse] = useState(courseIDs[0]);
 
@@ -27,14 +37,14 @@ const AchievementList = ({ achievements, profileTypeSortString }: any) => {
   );
 
   const filteredAchievements = achievements
-    .filter((a: any) => a.courseId === selectedCourse)
-    .filter((a: any) => {
-      if (filter === "achieved") return a.achieved;
-      if (filter === "not-achieved") return !a.achieved;
+    .filter((a: Achievement) => a.courseId === selectedCourse)
+    .filter((a: Achievement) => {
+      if (filter === "achieved") return a.completed;
+      if (filter === "not-achieved") return !a.completed;
       return true;
     });
 
-  const [selectedAchievement, setSelectedAchievement] = useState<any | null>(
+  const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(
     null
   );
   const [openAchievementDialog, setOpenDialog] = useState(false);
@@ -43,7 +53,7 @@ const AchievementList = ({ achievements, profileTypeSortString }: any) => {
     setOpenDialog(false);
   };
 
-  const handleOpenAchievement = (achievement: any) => {
+  const handleOpenAchievement = (achievement: Achievement) => {
     setSelectedAchievement(achievement);
     setOpenDialog(true);
   };

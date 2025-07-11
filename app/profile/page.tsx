@@ -1,12 +1,12 @@
 "use client";
 
 import { pagePrivateProfileStudentQuery } from "@/__generated__/pagePrivateProfileStudentQuery.graphql";
+import { pageUserAchievementsQuery } from "@/__generated__/pageUserAchievementsQuery.graphql";
 import AchievementList from "@/components/profile/AchievementList";
 import { Box, Tab, Tabs, Typography } from "@mui/material";
 import { useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
-import { achievementsData } from "../../components/profile/AchievementData";
 import GeneralPage from "./GeneralPage";
 
 export default function ProfilePage() {
@@ -31,6 +31,31 @@ export default function ProfilePage() {
     `,
     {}
   );
+
+  const { achievementsByUserId } = useLazyLoadQuery<pageUserAchievementsQuery>(
+    graphql`
+      query pageUserAchievementsQuery($id: UUID!) {
+        achievementsByUserId(userId: $id) {
+          id
+          name
+          imageUrl
+          description
+          courseId
+          userId
+          completed
+          requiredCount
+          completedCount
+          trackingStartTime
+          trackingEndTime
+        }
+      }
+    `,
+    { id: currentUserInfo.id }
+  );
+
+  console.log(achievementsByUserId)
+
+  const mutableAchievements = [...achievementsByUserId]
 
   const [tabIndex, setTabIndex] = useState(0);
 
@@ -97,7 +122,7 @@ export default function ProfilePage() {
         {tabIndex === 0 && <GeneralPage studentData={currentUserInfo} />}
         {tabIndex === 1 && (
           <AchievementList
-            achievements={achievementsData}
+            achievements={mutableAchievements}
             profileTypeSortString={"not-achieved"}
           />
         )}
