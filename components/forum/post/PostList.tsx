@@ -10,12 +10,14 @@ type Props = {
   posts: PostsType;
   threadCreatorId: ThreadType["creatorId"];
   bestAnswerId?: ThreadType["selectedAnswer"];
+  isQuestion: boolean;
 };
 
 export default function PostList({
   posts,
   threadCreatorId,
   bestAnswerId,
+  isQuestion,
 }: Props) {
   const [selectBestAnswer] = useMutation<ForumApiSelectBestAnswerMutation>(
     forumApiSelectBestAnswerMutation
@@ -59,6 +61,7 @@ export default function PostList({
           bestAnswerId={bestAnswerLocalId}
           threadCreatorId={threadCreatorId}
           post={post}
+          isQuestion={isQuestion}
         />
       ))}
     </Box>

@@ -161,6 +161,7 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
           bestAnswerId={thread?.selectedAnswer}
           threadCreatorId={thread?.creatorId}
           posts={localPosts ?? []}
+          isQuestion={!!thread.question}
         ></PostList>
 
         <Box

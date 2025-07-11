@@ -12,6 +12,7 @@ type Props = {
   threadCreatorId: ThreadType["creatorId"];
   bestAnswerId?: string | null;
   onMarkAsBest: () => void;
+  isQuestion:boolean;
 };
 
 export default function PostItem({
@@ -19,6 +20,7 @@ export default function PostItem({
   threadCreatorId,
   bestAnswerId,
   onMarkAsBest,
+  isQuestion
 }: Props) {
   const loggedInUser = useLazyLoadQuery<ForumApiUserInfoQuery>(
     forumApiUserInfoQuery,
@@ -66,7 +68,7 @@ export default function PostItem({
           ></UserPostInformation>
         </Box>
         <Box sx={{ mr: "20px !important" }}>
-          {isThreadAuthor && (
+          {(isThreadAuthor && isQuestion) && (
             <Tooltip
               title={isBestAnswer ? "Best answer!" : "Mark as best answer!"}
             >
