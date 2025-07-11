@@ -5,7 +5,8 @@ import React, { useEffect, useMemo } from "react";
 
 import { PageLayout } from "@/components/PageLayout";
 import { initRelayEnvironment } from "@/src/RelayEnvironment";
-import { PageViewProvider } from "@/src/currentView";
+import { PageViewProvider, PageView, usePageView } from "@/src/currentView";
+import TutorWidget from "@/components/tutor/TutorWidget";
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
@@ -25,7 +26,6 @@ import {
 } from "react-oidc-context";
 import { RelayEnvironmentProvider } from "react-relay";
 import PageLoading from "./loading";
-import TutorWidget from "@/components/tutor/TutorWidget"; // Import the TutorWidget component
 
 dayjs.extend(isBetween);
 
@@ -58,6 +58,19 @@ const theme = createTheme({
   },
 });
 
+function InnerLayout({ children }: { children: React.ReactNode }) {
+  const [pageView] = usePageView();
+  const auth = useAuth();
+  return (
+    <>‚
+      <PageLayout>{children}</PageLayout>
+      {pageView === PageView.Student && (
+        <TutorWidget isAuthenticated={auth.isAuthenticated} />
+      )}
+    </>
+  );
+}
+
 export default function App({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de" className="h-full overflow-hidden">
@@ -70,7 +83,7 @@ export default function App({ children }: { children: React.ReactNode }) {
             <DndProvider backend={HTML5Backend}>
               <SigninContent>
                 <PageViewProvider>
-                  <PageLayout>{children}</PageLayout>
+                  <InnerLayout>{children}</InnerLayout>
                 </PageViewProvider>
               </SigninContent>
             </DndProvider>
@@ -125,7 +138,6 @@ function SigninContent({ children }: { children: React.ReactNode }) {
     return (
       <RelayEnvironmentProvider environment={environment}>
         <ThemeProvider theme={theme}>
-          <TutorWidget isAuthenticated={auth.isAuthenticated} />
           {children}
         </ThemeProvider>
       </RelayEnvironmentProvider>
