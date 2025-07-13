@@ -445,7 +445,7 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
           </ListItemAvatar>
           <ListItemText primary={auth.user?.profile?.name} />
           <Tooltip title="Settings" placement="left">
-            <Link href="/settings/gamification">
+            <Link href="/settings/general">
               <IconButton>
                 <Settings />
               </IconButton>

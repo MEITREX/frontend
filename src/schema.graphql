@@ -226,6 +226,12 @@ type CodeAssignmentMetadata {
   readmeHtml: String
 }
 
+enum ColorTheme {
+  COLOR_BLIND
+  DARK
+  LIGHT
+}
+
 type CompositeProgressInformation {
   completedContents: Int!
   progress: Float!
@@ -726,6 +732,14 @@ enum Gamification {
 input GenerateAccessTokenInput {
   authorizationCode: String!
   provider: ExternalServiceProviderDto!
+}
+
+type GeneralSettings {
+  colorTheme: ColorTheme
+}
+
+input GeneralSettingsInput {
+  colorTheme: ColorTheme
 }
 
 input GenerateMediaRecordLinksInput {
@@ -1344,11 +1358,13 @@ interface SemanticSearchResult {
 
 type Settings {
   gamification: Gamification
+  general: GeneralSettings
   notification: Notification
 }
 
 input SettingsInput {
   gamification: Gamification
+  general: GeneralSettingsInput
   notification: NotificationInput
 }
 
