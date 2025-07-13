@@ -147,6 +147,12 @@ type ClozeTextElement {
   text: JSON!
 }
 
+enum ColorTheme {
+  COLOR_BLIND
+  DARK
+  LIGHT
+}
+
 type CompositeProgressInformation {
   completedContents: Int!
   progress: Float!
@@ -563,6 +569,14 @@ enum Gamification {
   ADAPTIVE_GAMIFICATION_ENABLED
   ALL_GAMIFICATION_DISABLED
   GAMIFICATION_ENABLED
+}
+
+type GeneralSettings {
+  colorTheme: ColorTheme
+}
+
+input GeneralSettingsInput {
+  colorTheme: ColorTheme
 }
 
 input GenerateMediaRecordLinksInput {
@@ -1037,11 +1051,13 @@ interface SemanticSearchResult {
 
 type Settings {
   gamification: Gamification
+  general: GeneralSettings
   notification: Notification
 }
 
 input SettingsInput {
   gamification: Gamification
+  general: GeneralSettingsInput
   notification: NotificationInput
 }
 
