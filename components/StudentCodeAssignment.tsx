@@ -1,12 +1,8 @@
 import { StudentCodeAssignment$key } from "@/__generated__/StudentCodeAssignment.graphql";
-import { StudentCodeAssignmentQuery } from "@/__generated__/StudentCodeAssignmentQuery.graphql";
+import { StudentCodeAssignmentCurrentUserQuery } from "@/__generated__/StudentCodeAssignmentCurrentUserQuery.graphql";
 import { StudentCodeAssignmentGradingQuery } from "@/__generated__/StudentCodeAssignmentGradingQuery.graphql";
-import { ContentTags } from "./ContentTags";
-import { FormErrors } from "./FormErrors";
-import { Heading } from "./Heading";
-import { PageError } from "./PageError";
-import { QuizModal } from "./QuizModal";
-import { Edit, ExpandMore, GitHub } from "@mui/icons-material";
+import { StudentCodeAssignmentQuery } from "@/__generated__/StudentCodeAssignmentQuery.graphql";
+import { ExpandMore, GitHub } from "@mui/icons-material";
 import {
   Accordion,
   AccordionDetails,
@@ -14,21 +10,20 @@ import {
   Box,
   Button,
   Divider,
-  Link,
-  Paper,
   Table,
   TableBody,
   TableCell,
-  TableContainer,
-  TableHead,
   TableRow,
   Typography,
 } from "@mui/material";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useState } from "react";
-import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
 import toast from "react-hot-toast";
-import { StudentCodeAssignmentCurrentUserQuery } from "@/__generated__/StudentCodeAssignmentCurrentUserQuery.graphql";
+import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
+import { ContentTags } from "./ContentTags";
+import { FormErrors } from "./FormErrors";
+import { Heading } from "./Heading";
+import { PageError } from "./PageError";
 
 export default function StudentCodeAssignment({
   contentRef,
@@ -374,7 +369,23 @@ function renderGroupedTestResults(html: string) {
               border: "1px solid #ddd",
             }}
           >
-            <AccordionSummary expandIcon={<ExpandMore />}>
+            <AccordionSummary
+              expandIcon={<ExpandMore />}
+              sx={{
+                minHeight: 32,
+                px: 2,
+                py: 0.5,
+                "&.MuiAccordionSummary-root": {
+                  minHeight: 42,
+                },
+                "& .MuiAccordionSummary-content": {
+                  my: 0,
+                  py: 0,
+                  margin: 0,
+                  alignItems: "center",
+                },
+              }}
+            >
               <Typography fontWeight="bold" sx={{ flexGrow: 1 }}>
                 {prefix}
               </Typography>
@@ -382,11 +393,24 @@ function renderGroupedTestResults(html: string) {
                 {passedTests}/{totalTests} passed
               </Typography>
             </AccordionSummary>
-            <AccordionDetails>
+
+            <AccordionDetails
+              sx={{
+                px: 2,
+                py: 0,
+              }}
+            >
               <Table size="small">
                 <TableBody>
                   {tests.map(({ name, score }, idx) => (
-                    <TableRow key={idx}>
+                    <TableRow
+                      key={idx}
+                      sx={{
+                        "&:last-child td, &:last-child th": {
+                          borderBottom: "none",
+                        },
+                      }}
+                    >
                       <TableCell>{name}</TableCell>
                       <TableCell align="center">{score}</TableCell>
                     </TableRow>
