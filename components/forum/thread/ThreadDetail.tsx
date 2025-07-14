@@ -135,6 +135,9 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
                   thread.question?.content ?? thread.info?.content!
                 }
                 postId={thread.question?.id ?? thread.info?.id!}
+                threadId={threadId}
+                isThread={true}
+                redirect={() => redirect()}
               ></EditableContent>
             </Box>
             <Stack

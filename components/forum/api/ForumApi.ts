@@ -63,6 +63,14 @@ export const forumApiCreateQuestionThreadMutation = graphql`
   }
 `;
 
+export const forumApiDeleteThreadMutation = graphql`
+  mutation ForumApiDeleteThreadMutation($id: UUID!) {
+    deleteThread(threadId: $id) {
+      id
+    }
+  }
+`;
+
 export const forumApiAddPostMutation = graphql`
   mutation ForumApiAddPostMutation($post: InputPost!) {
     addPost(post: $post) {
