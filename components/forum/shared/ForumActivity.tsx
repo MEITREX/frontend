@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import UserPostInformation from "@/components/forum/shared/UserPostInformation";
 import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
 import React from "react";
+import CourseName from "./CourseName";
 
 type ForumActivityEntry = {
   creationTime: string;
@@ -14,13 +15,14 @@ type ForumActivityEntry = {
     content: string;
     authorId: string;
   } | null;
-} | null;
+};
 
 type Props = {
   data: ForumActivityEntry;
+  courseId?: string | null ;
 };
 
-export default function ForumActivity({ data }: Props) {
+export default function ForumActivity({ data, courseId }: Props) {
   if (!data) return null;
   const { creationTime, thread, post } = data;
 
@@ -33,6 +35,7 @@ export default function ForumActivity({ data }: Props) {
         borderLeftColor: "primary.main",
         p: 1,
         mb: 1.5,
+        position: "relative",
         "&:hover": {
           backgroundColor: "grey.100",
           cursor: "pointer",
@@ -140,6 +143,21 @@ export default function ForumActivity({ data }: Props) {
           </Box>
         </Box>
       )}
+
+      {courseId && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            color: "text.secondary",
+            fontSize: "0.875rem",
+          }}
+        >
+          <CourseName courseId={courseId} />
+        </Box>
+      )}
+
     </Box>
   );
 }

@@ -160,6 +160,14 @@ export const forumApiForumActivityQuery = graphql`
     }
 `
 
+export const forumApiCourseNameQuery = graphql`
+    query ForumApiCourseNameQuery($id: UUID!) {
+      coursesByIds(ids:[$id]){
+        title
+      }
+    }
+`
+
 export const forumApiForumActivityUserQuery = graphql`
     query ForumApiForumActivityUserQuery($id: UUID!) {
       forumActivityByUserId(id: $id) {

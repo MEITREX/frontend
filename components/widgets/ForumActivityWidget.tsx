@@ -12,12 +12,6 @@ import { format } from "date-fns";
 import ForumActivity from "@/components/forum/shared/ForumActivity";
 
 
-
-const formatTime = (isoString: string) => {
-  const date = new Date(isoString);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-};
-
 export default function ForumActivityWidget(){
   const params = useParams();
   const courseId = params.courseId as string;
@@ -68,7 +62,7 @@ export default function ForumActivityWidget(){
         </Link>
       </Box>
       {(data.forumActivity ?? []).length > 0 ? (<Stack spacing={2}>
-        {data.forumActivity!.map((a, idx) => (
+        {data.forumActivity.map((a, idx) => (
           <ForumActivity data={a} key={idx} />
         ))}
       </Stack>)
