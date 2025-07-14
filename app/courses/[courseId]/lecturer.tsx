@@ -6,9 +6,14 @@ import { useParams } from "next/navigation";
 import { graphql, useLazyLoadQuery } from "react-relay";
 
 import { AddChapterModal } from "@/components/AddChapterModal";
+import { CodeAssessmentProviderCourseButton } from "@/components/CodeAssessmentProviderCourseButton";
 import { EditCourseModal } from "@/components/EditCourseModal";
 import { Heading } from "@/components/Heading";
 import { PageError } from "@/components/PageError";
+import {
+  codeAssessmentProvider,
+  providerConfig,
+} from "@/components/ProviderConfig";
 import { Add, People, Settings } from "@mui/icons-material";
 import { orderBy } from "lodash";
 import { useRouter } from "next/navigation";
@@ -36,6 +41,8 @@ graphql`
 export default function LecturerCoursePage() {
   const router = useRouter();
 
+  const provider = providerConfig[codeAssessmentProvider];
+
   // Get course id from url
   const { courseId } = useParams();
 
@@ -60,6 +67,11 @@ export default function LecturerCoursePage() {
 
           coursesByIds(ids: [$courseId]) {
             ...lecturerCourseFragment @relay(mask: false)
+          }
+
+          getExternalCourse(courseId: $courseId) {
+            url
+            courseTitle
           }
         }
       `,
@@ -93,6 +105,9 @@ export default function LecturerCoursePage() {
         title={course.title}
         action={
           <div className="flex gap-4 items-center">
+            <CodeAssessmentProviderCourseButton
+              externalCourse={query.getExternalCourse}
+            />
             <Button startIcon={<Add />} onClick={() => setOpenModal(true)}>
               Add chapter
             </Button>

@@ -15,18 +15,24 @@ import {
   PersonalVideo,
   QuestionAnswerRounded,
   Quiz,
+  Terminal,
 } from "@mui/icons-material";
 import { Chip, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { graphql, useFragment } from "react-relay";
 import colors from "tailwindcss/colors";
+import { ProviderAuthorizationDialog } from "../ProviderAuthorizationDialog";
+import { codeAssessmentProvider, providerConfig } from "../ProviderConfig";
 import { NoMaxWidthTooltip } from "../search/SearchResultItem";
+import { useAccessTokenCheck } from "../useAccessTokenCheck";
 import { ProgressFrame } from "./ProgressFrame";
 
 export const ContentTypeToColor: Record<string, string> = {
   MediaContent: colors.violet[200],
   FlashcardSetAssessment: colors.emerald[200],
   QuizAssessment: colors.rose[200],
+  AssignmentAssessment: colors.blue[200],
 };
 
 export type ContentChip = { key: string; label: string; color?: string };
@@ -98,11 +104,22 @@ export function ContentLink({
           }
         }
 
+        ... on AssignmentAssessment {
+          assignment {
+            assignmentType
+          }
+        }
+
         __typename
       }
     `,
     _content
   );
+
+  const [showProviderDialog, setShowProviderDialog] = useState(false);
+  const checkAccessToken = useAccessTokenCheck();
+  const provider = providerConfig[codeAssessmentProvider];
+
   const isProcessing =
     content.aiProcessingProgress?.state === "PROCESSING" ||
     content.aiProcessingProgress?.state === "ENQUEUED" ||
@@ -123,6 +140,9 @@ export function ContentLink({
       ? "Flashcard"
       : content.__typename === "QuizAssessment"
       ? "Quiz"
+      : content.__typename === "AssignmentAssessment" &&
+        content.assignment?.assignmentType === "CODE_ASSIGNMENT"
+      ? "Code Assignment"
       : "Unknown";
   const router = useRouter();
   const chips = [
@@ -178,6 +198,13 @@ export function ContentLink({
           color: disabled ? "text.disabled" : "text.secondary",
         }}
       />
+    ) : content.__typename === "AssignmentAssessment" ? (
+      <Terminal
+        className="!w-[47%] !h-[47%]"
+        sx={{
+          color: disabled ? "text.disabled" : "text.secondary",
+        }}
+      />
     ) : (
       <div>unknown</div>
     );
@@ -189,50 +216,83 @@ export function ContentLink({
       ? `/courses/${courseId}/flashcards/${content.id}`
       : content.__typename === "QuizAssessment"
       ? `/courses/${courseId}/quiz/${content.id}`
+      : content.__typename === "AssignmentAssessment" &&
+        content.assignment?.assignmentType === "CODE_ASSIGNMENT"
+      ? `/courses/${courseId}/assignment/${content.id}`
       : "-";
 
   const body = (
-    <button
-      disabled={disabled}
-      className={`group flex items-center text-left ${gap} pr-3 bg-transparent hover:disabled:bg-gray-50 ${cursor} rounded-full`}
-      onClick={() => router.push(link)}
-    >
-      <div
-        className={`${frameSize} relative flex justify-center items-center group-hover:group-enabled:scale-105`}
-      >
-        <ProgressFrame
-          color={
-            disabled ? colors.gray[100] : ContentTypeToColor[content.__typename]
-          }
-          _progress={content.userProgressData}
+    <>
+      {showProviderDialog && (
+        <ProviderAuthorizationDialog
+          onClose={() => setShowProviderDialog(false)}
+          onAuthorize={() => {
+            setShowProviderDialog(false);
+          }}
+          alertMessage={`You must authorize via ${provider.name} to access this code assignment.`}
+          _provider={codeAssessmentProvider}
         />
+      )}
 
-        <div className="absolute flex justify-center items-center">{icon}</div>
-      </div>
-      <div className="group-hover:group-enabled:translate-x-0.5">
+      <button
+        disabled={disabled}
+        className={`group flex items-center text-left ${gap} pr-3 bg-transparent hover:disabled:bg-gray-50 ${cursor} rounded-full`}
+        onClick={async () => {
+          if (
+            content.__typename === "AssignmentAssessment" &&
+            content.assignment?.assignmentType === "CODE_ASSIGNMENT"
+          ) {
+            const hasToken = await checkAccessToken();
+            if (!hasToken) {
+              setShowProviderDialog(true);
+              return;
+            }
+          }
+
+          router.push(link);
+        }}
+      >
         <div
-          className={`flex pb-1 items-center ${
-            size == "small" ? "gap-1 -ml-0.5" : "gap-1.5 -ml-1"
-          }`}
+          className={`${frameSize} relative flex justify-center items-center group-hover:group-enabled:scale-105`}
         >
-          {chips.map((chip) => (
-            <Chip
-              key={chip.key}
-              className={"!h-4 px-0 !text-[0.6rem]"}
-              label={chip.label}
-              sx={{ backgroundColor: chip.color }}
-            />
-          ))}
+          <ProgressFrame
+            color={
+              disabled
+                ? colors.gray[100]
+                : ContentTypeToColor[content.__typename]
+            }
+            _progress={content.userProgressData}
+          />
+
+          <div className="absolute flex justify-center items-center">
+            {icon}
+          </div>
         </div>
-        <Typography
-          variant="body2"
-          color={disabled ? "text.disabled" : "text.secondary"}
-        >
-          {content.metadata.name}
-        </Typography>
-      </div>
-      <div className="flex-1"></div>
-    </button>
+        <div className="group-hover:group-enabled:translate-x-0.5">
+          <div
+            className={`flex pb-1 items-center ${
+              size == "small" ? "gap-1 -ml-0.5" : "gap-1.5 -ml-1"
+            }`}
+          >
+            {chips.map((chip) => (
+              <Chip
+                key={chip.key}
+                className={"!h-4 px-0 !text-[0.6rem]"}
+                label={chip.label}
+                sx={{ backgroundColor: chip.color }}
+              />
+            ))}
+          </div>
+          <Typography
+            variant="body2"
+            color={disabled ? "text.disabled" : "text.secondary"}
+          >
+            {content.metadata.name}
+          </Typography>
+        </div>
+        <div className="flex-1"></div>
+      </button>
+    </>
   );
 
   if (content.mediaRecords?.some((x) => true)) {
