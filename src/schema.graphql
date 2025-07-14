@@ -591,6 +591,7 @@ type Forum {
 }
 
 type ForumActivityEntry {
+  courseId: UUID
   creationTime: DateTime!
   post: Post
   thread: Thread!
@@ -965,6 +966,7 @@ type Query {
   flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
   forum(id: UUID!): Forum
   forumActivity(id: UUID!): [ForumActivityEntry]
+  forumActivityByUserId(id: UUID!): [ForumActivityEntry]
   forumByCourseId(id: UUID!): Forum
   getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
   getSemanticallySimilarEntities(count: Int! = 10, courseWhitelist: [UUID!], excludeEntitiesWithSameParent: Boolean, segmentId: UUID!): [SemanticSearchResult!]!

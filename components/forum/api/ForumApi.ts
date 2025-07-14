@@ -102,6 +102,7 @@ export const forumApiUpvotePostMutation = graphql`
   }
 `;
 
+
 export const forumApiDownvotePostMutation = graphql`
   mutation ForumApiDownvotePostMutation($postId: UUID!) {
     downvotePost(postId: $postId) {
@@ -158,6 +159,25 @@ export const forumApiForumActivityQuery = graphql`
     }
     }
 `
+
+export const forumApiForumActivityUserQuery = graphql`
+    query ForumApiForumActivityUserQuery($id: UUID!) {
+      forumActivityByUserId(id: $id) {
+        courseId
+        creationTime
+        thread {
+          id
+          creatorId
+          title
+        }
+        post {
+          content
+          authorId
+        }
+      }
+    }
+`
+
 
 export const forumApiSelectBestAnswerMutation = graphql`
   mutation ForumApiSelectBestAnswerMutation($postId: UUID!) {

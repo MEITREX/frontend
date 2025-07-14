@@ -5,8 +5,16 @@ import { Box, Tab, Tabs, Typography } from "@mui/material";
 import { useState } from "react";
 import { achievementsData } from "../../components/profile/AchievementData";
 import GeneralPage from "./GeneralPage";
+import ProfileForumActivity from "@/components/profile/forum/ProfileForumActivity";
+import { useLazyLoadQuery } from "react-relay";
+import { ForumApiUserInfoQuery } from "@/__generated__/ForumApiUserInfoQuery.graphql";
+import { forumApiUserInfoQuery } from "@/components/forum/api/ForumApi";
 
 export default function ProfilePage() {
+  const loggedInUser = useLazyLoadQuery<ForumApiUserInfoQuery>(
+    forumApiUserInfoQuery,
+    {}
+  );
   // Beispiel-Daten – im echten Fall holst du die aus auth.user?.profile oder einem Query
   const profileData = {
     firstName: "Max",
@@ -82,6 +90,9 @@ export default function ProfilePage() {
             achievements={achievementsData}
             profileTypeSortString={"not-achieved"}
           />
+        )}
+        {tabIndex === 2 && (
+          <ProfileForumActivity userId={loggedInUser.currentUserInfo.id} />
         )}
       </Box>
     </>
