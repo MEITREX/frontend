@@ -299,9 +299,9 @@ export default function StudentCodeAssignment({
         {isCompleted &&
           grading?.codeAssignmentGradingMetadata?.feedbackTableHtml && (
             <Box mt={2}>
-              {renderGroupedTestResults(
-                grading.codeAssignmentGradingMetadata.feedbackTableHtml
-              )}
+              <GroupedTestResults
+                html={grading.codeAssignmentGradingMetadata.feedbackTableHtml}
+              />
             </Box>
           )}
 
@@ -322,7 +322,7 @@ export default function StudentCodeAssignment({
   );
 }
 
-function renderGroupedTestResults(html: string) {
+function GroupedTestResults({ html }: { html: string }) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
   const rows = Array.from(doc.querySelectorAll("tbody tr"));
@@ -345,7 +345,6 @@ function renderGroupedTestResults(html: string) {
   });
 
   const [expanded, setExpanded] = useState<string | false>(false);
-
   const handleChange =
     (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false);
@@ -375,9 +374,7 @@ function renderGroupedTestResults(html: string) {
                 minHeight: 32,
                 px: 2,
                 py: 0.5,
-                "&.MuiAccordionSummary-root": {
-                  minHeight: 42,
-                },
+                "&.MuiAccordionSummary-root": { minHeight: 42 },
                 "& .MuiAccordionSummary-content": {
                   my: 0,
                   py: 0,
@@ -394,12 +391,7 @@ function renderGroupedTestResults(html: string) {
               </Typography>
             </AccordionSummary>
 
-            <AccordionDetails
-              sx={{
-                px: 2,
-                py: 0,
-              }}
-            >
+            <AccordionDetails sx={{ px: 2, py: 0 }}>
               <Table size="small">
                 <TableBody>
                   {tests.map(({ name, score }, idx) => (
