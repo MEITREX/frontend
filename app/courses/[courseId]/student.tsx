@@ -286,7 +286,10 @@ export default function StudentCoursePage() {
         }
       }
     `,
-    { id: userId }
+    { id: userId },
+    {
+      fetchPolicy: "network-only", // <-- wichtig!
+    }
   );
 
   const mutableAchievements = [...achievementsByUserId]
@@ -360,6 +363,7 @@ export default function StudentCoursePage() {
       <AchievementWidget
         achievements={mutableAchievements}
         openAchievements={handleOpenAchievement}
+        course={course.id}
       />
       <AchievementPopUp
         open={openAchievementDialog}

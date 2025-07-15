@@ -81,6 +81,25 @@ export default function AllAchievements({
     { id: "course8", name: "Mathe I" },
   ];
 
+  if (filteredAchievements.length === 0 || Object.keys(groupedAchievements).length === 0) {
+    return (
+      <Box
+        sx={{
+          border: "1px solid #ccc",
+          borderRadius: 2,
+          p: 4,
+          mb: 4,
+          textAlign: "center",
+          backgroundColor: "#f9f9f9",
+        }}
+      >
+        <Typography variant="h6" color="text.secondary">
+          You need to register in a course to unlock achievements
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{

@@ -1,4 +1,4 @@
-import { AllAchievementsCourseNamesQuery } from "@/__generated__/AllAchievementsCourseNamesQuery.graphql";
+import { AchievementPopUpCourseNamesPopUpQuery } from "@/__generated__/AchievementPopUpCourseNamesPopUpQuery.graphql";
 import {
   Box,
   Button,
@@ -24,9 +24,9 @@ export default function AchievementPopUp({
 }: AchievementPopUpProps) {
 
   const CourseNameQuery = ({ courseId }: { courseId: string }) => {
-    const { coursesByIds } = useLazyLoadQuery<AllAchievementsCourseNamesQuery>(
+    const { coursesByIds } = useLazyLoadQuery<AchievementPopUpCourseNamesPopUpQuery>(
       graphql`
-      query AllAchievementsCourseNamesQuery($id: [UUID!]!) {
+      query AchievementPopUpCourseNamesPopUpQuery($id: [UUID!]!) {
         coursesByIds(ids: $id) {
           id
           title

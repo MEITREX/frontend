@@ -5,11 +5,13 @@ import Link from "next/link";
 interface LatestAchievementsProps {
   openAchievements: (achievement: Achievement) => void;
   achievements: Achievement[];
+  course: string
 }
 
 export default function LatestAchievements({
   openAchievements,
   achievements,
+  course
 }: LatestAchievementsProps) {
   const top4Achievements = achievements.slice(0, 4); // oder .filter(...) nach Wunsch
 
@@ -26,9 +28,13 @@ export default function LatestAchievements({
   }
 
   function getFilteredAchievements(achievements: Achievement[], courseId: string) {
+
+    console.log(achievements, 'ach')
     const courseAchievements = achievements.filter(
       (a) => a.courseId === courseId
     );
+
+    console.log(courseAchievements, 'ach1')
 
     const completed = courseAchievements
       .filter((a) => a.trackingEndTime)
@@ -68,25 +74,28 @@ export default function LatestAchievements({
     if (randomNotCompleted) usedIds.add(randomNotCompleted.id!);
 
     // Rückgabe: Nur Achievements, die existieren
+
+    console.log(lastCompleted, lastUnlocked, randomNotCompleted, firstUnlockedPending)
+
     return [
       lastCompleted && {
         key: "lastCompleted",
-        title: "Zuletzt abgeschlossen",
+        title: "Last completed",
         achievement: lastCompleted,
       },
       randomNotCompleted && {
         key: "randomNotCompleted",
-        title: "Zufällig noch nicht abgeschlossen",
+        title: "Random uncompleted",
         achievement: randomNotCompleted,
       },
       lastUnlocked && {
         key: "lastUnlocked",
-        title: "Zuletzt freigeschaltet (nicht abgeschlossen)",
+        title: "Last unlocked",
         achievement: lastUnlocked,
       },
       firstUnlockedPending && {
         key: "firstUnlockedPending",
-        title: "Frühestes freigeschaltet (nicht abgeschlossen)",
+        title: "Longest unlocked",
         achievement: firstUnlockedPending,
       },
     ].filter(Boolean); // entfernt alle null-Einträge
@@ -127,7 +136,7 @@ export default function LatestAchievements({
         </Link>
       </Box>
       <Grid container spacing={2}>
-        {getFilteredAchievements(achievements, "course1").map((a, index) => (
+        {getFilteredAchievements(achievements, course).map((a, index) => (
           <Grid item xs={6} key={a!.key}>
             <Box
               sx={{
@@ -149,7 +158,7 @@ export default function LatestAchievements({
                 }}
                 fontWeight={"bold"}
               >
-                {doHeadings(index)}
+                {a?.title}
               </Typography>
               <Tooltip title={a!.achievement.name}>
                 <Box

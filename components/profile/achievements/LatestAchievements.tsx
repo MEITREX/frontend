@@ -11,7 +11,7 @@ export default function LatestAchievements({
   openAchievements,
   achievements,
 }: LatestAchievementsProps) {
-  return (
+  return achievements.length > 0 ? (
     <Box
       sx={{
         border: "1px solid #ccc", // hellgrau
@@ -34,5 +34,5 @@ export default function LatestAchievements({
         ))}
       </Grid>
     </Box>
-  );
+  ) : null;
 }
