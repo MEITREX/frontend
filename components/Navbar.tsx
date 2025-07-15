@@ -41,9 +41,16 @@ import {
 import dayjs from "dayjs";
 import { chain, debounce } from "lodash";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactElement, useCallback, useState, useTransition } from "react";
+import {
+  Fragment,
+  ReactElement,
+  useCallback,
+  useState,
+  useTransition,
+} from "react";
 import { useAuth } from "react-oidc-context";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
+import clsx from "clsx";
 
 function useIsTutor(_frag: NavbarIsTutor$key) {
   const { realmRoles, courseMemberships } = useFragment(
@@ -258,7 +265,7 @@ function NavbarBase({
   }
 
   return (
-    <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
+    <div className="shrink-0 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
       <div className="text-center mt-8 text-3xl font-medium tracking-wider sticky">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logo.src} alt="GITS logo" className="w-24 m-auto" />
@@ -267,7 +274,7 @@ function NavbarBase({
             fontFamily: "'Quicksand', sans-serif",
             fontSize: "2.5rem",
             fontWeight: "bold",
-            color: "#089CDC",
+            color: "primaryA.0",
             marginTop: "4px",
             textAlign: "center",
           }}
@@ -299,14 +306,10 @@ function NavbarBase({
           renderOption={(props, option) => (
             <li {...props} key={option?.breadcrumbs}>
               <div>
-                <div className="text-[10px] text-slate-500">
-                  {option.breadcrumbs}
-                </div>
+                <div className="text-[10px]">{option.breadcrumbs}</div>
                 {option.title}
                 {option.position && (
-                  <div className="text-[10px] text-slate-400">
-                    {option.position}
-                  </div>
+                  <div className="text-[10px]">{option.position}</div>
                 )}
               </div>
             </li>
@@ -345,12 +348,17 @@ function NavbarBase({
 
 function NavbarSection({ children, title }: { children: any; title?: string }) {
   return (
-    <div className="bg-white rounded-lg">
+    <div className="rounded-lg bg-meitrex_surface_a0">
       <List
         subheader={
-          title ? (
-            <ListSubheader className="rounded-lg">{title}</ListSubheader>
-          ) : undefined
+          title && (
+            <ListSubheader
+              className="overflow-hidden text-ellipsis whitespace-nowrap rounded-lg bg-meitrex_surface_a0"
+              sx={{ backgroundColor: "surfaceA.0" }}
+            >
+              {title}
+            </ListSubheader>
+          )
         }
       >
         {children}
@@ -376,16 +384,18 @@ function NavbarLink({
   const isActive = exact ? currentPath == href : currentPath.startsWith(href);
   return (
     <div
-      className={`relative ${
-        isActive ? "bg-gradient-to-r from-gray-100 to-transparent" : ""
-      }`}
+      className={clsx("relative", {
+        "bg-gradient-to-r from-meitrex_surface_a10 to-transparent": isActive,
+      })}
     >
       {isActive && (
-        <div className="absolute w-2 inset-y-0 -left-2 bg-sky-800 rounded-l"></div>
+        <div className="absolute w-2 inset-y-0 -left-2 bg-meitrex_secondary rounded-l"></div>
       )}
       <ListItemButton onClick={() => router.push(href)}>
-        {icon && <ListItemIcon>{icon}</ListItemIcon>}
-        <ListItemText primary={title} />
+        {icon && (
+          <ListItemIcon sx={{ color: "text.secondary" }}>{icon}</ListItemIcon>
+        )}
+        <ListItemText sx={{ color: "text.primary" }} primary={title} />
       </ListItemButton>
     </div>
   );
@@ -416,12 +426,13 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
   const tutor = useIsTutor(_isTutor);
 
   return (
-    <div className="sticky bottom-0 py-6 -mt-6 bg-gradient-to-t from-slate-200 from-75% to-transparent">
+    <div className="sticky bottom-0 py-6 -mt-6">
       <NavbarSection>
         <ListItem
           secondaryAction={
             <Tooltip title="Logout" placement="left">
               <IconButton
+                sx={{ color: "text.secondary" }}
                 edge="end"
                 aria-label="logout"
                 onClick={() => {
@@ -446,7 +457,7 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
           <ListItemText primary={auth.user?.profile?.name} />
           <Tooltip title="Settings" placement="left">
             <Link href="/settings/general">
-              <IconButton>
+              <IconButton sx={{ color: "text.secondary" }}>
                 <Settings />
               </IconButton>
             </Link>
@@ -522,7 +533,7 @@ export function Navbar() {
           ))}
         </NavbarSection>
       ) : (
-        <></>
+        <Fragment />
       )}
     </NavbarBase>
   );
