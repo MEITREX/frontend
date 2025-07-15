@@ -131,6 +131,28 @@ export function MediaRecordSelector({
         deleteMediaRecord(id: $id)
       }
     `);
+
+  const [setCourseRecords] =
+    useMutation<MediaRecordSelectorAddToCourseMutation>(graphql`
+      mutation MediaRecordSelectorAddToCourseMutation(
+        $courseId: UUID!
+        $mediaRecordIds: [UUID!]!
+      ) {
+        setMediaRecordsForCourse(
+          courseId: $courseId
+          mediaRecordIds: $mediaRecordIds
+        ) {
+          id
+          __id
+          uploadUrl
+          name
+          downloadUrl
+          contentIds
+          type
+          suggestedTags
+        }
+      }
+    `);
   const courseMediaRecords = coursesByIds[0].mediaRecords || [];
 
   const courseMediaRecordIds = courseMediaRecords.map((x) => x.id);
@@ -218,7 +240,16 @@ export function MediaRecordSelector({
         },
       });
     },
-    [createMediaRecord, props]
+    [
+      createMediaRecord,
+      setFileUploadStates,
+      setCourseRecords,
+      setError,
+      coursesByIds,
+      courseMediaRecordIds,
+      userId,
+      props
+    ]
   );
 
   const onDrop = useCallback(
@@ -272,27 +303,7 @@ export function MediaRecordSelector({
     (x) => !search || x.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const [setCourseRecords] =
-    useMutation<MediaRecordSelectorAddToCourseMutation>(graphql`
-      mutation MediaRecordSelectorAddToCourseMutation(
-        $courseId: UUID!
-        $mediaRecordIds: [UUID!]!
-      ) {
-        setMediaRecordsForCourse(
-          courseId: $courseId
-          mediaRecordIds: $mediaRecordIds
-        ) {
-          id
-          __id
-          uploadUrl
-          name
-          downloadUrl
-          contentIds
-          type
-          suggestedTags
-        }
-      }
-    `);
+  
 
   function MediaRecord({ record }: { record: MediaRecord }) {
     const checked =
