@@ -72,6 +72,9 @@ export default function PublicProfilePage() {
             profileTypeSortString={"achieved"}
           />
         )}
+        {tabIndex === 1 && (
+          <OtherUserProfileForumActivity/>
+        )}
       </Box>
     </Box>
   );

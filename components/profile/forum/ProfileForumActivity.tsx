@@ -10,7 +10,7 @@ type Props = {
   userId: string;
 }
 
-export default function ProfileForumActivity({userId}:Props) {
+export default function OtherUserProfileForumActivity({userId}:Props) {
   // IM BACKEND Sortieren und für anderen user noch einer über komponente hinzufügen die dann checkt welche komponent genommen wird
   const data = useLazyLoadQuery<ForumApiForumActivityUserQuery>(
     forumApiForumActivityUserQuery,
