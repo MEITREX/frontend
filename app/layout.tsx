@@ -1,16 +1,17 @@
 "use client";
 
 import "@/styles/globals.css";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 
 import { PageLayout } from "@/components/PageLayout";
+import TutorWidget from "@/components/tutor/TutorWidget"; // Import the TutorWidget component
 import { initRelayEnvironment } from "@/src/RelayEnvironment";
 import { PageViewProvider } from "@/src/currentView";
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import { ThemeProvider, colors, createTheme } from "@mui/material";
+import { CssBaseline, ThemeProvider } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
@@ -24,8 +25,13 @@ import {
   useAuth,
 } from "react-oidc-context";
 import { RelayEnvironmentProvider } from "react-relay";
+import { GlobalStyleSetup } from "./GlobalStyleSetup";
+import {
+  ThemeVariantContext,
+  ThemeVariantContextType,
+} from "./ThemeVariantContext";
+import { themeColorBlind, themeDark, themeLight } from "./color-themes";
 import PageLoading from "./loading";
-import TutorWidget from "@/components/tutor/TutorWidget"; // Import the TutorWidget component
 
 dayjs.extend(isBetween);
 
@@ -42,23 +48,45 @@ const oidcConfig: AuthProviderProps = {
   },
 };
 
-const theme = createTheme({
-  palette: {
-    success: colors.green,
-  },
-  typography: {
-    h1: {
-      fontSize: "2rem",
-      fontWeight: "400",
-    },
-    h2: {
-      fontSize: "1.5rem",
-      fontWeight: "400",
-    },
-  },
-});
+type Props = {
+  children: React.ReactNode;
+};
 
-export default function App({ children }: { children: React.ReactNode }) {
+export default function App({ children }: Props) {
+  const [themeVariant, setThemeVariant] =
+    useState<ThemeVariantContextType["themeVariant"]>("auto");
+
+  // them variant === "auto" => use browser preference
+  useLayoutEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const handleMediaQueryChange = (_e: Event) => {
+      if (themeVariant === "auto") {
+        setThemeVariant(mediaQuery.matches ? "dark" : "light");
+      }
+    };
+    mediaQuery.addEventListener("change", handleMediaQueryChange);
+    return () =>
+      mediaQuery.removeEventListener("change", handleMediaQueryChange);
+  }, [setThemeVariant, themeVariant]);
+
+  const activeTheme = useMemo(
+    () =>
+      themeVariant === "dark"
+        ? themeDark
+        : themeVariant === "color-blind"
+        ? themeColorBlind
+        : themeLight,
+    [themeVariant]
+  );
+  const themeProviderValue = useMemo(
+    () => ({
+      themeVariant,
+      setThemeVariant,
+    }),
+    [themeVariant]
+  );
+
   return (
     <html lang="de" className="h-full overflow-hidden">
       <head>
@@ -69,9 +97,15 @@ export default function App({ children }: { children: React.ReactNode }) {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DndProvider backend={HTML5Backend}>
               <SigninContent>
-                <PageViewProvider>
-                  <PageLayout>{children}</PageLayout>
-                </PageViewProvider>
+                <ThemeVariantContext.Provider value={themeProviderValue}>
+                  <ThemeProvider theme={activeTheme}>
+                    <CssBaseline />
+                    <GlobalStyleSetup />
+                    <PageViewProvider>
+                      <PageLayout>{children}</PageLayout>
+                    </PageViewProvider>
+                  </ThemeProvider>
+                </ThemeVariantContext.Provider>
               </SigninContent>
             </DndProvider>
           </LocalizationProvider>
@@ -124,10 +158,8 @@ function SigninContent({ children }: { children: React.ReactNode }) {
   if (auth.isAuthenticated) {
     return (
       <RelayEnvironmentProvider environment={environment}>
-        <ThemeProvider theme={theme}>
-          <TutorWidget isAuthenticated={auth.isAuthenticated} />
-          {children}
-        </ThemeProvider>
+        <TutorWidget isAuthenticated={auth.isAuthenticated} />
+        {children}
       </RelayEnvironmentProvider>
     );
   }
