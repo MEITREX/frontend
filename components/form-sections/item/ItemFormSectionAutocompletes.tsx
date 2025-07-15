@@ -4,6 +4,7 @@ import {
   Autocomplete,
   Box,
   Chip,
+  CircularProgress,
   createFilterOptions,
   Stack,
   TextField,
@@ -75,6 +76,7 @@ interface Props {
   allSkillsQueryRef: PreloadedQuery<lecturerAllSkillsQuery>;
   SKILL_CATALOGUE: Record<string, MappedSkillType[]>;
   SKILL_CATEGORY_ABBREVIATION: Record<string, string>;
+  stackDirection?: "row" | "column";
 }
 
 const ItemFormSectionAutocompletes = ({
@@ -83,6 +85,7 @@ const ItemFormSectionAutocompletes = ({
   allSkillsQueryRef,
   SKILL_CATALOGUE,
   SKILL_CATEGORY_ABBREVIATION,
+  stackDirection = "row",
 }: Props) => {
   const { coursesByIds } = usePreloadedQuery(AllSkillQuery, allSkillsQueryRef);
   // FIXME: after waiting some time, this turns undefined?!
@@ -350,302 +353,312 @@ const ItemFormSectionAutocompletes = ({
     useState(false);
 
   return (
-    <Stack className="flex flex-row gap-x-2 mb-2">
-      <Autocomplete
-        disabled={allSkillCategoriesSorted.length === 0}
-        fullWidth
-        isOptionEqualToValue={(option, value) =>
-          option.skillCategory === value.skillCategory
-        }
-        options={allSkillCategoriesSorted}
-        onInputChange={handleInputChange}
-        getOptionLabel={(option) => option.skillCategory}
-        onChange={(_, newValue) =>
-          // if a new skill category is selected, reset the skill since one
-          // skill shouldn't be present in multiple categories
-          setNewSkillCategory((prev) => {
-            if (newValue && newValue.skillCategory !== prev?.skillCategory)
-              setNewSkill([]);
-            return newValue;
-          })
-        }
-        renderInput={(params) => (
-          <TextField {...params} label="Knowledge Area" />
-        )}
-        sx={{ width: 300 }}
-        filterOptions={(options, params) => {
-          const filtered = filterOptionsSkillCategory(options, params);
-          if (params.inputValue !== "" && filtered.length === 0) {
-            filtered.push({
-              skillCategory: params.inputValue,
-              isCustomSkillCategory: true,
-              toBeAdded: true,
-            });
-          }
-          return filtered;
-        }}
-        renderOption={(props, option: SkillCategoryInAutocomplete) => {
-          // key prop is available in browser - api bug?
-          // TODO this doesn't work, key is duplicated sometimes
-          const { key, ...optionProps } =
-            props as React.HTMLAttributes<HTMLLIElement> & {
-              key: string;
-            } & Record<string, unknown>;
-          // if this prop isn't present on all browsers (tested on FireFox), the ruler won't be displayed
-          const index = optionProps["data-option-index"] as unknown as
-            | number
-            | undefined;
-
-          return (
-            <Fragment key={`${index}-${key}`}>
-              <Box {...optionProps} component="li">
-                {option?.toBeAdded && "Add: "}
-                {option.skillCategory}
-                {option.isCustomSkillCategory && (
-                  <Chip
-                    label="Custom"
-                    variant="outlined"
-                    size="small"
-                    sx={{ ml: 1 }}
-                  />
-                )}
-              </Box>
-              {/* add ruler after used categories */}
-              {isCategoryInputEmpty && index === allSkillCategoriesUsed - 1 && (
-                <>
-                  <Box
-                    key="used-in-course-label"
-                    component="li"
-                    sx={{
-                      textAlign: "center",
-                      color: "text.secondary",
-                      fontSize: "14px",
-                      margin: "0.5rem 0",
-                    }}
-                  >
-                    Used in Course
-                  </Box>
-                  <Box
-                    key="ruler"
-                    component="li"
-                    sx={{
-                      height: "2px",
-                      backgroundColor: "divider",
-                      margin: "0.5rem 0",
-                      width: "100%",
-                    }}
-                  />
-                </>
-              )}
-            </Fragment>
-          );
-        }}
-      />
-
-      <InfoPopover>
-        <Typography variant="body1">
-          Knowledge Areas are based on the IEEE Standardized Competencies to
-          propose groupings for skills of the Computer Science filed. <br />
-          You can create custom Knowledge Areas yourself, if you find the
-          standardized ones not suitable.
-        </Typography>
-      </InfoPopover>
-
-      {!searchInAllCategories ? (
+    <Stack direction={stackDirection} spacing={1}>
+      <Stack direction="row" spacing={2}>
         <Autocomplete
+          disabled={allSkillCategoriesSorted.length === 0}
           fullWidth
-          disabled={searchInAllCategories}
-          multiple
-          value={newSkill}
-          onChange={(_, newValue) => {
-            setNewSkill([]);
-            // setKey((prev) => prev + 1);
-
-            setItem((prev) => {
-              // TODO is this necessary?
-              if (!newValue) return prev;
-
-              const newSkills = [...prev.associatedSkills];
-              // TODO check if array is always one element only?
-              newSkills.push(
-                ...newValue
-                  .filter(
-                    (skillFromNewVal) =>
-                      !skillsSelected.some(
-                        (s) =>
-                          s.skillName === skillFromNewVal.skillName &&
-                          s.skillCategory === newSkillCategory!.skillCategory
-                      )
-                  )
-                  .map((skill) => ({
-                    skillName: skill.skillName,
-                    skillCategory: newSkillCategory!.skillCategory,
-                    isCustomSkill: skill.isCustomSkill,
-                  }))
-              );
-              return { ...prev, associatedSkills: newSkills };
-            });
-          }}
           isOptionEqualToValue={(option, value) =>
-            option.skillName === value.skillName
+            option.skillCategory === value.skillCategory
           }
-          options={currentSkillsAvailableSorted}
+          options={allSkillCategoriesSorted}
+          onInputChange={handleInputChange}
+          getOptionLabel={(option) => option.skillCategory}
+          onChange={(_, newValue) =>
+            // if a new skill category is selected, reset the skill since one
+            // skill shouldn't be present in multiple categories
+            setNewSkillCategory((prev) => {
+              if (newValue && newValue.skillCategory !== prev?.skillCategory)
+                setNewSkill([]);
+              return newValue;
+            })
+          }
+          renderInput={(params) => (
+            <TextField {...params} label="Knowledge Area" />
+          )}
           sx={{ width: 300 }}
-          getOptionLabel={(option) => option.skillName ?? ""}
-          renderInput={(params) => <TextField {...params} label="Skills" />}
-          renderTags={() => null}
-          getOptionDisabled={isSkillAlreadySelected<SkillInAutocomplete>}
           filterOptions={(options, params) => {
-            const filtered = filterOptionsSkill(options, params);
-
-            const inputValueExists = options.some(
-              (option) =>
-                option.skillName.toLowerCase() ===
-                params.inputValue.toLowerCase()
-            );
-
-            if (params.inputValue !== "" && !inputValueExists) {
+            const filtered = filterOptionsSkillCategory(options, params);
+            if (params.inputValue !== "" && filtered.length === 0) {
               filtered.push({
-                skillName: params.inputValue,
-                isCustomSkill: true,
+                skillCategory: params.inputValue,
+                isCustomSkillCategory: true,
                 toBeAdded: true,
               });
             }
             return filtered;
           }}
-          renderOption={(props, option: SkillInAutocomplete) => {
-            // api bug
-            const { key, ...optionProps } =
-              props as React.HTMLAttributes<HTMLLIElement> & { key: string };
-            return (
-              <Box key={key} {...optionProps} component="li">
-                {option.toBeAdded && "Add: "}
-                {option.skillName}
-                {option.isCustomSkill && (
-                  <Chip
-                    label="Custom"
-                    variant="outlined"
-                    size="small"
-                    sx={{ ml: 1 }}
-                  />
-                )}
-              </Box>
-            );
-          }}
-        />
-      ) : (
-        <Autocomplete
-          fullWidth
-          disabled={
-            !searchInAllCategories ||
-            skillsAndCategoriesAvailableSorted.length === 0
-          }
-          multiple
-          sx={{ width: 300 }}
-          value={newSkillAndCategory}
-          // render stuff
-          renderInput={(params) => <TextField {...params} label="All Skills" />}
-          renderTags={() => null}
-          // data stuff
-          options={skillsAndCategoriesAvailableSorted}
-          getOptionDisabled={
-            isSkillAlreadySelected<SkillAndCategoryInAutocomplete>
-          }
-          getOptionLabel={(option) =>
-            // avoids duplication of option labels; return of this function is
-            // used for comparison in `filterOptions`
-            `${option.skillName} [${option.skillCategory}]`
-          }
-          filterOptions={(options, inputState) => {
-            const filtered = filterOptionsSkillAndCategory(options, inputState);
-            const inputValueExists = options.some(
-              (option) =>
-                option.skillName.toLowerCase() ===
-                inputState.inputValue.toLowerCase()
-            );
-
-            if (inputState.inputValue !== "" && !inputValueExists) {
-              return [
-                {
-                  skillCategory: "Custom",
-                  skillName: inputState.inputValue,
-                  isCustomSkill: true,
-                  toBeAdded: true,
-                },
-                ...filtered,
-              ];
-            } else return filtered;
-          }}
-          onChange={(_, newValues) => {
-            if (!newValues || !Array.isArray(newValues)) return;
-
-            setItem((prev) => {
-              const notPresentInItemsSkills = newValues.find(
-                (newSkill) =>
-                  !prev.associatedSkills.some(
-                    (s) =>
-                      s.skillName === newSkill.skillName &&
-                      s.skillCategory === newSkill.skillCategory
-                  )
-              );
-              if (!notPresentInItemsSkills) return prev;
-
-              const newItemSkills = [...prev.associatedSkills];
-              newItemSkills.push({
-                skillName: notPresentInItemsSkills.skillName,
-                skillCategory: notPresentInItemsSkills.skillCategory,
-                isCustomSkill: notPresentInItemsSkills.isCustomSkill,
-              });
-
-              return { ...prev, associatedSkills: newItemSkills };
-            });
-          }}
-          // render data stuff
-          renderOption={(props, option: SkillAndCategoryInAutocomplete) => {
+          renderOption={(props, option: SkillCategoryInAutocomplete) => {
+            // key prop is available in browser - api bug?
+            // TODO this doesn't work, key is duplicated sometimes
             const { key, ...optionProps } =
               props as React.HTMLAttributes<HTMLLIElement> & {
                 key: string;
               } & Record<string, unknown>;
+            // if this prop isn't present on all browsers (tested on FireFox), the ruler won't be displayed
+            const index = optionProps["data-option-index"] as unknown as
+              | number
+              | undefined;
 
             return (
-              <Box
-                key={key ?? option.skillName}
-                {...optionProps}
-                component="li"
-              >
-                {option.toBeAdded && "Add: "}
-                {option.skillName}
-                <Chip
-                  label={
-                    SKILL_CATEGORY_ABBREVIATION[option.skillCategory!] ||
-                    option.skillCategory
-                  }
-                  title={!option.isCustomSkill ? option.skillCategory : ""}
-                  variant="outlined"
-                  size="small"
-                  sx={{ ml: 1 }}
-                />
-              </Box>
+              <Fragment key={`${index}-${key}`}>
+                <Box {...optionProps} component="li">
+                  {option?.toBeAdded && "Add: "}
+                  {option.skillCategory}
+                  {option.isCustomSkillCategory && (
+                    <Chip
+                      label="Custom"
+                      variant="outlined"
+                      size="small"
+                      sx={{ ml: 1 }}
+                    />
+                  )}
+                </Box>
+                {/* add ruler after used categories */}
+                {isCategoryInputEmpty &&
+                  index === allSkillCategoriesUsed - 1 && (
+                    <>
+                      <Box
+                        key="used-in-course-label"
+                        component="li"
+                        sx={{
+                          textAlign: "center",
+                          color: "text.secondary",
+                          fontSize: "14px",
+                          margin: "0.5rem 0",
+                        }}
+                      >
+                        Used in Course
+                      </Box>
+                      <Box
+                        key="ruler"
+                        component="li"
+                        sx={{
+                          height: "2px",
+                          backgroundColor: "divider",
+                          margin: "0.5rem 0",
+                          width: "100%",
+                        }}
+                      />
+                    </>
+                  )}
+              </Fragment>
             );
           }}
         />
-      )}
 
-      <InfoPopover>
+        <InfoPopover>
+          <Typography variant="body1">
+            Knowledge Areas are based on the IEEE Standardized Competencies to
+            propose groupings for skills of the Computer Science filed. <br />
+            You can create custom Knowledge Areas yourself, if you find the
+            standardized ones not suitable.
+          </Typography>
+        </InfoPopover>
+      </Stack>
+
+      <Stack direction="row" spacing={2}>
         {!searchInAllCategories ? (
-          <Typography variant="body1">
-            Search through the Skills of the selected Knowledge Area.
-          </Typography>
+          <Autocomplete
+            fullWidth
+            disabled={searchInAllCategories}
+            multiple
+            value={newSkill}
+            onChange={(_, newValue) => {
+              setNewSkill([]);
+              // setKey((prev) => prev + 1);
+
+              setItem((prev) => {
+                // TODO is this necessary?
+                if (!newValue) return prev;
+
+                const newSkills = [...prev.associatedSkills];
+                // TODO check if array is always one element only?
+                newSkills.push(
+                  ...newValue
+                    .filter(
+                      (skillFromNewVal) =>
+                        !skillsSelected.some(
+                          (s) =>
+                            s.skillName === skillFromNewVal.skillName &&
+                            s.skillCategory === newSkillCategory!.skillCategory
+                        )
+                    )
+                    .map((skill) => ({
+                      skillName: skill.skillName,
+                      skillCategory: newSkillCategory!.skillCategory,
+                      isCustomSkill: skill.isCustomSkill,
+                    }))
+                );
+                return { ...prev, associatedSkills: newSkills };
+              });
+            }}
+            isOptionEqualToValue={(option, value) =>
+              option.skillName === value.skillName
+            }
+            options={currentSkillsAvailableSorted}
+            sx={{ width: 300 }}
+            getOptionLabel={(option) => option.skillName ?? ""}
+            renderInput={(params) => <TextField {...params} label="Skills" />}
+            renderTags={() => null}
+            getOptionDisabled={isSkillAlreadySelected<SkillInAutocomplete>}
+            filterOptions={(options, params) => {
+              const filtered = filterOptionsSkill(options, params);
+
+              const inputValueExists = options.some(
+                (option) =>
+                  option.skillName.toLowerCase() ===
+                  params.inputValue.toLowerCase()
+              );
+
+              if (params.inputValue !== "" && !inputValueExists) {
+                filtered.push({
+                  skillName: params.inputValue,
+                  isCustomSkill: true,
+                  toBeAdded: true,
+                });
+              }
+              return filtered;
+            }}
+            renderOption={(props, option: SkillInAutocomplete) => {
+              // api bug
+              const { key, ...optionProps } =
+                props as React.HTMLAttributes<HTMLLIElement> & { key: string };
+              return (
+                <Box key={key} {...optionProps} component="li">
+                  {option.toBeAdded && "Add: "}
+                  {option.skillName}
+                  {option.isCustomSkill && (
+                    <Chip
+                      label="Custom"
+                      variant="outlined"
+                      size="small"
+                      sx={{ ml: 1 }}
+                    />
+                  )}
+                </Box>
+              );
+            }}
+          />
         ) : (
-          <Typography variant="body1">
-            Search through the Skills grouped in any Knowledge Areas present in
-            this course. If you add a new skill here, it will be added to the
-            default Knowledge Area called &quot;<i>Custom</i>&quot;.
-            <br /> For more control, use the dropdown on the left to create a
-            new Knowledge Area and then add a Skill.
-          </Typography>
+          <Autocomplete
+            fullWidth
+            disabled={
+              !searchInAllCategories ||
+              skillsAndCategoriesAvailableSorted.length === 0
+            }
+            multiple
+            sx={{ width: 300 }}
+            value={newSkillAndCategory}
+            // render stuff
+            renderInput={(params) => (
+              <TextField {...params} label="All Skills" />
+            )}
+            renderTags={() => null}
+            // data stuff
+            options={skillsAndCategoriesAvailableSorted}
+            getOptionDisabled={
+              isSkillAlreadySelected<SkillAndCategoryInAutocomplete>
+            }
+            getOptionLabel={(option) =>
+              // avoids duplication of option labels; return of this function is
+              // used for comparison in `filterOptions`
+              `${option.skillName} [${option.skillCategory}]`
+            }
+            filterOptions={(options, inputState) => {
+              const filtered = filterOptionsSkillAndCategory(
+                options,
+                inputState
+              );
+              const inputValueExists = options.some(
+                (option) =>
+                  option.skillName.toLowerCase() ===
+                  inputState.inputValue.toLowerCase()
+              );
+
+              if (inputState.inputValue !== "" && !inputValueExists) {
+                return [
+                  {
+                    skillCategory: "Custom",
+                    skillName: inputState.inputValue,
+                    isCustomSkill: true,
+                    toBeAdded: true,
+                  },
+                  ...filtered,
+                ];
+              } else return filtered;
+            }}
+            onChange={(_, newValues) => {
+              if (!newValues || !Array.isArray(newValues)) return;
+
+              setItem((prev) => {
+                const notPresentInItemsSkills = newValues.find(
+                  (newSkill) =>
+                    !prev.associatedSkills.some(
+                      (s) =>
+                        s.skillName === newSkill.skillName &&
+                        s.skillCategory === newSkill.skillCategory
+                    )
+                );
+                if (!notPresentInItemsSkills) return prev;
+
+                const newItemSkills = [...prev.associatedSkills];
+                newItemSkills.push({
+                  skillName: notPresentInItemsSkills.skillName,
+                  skillCategory: notPresentInItemsSkills.skillCategory,
+                  isCustomSkill: notPresentInItemsSkills.isCustomSkill,
+                });
+
+                return { ...prev, associatedSkills: newItemSkills };
+              });
+            }}
+            // render data stuff
+            renderOption={(props, option: SkillAndCategoryInAutocomplete) => {
+              const { key, ...optionProps } =
+                props as React.HTMLAttributes<HTMLLIElement> & {
+                  key: string;
+                } & Record<string, unknown>;
+
+              return (
+                <Box
+                  key={key ?? option.skillName}
+                  {...optionProps}
+                  component="li"
+                >
+                  {option.toBeAdded && "Add: "}
+                  {option.skillName}
+                  <Chip
+                    label={
+                      SKILL_CATEGORY_ABBREVIATION[option.skillCategory!] ||
+                      option.skillCategory
+                    }
+                    title={!option.isCustomSkill ? option.skillCategory : ""}
+                    variant="outlined"
+                    size="small"
+                    sx={{ ml: 1 }}
+                  />
+                </Box>
+              );
+            }}
+          />
         )}
-      </InfoPopover>
+
+        <InfoPopover>
+          {!searchInAllCategories ? (
+            <Typography variant="body1">
+              Search through the Skills of the selected Knowledge Area.
+            </Typography>
+          ) : (
+            <Typography variant="body1">
+              Search through the Skills grouped in any Knowledge Areas present
+              in this course. If you add a new skill here, it will be added to
+              the default Knowledge Area called &quot;<i>Custom</i>&quot;.
+              <br /> For more control, use the dropdown on the left to create a
+              new Knowledge Area and then add a Skill.
+            </Typography>
+          )}
+        </InfoPopover>
+      </Stack>
     </Stack>
   );
 };
