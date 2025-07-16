@@ -18,19 +18,17 @@ export default function ProfilePage() {
     nickname: "nickname",
   };
 
-
-
   const { currentUserInfo } = useLazyLoadQuery<pagePrivateProfileStudentQuery>(
     graphql`
       query pagePrivateProfileStudentQuery {
-    currentUserInfo {
-    id
+        currentUserInfo {
+          id
           lastName
           firstName
           userName
+        }
       }
-      }`
-    ,
+    `,
     {}
   );
 
@@ -50,17 +48,17 @@ export default function ProfilePage() {
           trackingStartTime
           trackingEndTime
         }
-      }`
-    ,
+      }
+    `,
     { id: currentUserInfo.id },
     {
       fetchPolicy: "network-only", // <-- wichtig!
-  }
+    }
   );
 
-  console.log(achievementsByUserId)
+  console.log(achievementsByUserId);
 
-  const mutableAchievements = [...achievementsByUserId]
+  const mutableAchievements = [...achievementsByUserId];
 
   const [tabIndex, setTabIndex] = useState(0);
 

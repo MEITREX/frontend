@@ -48,13 +48,11 @@ export function CourseCard({
   _suggestions = [],
   progress = 0,
   available = true,
-
 }: {
   _course: CourseCardFragment$key;
   _suggestions?: readonly SuggestionFragment$key[];
   progress?: number;
   available?: boolean;
-
 }) {
   const [pageView, _] = usePageView();
   const course = useFragment(
@@ -68,9 +66,6 @@ export function CourseCard({
     `,
     _course
   );
-
-
-
 
   return (
     <Card variant="outlined" className="h-full" key={course.id}>

@@ -248,7 +248,7 @@ export function MediaRecordSelector({
       coursesByIds,
       courseMediaRecordIds,
       userId,
-      props
+      props,
     ]
   );
 
@@ -302,8 +302,6 @@ export function MediaRecordSelector({
   const filteredMediaUser: MediaRecord[] = recordsNotInCourse.filter(
     (x) => !search || x.name.toLowerCase().includes(search.toLowerCase())
   );
-
-  
 
   function MediaRecord({ record }: { record: MediaRecord }) {
     const checked =

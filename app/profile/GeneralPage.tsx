@@ -125,19 +125,20 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
             fullWidth
             disabled={!editMode}
           />
-          {editMode && <IconButton
-            onClick={() =>
-              setStudentData((prev) => ({
-                ...prev,
-                userName: generateRandomNickname(),
-              }))
-            }
-            size="large"
-          >
-            <AutorenewIcon sx={{ fontSize: 28, color: "#00a9d6" }} />
-          </IconButton>}
+          {editMode && (
+            <IconButton
+              onClick={() =>
+                setStudentData((prev) => ({
+                  ...prev,
+                  userName: generateRandomNickname(),
+                }))
+              }
+              size="large"
+            >
+              <AutorenewIcon sx={{ fontSize: 28, color: "#00a9d6" }} />
+            </IconButton>
+          )}
         </Box>
-
       </Box>
     </Box>
   );

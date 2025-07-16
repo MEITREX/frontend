@@ -12,20 +12,18 @@ export default function AchievementCard({
   showProgress = false,
   onClick,
 }: AchievementProps) {
-
-  let progressValue = 0
-  console.log(achievement.imageUrl)
+  let progressValue = 0;
+  console.log(achievement.imageUrl);
 
   if (achievement.requiredCount) {
     progressValue =
       achievement.requiredCount! > 0
-      ? Math.min(
-        (achievement.completedCount! / achievement.requiredCount!) * 100,
-          100
-        )
-      : 0;
+        ? Math.min(
+            (achievement.completedCount! / achievement.requiredCount!) * 100,
+            100
+          )
+        : 0;
   }
-
 
   return (
     <Card

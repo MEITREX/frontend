@@ -27,7 +27,7 @@ interface AllAchievementsProps {
   handleChangeCourse: (event: any, value: any) => void;
   filteredAchievements: Achievement[];
   handleOpenAchievement: (a: any) => void;
-  profileTypeSortString: 'achieved' | 'not-achieved' | null;
+  profileTypeSortString: "achieved" | "not-achieved" | null;
 }
 
 export default function AllAchievements({
@@ -39,7 +39,7 @@ export default function AllAchievements({
   filteredAchievements,
   handleOpenAchievement,
   achievements,
-  profileTypeSortString
+  profileTypeSortString,
 }: AllAchievementsProps) {
   const groupedAchievements = filteredAchievements.reduce(
     (acc, achievement) => {
@@ -53,24 +53,26 @@ export default function AllAchievements({
     {} as Record<string, any[]>
   );
 
-  console.log(groupedAchievements, 'GGGGGGGGGGGRRRRRRRPOU')
-  const coursesInAchievements = Object.keys(groupedAchievements)
-  console.log(coursesInAchievements, 'courses')
+  console.log(groupedAchievements, "GGGGGGGGGGGRRRRRRRPOU");
+  const coursesInAchievements = Object.keys(groupedAchievements);
+  console.log(coursesInAchievements, "courses");
 
-  const { coursesByIds } =
-    useLazyLoadQuery<AllAchievementsCourseNamesQuery>(
-      graphql`
-        query AllAchievementsCourseNamesQuery($id: [UUID!]!) {
-          coursesByIds(ids: $id) {
-            id
-            title
-          }
+  const { coursesByIds } = useLazyLoadQuery<AllAchievementsCourseNamesQuery>(
+    graphql`
+      query AllAchievementsCourseNamesQuery($id: [UUID!]!) {
+        coursesByIds(ids: $id) {
+          id
+          title
         }
-      `,
-      { id: coursesInAchievements }
-    );
+      }
+    `,
+    { id: coursesInAchievements }
+  );
 
-  if (filteredAchievements.length === 0 || Object.keys(groupedAchievements).length === 0) {
+  if (
+    filteredAchievements.length === 0 ||
+    Object.keys(groupedAchievements).length === 0
+  ) {
     return (
       <Box
         sx={{
@@ -120,47 +122,49 @@ export default function AllAchievements({
           All Achievements
         </Typography>
 
-        {profileTypeSortString === "not-achieved" && <Box sx={{ display: "flex", gap: 2 }}>
-          {/* Filter: Achieved / Not Achieved */}
-          <ToggleButtonGroup
-            value={filter}
-            exclusive
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-            size="small"
-          >
-            <ToggleButton
-              value="achieved"
-              sx={{
-                "&.Mui-selected": {
-                  backgroundColor: "#009bde", // dein Blauton
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: "#009bde",
-                  },
-                },
-              }}
+        {profileTypeSortString === "not-achieved" && (
+          <Box sx={{ display: "flex", gap: 2 }}>
+            {/* Filter: Achieved / Not Achieved */}
+            <ToggleButtonGroup
+              value={filter}
+              exclusive
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+              size="small"
             >
-              <EmojiEventsIcon sx={{ mr: 1 }} />
-              Achieved
-            </ToggleButton>
-            <ToggleButton
-              value="not-achieved"
-              sx={{
-                "&.Mui-selected": {
-                  backgroundColor: "#009bde", // dein Blauton
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: "#009bde",
+              <ToggleButton
+                value="achieved"
+                sx={{
+                  "&.Mui-selected": {
+                    backgroundColor: "#009bde", // dein Blauton
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "#009bde",
+                    },
                   },
-                },
-              }}
-            >
-              <EmojiEventsOutlinedIcon sx={{ mr: 1 }} />
-              Not Achieved
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Box>}
+                }}
+              >
+                <EmojiEventsIcon sx={{ mr: 1 }} />
+                Achieved
+              </ToggleButton>
+              <ToggleButton
+                value="not-achieved"
+                sx={{
+                  "&.Mui-selected": {
+                    backgroundColor: "#009bde", // dein Blauton
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "#009bde",
+                    },
+                  },
+                }}
+              >
+                <EmojiEventsOutlinedIcon sx={{ mr: 1 }} />
+                Not Achieved
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
+        )}
       </Box>
 
       <Box mt={0} mb={4}>
@@ -230,7 +234,11 @@ export default function AllAchievements({
           const visibleAchievements = sortedAchievements.slice(0, 11);
           const hasMore = sortedAchievements.length > 11;
 
-          console.log(filter, courseAchievements[0].id, courseAchievements[1].id);
+          console.log(
+            filter,
+            courseAchievements[0].id,
+            courseAchievements[1].id
+          );
 
           return (
             <Box key={course} sx={{ px: 2, pt: 2, mb: 2 }}>
@@ -245,7 +253,8 @@ export default function AllAchievements({
                 }}
               >
                 {sortedAchievements.map((a: Achievement, index: any) => {
-                  const isCountable = a.requiredCount != null && a.completedCount != null;
+                  const isCountable =
+                    a.requiredCount != null && a.completedCount != null;
 
                   return (
                     <Grid item xs={12} sm={6} key={a.id}>

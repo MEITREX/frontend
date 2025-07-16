@@ -22,23 +22,26 @@ export default function AchievementPopUp({
   onClose,
   selectedAchievement,
 }: AchievementPopUpProps) {
-
   const CourseNameQuery = ({ courseId }: { courseId: string }) => {
-    const { coursesByIds } = useLazyLoadQuery<AchievementPopUpCourseNamesPopUpQuery>(
-      graphql`
-      query AchievementPopUpCourseNamesPopUpQuery($id: [UUID!]!) {
-        coursesByIds(ids: $id) {
-          id
-          title
-        }
-      }
-    `,
-      { id: [courseId] }
+    const { coursesByIds } =
+      useLazyLoadQuery<AchievementPopUpCourseNamesPopUpQuery>(
+        graphql`
+          query AchievementPopUpCourseNamesPopUpQuery($id: [UUID!]!) {
+            coursesByIds(ids: $id) {
+              id
+              title
+            }
+          }
+        `,
+        { id: [courseId] }
+      );
+
+    return (
+      <div>
+        <strong>Course:</strong> {coursesByIds[0]?.title}
+      </div>
     );
-
-    return <div><strong>Course:</strong>{" "} {coursesByIds[0]?.title}</div>;
   };
-
 
   const courses = [
     { id: "all", name: "All" },
@@ -47,10 +50,6 @@ export default function AchievementPopUp({
   ];
 
   return (
-
-
-
-
     <Dialog
       open={open}
       onClose={onClose}
@@ -87,7 +86,6 @@ export default function AchievementPopUp({
               mx: "auto",
             }}
           />
-
 
           <Typography mt={2} variant="body1">
             {selectedAchievement?.description}

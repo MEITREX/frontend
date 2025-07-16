@@ -149,7 +149,6 @@ export function VideoSide({
     }
   }, [searchParams]);
 
-
   const groupedSegments = segments.reduce((prev, cur) => {
     let l = last(prev);
 

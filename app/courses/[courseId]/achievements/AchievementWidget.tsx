@@ -5,13 +5,13 @@ import Link from "next/link";
 interface LatestAchievementsProps {
   openAchievements: (achievement: Achievement) => void;
   achievements: Achievement[];
-  course: string
+  course: string;
 }
 
 export default function LatestAchievements({
   openAchievements,
   achievements,
-  course
+  course,
 }: LatestAchievementsProps) {
   const top4Achievements = achievements.slice(0, 4); // oder .filter(...) nach Wunsch
 
@@ -27,20 +27,23 @@ export default function LatestAchievements({
     }
   }
 
-  function getFilteredAchievements(achievements: Achievement[], courseId: string) {
-
-    console.log(achievements, 'ach')
+  function getFilteredAchievements(
+    achievements: Achievement[],
+    courseId: string
+  ) {
+    console.log(achievements, "ach");
     const courseAchievements = achievements.filter(
       (a) => a.courseId === courseId
     );
 
-    console.log(courseAchievements, 'ach1')
+    console.log(courseAchievements, "ach1");
 
     const completed = courseAchievements
       .filter((a) => a.trackingEndTime)
       .sort(
         (a, b) =>
-          new Date(b.trackingEndTime!).getTime() - new Date(a.trackingEndTime!).getTime()
+          new Date(b.trackingEndTime!).getTime() -
+          new Date(a.trackingEndTime!).getTime()
       );
 
     const usedIds = new Set<string>();
@@ -48,10 +51,14 @@ export default function LatestAchievements({
     if (lastCompleted) usedIds.add(lastCompleted.id!);
 
     const unlockedButNotCompleted = courseAchievements
-      .filter((a: Achievement) => a.trackingStartTime && !a.trackingEndTime && !usedIds.has(a.id!))
+      .filter(
+        (a: Achievement) =>
+          a.trackingStartTime && !a.trackingEndTime && !usedIds.has(a.id!)
+      )
       .sort(
         (a, b) =>
-          new Date(b.trackingStartTime!).getTime() - new Date(a.trackingStartTime!).getTime()
+          new Date(b.trackingStartTime!).getTime() -
+          new Date(a.trackingStartTime!).getTime()
       );
 
     const lastUnlocked = unlockedButNotCompleted[0] || null;
@@ -75,7 +82,12 @@ export default function LatestAchievements({
 
     // Rückgabe: Nur Achievements, die existieren
 
-    console.log(lastCompleted, lastUnlocked, randomNotCompleted, firstUnlockedPending)
+    console.log(
+      lastCompleted,
+      lastUnlocked,
+      randomNotCompleted,
+      firstUnlockedPending
+    );
 
     return [
       lastCompleted && {

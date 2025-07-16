@@ -190,29 +190,30 @@ export default function StudentCoursePage() {
     }
   `);
 
-  const { achievementsByUserId } = useLazyLoadQuery<studentUserAchievementsWidgetQuery>(
-    graphql`
-      query studentUserAchievementsWidgetQuery($id: UUID!) {
-        achievementsByUserId(userId: $id) {
-          id
-          name
-          imageUrl
-          description
-          courseId
-          userId
-          completed
-          requiredCount
-          completedCount
-          trackingStartTime
-          trackingEndTime
+  const { achievementsByUserId } =
+    useLazyLoadQuery<studentUserAchievementsWidgetQuery>(
+      graphql`
+        query studentUserAchievementsWidgetQuery($id: UUID!) {
+          achievementsByUserId(userId: $id) {
+            id
+            name
+            imageUrl
+            description
+            courseId
+            userId
+            completed
+            requiredCount
+            completedCount
+            trackingStartTime
+            trackingEndTime
+          }
         }
+      `,
+      { id: userId },
+      {
+        fetchPolicy: "network-only", // <-- wichtig!
       }
-    `,
-    { id: userId },
-    {
-      fetchPolicy: "network-only", // <-- wichtig!
-    }
-  );
+    );
 
   // Extract scoreboard
   const rows: Data[] = scoreboard
@@ -292,24 +293,21 @@ export default function StudentCoursePage() {
     setOpenDialog(false);
   };
 
-
-
-  const mutableAchievements = [...achievementsByUserId]
+  const mutableAchievements = [...achievementsByUserId];
 
   useEffect(() => {
     if (course.id) {
       studentUserLogin({
         variables: { id: course.id },
         onCompleted: () => {
-          console.log('Login registered');
+          console.log("Login registered");
         },
         onError: (e) => {
-          console.error('Login error:', e);
+          console.error("Login error:", e);
         },
       });
     }
   }, [course.id, studentUserLogin]);
-
 
   return (
     <main>

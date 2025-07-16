@@ -38,7 +38,6 @@ const SurveyPopup = ({ id }: { id: string }) => {
   const [isSkippedScreen, setIsSkippedScreen] = useState(false);
   const [isNicknameScreen, setIsNicknameScreen] = useState(true);
 
-
   useEffect(() => {
     const savedAnswer = answers[currentQuestionIndex];
     setSelected(savedAnswer ?? null);
@@ -224,7 +223,8 @@ const SurveyPopup = ({ id }: { id: string }) => {
         <DialogContent>
           <Box textAlign="center" py={4}>
             <Typography variant="body1" mb={2}>
-              This nickname will be your public display name throughout the application.
+              This nickname will be your public display name throughout the
+              application.
             </Typography>
             <TextField
               value={nickname}
@@ -248,23 +248,28 @@ const SurveyPopup = ({ id }: { id: string }) => {
               }}
             />
 
-            <IconButton onClick={() => setNickname(generateRandomNickname())} size="large">
+            <IconButton
+              onClick={() => setNickname(generateRandomNickname())}
+              size="large"
+            >
               <AutorenewIcon sx={{ fontSize: 28, color: "#00a9d6" }} />
             </IconButton>
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3 }}>
-          <Button variant="contained" onClick={() => {
-            setIsNicknameScreen(false)
-            setIsStartScreen(true)
-          }}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setIsNicknameScreen(false);
+              setIsStartScreen(true);
+            }}
+          >
             Continue
           </Button>
         </DialogActions>
       </Dialog>
     );
   }
-
 
   if (isSkippedScreen) {
     return (
@@ -379,7 +384,6 @@ const SurveyPopup = ({ id }: { id: string }) => {
                 gamification elements in a way that keeps you engaged and
                 personalizes your experience.
               </Typography>
-
             </Box>
           </DialogContent>
           <DialogActions sx={{ px: 3 }}>
