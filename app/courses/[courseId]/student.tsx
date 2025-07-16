@@ -184,6 +184,36 @@ export default function StudentCoursePage() {
     }
   `);
 
+  const [studentUserLogin] = useMutation<studentUserLoginMutation>(graphql`
+    mutation studentUserLoginMutation($id: UUID!) {
+      loginUser(courseId: $id)
+    }
+  `);
+
+  const { achievementsByUserId } = useLazyLoadQuery<studentUserAchievementsWidgetQuery>(
+    graphql`
+      query studentUserAchievementsWidgetQuery($id: UUID!) {
+        achievementsByUserId(userId: $id) {
+          id
+          name
+          imageUrl
+          description
+          courseId
+          userId
+          completed
+          requiredCount
+          completedCount
+          trackingStartTime
+          trackingEndTime
+        }
+      }
+    `,
+    { id: userId },
+    {
+      fetchPolicy: "network-only", // <-- wichtig!
+    }
+  );
+
   // Extract scoreboard
   const rows: Data[] = scoreboard
     .slice(0, 3)
@@ -262,35 +292,7 @@ export default function StudentCoursePage() {
     setOpenDialog(false);
   };
 
-  const [studentUserLogin] = useMutation<studentUserLoginMutation>(graphql`
-  mutation studentUserLoginMutation($id: UUID!) {
-    loginUser(courseId: $id)
-  }
-`);
 
-  const { achievementsByUserId } = useLazyLoadQuery<studentUserAchievementsWidgetQuery>(
-    graphql`
-      query studentUserAchievementsWidgetQuery($id: UUID!) {
-        achievementsByUserId(userId: $id) {
-          id
-          name
-          imageUrl
-          description
-          courseId
-          userId
-          completed
-          requiredCount
-          completedCount
-          trackingStartTime
-          trackingEndTime
-        }
-      }
-    `,
-    { id: userId },
-    {
-      fetchPolicy: "network-only", // <-- wichtig!
-    }
-  );
 
   const mutableAchievements = [...achievementsByUserId]
 
@@ -306,7 +308,8 @@ export default function StudentCoursePage() {
         },
       });
     }
-  }, [course.id])
+  }, [course.id, studentUserLogin]);
+
 
   return (
     <main>
