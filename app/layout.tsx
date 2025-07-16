@@ -26,7 +26,6 @@ import {
 } from "react-oidc-context";
 import { RelayEnvironmentProvider } from "react-relay";
 import PageLoading from "./loading";
-import PageLoading from "./loading";
 import { ClientToaster } from "@/components/ClientToaster";
 
 dayjs.extend(isBetween);
@@ -136,16 +135,16 @@ function SigninContent({ children }: { children: React.ReactNode }) {
     return <div>Oops... {auth.error.message}</div>;
   }
 
-if (auth.isAuthenticated) {
-  return (
-    <RelayEnvironmentProvider environment={environment}>
-      <ThemeProvider theme={theme}>
-        <ClientToaster />
-        {children}
-      </ThemeProvider>
-    </RelayEnvironmentProvider>
-  );
-}
+  if (auth.isAuthenticated) {
+    return (
+      <RelayEnvironmentProvider environment={environment}>
+        <ThemeProvider theme={theme}>
+          <ClientToaster />
+          {children}
+        </ThemeProvider>
+      </RelayEnvironmentProvider>
+    );
+  }
 
   return <div>Logging in...</div>;
 }
