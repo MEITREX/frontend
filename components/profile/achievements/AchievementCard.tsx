@@ -36,12 +36,19 @@ export default function AchievementCard({
       <Grid container spacing={2} alignItems="center">
         <Grid item>
           <Box
-            fontSize="2.5rem"
-            sx={{ opacity: achievement.completed ? 1 : 0.4 }}
-          >
-            {achievement.imageUrl}
-          </Box>
+            component="img"
+            src={achievement.imageUrl}
+            alt={achievement.name}
+            sx={{
+              width: 64,
+              height: 64,
+              opacity: achievement.completed ? 1 : 0.4,
+              borderRadius: 2,
+              objectFit: "cover",
+            }}
+          />
         </Grid>
+
         <Grid item xs>
           <Typography variant="subtitle1" fontWeight="bold">
             {achievement.name}

@@ -74,7 +74,20 @@ export default function AchievementPopUp({
 
       <DialogContent>
         <Box textAlign="center" py={3}>
-          <Box fontSize={60}>{selectedAchievement?.imageUrl}</Box>
+          <Box
+            component="img"
+            src={selectedAchievement?.imageUrl}
+            alt={selectedAchievement?.name}
+            sx={{
+              width: 120,
+              height: 120,
+              objectFit: "cover",
+              opacity: selectedAchievement?.completed ? 1 : 0.4,
+              borderRadius: 2,
+              mx: "auto",
+            }}
+          />
+
 
           <Typography mt={2} variant="body1">
             {selectedAchievement?.description}

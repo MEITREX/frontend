@@ -131,7 +131,7 @@ export default function LatestAchievements({
               },
             }}
           >
-            All Achievements
+            Profile
           </Button>
         </Link>
       </Box>

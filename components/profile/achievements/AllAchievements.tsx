@@ -70,17 +70,6 @@ export default function AllAchievements({
       { id: coursesInAchievements }
     );
 
-  const coursesNames = [
-    { id: "course1", name: "Physics 202" },
-    { id: "course2", name: "Informatik" },
-    { id: "course3", name: "DSA" },
-    { id: "course4", name: "PSE" },
-    { id: "course5", name: "Theo I" },
-    { id: "course6", name: "Mathe II" },
-    { id: "course7", name: "MCI" },
-    { id: "course8", name: "Mathe I" },
-  ];
-
   if (filteredAchievements.length === 0 || Object.keys(groupedAchievements).length === 0) {
     return (
       <Box
@@ -94,7 +83,7 @@ export default function AllAchievements({
         }}
       >
         <Typography variant="h6" color="text.secondary">
-          You need to register in a course to unlock achievements
+          No achievements can be displayed at this point
         </Typography>
       </Box>
     );
