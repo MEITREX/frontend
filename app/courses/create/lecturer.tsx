@@ -28,8 +28,9 @@ import { Dayjs } from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { graphql, useMutation } from "react-relay";
-import { forumApiCreateForumMutation } from "@/components/forum/api/ForumApi";
+import { forumApiAddUserToForumMutation, forumApiCreateForumMutation } from "@/components/forum/api/ForumApi";
 import { ForumApiCreateForumMutation } from "@/__generated__/ForumApiCreateForumMutation.graphql";
+import { ForumApiAddUserToForumMutation } from "@/__generated__/ForumApiAddUserToForumMutation.graphql";
 
 function TableRow({ label, value }: { label: string; value: string }) {
   return (
@@ -45,6 +46,9 @@ export default function NewCourse() {
 
   const [createForum] = useMutation<ForumApiCreateForumMutation>(
     forumApiCreateForumMutation
+  );
+  const [addUserToForum] = useMutation<ForumApiAddUserToForumMutation>(
+    forumApiAddUserToForumMutation
   );
 
   const [title, setTitle] = useState("");
@@ -115,6 +119,7 @@ export default function NewCourse() {
       },
       onError: setError,
       onCompleted(response) {
+        createAndSetupForum(response.createCourse.id);
         function _addChapter(num: number) {
           addChapter({
             variables: {
@@ -136,25 +141,24 @@ export default function NewCourse() {
               }
             },
           });
-
-
         }
-
         _addChapter(0);
-
-        createForum({
-          variables: {courseId: response.createCourse.id},
-          onCompleted(data) {
-            console.log("Created Forum!");
-          },
-          onError(error) {
-            console.error("Forum Creation unsuccessful!", error);
-          },
-        })
       },
 
     });
   }
+
+  const createAndSetupForum = async (courseId: string) => {
+    try {
+      await createForum({ variables: { courseId } });
+      console.log("Created forum");
+      await addUserToForum({ variables: { courseId } });
+      console.log("Added user to forum");
+    } catch (error) {
+      console.error("Forum setup failed:", error);
+    }
+  };
+
 
   const steps: StepInfo[] = [
     {

@@ -6,12 +6,7 @@ import ForumActivity from "@/components/forum/shared/ForumActivity";
 import React from "react";
 
 
-type Props = {
-  userId: string;
-}
-
-export default function OtherUserProfileForumActivity({userId}:Props) {
-  // IM BACKEND Sortieren und für anderen user noch einer über komponente hinzufügen die dann checkt welche komponent genommen wird
+export default function ProfileForumActivity() {
   const data = useLazyLoadQuery<ForumApiForumActivityUserQuery>(
     forumApiForumActivityUserQuery,
     { fetchPolicy: "network-only" }

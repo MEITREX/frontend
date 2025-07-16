@@ -29,8 +29,13 @@ import {
   useLazyLoadQuery,
   useMutation,
 } from "react-relay";
+import { forumApiAddUserToForumMutation } from "@/components/forum/api/ForumApi";
+import { ForumApiAddUserToForumMutation } from "@/__generated__/ForumApiAddUserToForumMutation.graphql";
 
 export default function StudentCourseList() {
+  const [addUserToForum] = useMutation<ForumApiAddUserToForumMutation>(
+    forumApiAddUserToForumMutation
+  );
   const [pageView] = usePageView();
 
   const {
@@ -237,7 +242,17 @@ export default function StudentCourseList() {
                           courseId: course.id,
                         },
                         onCompleted() {
-                          router.push(`/courses/${course.id}`);
+                          addUserToForum({
+                            variables: {courseId: course.id},
+                            onCompleted() {
+                              console.log("Added User to Forum!");
+                              router.push(`/courses/${course.id}`);
+                            },
+                            onError(error) {
+                              console.error("Failed to add User to Forum", error);
+                            },
+                          })
+
                         },
                         onError: setError,
                         updater(store) {

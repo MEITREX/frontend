@@ -4,6 +4,7 @@ import { achievementsData } from "@/components/profile/AchievementData";
 import AchievementList from "@/components/profile/AchievementList";
 import { Avatar, Box, Tab, Tabs, Typography } from "@mui/material";
 import { useState } from "react";
+import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
 
 export default function PublicProfilePage() {
   const publicTabs = ["Achievements", "Forum", "Progress", "Badges"];

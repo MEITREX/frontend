@@ -1119,7 +1119,7 @@ type Query {
   mediaRecordsForCourses(courseIds: [UUID!]!): [[MediaRecord!]!]!
   mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
   openQuestionByCourseId(id: UUID!): [Thread!]!
-  otherUserForumActivityByUserId(otherUserId: UUID!, userId: UUID!): [ForumActivityEntry!]!
+  otherUserForumActivityByUserId(otherUserId: UUID!): [ForumActivityEntry!]!
   PlayerHexadScoreExists(userId: UUID!): Boolean!
   scoreboard(courseId: UUID!): [ScoreboardItem!]!
   semanticSearch(count: Int! = 10, courseWhitelist: [UUID!], queryText: String!): [SemanticSearchResult!]!

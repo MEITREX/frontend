@@ -11,10 +11,6 @@ import { ForumApiUserInfoQuery } from "@/__generated__/ForumApiUserInfoQuery.gra
 import { forumApiUserInfoQuery } from "@/components/forum/api/ForumApi";
 
 export default function ProfilePage() {
-  const loggedInUser = useLazyLoadQuery<ForumApiUserInfoQuery>(
-    forumApiUserInfoQuery,
-    {}
-  );
   // Beispiel-Daten – im echten Fall holst du die aus auth.user?.profile oder einem Query
   const profileData = {
     firstName: "Max",
@@ -92,7 +88,7 @@ export default function ProfilePage() {
           />
         )}
         {tabIndex === 2 && (
-          <ProfileForumActivity userId={loggedInUser.currentUserInfo.id} />
+          <ProfileForumActivity />
         )}
       </Box>
     </>

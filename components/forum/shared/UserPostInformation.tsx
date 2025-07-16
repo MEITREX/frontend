@@ -10,6 +10,7 @@ import {
   forumApiUserInfoQuery,
 } from "@/components/forum/api/ForumApi";
 import { ForumApiUserInfoByIdQuery } from "@/__generated__/ForumApiUserInfoByIdQuery.graphql";
+import { useRouter } from "next/navigation";
 
 type Props = {
   creatorId: ThreadType["creatorId"];
@@ -27,6 +28,8 @@ export default function UserPostInformation({
   creatorId,
 }: Props) {
   // TODO: Refactor: We should add the username in the backend to the post, so we don't have to fetch for it for every post
+  const router = useRouter();
+
   const loggedInUser = useLazyLoadQuery<ForumApiUserInfoQuery>(
     forumApiUserInfoQuery,
     {}
@@ -46,13 +49,23 @@ export default function UserPostInformation({
       {displayPB && <Avatar sx={{ width: 24, height: 24 }}>A</Avatar>}
       {userInfo && (
         <Typography
+          sx={{
+            "&:hover": {
+              cursor: "pointer",
+            },
+          }}
           color={
             loggedInUser.currentUserInfo.id === userInfo.id
               ? "#00a152"
               : "default"
           }
           variant="caption"
-        >
+          onClick={() => {
+            if (!userInfo) return;
+            const isOwnProfile = loggedInUser.currentUserInfo.id === userInfo.id;
+            const profileUrl = isOwnProfile ? '/profile' : `/profile/${userInfo.id}`;
+            router.push(profileUrl);
+          }}        >
           {userInfo.userName ?? "unknown"}
         </Typography>
       )}

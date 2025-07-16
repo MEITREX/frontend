@@ -10,12 +10,14 @@ export const forumApiCreateForumMutation = graphql `
 `
 
 export const forumApiAddUserToForumMutation = graphql `
-    mutation ForumApiAddUserToForumMutation($forumId: UUID!) {
-        addUserToForum(forumId: $forumId){
+    mutation ForumApiAddUserToForumMutation($courseId: UUID!) {
+        addUserToForumCourse(courseId: $courseId){
             id
         }
     }
 `
+
+
 
 export const forumApiThreadDetailQuery = graphql`
   query ForumApiThreadDetailQuery($id: UUID!) {
@@ -174,6 +176,24 @@ export const forumApiForumActivityQuery = graphql`
           authorId
         }
     }
+    }
+`
+
+export const forumApiOtherUserForumActivityQuery = graphql`
+    query ForumApiOtherUserForumActivityQuery($id: UUID!) {
+        otherUserForumActivityByUserId(otherUserId: $id) {
+            courseId
+            creationTime
+            thread {
+                id
+                creatorId
+                title
+            }
+            post {
+                content
+                authorId
+            }
+        }
     }
 `
 
