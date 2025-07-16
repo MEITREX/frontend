@@ -1,40 +1,88 @@
-"""Exposes a URL that specifies the behaviour of this scalar."""
+"""
+Exposes a URL that specifies the behaviour of this scalar.
+"""
 directive @specifiedBy(
-  """The URL that specifies the behaviour of this scalar."""
+  """
+  The URL that specifies the behaviour of this scalar.
+  """
   url: String!
 ) on SCALAR
 
-""" see also https://github.com/graphql-java/graphql-java-extended-validation/blob/master/README.md
 """
-directive @DecimalMax(value: String!, inclusive: Boolean! = true, message: String = "graphql.validation.DecimalMax.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+see also https://github.com/graphql-java/graphql-java-extended-validation/blob/master/README.md
+"""
+directive @DecimalMax(
+  value: String!
+  inclusive: Boolean! = true
+  message: String = "graphql.validation.DecimalMax.message"
+) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @DecimalMin(value: String!, inclusive: Boolean! = true, message: String = "graphql.validation.DecimalMin.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @DecimalMin(
+  value: String!
+  inclusive: Boolean! = true
+  message: String = "graphql.validation.DecimalMin.message"
+) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @Max(value: Int! = 2147483647, message: String = "graphql.validation.Max.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @Max(
+  value: Int! = 2147483647
+  message: String = "graphql.validation.Max.message"
+) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @Min(value: Int! = 0, message: String = "graphql.validation.Min.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @Min(
+  value: Int! = 0
+  message: String = "graphql.validation.Min.message"
+) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @Negative(message: String = "graphql.validation.Negative.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @Negative(
+  message: String = "graphql.validation.Negative.message"
+) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @NegativeOrZero(message: String = "graphql.validation.NegativeOrZero.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @NegativeOrZero(
+  message: String = "graphql.validation.NegativeOrZero.message"
+) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @NotBlank(message: String = "graphql.validation.NotBlank.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @NotBlank(
+  message: String = "graphql.validation.NotBlank.message"
+) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @NotEmpty(message: String = "graphql.validation.NotEmpty.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @NotEmpty(
+  message: String = "graphql.validation.NotEmpty.message"
+) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @ContainerNotEmpty(message: String = "graphql.validation.ContainerNotEmpty.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @ContainerNotEmpty(
+  message: String = "graphql.validation.ContainerNotEmpty.message"
+) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @Pattern(regexp: String! = ".*", message: String = "graphql.validation.Pattern.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @Pattern(
+  regexp: String! = ".*"
+  message: String = "graphql.validation.Pattern.message"
+) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @Positive(message: String = "graphql.validation.Positive.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @Positive(
+  message: String = "graphql.validation.Positive.message"
+) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @PositiveOrZero(message: String = "graphql.validation.PositiveOrZero.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @PositiveOrZero(
+  message: String = "graphql.validation.PositiveOrZero.message"
+) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @Range(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Range.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @Range(
+  min: Int = 0
+  max: Int = 2147483647
+  message: String = "graphql.validation.Range.message"
+) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @Size(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Size.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @Size(
+  min: Int = 0
+  max: Int = 2147483647
+  message: String = "graphql.validation.Size.message"
+) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @ContainerSize(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.ContainerSize.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+directive @ContainerSize(
+  min: Int = 0
+  max: Int = 2147483647
+  message: String = "graphql.validation.ContainerSize.message"
+) on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 """
 The @OnDemand directive is used to mark fields that are only internally resolved when requested.
@@ -42,15 +90,23 @@ Implementation Note: This will cause the code generator to omit the field from t
 """
 directive @OnDemand on FIELD_DEFINITION
 
-"""Indicates an Input Object is a OneOf Input Object."""
+"""
+Indicates an Input Object is a OneOf Input Object.
+"""
 directive @oneOf on INPUT_OBJECT
 
-"""This directive allows results to be deferred during execution"""
+"""
+This directive allows results to be deferred during execution
+"""
 directive @defer(
-  """Deferred behaviour is controlled by this argument"""
+  """
+  Deferred behaviour is controlled by this argument
+  """
   if: Boolean! = true
 
-  """A unique label that represents the fragment being deferred"""
+  """
+  A unique label that represents the fragment being deferred
+  """
   label: String
 ) on FRAGMENT_SPREAD | INLINE_FRAGMENT
 
@@ -59,7 +115,21 @@ This directive disables error propagation when a non nullable field returns null
 """
 directive @experimental_disableErrorPropagation on QUERY | MUTATION | SUBSCRIPTION
 
-directive @resolveTo(requiredSelectionSet: String, sourceName: String!, sourceTypeName: String!, sourceFieldName: String!, sourceSelectionSet: String, sourceArgs: ResolveToSourceArgs, keyField: String, keysArg: String, pubsubTopic: String, filterBy: String, additionalArgs: ResolveToSourceArgs, result: String, resultType: String) on FIELD_DEFINITION
+directive @resolveTo(
+  requiredSelectionSet: String
+  sourceName: String!
+  sourceTypeName: String!
+  sourceFieldName: String!
+  sourceSelectionSet: String
+  sourceArgs: ResolveToSourceArgs
+  keyField: String
+  keysArg: String
+  pubsubTopic: String
+  filterBy: String
+  additionalArgs: ResolveToSourceArgs
+  result: String
+  resultType: String
+) on FIELD_DEFINITION
 
 type AiEntityProcessingProgress {
   entityId: UUID!
@@ -80,22 +150,34 @@ input AnswerInput {
 }
 
 interface Assessment {
-  """Assessment metadata"""
+  """
+  Assessment metadata
+  """
   assessmentMetadata: AssessmentMetadata!
 
-  """ID of the content"""
+  """
+  ID of the content
+  """
   id: UUID!
 
-  """Metadata of the content"""
+  """
+  Metadata of the content
+  """
   metadata: ContentMetadata!
 
-  """Progress data of the content for the current user."""
+  """
+  Progress data of the content for the current user.
+  """
   userProgressData: UserProgressData!
 
-  """Progress data of the specified user."""
+  """
+  Progress data of the specified user.
+  """
   progressDataForUser(userId: UUID!): UserProgressData!
 
-  """the items that belong to the Assessment"""
+  """
+  the items that belong to the Assessment
+  """
   items: [Item!]!
 
   """
@@ -110,10 +192,14 @@ type AssessmentContentReference {
 }
 
 type AssessmentMetadata {
-  """Number of skill points a student receives for completing this content"""
+  """
+  Number of skill points a student receives for completing this content
+  """
   skillPoints: Int!
 
-  """Type of the assessment"""
+  """
+  Type of the assessment
+  """
   skillTypes: [SkillType!]!
 
   """
@@ -127,10 +213,14 @@ type AssessmentMetadata {
 }
 
 input AssessmentMetadataInput {
-  """Number of skill points a student receives for completing this content"""
+  """
+  Number of skill points a student receives for completing this content
+  """
   skillPoints: Int!
 
-  """Type of the assessment"""
+  """
+  Type of the assessment
+  """
   skillTypes: [SkillType!]!
 
   """
@@ -144,13 +234,19 @@ input AssessmentMetadataInput {
 }
 
 type AssessmentSemanticSearchResult implements SemanticSearchResult {
-  """The similarity score of the search result."""
+  """
+  The similarity score of the search result.
+  """
   score: Float!
 
-  """ID of the assessment this search result is referencing."""
+  """
+  ID of the assessment this search result is referencing.
+  """
   assessmentId: UUID!
 
-  """The assessment this search result is referencing."""
+  """
+  The assessment this search result is referencing.
+  """
   assessment: Assessment!
 }
 
@@ -158,22 +254,34 @@ type AssessmentSemanticSearchResult implements SemanticSearchResult {
 An assignment, assignment related fields are stored in the assignment service.
 """
 type AssignmentAssessment implements Assessment & Content {
-  """Assessment metadata"""
+  """
+  Assessment metadata
+  """
   assessmentMetadata: AssessmentMetadata!
 
-  """ID of the content"""
+  """
+  ID of the content
+  """
   id: UUID!
 
-  """Metadata of the content"""
+  """
+  Metadata of the content
+  """
   metadata: ContentMetadata!
 
-  """Progress data of the content for the current user."""
+  """
+  Progress data of the content for the current user.
+  """
   userProgressData: UserProgressData!
 
-  """Progress data of the specified user."""
+  """
+  Progress data of the specified user.
+  """
   progressDataForUser(userId: UUID!): UserProgressData!
 
-  """the items that belong to the Assignment"""
+  """
+  the items that belong to the Assignment
+  """
   items: [Item!]!
 
   """
@@ -184,13 +292,19 @@ type AssignmentAssessment implements Assessment & Content {
 }
 
 input AssociationInput {
-  """id of the corresponding item"""
+  """
+  id of the corresponding item
+  """
   itemId: UUID
 
-  """Text of the left side of the association, in SlateJS JSON format."""
+  """
+  Text of the left side of the association, in SlateJS JSON format.
+  """
   left: String!
 
-  """Text of the right side of the association, in SlateJS JSON format."""
+  """
+  Text of the right side of the association, in SlateJS JSON format.
+  """
   right: String!
 
   """
@@ -208,16 +322,24 @@ type AssociationQuestion implements Question {
   """
   text: JSON!
 
-  """List of correct associations."""
+  """
+  List of correct associations.
+  """
   correctAssociations: [SingleAssociation!]!
 
-  """Computed list of all the left sides of the associations, shuffled."""
+  """
+  Computed list of all the left sides of the associations, shuffled.
+  """
   leftSide: [String!]!
 
-  """Computed list of all the right sides of the associations, shuffled."""
+  """
+  Computed list of all the right sides of the associations, shuffled.
+  """
   rightSide: [String!]!
 
-  """Unique identifier of the question and the id of the corresponding item"""
+  """
+  Unique identifier of the question and the id of the corresponding item
+  """
   itemId: UUID!
 
   """
@@ -226,15 +348,21 @@ type AssociationQuestion implements Question {
   """
   number: Int!
 
-  """Type of the question."""
+  """
+  Type of the question.
+  """
   type: QuestionType!
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
   item: Item!
 }
 
-"""Level of Blooms Taxonomy"""
+"""
+Level of Blooms Taxonomy
+"""
 enum BloomLevel {
   REMEMBER
   UNDERSTAND
@@ -244,24 +372,38 @@ enum BloomLevel {
   CREATE
 }
 
-"""A chapter is a part of a course."""
+"""
+A chapter is a part of a course.
+"""
 type Chapter {
-  """UUID of the chapter, generated automatically"""
+  """
+  UUID of the chapter, generated automatically
+  """
   id: UUID!
 
-  """Title of the chapter, maximum length is 255 characters."""
+  """
+  Title of the chapter, maximum length is 255 characters.
+  """
   title: String!
 
-  """Description of the chapter, maximum length is 3000 characters."""
+  """
+  Description of the chapter, maximum length is 3000 characters.
+  """
   description: String!
 
-  """Number of the chapter, determines the order of the chapters."""
+  """
+  Number of the chapter, determines the order of the chapters.
+  """
   number: Int!
 
-  """Start date of the chapter, ISO 8601 format."""
+  """
+  Start date of the chapter, ISO 8601 format.
+  """
   startDate: DateTime!
 
-  """End date of the chapter, ISO 8601 format."""
+  """
+  End date of the chapter, ISO 8601 format.
+  """
   endDate: DateTime!
 
   """
@@ -276,16 +418,24 @@ type Chapter {
   """
   suggestedEndDate: DateTime
 
-  """The course the chapter belongs to."""
+  """
+  The course the chapter belongs to.
+  """
   course: Course!
 
-  """Contents of this chapter."""
+  """
+  Contents of this chapter.
+  """
   contents: [Content!]!
 
-  """Contents of this chapter which are not in any section."""
+  """
+  Contents of this chapter which are not in any section.
+  """
   contentsWithNoSection: [Content!]!
 
-  """Sections of this chapter."""
+  """
+  Sections of this chapter.
+  """
   sections: [Section!]!
 
   """
@@ -294,7 +444,9 @@ type Chapter {
   """
   achievableSkillTypes: [SkillType]!
 
-  """The progress of the current user in this chapter."""
+  """
+  The progress of the current user in this chapter.
+  """
   userProgress: CompositeProgressInformation!
   skills: [Skill]!
 }
@@ -321,7 +473,9 @@ type ChapterPayload {
 }
 
 type ClozeBlankElement {
-  """The correct answer for the blank."""
+  """
+  The correct answer for the blank.
+  """
   correctAnswer: String!
 
   """
@@ -333,13 +487,19 @@ type ClozeBlankElement {
 union ClozeElement = ClozeTextElement | ClozeBlankElement
 
 input ClozeElementInput {
-  """Type of the element."""
+  """
+  Type of the element.
+  """
   type: ClozeElementType!
 
-  """Text of the element. Only used for TEXT type."""
+  """
+  Text of the element. Only used for TEXT type.
+  """
   text: JSON
 
-  """The correct answer for the blank. Only used for BLANK type."""
+  """
+  The correct answer for the blank. Only used for BLANK type.
+  """
   correctAnswer: String
 
   """
@@ -354,10 +514,14 @@ enum ClozeElementType {
 }
 
 type ClozeQuestion implements Question {
-  """The elements of the cloze question."""
+  """
+  The elements of the cloze question.
+  """
   clozeElements: [ClozeElement!]!
 
-  """Addtional wrong answers for the blanks."""
+  """
+  Addtional wrong answers for the blanks.
+  """
   additionalWrongAnswers: [String!]!
 
   """
@@ -370,7 +534,9 @@ type ClozeQuestion implements Question {
   """
   showBlanksList: Boolean!
 
-  """Unique identifier of the question and the id of the corresponding item"""
+  """
+  Unique identifier of the question and the id of the corresponding item
+  """
   itemId: UUID!
 
   """
@@ -379,41 +545,61 @@ type ClozeQuestion implements Question {
   """
   number: Int!
 
-  """Type of the question."""
+  """
+  Type of the question.
+  """
   type: QuestionType!
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
   item: Item!
 }
 
 type ClozeTextElement {
-  """Text of the element, in SlateJS JSON format."""
+  """
+  Text of the element, in SlateJS JSON format.
+  """
   text: JSON!
 }
 
 type CompositeProgressInformation {
-  """percentage of completedContents/totalContents"""
+  """
+  percentage of completedContents/totalContents
+  """
   progress: Float!
 
-  """absolut number of completed content"""
+  """
+  absolut number of completed content
+  """
   completedContents: Int!
 
-  """absolut number of total content"""
+  """
+  absolut number of total content
+  """
   totalContents: Int!
 }
 
 interface Content {
-  """ID of the content"""
+  """
+  ID of the content
+  """
   id: UUID!
 
-  """Metadata of the content"""
+  """
+  Metadata of the content
+  """
   metadata: ContentMetadata!
 
-  """Progress data of the content for the current user."""
+  """
+  Progress data of the content for the current user.
+  """
   userProgressData: UserProgressData!
 
-  """Progress data of the specified user."""
+  """
+  Progress data of the specified user.
+  """
   progressDataForUser(userId: UUID!): UserProgressData!
 
   """
@@ -424,42 +610,66 @@ interface Content {
 }
 
 type ContentMetadata {
-  """Name of the content"""
+  """
+  Name of the content
+  """
   name: String!
 
-  """Content type"""
+  """
+  Content type
+  """
   type: ContentType!
 
-  """Suggested date when the content should be done"""
+  """
+  Suggested date when the content should be done
+  """
   suggestedDate: DateTime!
 
-  """Number of reward points a student receives for completing this content"""
+  """
+  Number of reward points a student receives for completing this content
+  """
   rewardPoints: Int!
 
-  """ID of the chapter this content is associated with"""
+  """
+  ID of the chapter this content is associated with
+  """
   chapterId: UUID!
 
-  """ID of the course this content is associated with"""
+  """
+  ID of the course this content is associated with
+  """
   courseId: UUID!
 
-  """TagNames this content is tagged with"""
+  """
+  TagNames this content is tagged with
+  """
   tagNames: [String!]!
 
-  """The course this content belongs to."""
+  """
+  The course this content belongs to.
+  """
   course: Course!
 
-  """The chapter this content belongs to."""
+  """
+  The chapter this content belongs to.
+  """
   chapter: Chapter!
 }
 
 type ContentMutation {
-  """Identifier of Content"""
+  """
+  Identifier of Content
+  """
   contentId: UUID!
 
-  """Update an existing Content"""
+  """
+  Update an existing Content
+  """
   updateMediaContent(input: UpdateMediaContentInput!): MediaContent!
 
-  """Update an existing Assessment"""
+  """
+  Update an existing Assessment
+  """
   updateAssessment(input: UpdateAssessmentInput!): Assessment!
 
   """
@@ -467,22 +677,32 @@ type ContentMutation {
   """
   deleteContent: UUID!
 
-  """Add a tag to an existing content"""
+  """
+  Add a tag to an existing content
+  """
   addTagToContent(tagName: String): Content!
 
-  """Remove a tag from an existing content"""
+  """
+  Remove a tag from an existing content
+  """
   removeTagFromContent(tagName: String): Content!
 }
 
 type ContentPayload {
-  """the contents"""
+  """
+  the contents
+  """
   elements: [Content!]!
 
-  """pagination info"""
+  """
+  pagination info
+  """
   pageInfo: PaginationInfo!
 }
 
-"""Type of the content"""
+"""
+Type of the content
+"""
 enum ContentType {
   MEDIA
   FLASHCARDS
@@ -505,7 +725,9 @@ type Course {
   """
   title: String!
 
-  """Detailed description of the course. Maximal length is 3000 characters."""
+  """
+  Detailed description of the course. Maximal length is 3000 characters.
+  """
   description: String!
 
   """
@@ -527,10 +749,14 @@ type Course {
   """
   published: Boolean!
 
-  """The year in which the term starts."""
+  """
+  The year in which the term starts.
+  """
   startYear: Int
 
-  """The division of the academic calendar in which the term takes place."""
+  """
+  The division of the academic calendar in which the term takes place.
+  """
   yearDivision: YearDivision
 
   """
@@ -546,7 +772,9 @@ type Course {
     """
     sortBy: [String!]! = []
 
-    """The sort direction for each field. If not specified, defaults to ASC."""
+    """
+    The sort direction for each field. If not specified, defaults to ASC.
+    """
     sortDirection: [SortDirection!]! = [ASC]
     pagination: Pagination
   ): ChapterPayload!
@@ -558,7 +786,9 @@ type Course {
   """
   memberships: [CourseMembership!]!
 
-  """The reward scores of this course for the currently logged in user."""
+  """
+  The reward scores of this course for the currently logged in user.
+  """
   rewardScores: RewardScores!
 
   """
@@ -566,7 +796,9 @@ type Course {
   """
   scoreboard: [ScoreboardItem!]!
 
-  """The media records which are linked to this course."""
+  """
+  The media records which are linked to this course.
+  """
   mediaRecords: [MediaRecord!]!
 
   """
@@ -574,7 +806,9 @@ type Course {
   learn next (both new content and content to repeat).
   """
   suggestions(
-    """The amount of suggestions to generate in total."""
+    """
+    The amount of suggestions to generate in total.
+    """
     amount: Int!
 
     """
@@ -585,7 +819,9 @@ type Course {
     skillTypes: [SkillType!]! = []
   ): [Suggestion!]!
 
-  """The progress of the current user in this course."""
+  """
+  The progress of the current user in this course.
+  """
   userProgress: CompositeProgressInformation!
   skills: [Skill!]!
 }
@@ -610,31 +846,49 @@ Represents a course membership object of a user. Each user can be a member of
 set of courses and some users can also own courses
 """
 type CourseMembership {
-  """Id of the user."""
+  """
+  Id of the user.
+  """
   userId: UUID!
 
-  """Id of the course the user is a member of."""
+  """
+  Id of the course the user is a member of.
+  """
   courseId: UUID!
 
-  """The role of the user in the course."""
+  """
+  The role of the user in the course.
+  """
   role: UserRoleInCourse!
 
-  """Course of the Course Membership"""
+  """
+  Course of the Course Membership
+  """
   course: Course!
 
-  """The user of this course membership."""
+  """
+  The user of this course membership.
+  """
   user: PublicUserInfo
 }
 
-"""Represents a course membership input object of a user."""
+"""
+Represents a course membership input object of a user.
+"""
 input CourseMembershipInput {
-  """Id of the user."""
+  """
+  Id of the user.
+  """
   userId: UUID!
 
-  """Id of the course the user is a member of."""
+  """
+  Id of the course the user is a member of.
+  """
   courseId: UUID!
 
-  """The role of the user in the course."""
+  """
+  The role of the user in the course.
+  """
   role: UserRoleInCourse!
 }
 
@@ -647,21 +901,31 @@ type CoursePayload {
 }
 
 input CreateAssessmentInput {
-  """Metadata for the new Content"""
+  """
+  Metadata for the new Content
+  """
   metadata: CreateContentMetadataInput!
 
-  """Assessment metadata"""
+  """
+  Assessment metadata
+  """
   assessmentMetadata: AssessmentMetadataInput!
 
-  """items of the new assessments"""
+  """
+  items of the new assessments
+  """
   items: [CreateItemInput!]
 }
 
 input CreateAssociationInput {
-  """Text of the left side of the association, in SlateJS JSON format."""
+  """
+  Text of the left side of the association, in SlateJS JSON format.
+  """
   left: String!
 
-  """Text of the right side of the association, in SlateJS JSON format."""
+  """
+  Text of the right side of the association, in SlateJS JSON format.
+  """
   right: String!
 
   """
@@ -671,7 +935,9 @@ input CreateAssociationInput {
 }
 
 input CreateAssociationQuestionInput {
-  """id of the corresponding item"""
+  """
+  id of the corresponding item
+  """
   itemId: UUID!
 
   """
@@ -680,13 +946,19 @@ input CreateAssociationQuestionInput {
   """
   number: Int
 
-  """Text of the question, in SlateJS JSON format."""
+  """
+  Text of the question, in SlateJS JSON format.
+  """
   text: JSON!
 
-  """List of associations."""
+  """
+  List of associations.
+  """
   correctAssociations: [AssociationInput!]!
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
 }
 
@@ -697,14 +969,18 @@ input CreateAssociationQuestionInputWithoutItem {
   hint: JSON
 }
 
-"""Input type for creating chapters."""
+"""
+Input type for creating chapters.
+"""
 input CreateChapterInput {
   """
   Title of the chapter, maximum length is 255 characters, must not be blank.
   """
   title: String!
 
-  """Description of the chapter, maximum length is 3000 characters."""
+  """
+  Description of the chapter, maximum length is 3000 characters.
+  """
   description: String!
 
   """
@@ -744,13 +1020,19 @@ input CreateChapterInput {
 }
 
 input CreateClozeElementInput {
-  """Type of the element."""
+  """
+  Type of the element.
+  """
   type: ClozeElementType!
 
-  """Text of the element. Only used for TEXT type."""
+  """
+  Text of the element. Only used for TEXT type.
+  """
   text: JSON
 
-  """The correct answer for the blank. Only used for BLANK type."""
+  """
+  The correct answer for the blank. Only used for BLANK type.
+  """
   correctAnswer: String
 
   """
@@ -760,7 +1042,9 @@ input CreateClozeElementInput {
 }
 
 input CreateClozeQuestionInput {
-  """id of the corresponding item"""
+  """
+  id of the corresponding item
+  """
   itemId: UUID!
 
   """
@@ -769,16 +1053,24 @@ input CreateClozeQuestionInput {
   """
   number: Int
 
-  """List of cloze elements."""
+  """
+  List of cloze elements.
+  """
   clozeElements: [ClozeElementInput!]!
 
-  """List of additional wrong answers."""
+  """
+  List of additional wrong answers.
+  """
   additionalWrongAnswers: [String!]! = []
 
-  """If true, the list of possible answers will be shown to the user."""
+  """
+  If true, the list of possible answers will be shown to the user.
+  """
   showBlanksList: Boolean! = true
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
 }
 
@@ -791,22 +1083,34 @@ input CreateClozeQuestionInputWithoutItem {
 }
 
 input CreateContentMetadataInput {
-  """Name of the content"""
+  """
+  Name of the content
+  """
   name: String!
 
-  """Type of the content"""
+  """
+  Type of the content
+  """
   type: ContentType!
 
-  """Suggested date when the content should be done"""
+  """
+  Suggested date when the content should be done
+  """
   suggestedDate: DateTime!
 
-  """Number of reward points a student receives for completing this content"""
+  """
+  Number of reward points a student receives for completing this content
+  """
   rewardPoints: Int!
 
-  """ID of the chapter this content is associated with"""
+  """
+  ID of the chapter this content is associated with
+  """
   chapterId: UUID!
 
-  """TagNames this content is tagged with"""
+  """
+  TagNames this content is tagged with
+  """
   tagNames: [String!]! = []
 }
 
@@ -814,10 +1118,14 @@ input CreateContentMetadataInput {
 Input type for creating a new course. See also on the course type for detailed field descriptions.
 """
 input CreateCourseInput {
-  """Title of the course, max 255 characters, must not be blank."""
+  """
+  Title of the course, max 255 characters, must not be blank.
+  """
   title: String!
 
-  """Description of the course, max 3000 characters."""
+  """
+  Description of the course, max 3000 characters.
+  """
   description: String!
 
   """
@@ -832,18 +1140,26 @@ input CreateCourseInput {
   """
   endDate: DateTime!
 
-  """Published status of the course."""
+  """
+  Published status of the course.
+  """
   published: Boolean!
 
-  """The year in which the term starts."""
+  """
+  The year in which the term starts.
+  """
   startYear: Int
 
-  """The division of the academic calendar in which the term takes place."""
+  """
+  The division of the academic calendar in which the term takes place.
+  """
   yearDivision: YearDivision
 }
 
 input CreateExactAnswerQuestionInput {
-  """id of the corresponding item"""
+  """
+  id of the corresponding item
+  """
   itemId: UUID
 
   """
@@ -852,7 +1168,9 @@ input CreateExactAnswerQuestionInput {
   """
   number: Int
 
-  """Text of the question, in SlateJS JSON format."""
+  """
+  Text of the question, in SlateJS JSON format.
+  """
   text: JSON!
 
   """
@@ -860,7 +1178,9 @@ input CreateExactAnswerQuestionInput {
   """
   caseSensitive: Boolean! = false
 
-  """A list of possible correct answers."""
+  """
+  A list of possible correct answers.
+  """
   correctAnswers: [String!]!
 
   """
@@ -868,7 +1188,9 @@ input CreateExactAnswerQuestionInput {
   """
   feedback: JSON
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
 }
 
@@ -882,10 +1204,14 @@ input CreateExactAnswerQuestionInputWithoutItem {
 }
 
 input CreateFlashcardInput {
-  """id of the item the flashcard belongs to"""
+  """
+  id of the item the flashcard belongs to
+  """
   itemId: UUID
 
-  """List of sides of this flashcard. Must be at least two sides."""
+  """
+  List of sides of this flashcard. Must be at least two sides.
+  """
   sides: [FlashcardSideInput!]!
 }
 
@@ -894,12 +1220,16 @@ Input to create a new flashcard without an item.
 This is supposed to be consumed by the frontend to create a new flashcard after the associated item has been created.
 """
 input CreateFlashcardInputWithoutItem {
-  """List of sides of this flashcard. Must be at least two sides."""
+  """
+  List of sides of this flashcard. Must be at least two sides.
+  """
   sides: [FlashcardSideInput!]!
 }
 
 input CreateFlashcardSetInput {
-  """List of flashcards in this set."""
+  """
+  List of flashcards in this set.
+  """
   flashcards: [CreateFlashcardInput!]!
 }
 
@@ -912,7 +1242,9 @@ input CreateItemInput {
 Input for creating new media content. Media specific fields are stored in the Media Service.
 """
 input CreateMediaContentInput {
-  """Metadata for the new Content"""
+  """
+  Metadata for the new Content
+  """
   metadata: CreateContentMetadataInput!
 }
 
@@ -922,15 +1254,21 @@ input CreateMediaRecordInput {
   """
   name: String!
 
-  """Type of the media record."""
+  """
+  Type of the media record.
+  """
   type: MediaType!
 
-  """IDs of the MediaContents this media record is associated with"""
+  """
+  IDs of the MediaContents this media record is associated with
+  """
   contentIds: [UUID!]!
 }
 
 input CreateMultipleChoiceQuestionInput {
-  """UUID of the question to update and the id of the corresponding item."""
+  """
+  UUID of the question to update and the id of the corresponding item.
+  """
   itemId: UUID!
 
   """
@@ -939,13 +1277,19 @@ input CreateMultipleChoiceQuestionInput {
   """
   number: Int
 
-  """Text of the question, in SlateJS JSON format."""
+  """
+  Text of the question, in SlateJS JSON format.
+  """
   text: JSON!
 
-  """List of answers."""
+  """
+  List of answers.
+  """
   answers: [MultipleChoiceAnswerInput!]!
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
 }
 
@@ -957,7 +1301,9 @@ input CreateMultipleChoiceQuestionInputWithoutItem {
 }
 
 input CreateNumericQuestionInput {
-  """id of the corresponding item"""
+  """
+  id of the corresponding item
+  """
   itemId: UUID!
 
   """
@@ -966,13 +1312,19 @@ input CreateNumericQuestionInput {
   """
   number: Int
 
-  """Text of the question, in SlateJS JSON format."""
+  """
+  Text of the question, in SlateJS JSON format.
+  """
   text: JSON!
 
-  """The correct answer for the question."""
+  """
+  The correct answer for the question.
+  """
   correctAnswer: Float!
 
-  """The allowed deviation from the correct answer."""
+  """
+  The allowed deviation from the correct answer.
+  """
   tolerance: Float!
 
   """
@@ -980,7 +1332,9 @@ input CreateNumericQuestionInput {
   """
   feedback: JSON
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
 }
 
@@ -996,37 +1350,45 @@ input CreateNumericQuestionInputWithoutItem {
 input CreateQuizInput {
   """
   Threshold of the quiz, i.e., how many questions the user has to answer correctly to pass the quiz.
-  
+
   If this is greater than the number of questions, the behavior is the same
   as if it was equal to the number of questions.
   """
   requiredCorrectAnswers: Int!
 
-  """Question pooling mode of the quiz."""
+  """
+  Question pooling mode of the quiz.
+  """
   questionPoolingMode: QuestionPoolingMode!
 
   """
   Number of questions that are randomly selected from the list of questions.
   Should only be set if questionPoolingMode is RANDOM.
-  
+
   If this is greater than the number of questions, the behavior is the same
   as if it was equal to the number of questions.
-  
+
   If this is null or not set, the behavior is the same as if it was equal to the number of questions.
   """
   numberOfRandomlySelectedQuestions: Int
 }
 
 input CreateSectionInput {
-  """Chapter Section will belong to"""
+  """
+  Chapter Section will belong to
+  """
   chapterId: UUID!
 
-  """name given to Section"""
+  """
+  name given to Section
+  """
   name: String!
 }
 
 input CreateSelfAssessmentQuestionInput {
-  """id of the corresponding item"""
+  """
+  id of the corresponding item
+  """
   itemId: UUID!
 
   """
@@ -1035,13 +1397,19 @@ input CreateSelfAssessmentQuestionInput {
   """
   number: Int
 
-  """Text of the question, in SlateJS JSON format."""
+  """
+  Text of the question, in SlateJS JSON format.
+  """
   text: JSON!
 
-  """A possible correct answer to the question."""
+  """
+  A possible correct answer to the question.
+  """
   solutionSuggestion: JSON!
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
 }
 
@@ -1059,17 +1427,25 @@ input CreateSkillInput {
 }
 
 input CreateStageInput {
-  """updated List of UUIDs for content labeled as required in this Stage"""
+  """
+  updated List of UUIDs for content labeled as required in this Stage
+  """
   requiredContents: [UUID!]!
 
-  """updated List of UUIDs for content labeled as optional in this Stage"""
+  """
+  updated List of UUIDs for content labeled as optional in this Stage
+  """
   optionalContents: [UUID!]!
 }
 
-"""An RFC-3339 compliant Full Date Scalar"""
+"""
+An RFC-3339 compliant Full Date Scalar
+"""
 scalar Date
 
-"""A slightly refined version of RFC-3339 compliant DateTime Scalar"""
+"""
+A slightly refined version of RFC-3339 compliant DateTime Scalar
+"""
 scalar DateTime
 
 """
@@ -1077,33 +1453,51 @@ Filter for date values.
 If multiple filters are specified, they are combined with AND.
 """
 input DateTimeFilter {
-  """If specified, filters for dates after the specified value."""
+  """
+  If specified, filters for dates after the specified value.
+  """
   after: DateTime
 
-  """If specified, filters for dates before the specified value."""
+  """
+  If specified, filters for dates before the specified value.
+  """
   before: DateTime
 }
 
 type DocumentRecordSegment implements MediaRecordSegment {
-  """UUID of this segment."""
+  """
+  UUID of this segment.
+  """
   id: UUID!
 
-  """UUID of the media record this search result references."""
+  """
+  UUID of the media record this search result references.
+  """
   mediaRecordId: UUID!
 
-  """Page of the document this search result references."""
+  """
+  Page of the document this search result references.
+  """
   page: Int!
 
-  """The text snippet of the document this search result references."""
+  """
+  The text snippet of the document this search result references.
+  """
   text: String!
 
-  """Base64-encoded image thumbnail for this segment."""
+  """
+  Base64-encoded image thumbnail for this segment.
+  """
   thumbnail: String!
 
-  """Title of this segment."""
+  """
+  Title of this segment.
+  """
   title: String
 
-  """The media record this segment is part of."""
+  """
+  The media record this segment is part of.
+  """
   mediaRecord: MediaRecord!
 }
 
@@ -1113,7 +1507,9 @@ Differs from self-assessment questions in that the user has to enter one of the 
 the answer is checked automatically.
 """
 type ExactAnswerQuestion implements Question {
-  """Text of the question, in SlateJS JSON format."""
+  """
+  Text of the question, in SlateJS JSON format.
+  """
   text: JSON!
 
   """
@@ -1131,7 +1527,9 @@ type ExactAnswerQuestion implements Question {
   """
   feedback: JSON
 
-  """Unique identifier of the question and the id of the corresponding item"""
+  """
+  Unique identifier of the question and the id of the corresponding item
+  """
   itemId: UUID!
 
   """
@@ -1140,10 +1538,14 @@ type ExactAnswerQuestion implements Question {
   """
   number: Int!
 
-  """Type of the question."""
+  """
+  Type of the question.
+  """
   type: QuestionType!
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
   item: Item!
 }
@@ -1159,7 +1561,9 @@ type Flashcard {
   """
   itemId: UUID!
 
-  """List of sides of this flashcard."""
+  """
+  List of sides of this flashcard.
+  """
   sides: [FlashcardSide!]!
 
   """
@@ -1170,15 +1574,23 @@ type Flashcard {
   item: Item!
 }
 
-"""Feedback for the logFlashcardLearned mutation."""
+"""
+Feedback for the logFlashcardLearned mutation.
+"""
 type FlashcardLearnedFeedback {
-  """Whether the flashcard was learned correctly."""
+  """
+  Whether the flashcard was learned correctly.
+  """
   success: Boolean!
 
-  """Next date when the flashcard should be learned again."""
+  """
+  Next date when the flashcard should be learned again.
+  """
   nextLearnDate: DateTime!
 
-  """Progress of the whole flashcard set."""
+  """
+  Progress of the whole flashcard set.
+  """
   flashcardSetProgress: FlashcardSetProgress!
 }
 
@@ -1193,7 +1605,9 @@ type FlashcardProgressData {
   """
   lastLearned: DateTime
 
-  """The learning interval in days for the content item."""
+  """
+  The learning interval in days for the content item.
+  """
   learningInterval: Int
 
   """
@@ -1205,13 +1619,19 @@ type FlashcardProgressData {
 }
 
 type FlashcardProgressDataLog {
-  """The id of the Log"""
+  """
+  The id of the Log
+  """
   id: UUID
 
-  """The date the user learned the flashcard."""
+  """
+  The date the user learned the flashcard.
+  """
   learnedAt: DateTime!
 
-  """Whether the user knew the flashcard or not."""
+  """
+  Whether the user knew the flashcard or not.
+  """
   success: Boolean!
 }
 
@@ -1226,13 +1646,19 @@ type FlashcardSet {
   """
   assessmentId: UUID!
 
-  """Id of the course this flashcard set belongs to."""
+  """
+  Id of the course this flashcard set belongs to.
+  """
   courseId: UUID!
 
-  """List of flashcards in this set."""
+  """
+  List of flashcards in this set.
+  """
   flashcards: [Flashcard!]!
 
-  """The content this FlashcardSet belongs to."""
+  """
+  The content this FlashcardSet belongs to.
+  """
   content: Content
 }
 
@@ -1240,22 +1666,34 @@ type FlashcardSet {
 A set of flashcards, flashcard related fields are stored in the flashcard service.
 """
 type FlashcardSetAssessment implements Assessment & Content {
-  """Assessment metadata"""
+  """
+  Assessment metadata
+  """
   assessmentMetadata: AssessmentMetadata!
 
-  """ID of the content"""
+  """
+  ID of the content
+  """
   id: UUID!
 
-  """Metadata of the content"""
+  """
+  Metadata of the content
+  """
   metadata: ContentMetadata!
 
-  """Progress data of the content for the current user."""
+  """
+  Progress data of the content for the current user.
+  """
   userProgressData: UserProgressData!
 
-  """Progress data of the specified user."""
+  """
+  Progress data of the specified user.
+  """
   progressDataForUser(userId: UUID!): UserProgressData!
 
-  """the items that belong to the Flashcard"""
+  """
+  the items that belong to the Flashcard
+  """
   items: [Item!]!
 
   """
@@ -1264,7 +1702,9 @@ type FlashcardSetAssessment implements Assessment & Content {
   """
   isAvailableToBeWorkedOn: Boolean!
 
-  """The FlashcardSet of the assessment."""
+  """
+  The FlashcardSet of the assessment.
+  """
   flashcardSet: FlashcardSet
 
   """
@@ -1273,12 +1713,16 @@ type FlashcardSetAssessment implements Assessment & Content {
   """
   aiProcessingProgress: AiEntityProcessingProgress!
 
-  """Tags suggested for this assessment by the AI system."""
+  """
+  Tags suggested for this assessment by the AI system.
+  """
   suggestedTags: [String!]!
 }
 
 type FlashcardSetMutation {
-  """ID of the flashcard set that is being modified."""
+  """
+  ID of the flashcard set that is being modified.
+  """
   assessmentId: UUID!
 
   """
@@ -1290,16 +1734,26 @@ type FlashcardSetMutation {
   Creates a new flashcard and its associated item by internally fetching and mutating the assessment with the new
   item provided. The created item's id is then used to create the flashcard.
   """
-  createFlashcard(item: CreateItemInput!, assessmentId: UUID!, flashcardInput: CreateFlashcardInputWithoutItem!): FlashcardOutput!
+  createFlashcard(
+    item: CreateItemInput!
+    assessmentId: UUID!
+    flashcardInput: CreateFlashcardInputWithoutItem!
+  ): FlashcardOutput!
 
   """
   Updates a flashcard by updating the associated item and the flashcard itself.
   """
-  updateFlashcard(item: ItemInput!, assessmentId: UUID!, flashcardInput: UpdateFlashcardInput!): FlashcardOutput!
+  updateFlashcard(
+    item: ItemInput!
+    assessmentId: UUID!
+    flashcardInput: UpdateFlashcardInput!
+  ): FlashcardOutput!
 }
 
 type FlashcardSetProgress {
-  """Percentage of how many flashcards in the set have been learned."""
+  """
+  Percentage of how many flashcards in the set have been learned.
+  """
   percentageLearned: Float!
 
   """
@@ -1309,7 +1763,9 @@ type FlashcardSetProgress {
 }
 
 type FlashcardSide {
-  """Text of this flashcard side as rich text in SlateJS json."""
+  """
+  Text of this flashcard side as rich text in SlateJS json.
+  """
   text: JSON!
 
   """
@@ -1330,7 +1786,9 @@ type FlashcardSide {
 }
 
 input FlashcardSideInput {
-  """Text of this flashcard side."""
+  """
+  Text of this flashcard side.
+  """
   text: JSON!
 
   """
@@ -1366,7 +1824,9 @@ enum GlobalUserRole {
 }
 
 input IngestMediaRecordInput {
-  """UUID of the media record of this document."""
+  """
+  UUID of the media record of this document.
+  """
   id: UUID!
 }
 
@@ -1375,13 +1835,19 @@ Filter for integer values.
 If multiple filters are specified, they are combined with AND.
 """
 input IntFilter {
-  """An integer value to match exactly."""
+  """
+  An integer value to match exactly.
+  """
   equals: Int
 
-  """If specified, filters for values greater than to the specified value."""
+  """
+  If specified, filters for values greater than to the specified value.
+  """
   greaterThan: Int
 
-  """If specified, filters for values less than to the specified value."""
+  """
+  If specified, filters for values less than to the specified value.
+  """
   lessThan: Int
 }
 
@@ -1391,29 +1857,43 @@ SkillLevel Service estimates a students knowledge.
 An item is something like a question in a quiz, a flashcard of a flashcard set.
 """
 type Item {
-  """the id of the item"""
+  """
+  the id of the item
+  """
   id: UUID!
 
-  """The skills or the competencies the item belongs to."""
+  """
+  The skills or the competencies the item belongs to.
+  """
   associatedSkills: [Skill!]!
 
-  """The Level of Blooms Taxonomy the item belongs to"""
+  """
+  The Level of Blooms Taxonomy the item belongs to
+  """
   associatedBloomLevels: [BloomLevel!]!
 }
 
 input ItemInput {
-  """might be empty if a new item is created"""
+  """
+  might be empty if a new item is created
+  """
   id: UUID
 
-  """The skills or the competencies the item belongs to."""
+  """
+  The skills or the competencies the item belongs to.
+  """
   associatedSkills: [SkillInput!]!
 
-  """The Level of Blooms Taxonomy the item belongs to"""
+  """
+  The Level of Blooms Taxonomy the item belongs to
+  """
   associatedBloomLevels: [BloomLevel!]!
 }
 
 type ItemProgress {
-  """the id of the corresponding item"""
+  """
+  the id of the corresponding item
+  """
   itemId: UUID!
 
   """
@@ -1423,7 +1903,9 @@ type ItemProgress {
   responseCorrectness: Float!
 }
 
-"""A JSON scalar"""
+"""
+A JSON scalar
+"""
 scalar JSON
 
 """
@@ -1432,35 +1914,53 @@ scalar JSON
 scalar LocalTime
 
 input LogFlashcardLearnedInput {
-  """The id of the flashcard that was learned."""
+  """
+  The id of the flashcard that was learned.
+  """
   flashcardId: UUID!
 
-  """If the user knew the flashcard or not."""
+  """
+  If the user knew the flashcard or not.
+  """
   successful: Boolean!
 }
 
 input LogFlashcardSetLearnedInput {
-  """The id of the flashcard that was learned."""
+  """
+  The id of the flashcard that was learned.
+  """
   flashcardSetId: UUID!
 
-  """The id of the user that learned the flashcard."""
+  """
+  The id of the user that learned the flashcard.
+  """
   userId: UUID!
 
-  """The percentage of flashcards in the set that the user knew."""
+  """
+  The percentage of flashcards in the set that the user knew.
+  """
   percentageSuccess: Float!
 }
 
 type MediaContent implements Content {
-  """ID of the content"""
+  """
+  ID of the content
+  """
   id: UUID!
 
-  """Metadata of the content"""
+  """
+  Metadata of the content
+  """
   metadata: ContentMetadata!
 
-  """Progress data of the content for the current user."""
+  """
+  Progress data of the content for the current user.
+  """
   userProgressData: UserProgressData!
 
-  """Progress data of the specified user."""
+  """
+  Progress data of the specified user.
+  """
   progressDataForUser(userId: UUID!): UserProgressData!
 
   """
@@ -1469,7 +1969,9 @@ type MediaContent implements Content {
   """
   isAvailableToBeWorkedOn: Boolean!
 
-  """The media records linked to this media content."""
+  """
+  The media records linked to this media content.
+  """
   mediaRecords: [MediaRecord!]!
 
   """
@@ -1489,42 +1991,58 @@ type MediaContent implements Content {
 }
 
 """
- schema file of the microservice
- defines data types, queries and mutations
- this can be done in a separate files as long as they are in this folder and
- end with .graphqls
+schema file of the microservice
+defines data types, queries and mutations
+this can be done in a separate files as long as they are in this folder and
+end with .graphqls
 """
 type MediaRecord {
-  """ID of the media record"""
+  """
+  ID of the media record
+  """
   id: UUID!
 
-  """Ids of the courses this MediaRecord is associated with"""
+  """
+  Ids of the courses this MediaRecord is associated with
+  """
   courseIds: [UUID!]!
 
-  """Name of the media record"""
+  """
+  Name of the media record
+  """
   name: String!
 
-  """User ID of the creator of the media record."""
+  """
+  User ID of the creator of the media record.
+  """
   creatorId: UUID!
 
-  """Type of the media record"""
+  """
+  Type of the media record
+  """
   type: MediaType!
 
-  """IDs of the MediaContents this media record is associated with"""
+  """
+  IDs of the MediaContents this media record is associated with
+  """
   contentIds: [UUID!]!
 
-  """Temporary upload url for the media record"""
+  """
+  Temporary upload url for the media record
+  """
   uploadUrl: String!
 
-  """Temporary download url for the media record"""
+  """
+  Temporary download url for the media record
+  """
   downloadUrl: String!
 
   """
   Temporary download url for the media record where, if the media record is uploaded in a non-standardized format, a
   converted version of that file is served.
-  
+
   For documents, this is a PDF version of the document.
-  
+
   May be NULL if no standardized version is available.
   """
   standardizedDownloadUrl: String
@@ -1543,7 +2061,9 @@ type MediaRecord {
   """
   internalDownloadUrl: String!
 
-  """The progress data of the given user for this medium."""
+  """
+  The progress data of the given user for this medium.
+  """
   userProgressData: MediaRecordProgressData!
 
   """
@@ -1552,7 +2072,9 @@ type MediaRecord {
   """
   contents: [Content]!
 
-  """Returns the segments this media record consists of."""
+  """
+  Returns the segments this media record consists of.
+  """
   segments: [MediaRecordSegment!]!
 
   """
@@ -1561,10 +2083,14 @@ type MediaRecord {
   """
   closedCaptions: String
 
-  """The progress of the AI processing of this media record's content."""
+  """
+  The progress of the AI processing of this media record's content.
+  """
   aiProcessingProgress: AiEntityProcessingProgress!
 
-  """Tags suggested for this media record by the AI system."""
+  """
+  Tags suggested for this media record by the AI system.
+  """
   suggestedTags: [String!]!
 
   """
@@ -1576,7 +2102,9 @@ type MediaRecord {
 }
 
 type MediaRecordProgressData {
-  """Whether the medium has been worked on by the user."""
+  """
+  Whether the medium has been worked on by the user.
+  """
   workedOn: Boolean!
 
   """
@@ -1587,16 +2115,24 @@ type MediaRecordProgressData {
 }
 
 interface MediaRecordSegment {
-  """UUID of this segment."""
+  """
+  UUID of this segment.
+  """
   id: UUID!
 
-  """UUID of the media record this segment is part of."""
+  """
+  UUID of the media record this segment is part of.
+  """
   mediaRecordId: UUID!
 
-  """Base64-encoded image thumbnail for this segment."""
+  """
+  Base64-encoded image thumbnail for this segment.
+  """
   thumbnail: String!
 
-  """Title of this segment."""
+  """
+  Title of this segment.
+  """
   title: String
 }
 
@@ -1606,14 +2142,20 @@ type MediaRecordSegmentLink {
 }
 
 type MediaRecordSegmentSemanticSearchResult implements SemanticSearchResult {
-  """The similarity score of the search result."""
+  """
+  The similarity score of the search result.
+  """
   score: Float!
 
-  """The media record segment this search result is referencing."""
+  """
+  The media record segment this search result is referencing.
+  """
   mediaRecordSegment: MediaRecordSegment!
 }
 
-"""The type of the media record"""
+"""
+The type of the media record
+"""
 enum MediaType {
   VIDEO
   AUDIO
@@ -1624,10 +2166,14 @@ enum MediaType {
 }
 
 type MultipleChoiceAnswer {
-  """Text of the answer, in SlateJS JSON format."""
+  """
+  Text of the answer, in SlateJS JSON format.
+  """
   answerText: JSON!
 
-  """Whether the answer is correct or not."""
+  """
+  Whether the answer is correct or not.
+  """
   correct: Boolean!
 
   """
@@ -1637,10 +2183,14 @@ type MultipleChoiceAnswer {
 }
 
 input MultipleChoiceAnswerInput {
-  """Text of the answer, in SlateJS JSON format."""
+  """
+  Text of the answer, in SlateJS JSON format.
+  """
   answerText: JSON!
 
-  """Whether the answer is correct or not."""
+  """
+  Whether the answer is correct or not.
+  """
   correct: Boolean!
 
   """
@@ -1653,10 +2203,14 @@ input MultipleChoiceAnswerInput {
 Multiple choice question, i.e., a question with multiple answers of which the user has to select the correct ones.
 """
 type MultipleChoiceQuestion implements Question {
-  """Text of the question, in SlateJS JSON format."""
+  """
+  Text of the question, in SlateJS JSON format.
+  """
   text: JSON!
 
-  """List of answers."""
+  """
+  List of answers.
+  """
   answers: [MultipleChoiceAnswer!]!
 
   """
@@ -1664,7 +2218,9 @@ type MultipleChoiceQuestion implements Question {
   """
   numberOfCorrectAnswers: Int!
 
-  """Unique identifier of the question and the id of the corresponding item"""
+  """
+  Unique identifier of the question and the id of the corresponding item
+  """
   itemId: UUID!
 
   """
@@ -1673,29 +2229,37 @@ type MultipleChoiceQuestion implements Question {
   """
   number: Int!
 
-  """Type of the question."""
+  """
+  Type of the question.
+  """
   type: QuestionType!
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
   item: Item!
 }
 
 type Mutation {
-  evaluatePlayerHexadScore(userId: UUID!, input: PlayerAnswerInput!): PlayerHexadScore!
+  evaluatePlayerHexadScore(
+    userId: UUID!
+    input: PlayerAnswerInput!
+  ): PlayerHexadScore!
   updateSettings(userId: UUID!, input: SettingsInput!): Settings!
   defaultSettings(userId: UUID!): Settings!
 
   """
   ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
-  
+
   Triggers the recalculation of the reward score of the user.
   This is done automatically at some time in the night.
-  
+
   The purpose of this mutation is to allow testing of the reward score and demonstrate the functionality.
   🔒 The user be an admin in the course with the given courseId to perform this action.
   """
-  recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
+  recalculateScores(courseId: UUID!, userId: UUID!): RewardScores!
+    @deprecated(reason: "Only for testing purposes. Will be removed.")
 
   """
   Creates a new media record
@@ -1721,12 +2285,15 @@ type Mutation {
   This means that for the content, all already linked media records are removed and replaced by the given ones.
   🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
   """
-  setLinkedMediaRecordsForContent(contentId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
+  setLinkedMediaRecordsForContent(
+    contentId: UUID!
+    mediaRecordIds: [UUID!]!
+  ): [MediaRecord!]!
 
   """
   Logs that a media has been worked on by the current user.
   See https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/userProgress.html
-  
+
   Possible side effects:
   When all media records of a content have been worked on by a user,
   a user-progress event is emitted for the content.
@@ -1738,7 +2305,10 @@ type Mutation {
   Add the MediaRecords with the given UUIDS to the Course with the given UUID.
   🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
   """
-  setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
+  setMediaRecordsForCourse(
+    courseId: UUID!
+    mediaRecordIds: [UUID!]!
+  ): [MediaRecord!]!
 
   """
   Modify a quiz.
@@ -1746,8 +2316,13 @@ type Mutation {
   """
   mutateQuiz(assessmentId: UUID!): QuizMutation!
 
-  """Delete a quiz."""
-  deleteQuiz(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the quiz and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
+  """
+  Delete a quiz.
+  """
+  deleteQuiz(assessmentId: UUID!): UUID!
+    @deprecated(
+      reason: "Only use if you specifically only want to delete the quiz and not the whole assessment. Otherwise, use deleteAssessment in contents service instead."
+    )
 
   """
   Log that a multiple choice quiz is completed.
@@ -1769,14 +2344,15 @@ type Mutation {
 
   """
   ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
-  
+
   Triggers the recalculation of the skill level of the user.
   This is done automatically at some time in the night.
-  
+
   The purpose of this mutation is to allow testing of the skill level score and demonstrate the functionality.
   🔒 The user must be a super-user, otherwise an exception is thrown.
   """
-  recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
+  recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels!
+    @deprecated(reason: "Only for testing purposes. Will be removed.")
 
   """
   Modify a flashcard set.
@@ -1784,14 +2360,21 @@ type Mutation {
   """
   mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
 
-  """Delete a flashcard set."""
-  deleteFlashcardSet(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the flashcard set and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
+  """
+  Delete a flashcard set.
+  """
+  deleteFlashcardSet(assessmentId: UUID!): UUID!
+    @deprecated(
+      reason: "Only use if you specifically only want to delete the flashcard set and not the whole assessment. Otherwise, use deleteAssessment in contents service instead."
+    )
 
   """
   Logs that a user has learned a flashcard.
   🔒 The user must be enrolled in the course the flashcard set is in to perform this action.
   """
-  logFlashcardLearned(input: LogFlashcardLearnedInput!): FlashcardLearnedFeedback!
+  logFlashcardLearned(
+    input: LogFlashcardLearnedInput!
+  ): FlashcardLearnedFeedback!
 
   """
   Creates a new course with the given input and returns the created course.
@@ -1831,7 +2414,9 @@ type Mutation {
   """
   deleteChapter(id: UUID!): UUID!
 
-  """Lets the current user join a course as a student."""
+  """
+  Lets the current user join a course as a student.
+  """
   joinCourse(courseId: UUID!): CourseMembership!
 
   """
@@ -1857,20 +2442,33 @@ type Mutation {
   """
   deleteMembership(input: CourseMembershipInput!): CourseMembership!
 
-  """Creates a new media content and links the given media records to it."""
-  createMediaContentAndLinkRecords(contentInput: CreateMediaContentInput!, mediaRecordIds: [UUID!]!): MediaContent!
+  """
+  Creates a new media content and links the given media records to it.
+  """
+  createMediaContentAndLinkRecords(
+    contentInput: CreateMediaContentInput!
+    mediaRecordIds: [UUID!]!
+  ): MediaContent!
 
   """
   Creates a new quiz assessment and a new, linked quiz with the given properties.
   """
-  createQuizAssessment(assessmentInput: CreateAssessmentInput!, quizInput: CreateQuizInput!): QuizAssessment!
+  createQuizAssessment(
+    assessmentInput: CreateAssessmentInput!
+    quizInput: CreateQuizInput!
+  ): QuizAssessment!
 
   """
   Creates a new flashcard set assessment and a new, linked flashcard set with the given properties.
   """
-  createFlashcardSetAssessment(assessmentInput: CreateAssessmentInput!, flashcardSetInput: CreateFlashcardSetInput!): FlashcardSetAssessment
+  createFlashcardSetAssessment(
+    assessmentInput: CreateAssessmentInput!
+    flashcardSetInput: CreateFlashcardSetInput!
+  ): FlashcardSetAssessment
 
-  """Creates a new section in a chapter."""
+  """
+  Creates a new section in a chapter.
+  """
   createSection(input: CreateSectionInput!): Section!
 }
 
@@ -1885,10 +2483,14 @@ input NotificationInput {
 }
 
 type NumericQuestion implements Question {
-  """Text of the question, in SlateJS JSON format."""
+  """
+  Text of the question, in SlateJS JSON format.
+  """
   text: JSON!
 
-  """The correct answer to the question."""
+  """
+  The correct answer to the question.
+  """
   correctAnswer: Float!
 
   """
@@ -1901,7 +2503,9 @@ type NumericQuestion implements Question {
   """
   feedback: JSON
 
-  """Unique identifier of the question and the id of the corresponding item"""
+  """
+  Unique identifier of the question and the id of the corresponding item
+  """
   itemId: UUID!
 
   """
@@ -1910,15 +2514,21 @@ type NumericQuestion implements Question {
   """
   number: Int!
 
-  """Type of the question."""
+  """
+  Type of the question.
+  """
   type: QuestionType!
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
   item: Item!
 }
 
-"""Specifies the page size and page number for paginated results."""
+"""
+Specifies the page size and page number for paginated results.
+"""
 input Pagination {
   """
   The page number, starting at 0.
@@ -1928,25 +2538,39 @@ input Pagination {
   """
   page: Int! = 0
 
-  """The number of elements per page."""
+  """
+  The number of elements per page.
+  """
   size: Int!
 }
 
-"""Return type for information about paginated results."""
+"""
+Return type for information about paginated results.
+"""
 type PaginationInfo {
-  """The current page number."""
+  """
+  The current page number.
+  """
   page: Int!
 
-  """The number of elements per page."""
+  """
+  The number of elements per page.
+  """
   size: Int!
 
-  """The total number of elements across all pages."""
+  """
+  The total number of elements across all pages.
+  """
   totalElements: Int!
 
-  """The total number of pages."""
+  """
+  The total number of pages.
+  """
   totalPages: Int!
 
-  """Whether there is a next page."""
+  """
+  Whether there is a next page.
+  """
   hasNext: Boolean!
 }
 
@@ -1973,10 +2597,14 @@ type PlayerTypeScore {
 }
 
 type ProgressLogItem {
-  """The date the user completed the content item."""
+  """
+  The date the user completed the content item.
+  """
   timestamp: DateTime!
 
-  """Whether the user completed the content item successfully."""
+  """
+  Whether the user completed the content item successfully.
+  """
   success: Boolean!
 
   """
@@ -1985,7 +2613,9 @@ type ProgressLogItem {
   """
   correctness: Float!
 
-  """How many hints the user used to complete the content item."""
+  """
+  How many hints the user used to complete the content item.
+  """
   hintsUsed: Int!
 
   """
@@ -2017,7 +2647,9 @@ type Query {
   """
   findPublicUserInfos(ids: [UUID!]!): [PublicUserInfo]!
 
-  """Gets the user information of the currently authorized user."""
+  """
+  Gets the user information of the currently authorized user.
+  """
   currentUserInfo: UserInfo!
 
   """
@@ -2050,7 +2682,7 @@ type Query {
   """
   Returns the media records with the given IDs. Throws an error if a MediaRecord corresponding to a given ID
   cannot be found.
-  
+
   🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
   """
   mediaRecordsByIds(ids: [UUID!]!): [MediaRecord!]!
@@ -2058,21 +2690,24 @@ type Query {
   """
   Like mediaRecordsByIds() returns the media records with the given IDs, but instead of throwing an error if an ID
   cannot be found, it instead returns NULL for that media record.
-  
+
   🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
   """
   findMediaRecordsByIds(ids: [UUID!]!): [MediaRecord]!
 
   """
   Returns all media records of the system.
-  
+
   🔒 The user must be a super-user, otherwise an exception is thrown.
   """
-  mediaRecords: [MediaRecord!]! @deprecated(reason: "In production there should probably be no way to get all media records of the system.")
+  mediaRecords: [MediaRecord!]!
+    @deprecated(
+      reason: "In production there should probably be no way to get all media records of the system."
+    )
 
   """
   Returns all media records which the current user created.
-  
+
   🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
   """
   userMediaRecords: [MediaRecord!]!
@@ -2080,19 +2715,21 @@ type Query {
   """
   Returns the media records associated the given content IDs as a list of lists where each sublist contains
   the media records associated with the content ID at the same index in the input list
-  
+
   🔒 If the mediaRecord is associated with courses the user must be a member of at least one of the courses.
   """
   mediaRecordsByContentIds(contentIds: [UUID!]!): [[MediaRecord!]!]!
 
   """
   Returns all media records for the given CourseIds
-  
+
   🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
   """
   mediaRecordsForCourses(courseIds: [UUID!]!): [[MediaRecord!]!]!
 
-  """Returns all media records which were created by the users."""
+  """
+  Returns all media records which were created by the users.
+  """
   mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
 
   """
@@ -2132,17 +2769,21 @@ type Query {
 
   """
   Generates user specific suggestions for multiple chapters.
-  
+
   Only content that the user can access will be considered.
   The contents will be ranked by suggested date, with the most overdue or most urgent content first.
-  
+
   🔒 The user must have access to the courses containing the chapters with the given ids, otherwise an error is thrown.
   """
   suggestionsByChapterIds(
-    """The ids of the chapters for which suggestions should be generated."""
+    """
+    The ids of the chapters for which suggestions should be generated.
+    """
     chapterIds: [UUID!]!
 
-    """The amount of suggestions to generate in total."""
+    """
+    The amount of suggestions to generate in total.
+    """
     amount: Int!
 
     """
@@ -2186,7 +2827,9 @@ type Query {
     """
     sortBy: [String!]
 
-    """The sort direction for each field. If not specified, defaults to ASC."""
+    """
+    The sort direction for each field. If not specified, defaults to ASC.
+    """
     sortDirection: [SortDirection!]! = [ASC]
     pagination: Pagination
   ): CoursePayload!
@@ -2198,22 +2841,35 @@ type Query {
   coursesByIds(ids: [UUID!]!): [Course!]!
 
   """
-  Performs a semantic search with the specified search term. Returns at most `count` results. If a courseWhitelist is 
+  Performs a semantic search with the specified search term. Returns at most `count` results. If a courseWhitelist is
   provided, only results from the specified courses will be returned.
   """
-  semanticSearch(queryText: String!, count: Int! = 10, courseWhitelist: [UUID!]): [SemanticSearchResult!]!
+  semanticSearch(
+    queryText: String!
+    count: Int! = 10
+    courseWhitelist: [UUID!]
+  ): [SemanticSearchResult!]!
 
   """
   Returns semantic search results of entities that are semantically similar to the entity with the specified ID.
   Returns at most `count` results. If `excludeEntitiesWithSameParent` is true, segments from the same entity as the
   specified segment will be excluded from the results.
   """
-  getSemanticallySimilarEntities(segmentId: UUID!, count: Int! = 10, excludeEntitiesWithSameParent: Boolean, courseWhitelist: [UUID!]): [SemanticSearchResult!]!
+  getSemanticallySimilarEntities(
+    segmentId: UUID!
+    count: Int! = 10
+    excludeEntitiesWithSameParent: Boolean
+    courseWhitelist: [UUID!]
+  ): [SemanticSearchResult!]!
 }
 
-"""Generic question interface."""
+"""
+Generic question interface.
+"""
 interface Question {
-  """Unique identifier of the question and the id of the corresponding item"""
+  """
+  Unique identifier of the question and the id of the corresponding item
+  """
   itemId: UUID!
 
   """
@@ -2222,21 +2878,31 @@ interface Question {
   """
   number: Int!
 
-  """Type of the question."""
+  """
+  Type of the question.
+  """
   type: QuestionType!
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
 }
 
 input QuestionCompletedInput {
-  """ID of the question."""
+  """
+  ID of the question.
+  """
   questionId: UUID!
 
-  """true when question was answered correctly"""
+  """
+  true when question was answered correctly
+  """
   correct: Boolean!
 
-  """true when a hint was used for the question"""
+  """
+  true when a hint was used for the question
+  """
   usedHint: Boolean!
 }
 
@@ -2247,14 +2913,20 @@ input QuestionInput {
 }
 
 enum QuestionPoolingMode {
-  """Questions are randomly selected from the list of questions."""
+  """
+  Questions are randomly selected from the list of questions.
+  """
   RANDOM
 
-  """Questions are selected in order from the list of questions."""
+  """
+  Questions are selected in order from the list of questions.
+  """
   ORDERED
 }
 
-"""The type of a question."""
+"""
+The type of a question.
+"""
 enum QuestionType {
   MULTIPLE_CHOICE
   CLOZE
@@ -2269,10 +2941,14 @@ A quiz is a set of questions that the user has to answer correctly to pass the q
 Questions can be of different types, e.g., multiple choice, clozes, or open questions.
 """
 type Quiz {
-  """Identifier of the quiz, same as the identifier of the assessment."""
+  """
+  Identifier of the quiz, same as the identifier of the assessment.
+  """
   assessmentId: UUID!
 
-  """List of questions."""
+  """
+  List of questions.
+  """
   questionPool: [Question!]!
 
   """
@@ -2282,16 +2958,18 @@ type Quiz {
   """
   requiredCorrectAnswers: Int!
 
-  """Question pooling mode of the quiz."""
+  """
+  Question pooling mode of the quiz.
+  """
   questionPoolingMode: QuestionPoolingMode!
 
   """
   Number of questions that are randomly selected from the list of questions.
   Will only be considered if questionPoolingMode is RANDOM.
-  
+
   If this is greater than the number of questions, the behavior is the same
   as if it was equal to the number of questions.
-  
+
   If this is null or not set, the behavior is the same as if it was equal to the number of questions.
   """
   numberOfRandomlySelectedQuestions: Int
@@ -2303,31 +2981,49 @@ type Quiz {
   """
   selectedQuestions: [Question!]!
 
-  """Id of the course this quiz belongs to."""
+  """
+  Id of the course this quiz belongs to.
+  """
   courseId: UUID!
 
-  """The content this quiz belongs to."""
+  """
+  The content this quiz belongs to.
+  """
   content: Content
 }
 
-"""A quiz, quiz related fields are stored in the quiz service."""
+"""
+A quiz, quiz related fields are stored in the quiz service.
+"""
 type QuizAssessment implements Assessment & Content {
-  """Assessment metadata"""
+  """
+  Assessment metadata
+  """
   assessmentMetadata: AssessmentMetadata!
 
-  """ID of the content"""
+  """
+  ID of the content
+  """
   id: UUID!
 
-  """Metadata of the content"""
+  """
+  Metadata of the content
+  """
   metadata: ContentMetadata!
 
-  """Progress data of the content for the current user."""
+  """
+  Progress data of the content for the current user.
+  """
   userProgressData: UserProgressData!
 
-  """Progress data of the specified user."""
+  """
+  Progress data of the specified user.
+  """
   progressDataForUser(userId: UUID!): UserProgressData!
 
-  """the items that belong to the Quiz"""
+  """
+  the items that belong to the Quiz
+  """
   items: [Item!]!
 
   """
@@ -2348,32 +3044,48 @@ type QuizAssessment implements Assessment & Content {
   """
   aiProcessingProgress: AiEntityProcessingProgress!
 
-  """Tags suggested for this assessment by the AI system."""
+  """
+  Tags suggested for this assessment by the AI system.
+  """
   suggestedTags: [String!]!
 }
 
 input QuizCompletedInput {
-  """ID of the quiz."""
+  """
+  ID of the quiz.
+  """
   quizId: UUID!
 
-  """List of questions that were answered in the quiz."""
+  """
+  List of questions that were answered in the quiz.
+  """
   completedQuestions: [QuestionCompletedInput!]!
 }
 
-"""Feedback data when `logQuizCompletion` is called."""
+"""
+Feedback data when `logQuizCompletion` is called.
+"""
 type QuizCompletionFeedback {
-  """Whether the quiz was passed or not."""
+  """
+  Whether the quiz was passed or not.
+  """
   success: Boolean!
 
-  """The number of questions that were answered correctly."""
+  """
+  The number of questions that were answered correctly.
+  """
   correctness: Float!
 
-  """The number of hints that were used."""
+  """
+  The number of hints that were used.
+  """
   hintsUsed: Int!
 }
 
 type QuizMutation {
-  """Id of the quiz to modify."""
+  """
+  Id of the quiz to modify.
+  """
   assessmentId: UUID!
 
   """
@@ -2382,7 +3094,9 @@ type QuizMutation {
   """
   removeQuestion(number: Int!): Quiz!
 
-  """Switch the position of two questions with the given numbers."""
+  """
+  Switch the position of two questions with the given numbers.
+  """
   switchQuestions(firstNumber: Int!, secondNumber: Int!): Quiz!
 
   """
@@ -2390,58 +3104,126 @@ type QuizMutation {
   """
   setRequiredCorrectAnswers(requiredCorrectAnswers: Int!): Quiz!
 
-  """Set the question pooling mode of the quiz."""
+  """
+  Set the question pooling mode of the quiz.
+  """
   setQuestionPoolingMode(questionPoolingMode: QuestionPoolingMode!): Quiz!
 
   """
   Set the number of questions that are randomly selected from the list of questions.
   Will only be considered if questionPoolingMode is RANDOM.
   """
-  setNumberOfRandomlySelectedQuestions(numberOfRandomlySelectedQuestions: Int!): Quiz!
+  setNumberOfRandomlySelectedQuestions(
+    numberOfRandomlySelectedQuestions: Int!
+  ): Quiz!
 
   """
   Add a multiple choice question to the quiz questions, at the end of the list.
   """
-  addMultipleChoiceQuestion(questionInput: CreateMultipleChoiceQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
+  addMultipleChoiceQuestion(
+    questionInput: CreateMultipleChoiceQuestionInputWithoutItem!
+    assessmentId: UUID!
+    item: CreateItemInput!
+  ): QuizOutput!
 
-  """Update a multiple choice question in the quiz questions."""
-  updateMultipleChoiceQuestion(questionInput: UpdateMultipleChoiceQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
+  """
+  Update a multiple choice question in the quiz questions.
+  """
+  updateMultipleChoiceQuestion(
+    questionInput: UpdateMultipleChoiceQuestionInput!
+    assessmentId: UUID!
+    item: ItemInput!
+  ): QuizOutput!
 
-  """Add a cloze question to the quiz questions, at the end of the list."""
-  addClozeQuestion(questionInput: CreateClozeQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
+  """
+  Add a cloze question to the quiz questions, at the end of the list.
+  """
+  addClozeQuestion(
+    questionInput: CreateClozeQuestionInputWithoutItem!
+    assessmentId: UUID!
+    item: CreateItemInput!
+  ): QuizOutput!
 
-  """Update a cloze question in the quiz questions."""
-  updateClozeQuestion(questionInput: UpdateClozeQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
+  """
+  Update a cloze question in the quiz questions.
+  """
+  updateClozeQuestion(
+    questionInput: UpdateClozeQuestionInput!
+    assessmentId: UUID!
+    item: ItemInput!
+  ): QuizOutput!
 
   """
   Add an association question to the quiz questions, at the end of the list.
   """
-  addAssociationQuestion(questionInput: CreateAssociationQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
+  addAssociationQuestion(
+    questionInput: CreateAssociationQuestionInputWithoutItem!
+    assessmentId: UUID!
+    item: CreateItemInput!
+  ): QuizOutput!
 
-  """Update an association question in the quiz questions."""
-  updateAssociationQuestion(questionInput: UpdateAssociationQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
+  """
+  Update an association question in the quiz questions.
+  """
+  updateAssociationQuestion(
+    questionInput: UpdateAssociationQuestionInput!
+    assessmentId: UUID!
+    item: ItemInput!
+  ): QuizOutput!
 
   """
   Add an free text question with exact answer to the quiz questions, at the end of the list.
   """
-  addExactAnswerQuestion(questionInput: CreateExactAnswerQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
+  addExactAnswerQuestion(
+    questionInput: CreateExactAnswerQuestionInputWithoutItem!
+    assessmentId: UUID!
+    item: CreateItemInput!
+  ): QuizOutput!
 
-  """Update an free text question with exact answer in the quiz questions."""
-  updateExactAnswerQuestion(questionInput: UpdateExactAnswerQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
+  """
+  Update an free text question with exact answer in the quiz questions.
+  """
+  updateExactAnswerQuestion(
+    questionInput: UpdateExactAnswerQuestionInput!
+    assessmentId: UUID!
+    item: ItemInput!
+  ): QuizOutput!
 
-  """Add a numeric question to the quiz questions, at the end of the list."""
-  addNumericQuestion(questionInput: CreateNumericQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
+  """
+  Add a numeric question to the quiz questions, at the end of the list.
+  """
+  addNumericQuestion(
+    questionInput: CreateNumericQuestionInputWithoutItem!
+    assessmentId: UUID!
+    item: CreateItemInput!
+  ): QuizOutput!
 
-  """Update a numeric question in the quiz questions."""
-  updateNumericQuestion(questionInput: UpdateNumericQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
+  """
+  Update a numeric question in the quiz questions.
+  """
+  updateNumericQuestion(
+    questionInput: UpdateNumericQuestionInput!
+    assessmentId: UUID!
+    item: ItemInput!
+  ): QuizOutput!
 
   """
   Add a self assessment question to the quiz questions, at the end of the list.
   """
-  addSelfAssessmentQuestion(questionInput: CreateSelfAssessmentQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
+  addSelfAssessmentQuestion(
+    questionInput: CreateSelfAssessmentQuestionInputWithoutItem!
+    assessmentId: UUID!
+    item: CreateItemInput!
+  ): QuizOutput!
 
-  """Update a self assessment question in the quiz questions."""
-  updateSelfAssessmentQuestion(questionInput: UpdateSelfAssessmentQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
+  """
+  Update a self assessment question in the quiz questions.
+  """
+  updateSelfAssessmentQuestion(
+    questionInput: UpdateSelfAssessmentQuestionInput!
+    assessmentId: UUID!
+    item: ItemInput!
+  ): QuizOutput!
 }
 
 type QuizOutput {
@@ -2452,7 +3234,9 @@ type QuizOutput {
 
 scalar ResolveToSourceArgs
 
-"""The reason why the reward score has changed."""
+"""
+The reason why the reward score has changed.
+"""
 enum RewardChangeReason {
   """
   The user has completed a content for the first time.
@@ -2485,29 +3269,45 @@ enum RewardChangeReason {
   COMPOSITE_VALUE
 }
 
-"""An item in the reward score log."""
+"""
+An item in the reward score log.
+"""
 type RewardLogItem {
-  """The date when the reward score changed."""
+  """
+  The date when the reward score changed.
+  """
   date: DateTime!
 
-  """The difference between the previous and the new reward score."""
+  """
+  The difference between the previous and the new reward score.
+  """
   difference: Int!
 
-  """The old reward score."""
+  """
+  The old reward score.
+  """
   oldValue: Int!
 
-  """The new reward score."""
+  """
+  The new reward score.
+  """
   newValue: Int!
 
-  """The reason why the reward score has changed."""
+  """
+  The reason why the reward score has changed.
+  """
   reason: RewardChangeReason!
 
-  """The ids of the contents that are associated with the change."""
+  """
+  The ids of the contents that are associated with the change.
+  """
   associatedContentIds: [UUID!]!
   associatedContents: [Content]!
 }
 
-"""The reward score of a user."""
+"""
+The reward score of a user.
+"""
 type RewardScore {
   """
   The absolute value of the reward score.
@@ -2523,13 +3323,19 @@ type RewardScore {
   """
   percentage: Float!
 
-  """A log of the changes to the reward score, ordered by date descending."""
+  """
+  A log of the changes to the reward score, ordered by date descending.
+  """
   log: [RewardLogItem!]!
 }
 
-"""The five reward scores of a user."""
+"""
+The five reward scores of a user.
+"""
 type RewardScores {
-  """Health represents how up-to-date the user is with the course."""
+  """
+  Health represents how up-to-date the user is with the course.
+  """
   health: RewardScore!
 
   """
@@ -2537,67 +3343,107 @@ type RewardScores {
   """
   fitness: RewardScore!
 
-  """Growth represents the overall progress of the user."""
+  """
+  Growth represents the overall progress of the user.
+  """
   growth: RewardScore!
 
-  """Strength is earned by competing with other users."""
+  """
+  Strength is earned by competing with other users.
+  """
   strength: RewardScore!
 
-  """A composite score of all the other scores."""
+  """
+  A composite score of all the other scores.
+  """
   power: RewardScore!
 }
 
-"""An item in the scoreboard."""
+"""
+An item in the scoreboard.
+"""
 type ScoreboardItem {
-  """The user id of the user."""
+  """
+  The user id of the user.
+  """
   userId: UUID!
 
-  """The power score of the user."""
+  """
+  The power score of the user.
+  """
   powerScore: Int!
   user: PublicUserInfo
 }
 
-"""Representation of a Section"""
+"""
+Representation of a Section
+"""
 type Section {
-  """Unique identifier of the Section Object"""
+  """
+  Unique identifier of the Section Object
+  """
   id: UUID!
 
-  """Id of the Course the Section is located in."""
+  """
+  Id of the Course the Section is located in.
+  """
   courseId: UUID!
 
-  """Name of the Section"""
+  """
+  Name of the Section
+  """
   name: String!
 
-  """Chapter the Section is located in"""
+  """
+  Chapter the Section is located in
+  """
   chapterId: UUID!
 
-  """List of Stages contained in a Section"""
+  """
+  List of Stages contained in a Section
+  """
   stages: [Stage!]!
 
-  """The chapter this section is part of."""
+  """
+  The chapter this section is part of.
+  """
   chapter: Chapter!
 }
 
 type SectionMutation {
-  """Identifier of the section"""
+  """
+  Identifier of the section
+  """
   sectionId: UUID!
 
-  """update the name of a Section"""
+  """
+  update the name of a Section
+  """
   updateSectionName(name: String!): Section!
 
-  """delete a Section by ID"""
+  """
+  delete a Section by ID
+  """
   deleteSection: UUID!
 
-  """create new Stage in Section"""
+  """
+  create new Stage in Section
+  """
   createStage(input: CreateStageInput): Stage!
 
-  """Update Content of Stage"""
+  """
+  Update Content of Stage
+  """
   updateStage(input: UpdateStageInput): Stage!
 
-  """delete Stage by ID"""
+  """
+  delete Stage by ID
+  """
   deleteStage(id: UUID!): UUID!
 
-  """update Order of Stages within a Section"""
+  """
+  update Order of Stages within a Section
+  """
   updateStageOrder(stages: [UUID!]!): Section!
 }
 
@@ -2607,13 +3453,19 @@ The user has to enter a solution and self-assess whether it is correct or not.
 This is useful for questions where the answer is not clear-cut, e.g. when the user should explain a concept.
 """
 type SelfAssessmentQuestion implements Question {
-  """Text of the question, in SlateJS JSON format."""
+  """
+  Text of the question, in SlateJS JSON format.
+  """
   text: JSON!
 
-  """A possible correct answer to the question."""
+  """
+  A possible correct answer to the question.
+  """
   solutionSuggestion: JSON!
 
-  """Unique identifier of the question and the id of the corresponding item"""
+  """
+  Unique identifier of the question and the id of the corresponding item
+  """
   itemId: UUID!
 
   """
@@ -2622,15 +3474,21 @@ type SelfAssessmentQuestion implements Question {
   """
   number: Int!
 
-  """Type of the question."""
+  """
+  Type of the question.
+  """
   type: QuestionType!
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
 }
 
 interface SemanticSearchResult {
-  """The similarity score of the search result."""
+  """
+  The similarity score of the search result.
+  """
   score: Float!
 }
 
@@ -2645,10 +3503,14 @@ input SettingsInput {
 }
 
 type SingleAssociation {
-  """The left side of the association, in SlateJS JSON format."""
+  """
+  The left side of the association, in SlateJS JSON format.
+  """
   left: JSON!
 
-  """The right side of the association, in SlateJS JSON format."""
+  """
+  The right side of the association, in SlateJS JSON format.
+  """
   right: JSON!
 
   """
@@ -2662,19 +3524,29 @@ a skill or compentency.
 Something like loops or data structures.
 """
 type Skill {
-  """the id of a skill"""
+  """
+  the id of a skill
+  """
   id: UUID!
 
-  """the name of the skill"""
+  """
+  the name of the skill
+  """
   skillName: String!
 
-  """the category of the skill"""
+  """
+  the category of the skill
+  """
   skillCategory: String!
 
-  """whether the skill is a custom-created by the user and no IEEE skill"""
+  """
+  whether the skill is a custom-created by the user and no IEEE skill
+  """
   isCustomSkill: Boolean!
 
-  """The skill levels of the current user in this chapter."""
+  """
+  The skill levels of the current user in this chapter.
+  """
   skillLevels: SkillLevels
 }
 
@@ -2686,17 +3558,25 @@ input SkillInput {
   """
   id: UUID
 
-  """the name of the skill"""
+  """
+  the name of the skill
+  """
   skillName: String!
 
-  """the category of the skill"""
+  """
+  the category of the skill
+  """
   skillCategory: String!
 
-  """whether the skill is a custom-created by the user and no IEEE skill"""
+  """
+  whether the skill is a custom-created by the user and no IEEE skill
+  """
   isCustomSkill: Boolean!
 }
 
-"""The skill level of a user."""
+"""
+The skill level of a user.
+"""
 type SkillLevel {
   """
   The value of the skill level.
@@ -2704,41 +3584,65 @@ type SkillLevel {
   """
   value: Float!
 
-  """A log of the changes to the skill level"""
+  """
+  A log of the changes to the skill level
+  """
   log: [SkillLevelLogItem!]!
 }
 
-"""An item in the skill level change log."""
+"""
+An item in the skill level change log.
+"""
 type SkillLevelLogItem {
-  """The date when the skill level changed."""
+  """
+  The date when the skill level changed.
+  """
   date: DateTime!
 
-  """The difference between the previous and the new skill level."""
+  """
+  The difference between the previous and the new skill level.
+  """
   difference: Float!
 
-  """The old skill level."""
+  """
+  The old skill level.
+  """
   oldValue: Float!
 
-  """The new skill level."""
+  """
+  The new skill level.
+  """
   newValue: Float!
 
-  """The ids of the contents that are associated with the change."""
+  """
+  The ids of the contents that are associated with the change.
+  """
   associatedItemId: UUID!
 
-  """the response of the user to the item"""
+  """
+  the response of the user to the item
+  """
   userResponse: Float!
 
-  """the probability of a correct response, that M-Elo predicts"""
+  """
+  the probability of a correct response, that M-Elo predicts
+  """
   predictedCorrectness: Float!
   associatedContents: [Content]!
 }
 
-"""The four skill level of a user."""
+"""
+The four skill level of a user.
+"""
 type SkillLevels {
-  """remember represents how much user remember the concept"""
+  """
+  remember represents how much user remember the concept
+  """
   remember: SkillLevel
 
-  """understand represents how well the user understands learned content."""
+  """
+  understand represents how well the user understands learned content.
+  """
   understand: SkillLevel
 
   """
@@ -2746,7 +3650,9 @@ type SkillLevels {
   """
   apply: SkillLevel
 
-  """apply is how much user can evaluate information and draw conclusions"""
+  """
+  apply is how much user can evaluate information and draw conclusions
+  """
   analyze: SkillLevel
 
   """
@@ -2760,7 +3666,9 @@ type SkillLevels {
   create: SkillLevel
 }
 
-"""Type of the assessment"""
+"""
+Type of the assessment
+"""
 enum SkillType {
   CREATE
   EVALUATE
@@ -2770,30 +3678,46 @@ enum SkillType {
   ANALYZE
 }
 
-"""Specifies the sort direction, either ascending or descending."""
+"""
+Specifies the sort direction, either ascending or descending.
+"""
 enum SortDirection {
   ASC
   DESC
 }
 
-"""Representation of a Stage"""
+"""
+Representation of a Stage
+"""
 type Stage {
-  """Unique identifier of the Stage Object"""
+  """
+  Unique identifier of the Stage Object
+  """
   id: UUID!
 
-  """Position of the Stage within the Section"""
+  """
+  Position of the Stage within the Section
+  """
   position: Int!
 
-  """List of Content that is labeled as required content"""
+  """
+  List of Content that is labeled as required content
+  """
   requiredContents: [Content!]!
 
-  """Percentage of User Progress made to required Content"""
+  """
+  Percentage of User Progress made to required Content
+  """
   requiredContentsProgress: Float!
 
-  """List of Content that is labeled as optional content"""
+  """
+  List of Content that is labeled as optional content
+  """
   optionalContents: [Content!]!
 
-  """Percentage of Progress made to optional Content"""
+  """
+  Percentage of Progress made to optional Content
+  """
   optionalContentsProgress: Float!
 
   """
@@ -2808,7 +3732,9 @@ Filter for string values.
 If multiple filters are specified, they are combined with AND.
 """
 input StringFilter {
-  """A string value to match exactly."""
+  """
+  A string value to match exactly.
+  """
   equals: String
 
   """
@@ -2816,7 +3742,9 @@ input StringFilter {
   """
   contains: String
 
-  """If true, the filter is case-insensitive."""
+  """
+  If true, the filter is case-insensitive.
+  """
   ignoreCase: Boolean! = false
 }
 
@@ -2824,10 +3752,14 @@ input StringFilter {
 Represents a suggestion for a user to learn new content or review old content.
 """
 type Suggestion {
-  """The content that is suggested to the user."""
+  """
+  The content that is suggested to the user.
+  """
   content: Content!
 
-  """The type of suggestion."""
+  """
+  The type of suggestion.
+  """
   type: SuggestionType!
 }
 
@@ -2836,31 +3768,47 @@ enum SuggestionType {
   REPETITION
 }
 
-"""An RFC-3339 compliant Full Time Scalar"""
+"""
+An RFC-3339 compliant Full Time Scalar
+"""
 scalar Time
 
 input UpdateAssessmentInput {
-  """Metadata for the new Content"""
+  """
+  Metadata for the new Content
+  """
   metadata: UpdateContentMetadataInput!
 
-  """Assessment metadata"""
+  """
+  Assessment metadata
+  """
   assessmentMetadata: AssessmentMetadataInput!
 
-  """items of the new assessments"""
+  """
+  items of the new assessments
+  """
   items: [ItemInput!]
 }
 
 input UpdateAssociationQuestionInput {
-  """UUID of the question to update and the id of the corresponding item."""
+  """
+  UUID of the question to update and the id of the corresponding item.
+  """
   itemId: UUID!
 
-  """Text of the question, in SlateJS JSON format."""
+  """
+  Text of the question, in SlateJS JSON format.
+  """
   text: JSON!
 
-  """List of associations."""
+  """
+  List of associations.
+  """
   correctAssociations: [AssociationInput!]!
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
 }
 
@@ -2869,7 +3817,9 @@ Input type for updating chapters.
 The ID field specifies which chapter should be updated, all other fields specify the new values.
 """
 input UpdateChapterInput {
-  """UUID of the chapter that should be updated."""
+  """
+  UUID of the chapter that should be updated.
+  """
   id: UUID!
 
   """
@@ -2877,7 +3827,9 @@ input UpdateChapterInput {
   """
   title: String!
 
-  """Description of the chapter, maximum length is 3000 characters."""
+  """
+  Description of the chapter, maximum length is 3000 characters.
+  """
   description: String!
 
   """
@@ -2911,36 +3863,56 @@ input UpdateChapterInput {
 }
 
 input UpdateClozeQuestionInput {
-  """UUID of the question to update and the id of the corresponding item."""
+  """
+  UUID of the question to update and the id of the corresponding item.
+  """
   itemId: UUID!
 
-  """List of cloze elements."""
+  """
+  List of cloze elements.
+  """
   clozeElements: [ClozeElementInput!]!
 
-  """List of additional wrong answers."""
+  """
+  List of additional wrong answers.
+  """
   additionalWrongAnswers: [String!]!
 
-  """If true, the list of possible answers will be shown to the user."""
+  """
+  If true, the list of possible answers will be shown to the user.
+  """
   showBlanksList: Boolean! = true
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
 }
 
 input UpdateContentMetadataInput {
-  """Name of the content"""
+  """
+  Name of the content
+  """
   name: String!
 
-  """Date when the content should be done"""
+  """
+  Date when the content should be done
+  """
   suggestedDate: DateTime!
 
-  """Number of reward points a student receives for completing this content"""
+  """
+  Number of reward points a student receives for completing this content
+  """
   rewardPoints: Int!
 
-  """ID of the chapter this content is associated with"""
+  """
+  ID of the chapter this content is associated with
+  """
   chapterId: UUID!
 
-  """TagNames this content is tagged with"""
+  """
+  TagNames this content is tagged with
+  """
   tagNames: [String!]! = []
 }
 
@@ -2955,36 +3927,56 @@ input UpdateCourseInput {
   """
   id: UUID!
 
-  """The new title of the course, max 255 characters, must not be blank."""
+  """
+  The new title of the course, max 255 characters, must not be blank.
+  """
   title: String!
 
-  """The new description of the course, max 3000 characters."""
+  """
+  The new description of the course, max 3000 characters.
+  """
   description: String!
 
-  """The new start date of the course, ISO 8601 format."""
+  """
+  The new start date of the course, ISO 8601 format.
+  """
   startDate: DateTime!
 
-  """The new end date of the course, ISO 8601 format."""
+  """
+  The new end date of the course, ISO 8601 format.
+  """
   endDate: DateTime!
 
-  """The new published status of the course."""
+  """
+  The new published status of the course.
+  """
   published: Boolean!
 
-  """The year in which the term starts."""
+  """
+  The year in which the term starts.
+  """
   startYear: Int
 
-  """The division of the academic calendar in which the term takes place."""
+  """
+  The division of the academic calendar in which the term takes place.
+  """
   yearDivision: YearDivision
 }
 
 input UpdateExactAnswerQuestionInput {
-  """UUID of the question to update and the id of the corresponding item."""
+  """
+  UUID of the question to update and the id of the corresponding item.
+  """
   itemId: UUID!
 
-  """Text of the question, in SlateJS JSON format."""
+  """
+  Text of the question, in SlateJS JSON format.
+  """
   text: JSON!
 
-  """A list of possible correct answers."""
+  """
+  A list of possible correct answers.
+  """
   correctAnswers: [String!]!
 
   """
@@ -2997,7 +3989,9 @@ input UpdateExactAnswerQuestionInput {
   """
   feedback: JSON
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
 }
 
@@ -3007,17 +4001,23 @@ input UpdateFlashcardInput {
   """
   itemId: UUID!
 
-  """List of sides of this flashcard. Must be at least two sides."""
+  """
+  List of sides of this flashcard. Must be at least two sides.
+  """
   sides: [FlashcardSideInput!]!
 }
 
 input UpdateMediaContentInput {
-  """Metadata for the new Content"""
+  """
+  Metadata for the new Content
+  """
   metadata: UpdateContentMetadataInput!
 }
 
 input UpdateMediaRecordInput {
-  """ID of the media record which should be updated"""
+  """
+  ID of the media record which should be updated
+  """
   id: UUID!
 
   """
@@ -3025,38 +4025,58 @@ input UpdateMediaRecordInput {
   """
   name: String!
 
-  """New type of the media record."""
+  """
+  New type of the media record.
+  """
   type: MediaType!
 
-  """IDs of the MediaContents this media record is associated with"""
+  """
+  IDs of the MediaContents this media record is associated with
+  """
   contentIds: [UUID!]!
 }
 
 input UpdateMultipleChoiceQuestionInput {
-  """UUID of the question to update and the id of the corresponding item."""
+  """
+  UUID of the question to update and the id of the corresponding item.
+  """
   itemId: UUID!
 
-  """Text of the question, in SlateJS JSON format."""
+  """
+  Text of the question, in SlateJS JSON format.
+  """
   text: JSON!
 
-  """List of answers."""
+  """
+  List of answers.
+  """
   answers: [MultipleChoiceAnswerInput!]!
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
 }
 
 input UpdateNumericQuestionInput {
-  """UUID of the question to update and the id of the corresponding item."""
+  """
+  UUID of the question to update and the id of the corresponding item.
+  """
   itemId: UUID!
 
-  """Text of the question, in SlateJS JSON format."""
+  """
+  Text of the question, in SlateJS JSON format.
+  """
   text: JSON!
 
-  """The correct answer for the question."""
+  """
+  The correct answer for the question.
+  """
   correctAnswer: Float!
 
-  """The allowed deviation from the correct answer."""
+  """
+  The allowed deviation from the correct answer.
+  """
   tolerance: Float!
 
   """
@@ -3064,36 +4084,54 @@ input UpdateNumericQuestionInput {
   """
   feedback: JSON
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
 }
 
 input UpdateSelfAssessmentQuestionInput {
-  """UUID of the question to update and the id of the corresponding item."""
+  """
+  UUID of the question to update and the id of the corresponding item.
+  """
   itemId: UUID!
 
-  """Text of the question, in SlateJS JSON format."""
+  """
+  Text of the question, in SlateJS JSON format.
+  """
   text: JSON!
 
-  """A possible correct answer to the question."""
+  """
+  A possible correct answer to the question.
+  """
   solutionSuggestion: JSON!
 
-  """Optional hint for the question, in SlateJS JSON format."""
+  """
+  Optional hint for the question, in SlateJS JSON format.
+  """
   hint: JSON
 }
 
 input UpdateStageInput {
-  """Identifier of the Stage"""
+  """
+  Identifier of the Stage
+  """
   id: UUID!
 
-  """updated List of UUIDs for content labeled as required in this Stage"""
+  """
+  updated List of UUIDs for content labeled as required in this Stage
+  """
   requiredContents: [UUID!]!
 
-  """updated List of UUIDs for content labeled as optional in this Stage"""
+  """
+  updated List of UUIDs for content labeled as optional in this Stage
+  """
   optionalContents: [UUID!]!
 }
 
-"""A Url scalar"""
+"""
+A Url scalar
+"""
 scalar Url
 
 type UserInfo {
@@ -3103,12 +4141,16 @@ type UserInfo {
   lastName: String!
   realmRoles: [GlobalUserRole!]!
 
-  """The course memberships of the user."""
+  """
+  The course memberships of the user.
+  """
   courseMemberships: [CourseMembership!]!
   availableCourseMemberships: [CourseMembership!]!
   unavailableCourseMemberships: [CourseMembership!]!
 
-  """Media records of this user."""
+  """
+  Media records of this user.
+  """
   mediaRecords: [MediaRecord!]!
 }
 
@@ -3117,10 +4159,14 @@ Represents a user's progress on a content item.
 See https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/userProgress.html
 """
 type UserProgressData {
-  """The user's id."""
+  """
+  The user's id.
+  """
   userId: UUID!
 
-  """The id of the content item."""
+  """
+  The id of the content item.
+  """
   contentId: UUID!
 
   """
@@ -3153,25 +4199,35 @@ type UserProgressData {
   """
   isLearned: Boolean!
 
-  """True if the assessment is due for review."""
+  """
+  True if the assessment is due for review.
+  """
   isDueForReview: Boolean!
 }
 
-"""Enum containing all valid roles a user can have in a course."""
+"""
+Enum containing all valid roles a user can have in a course.
+"""
 enum UserRoleInCourse {
   STUDENT
   TUTOR
   ADMINISTRATOR
 }
 
-"""A universally unique identifier compliant UUID Scalar"""
+"""
+A universally unique identifier compliant UUID Scalar
+"""
 scalar UUID
 
 type VideoRecordSegment implements MediaRecordSegment {
-  """UUID of this segment."""
+  """
+  UUID of this segment.
+  """
   id: UUID!
 
-  """UUID of the media record this search result references."""
+  """
+  UUID of the media record this search result references.
+  """
   mediaRecordId: UUID!
 
   """
@@ -3179,7 +4235,9 @@ type VideoRecordSegment implements MediaRecordSegment {
   """
   startTime: Int!
 
-  """Text on the screen during this video snippet."""
+  """
+  Text on the screen during this video snippet.
+  """
   screenText: String!
 
   """
@@ -3187,17 +4245,25 @@ type VideoRecordSegment implements MediaRecordSegment {
   """
   transcript: String!
 
-  """Base64-encoded image thumbnail for this segment."""
+  """
+  Base64-encoded image thumbnail for this segment.
+  """
   thumbnail: String!
 
-  """Title of this segment."""
+  """
+  Title of this segment.
+  """
   title: String
 
-  """The media record this segment is part of."""
+  """
+  The media record this segment is part of.
+  """
   mediaRecord: MediaRecord!
 }
 
-"""The division of the academic year."""
+"""
+The division of the academic year.
+"""
 enum YearDivision {
   FIRST_SEMESTER
   SECOND_SEMESTER
@@ -3209,4 +4275,3 @@ enum YearDivision {
   THIRD_QUARTER
   FOURTH_QUARTER
 }
-
