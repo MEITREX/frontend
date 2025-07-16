@@ -1,3 +1,8 @@
+type AccessToken {
+  accessToken: String!
+  externalUserId: String
+}
+
 type AiEntityProcessingProgress {
   entityId: UUID!
   queuePosition: Int
@@ -46,6 +51,54 @@ type AssessmentSemanticSearchResult implements SemanticSearchResult {
   assessment: Assessment!
   assessmentId: UUID!
   score: Float!
+}
+
+type Assignment {
+  assessmentId: UUID!
+  assignmentType: AssignmentType!
+  codeAssignmentMetadata: CodeAssignmentMetadata
+  content: Content
+  courseId: UUID!
+  date: DateTime
+  description: String
+  exercises: [Exercise!]
+  externalId: String
+  requiredPercentage: Float
+  totalCredits: Float
+}
+
+type AssignmentAssessment implements Assessment & Content {
+  aiProcessingProgress: AiEntityProcessingProgress!
+  assessmentMetadata: AssessmentMetadata!
+  assignment: Assignment
+  id: UUID!
+  isAvailableToBeWorkedOn: Boolean!
+  items: [Item!]!
+  metadata: ContentMetadata!
+  progressDataForUser(userId: UUID!): UserProgressData!
+  suggestedTags: [String!]!
+  userProgressData: UserProgressData!
+}
+
+type AssignmentCompletedFeedback {
+  correctness: Float!
+  success: Boolean!
+}
+
+type AssignmentMutation {
+  assessmentId: UUID!
+  createExercise(input: CreateExerciseInput!): Exercise!
+  createSubexercise(input: CreateSubexerciseInput!): Subexercise!
+  deleteExercise(itemId: UUID!): UUID!
+  deleteSubexercise(itemId: UUID!): UUID!
+  updateExercise(input: UpdateExerciseInput!): Exercise!
+  updateSubexercise(input: UpdateSubexerciseInput!): Subexercise!
+}
+
+enum AssignmentType {
+  CODE_ASSIGNMENT
+  EXERCISE_SHEET
+  PHYSICAL_TEST
 }
 
 input AssociationInput {
@@ -147,6 +200,18 @@ type ClozeTextElement {
   text: JSON!
 }
 
+type CodeAssignmentGradingMetadata {
+  feedbackTableHtml: String
+  repoLink: String
+  status: String
+}
+
+type CodeAssignmentMetadata {
+  assignmentLink: String
+  invitationLink: String
+  readmeHtml: String
+}
+
 type CompositeProgressInformation {
   completedContents: Int!
   progress: Float!
@@ -192,6 +257,7 @@ type ContentPayload {
 }
 
 enum ContentType {
+  ASSIGNMENT
   FLASHCARDS
   MEDIA
   QUIZ
@@ -250,6 +316,16 @@ input CreateAssessmentInput {
   assessmentMetadata: AssessmentMetadataInput!
   items: [CreateItemInput!]
   metadata: CreateContentMetadataInput!
+}
+
+input CreateAssignmentInput {
+  assignmentType: AssignmentType!
+  date: DateTime
+  description: String
+  exercises: [CreateExerciseInput!]
+  externalId: String
+  requiredPercentage: Float
+  totalCredits: Float
 }
 
 input CreateAssociationInput {
@@ -344,6 +420,13 @@ input CreateExactAnswerQuestionInputWithoutItem {
   hint: JSON
   number: Int
   text: JSON!
+}
+
+input CreateExerciseInput {
+  itemId: UUID!
+  number: String
+  subexercises: [CreateSubexerciseInput!]!
+  totalExerciseCredits: Float!
 }
 
 input CreateFlashcardInput {
@@ -445,6 +528,13 @@ input CreateStageInput {
   requiredContents: [UUID!]!
 }
 
+input CreateSubexerciseInput {
+  itemId: UUID!
+  number: String
+  parentExerciseId: UUID!
+  totalSubexerciseCredits: Float!
+}
+
 scalar Date
 
 scalar DateTime
@@ -482,7 +572,47 @@ type ExactAnswerQuestion implements Question {
   type: QuestionType!
 }
 
+type Exercise {
+  itemId: UUID!
+  number: String
+  subexercises: [Subexercise!]!
+  totalExerciseCredits: Float!
+  tutorFeedback: String
+}
+
+input ExerciseCompletedInput {
+  achievedCredits: Float!
+  completedSubexercises: [SubexerciseCompletedInput]!
+  itemId: UUID!
+}
+
+type ExerciseGrading {
+  achievedCredits: Float!
+  itemId: UUID!
+  studentId: UUID!
+  subexerciseGradings: [SubexerciseGrading]!
+}
+
 directive @experimental_disableErrorPropagation on QUERY | MUTATION | SUBSCRIPTION
+
+type ExternalAssignment {
+  externalId: String!
+  sheetNo: Float!
+}
+
+type ExternalCourse {
+  courseTitle: String!
+  url: String!
+}
+
+enum ExternalServiceProviderDto {
+  GITHUB
+}
+
+type ExternalUserIdWithUser {
+  externalUserId: String!
+  userId: UUID!
+}
 
 type Flashcard {
   item: Item!
@@ -565,6 +695,11 @@ enum Gamification {
   GAMIFICATION_ENABLED
 }
 
+input GenerateAccessTokenInput {
+  authorizationCode: String!
+  provider: ExternalServiceProviderDto!
+}
+
 input GenerateMediaRecordLinksInput {
   contentId: UUID!
 }
@@ -572,6 +707,16 @@ input GenerateMediaRecordLinksInput {
 enum GlobalUserRole {
   COURSE_CREATOR
   SUPER_USER
+}
+
+type Grading {
+  achievedCredits: Float
+  assessmentId: UUID!
+  codeAssignmentGradingMetadata: CodeAssignmentGradingMetadata
+  date: DateTime
+  exerciseGradings: [ExerciseGrading!]
+  student: PublicUserInfo
+  studentId: UUID!
 }
 
 input IngestMediaRecordInput {
@@ -603,7 +748,21 @@ type ItemProgress {
 
 scalar JSON
 
+type Leaderboard {
+  id: ID!
+  period: Period
+  startDate: Date
+  title: String
+  userScores: [UserScore!]
+}
+
 scalar LocalTime
+
+input LogAssignmentCompletedInput {
+  achievedCredits: Float!
+  assessmentId: UUID!
+  completedExercises: [ExerciseCompletedInput]!
+}
 
 input LogFlashcardLearnedInput {
   flashcardId: UUID!
@@ -614,6 +773,11 @@ input LogFlashcardSetLearnedInput {
   flashcardSetId: UUID!
   percentageSuccess: Float!
   userId: UUID!
+}
+
+type ManualMappingInstance {
+  externalStudentId: String!
+  externalStudentInfo: String!
 }
 
 directive @Max(value: Int! = 2147483647, message: String = "graphql.validation.Max.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
@@ -707,6 +871,7 @@ type MultipleChoiceQuestion implements Question {
 }
 
 type Mutation {
+  createAssignmentAssessment(assessmentInput: CreateAssessmentInput!, assignmentInput: CreateAssignmentInput!): AssignmentAssessment!
   createChapter(input: CreateChapterInput!): Chapter!
   createCourse(input: CreateCourseInput!): Course!
   createFlashcardSetAssessment(assessmentInput: CreateAssessmentInput!, flashcardSetInput: CreateFlashcardSetInput!): FlashcardSetAssessment
@@ -723,19 +888,25 @@ type Mutation {
   deleteMembership(input: CourseMembershipInput!): CourseMembership!
   deleteQuiz(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the quiz and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
   evaluatePlayerHexadScore(input: PlayerAnswerInput!, userId: UUID!): PlayerHexadScore!
+  generateAccessToken(input: GenerateAccessTokenInput!): Boolean!
   joinCourse(courseId: UUID!): CourseMembership!
   leaveCourse(courseId: UUID!): CourseMembership!
+  logAssignmentCompleted(input: LogAssignmentCompletedInput!): AssignmentCompletedFeedback!
   logFlashcardLearned(input: LogFlashcardLearnedInput!): FlashcardLearnedFeedback!
   logMediaRecordWorkedOn(mediaRecordId: UUID!): MediaRecord!
   logQuizCompleted(input: QuizCompletedInput!): QuizCompletionFeedback!
+  mutateAssignment(assessmentId: UUID!): AssignmentMutation!
   mutateContent(contentId: UUID!): ContentMutation!
   mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
   mutateQuiz(assessmentId: UUID!): QuizMutation!
   mutateSection(sectionId: UUID!): SectionMutation!
   recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
   recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
+  saveStudentMappings(courseId: UUID!, studentMappingInputs: [StudentMappingInput!]!): [String]!
   setLinkedMediaRecordsForContent(contentId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
   setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
+  syncAssignmentsForCourse(courseId: UUID!): Boolean!
+  updateAssignment(assessmentId: UUID!, input: UpdateAssignmentInput!): Assignment!
   updateChapter(input: UpdateChapterInput!): Chapter!
   updateCourse(input: UpdateCourseInput!): Course!
   updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
@@ -792,6 +963,12 @@ type PaginationInfo {
 
 directive @Pattern(regexp: String! = ".*", message: String = "graphql.validation.Pattern.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
+enum Period {
+  ALL_TIME
+  MONTHLY
+  WEEKLY
+}
+
 input PlayerAnswerInput {
   questions: [QuestionInput!]!
 }
@@ -841,16 +1018,27 @@ type Query {
   coursesByIds(ids: [UUID!]!): [Course!]!
   currentUserInfo: UserInfo!
   dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
+  findAssignmentsByAssessmentIds(assessmentIds: [UUID!]!): [Assignment]!
   findContentsByIds(ids: [UUID!]!): [Content]!
   findFlashcardSetsByAssessmentIds(assessmentIds: [UUID!]!): [FlashcardSet]!
   findMediaRecordsByIds(ids: [UUID!]!): [MediaRecord]!
   findPublicUserInfos(ids: [UUID!]!): [PublicUserInfo]!
   findQuizzesByAssessmentIds(assessmentIds: [UUID!]!): [Quiz]!
   findUserInfos(ids: [UUID!]!): [UserInfo]!
-  findUserSettings(userId: UUID!): Settings!
+  findUserSettings(userId: UUID): Settings!
+  findUsersSettings(usersIds: [UUID]!): [Settings]!
   flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
+  getAllTimeCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+  getExternalAssignments(courseId: UUID!): [ExternalAssignment!]!
+  getExternalCodeAssignments(courseId: UUID!): [String!]!
+  getExternalCourse(courseId: UUID!): ExternalCourse
+  getGradingsForAssignment(assessmentId: UUID!): [Grading!]!
+  getManualMappingInstances(courseId: UUID!): [ManualMappingInstance]!
+  getMonthlyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
   getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
   getSemanticallySimilarEntities(count: Int! = 10, courseWhitelist: [UUID!], excludeEntitiesWithSameParent: Boolean, segmentId: UUID!): [SemanticSearchResult!]!
+  getWeeklyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+  isAccessTokenAvailable(provider: ExternalServiceProviderDto!): Boolean!
   mediaRecords: [MediaRecord!]! @deprecated(reason: "In production there should probably be no way to get all media records of the system.")
   mediaRecordsByContentIds(contentIds: [UUID!]!): [[MediaRecord!]!]!
   mediaRecordsByIds(ids: [UUID!]!): [MediaRecord!]!
@@ -961,7 +1149,7 @@ type QuizOutput {
 
 directive @Range(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Range.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
-directive @resolveTo(requiredSelectionSet: String, sourceName: String!, sourceTypeName: String!, sourceFieldName: String!, sourceSelectionSet: String, sourceArgs: ResolveToSourceArgs, keyField: String, keysArg: String, pubsubTopic: String, filterBy: String, additionalArgs: ResolveToSourceArgs, result: String, resultType: String) on FIELD_DEFINITION
+directive @resolveTo(requiredSelectionSet: String, sourceName: String, sourceTypeName: String, sourceFieldName: String, sourceSelectionSet: String, sourceArgs: ResolveToSourceArgs, keyField: String, keysArg: String, pubsubTopic: String, filterBy: String, additionalArgs: ResolveToSourceArgs, result: String, resultType: String) on FIELD_DEFINITION
 
 scalar ResolveToSourceArgs
 
@@ -1125,6 +1313,34 @@ input StringFilter {
   ignoreCase: Boolean! = false
 }
 
+type StudentMapping {
+  externalStudentId: String!
+  meitrexStudentId: UUID!
+}
+
+input StudentMappingInput {
+  externalStudentId: String!
+  meitrexStudentId: UUID!
+}
+
+type Subexercise {
+  itemId: UUID!
+  number: String
+  totalSubexerciseCredits: Float!
+  tutorFeedback: String
+}
+
+input SubexerciseCompletedInput {
+  achievedCredits: Float!
+  itemId: UUID!
+}
+
+type SubexerciseGrading {
+  achievedCredits: Float!
+  itemId: UUID!
+  studentId: UUID!
+}
+
 type Suggestion {
   content: Content!
   type: SuggestionType!
@@ -1137,10 +1353,21 @@ enum SuggestionType {
 
 scalar Time
 
+type UnfinishedGrading {
+  assignmentId: UUID!
+  externalStudentId: String!
+  gradingJson: String!
+  numberOfTries: Int!
+}
+
 input UpdateAssessmentInput {
   assessmentMetadata: AssessmentMetadataInput!
   items: [ItemInput!]
   metadata: UpdateContentMetadataInput!
+}
+
+input UpdateAssignmentInput {
+  requiredPercentage: Float
 }
 
 input UpdateAssociationQuestionInput {
@@ -1197,6 +1424,13 @@ input UpdateExactAnswerQuestionInput {
   text: JSON!
 }
 
+input UpdateExerciseInput {
+  itemId: UUID!
+  number: String
+  subexercises: [CreateSubexerciseInput!]!
+  totalExerciseCredits: Float!
+}
+
 input UpdateFlashcardInput {
   itemId: UUID!
   sides: [FlashcardSideInput!]!
@@ -1242,7 +1476,19 @@ input UpdateStageInput {
   requiredContents: [UUID!]!
 }
 
+input UpdateSubexerciseInput {
+  itemId: UUID!
+  number: String
+  totalSubexerciseCredits: Float!
+}
+
 scalar Url
+
+type User {
+  email: String!
+  id: UUID!
+  name: String!
+}
 
 type UserInfo {
   availableCourseMemberships: [CourseMembership!]!
@@ -1271,6 +1517,12 @@ enum UserRoleInCourse {
   ADMINISTRATOR
   STUDENT
   TUTOR
+}
+
+type UserScore {
+  id: ID!
+  score: Float
+  user: User
 }
 
 scalar UUID
