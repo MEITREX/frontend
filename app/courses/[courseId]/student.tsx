@@ -309,8 +309,6 @@ export default function StudentCoursePage() {
 
   const mutableAchievements = [...achievementsByUserId];
 
-
-
   return (
     <main>
       <FormErrors error={error} onClose={() => setError(null)} />
