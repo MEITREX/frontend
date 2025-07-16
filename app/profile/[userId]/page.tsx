@@ -36,26 +36,27 @@ export default function PublicProfilePage() {
       { id: [userId] }
     );
 
-  const { achievementsByUserId } = useLazyLoadQuery<pageUserAchievementsPublicQuery>(
-    graphql`
-          query pageUserAchievementsPublicQuery($id: UUID!) {
-            achievementsByUserId(userId: $id) {
-              id
-              name
-              imageUrl
-              description
-              courseId
-              userId
-              completed
-              requiredCount
-              completedCount
-              trackingStartTime
-              trackingEndTime
-            }
+  const { achievementsByUserId } =
+    useLazyLoadQuery<pageUserAchievementsPublicQuery>(
+      graphql`
+        query pageUserAchievementsPublicQuery($id: UUID!) {
+          achievementsByUserId(userId: $id) {
+            id
+            name
+            imageUrl
+            description
+            courseId
+            userId
+            completed
+            requiredCount
+            completedCount
+            trackingStartTime
+            trackingEndTime
           }
-        `,
-    { id: userId }
-  );
+        }
+      `,
+      { id: userId }
+    );
 
   return (
     <Box sx={{ p: 4 }}>

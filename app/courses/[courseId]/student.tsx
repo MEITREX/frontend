@@ -229,13 +229,27 @@ export default function StudentCoursePage() {
   );
   const [openAchievementDialog, setOpenDialog] = useState(false);
 
+  // Extract course
+  const course = coursesByIds[0];
+
+  useEffect(() => {
+    if (course.id) {
+      studentUserLogin({
+        variables: { id: course.id },
+        onCompleted: () => {
+          console.log("Login registered");
+        },
+        onError: (e) => {
+          console.error("Login error:", e);
+        },
+      });
+    }
+  }, [course.id, studentUserLogin]);
+
   // Show 404 error page if id was not found
   if (coursesByIds.length == 0) {
     return <PageError message="No course found with given id." />;
   }
-
-  // Extract course
-  const course = coursesByIds[0];
 
   const categoriesPerPage = 3;
   const uniqueSkillCategories = Array.from(
@@ -295,19 +309,7 @@ export default function StudentCoursePage() {
 
   const mutableAchievements = [...achievementsByUserId];
 
-  useEffect(() => {
-    if (course.id) {
-      studentUserLogin({
-        variables: { id: course.id },
-        onCompleted: () => {
-          console.log("Login registered");
-        },
-        onError: (e) => {
-          console.error("Login error:", e);
-        },
-      });
-    }
-  }, [course.id, studentUserLogin]);
+
 
   return (
     <main>
