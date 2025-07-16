@@ -68,7 +68,7 @@ const demoUsers: User[] = [
     profileImage:
       "https://images.unsplash.com/photo-1465101178521-c1a9136a3fd7?auto=format&fit=facearea&w=128&q=80",
   },
-      {
+  {
     id: "8",
     name: "Hanes Juergen",
     points: 2130,
@@ -131,8 +131,8 @@ const demoUsers: User[] = [
     rank: 15,
     profileImage:
       "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=128&q=80",
-    },
-    {
+  },
+  {
     id: "16",
     name: "sHans Juergen",
     points: 2230,
@@ -140,7 +140,7 @@ const demoUsers: User[] = [
     profileImage:
       "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=128&q=80",
   },
-      {
+  {
     id: "17",
     name: "Hanes Juergen",
     points: 2130,
@@ -149,7 +149,7 @@ const demoUsers: User[] = [
       "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=128&q=80",
   },
 
-    {
+  {
     id: "18",
     name: "JonathanWolp", // dein User
     points: 2555,
@@ -197,7 +197,7 @@ const demoUsers: User[] = [
     rank: 23,
     profileImage:
       "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=facearea&w=128&q=80",
-  }
+  },
 ];
 
 const PERIODS = {
@@ -221,9 +221,9 @@ const CourseLeaderboards: React.FC<CourseLeaderboardsProps> = ({
   currentUserName,
   currentUserProfileImage,
 }) => {
-  const [activeTab, setActiveTab] = useState<
-    "weekly" | "monthly" | "overall"
-  >("weekly");
+  const [activeTab, setActiveTab] = useState<"weekly" | "monthly" | "overall">(
+    "weekly"
+  );
 
   const handlePrevious = () => {
     alert("Vorheriger Zeitraum (Demo)");
@@ -232,8 +232,7 @@ const CourseLeaderboards: React.FC<CourseLeaderboardsProps> = ({
   // Mappe Dummy-Users und markiere currentUser
   const users = demoUsers.map((u) => ({
     ...u,
-    isCurrentUser:
-      u.id === currentUserId || u.name === currentUserName,
+    isCurrentUser: u.id === currentUserId || u.name === currentUserName,
     profileImage:
       (u.id === currentUserId || u.name === currentUserName) &&
       currentUserProfileImage
@@ -263,8 +262,7 @@ const CourseLeaderboards: React.FC<CourseLeaderboardsProps> = ({
               padding: "7px 20px",
               borderRadius: 12,
               border: "none",
-              background:
-                activeTab === tab ? "#b9d7fd" : "#e8ecf3",
+              background: activeTab === tab ? "#b9d7fd" : "#e8ecf3",
               cursor: "pointer",
             }}
           >
@@ -279,7 +277,7 @@ const CourseLeaderboards: React.FC<CourseLeaderboardsProps> = ({
         periodLabel={PERIODS[activeTab].periodLabel}
         onPrevious={handlePrevious}
         users={users}
-       // currentUserId={currentUserId}
+        // currentUserId={currentUserId}
       />
     </div>
   );
