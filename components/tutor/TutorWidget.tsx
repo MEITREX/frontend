@@ -135,7 +135,6 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
   let style: React.CSSProperties = {
     position: "fixed",
     zIndex: 10000,
-    
     cursor: isDragging ? "grabbing" : "grab",
     transition: isDragging ? "none" : "all 0.25s cubic-bezier(.4,2,.6,1)",
     ...(isDragging ? { left: dragPos.x, top: dragPos.y } : dockPosition.style),
