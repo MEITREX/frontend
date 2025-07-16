@@ -14,9 +14,6 @@ export default function OtherUserProfileForumActivity({userId}:Props) {
   // IM BACKEND Sortieren und für anderen user noch einer über komponente hinzufügen die dann checkt welche komponent genommen wird
   const data = useLazyLoadQuery<ForumApiForumActivityUserQuery>(
     forumApiForumActivityUserQuery,
-    {
-      id: userId,
-    },
     { fetchPolicy: "network-only" }
   );
 

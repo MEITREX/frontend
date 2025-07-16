@@ -28,6 +28,8 @@ import { Dayjs } from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { graphql, useMutation } from "react-relay";
+import { forumApiCreateForumMutation } from "@/components/forum/api/ForumApi";
+import { ForumApiCreateForumMutation } from "@/__generated__/ForumApiCreateForumMutation.graphql";
 
 function TableRow({ label, value }: { label: string; value: string }) {
   return (
@@ -40,6 +42,10 @@ function TableRow({ label, value }: { label: string; value: string }) {
 
 export default function NewCourse() {
   const router = useRouter();
+
+  const [createForum] = useMutation<ForumApiCreateForumMutation>(
+    forumApiCreateForumMutation
+  );
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -130,10 +136,23 @@ export default function NewCourse() {
               }
             },
           });
+
+
         }
 
         _addChapter(0);
+
+        createForum({
+          variables: {courseId: response.createCourse.id},
+          onCompleted(data) {
+            console.log("Created Forum!");
+          },
+          onError(error) {
+            console.error("Forum Creation unsuccessful!", error);
+          },
+        })
       },
+
     });
   }
 

@@ -1,5 +1,22 @@
 import { graphql } from "react-relay";
 
+
+export const forumApiCreateForumMutation = graphql `
+    mutation ForumApiCreateForumMutation($courseId: UUID!) {
+            createForum(courseId: $courseId) {
+                id
+            }
+    }
+`
+
+export const forumApiAddUserToForumMutation = graphql `
+    mutation ForumApiAddUserToForumMutation($forumId: UUID!) {
+        addUserToForum(forumId: $forumId){
+            id
+        }
+    }
+`
+
 export const forumApiThreadDetailQuery = graphql`
   query ForumApiThreadDetailQuery($id: UUID!) {
     thread(id: $id) {
@@ -169,8 +186,8 @@ export const forumApiCourseNameQuery = graphql`
 `
 
 export const forumApiForumActivityUserQuery = graphql`
-    query ForumApiForumActivityUserQuery($id: UUID!) {
-      forumActivityByUserId(id: $id) {
+    query ForumApiForumActivityUserQuery {
+      forumActivityByUserId {
         courseId
         creationTime
         thread {
