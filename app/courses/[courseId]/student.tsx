@@ -553,7 +553,7 @@ export default function StudentCoursePage() {
           <CourseLeaderboards
             courseId={id}
             currentUserId={userId}
-            currentUserName="JonathanWolp"
+
             //currentUserProfileImage={profileImage} // optional!
           />
         </CustomTabPanel>

@@ -10,20 +10,25 @@ export type User = {
   isCurrentUser?: boolean;
 };
 
-export type LeaderboardProps = {
-  title: string;
+export type CourseLeaderboardProps = {
+  courseId: string;
+  currentUserId: string;
+  title?: string;
   periodLabel?: string;
   onPrevious?: () => void;
-  users: User[];
   // ggf. weitere Props
 };
 
-const Leaderboard: React.FC<LeaderboardProps> = ({
-  title,
+const CourseLeaderboard: React.FC<CourseLeaderboardProps> = ({
+  courseId,
+  currentUserId,
+  title = "Leaderboard",
   periodLabel,
   onPrevious,
-  users,
 }) => {
+  // TODO: Lade hier die User basierend auf courseId per GraphQL, REST, etc.
+  const users: User[] = []; // Beispiel: API call machen, useQuery benutzen, etc.
+
   return (
     <div>
       <h2>{title}</h2>
@@ -37,7 +42,9 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
         {users.map((user) => (
           <li
             key={user.id}
-            style={{ fontWeight: user.isCurrentUser ? "bold" : "normal" }}
+            style={{
+              fontWeight: user.id === currentUserId ? "bold" : "normal",
+            }}
           >
             #{user.rank} {user.name} - {user.points} pts
           </li>
@@ -47,4 +54,4 @@ const Leaderboard: React.FC<LeaderboardProps> = ({
   );
 };
 
-export default Leaderboard;
+export default CourseLeaderboard;
