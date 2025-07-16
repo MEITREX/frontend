@@ -15,7 +15,12 @@ export function HoverCard({
   cardStyle,
 }: HoverCardProps) {
   const [open, setOpen] = useState(false);
-  const [coords, setCoords] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+  const [coords, setCoords] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -69,7 +74,8 @@ export function HoverCard({
       >
         {children}
       </div>
-      {open && coords &&
+      {open &&
+        coords &&
         createPortal(
           <div
             style={{
@@ -84,13 +90,12 @@ export function HoverCard({
             }}
             onMouseEnter={() => setOpen(true)}
             onMouseLeave={() => setOpen(false)}
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             {card}
           </div>,
           document.body
-        )
-      }
+        )}
     </>
   );
 }

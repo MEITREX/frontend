@@ -35,7 +35,6 @@ import { ChapterOverview } from "@/components/ChapterOverview";
 
 import CourseLeaderboards from "@/components/leaderboard/CourseLeaderboard";
 
-
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -175,7 +174,6 @@ export default function StudentCoursePage() {
     { id }
   );
 
-
   const [leave] = useMutation<studentCourseLeaveMutation>(graphql`
     mutation studentCourseLeaveMutation($courseId: UUID!) {
       leaveCourse(courseId: $courseId) {
@@ -313,7 +311,7 @@ export default function StudentCoursePage() {
             <Tab label="Course Overview" {...a11yProps(0)} />
             <Tab label="Learning Progress" {...a11yProps(1)} />
             <Tab label="Chapters" {...a11yProps(2)} />
-            <Tab label="Leaderboard" {...a11yProps(3)} /> 
+            <Tab label="Leaderboard" {...a11yProps(3)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
@@ -553,11 +551,11 @@ export default function StudentCoursePage() {
         <CustomTabPanel value={value} index={3}>
           {/* Leaderboard-Tab */}
           <CourseLeaderboards
-              courseId={id}
-              currentUserId={userId}
-              currentUserName= "JonathanWolp"
-              //currentUserProfileImage={profileImage} // optional!
-            />
+            courseId={id}
+            currentUserId={userId}
+            currentUserName="JonathanWolp"
+            //currentUserProfileImage={profileImage} // optional!
+          />
         </CustomTabPanel>
       </Box>
     </main>
