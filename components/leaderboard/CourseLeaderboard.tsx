@@ -1,57 +1,85 @@
-import React from "react";
+import React, { useState } from "react";
+import Leaderboard from "./Leaderboard";
 
-export type User = {
-  id: string;
-  name: string;
-  points: number;
-  rank: number;
-  profileImage: string;
-  backgroundImage?: string;
-  isCurrentUser?: boolean;
-};
-
-export type CourseLeaderboardProps = {
-  courseId: string;
+type CourseLeaderboardsProps = {
+  courseID: string; // Großes D!
   currentUserId: string;
-  title?: string;
-  periodLabel?: string;
-  onPrevious?: () => void;
-  // ggf. weitere Props
+  currentUserName: string;
+  currentUserProfileImage?: string;
 };
 
-const CourseLeaderboard: React.FC<CourseLeaderboardProps> = ({
-  courseId,
+const PERIODS = {
+  weekly: {
+    title: "Weekly Leaderboard",
+    periodLabel: "23.06.2025 – 29.06.2025",
+    key: "weekly",
+  },
+  monthly: {
+    title: "Monthly Leaderboard",
+    periodLabel: "Juni 2025",
+    key: "monthly",
+  },
+  overall: {
+    title: "All Time Leaderboard",
+    periodLabel: "",
+    key: "allTime",
+  },
+};
+
+const CourseLeaderboards: React.FC<CourseLeaderboardsProps> = ({
+  courseID,
   currentUserId,
-  title = "Leaderboard",
-  periodLabel,
-  onPrevious,
+  currentUserName,
+  currentUserProfileImage,
 }) => {
-  // TODO: Lade hier die User basierend auf courseId per GraphQL, REST, etc.
-  const users: User[] = []; // Beispiel: API call machen, useQuery benutzen, etc.
+  const [activeTab, setActiveTab] = useState<"weekly" | "monthly" | "overall">("weekly");
+
+  const handlePrevious = () => {
+    alert("Vorheriger Zeitraum (Demo)");
+  };
 
   return (
     <div>
-      <h2>{title}</h2>
-      {periodLabel && <p>{periodLabel}</p>}
-      {onPrevious && (
-        <button onClick={onPrevious} style={{ marginBottom: 10 }}>
-          Previous
-        </button>
-      )}
-      <ul>
-        {users.map((user) => (
-          <li
-            key={user.id}
+      {/* Tabs */}
+      <div
+        style={{
+          display: "flex",
+          gap: 14,
+          marginBottom: 28,
+          marginTop: 10,
+          justifyContent: "center",
+        }}
+      >
+        {(["weekly", "monthly", "overall"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
             style={{
-              fontWeight: user.id === currentUserId ? "bold" : "normal",
+              fontWeight: 600,
+              fontSize: 17,
+              padding: "7px 20px",
+              borderRadius: 12,
+              border: "none",
+              background: activeTab === tab ? "#b9d7fd" : "#e8ecf3",
+              cursor: "pointer",
             }}
           >
-            #{user.rank} {user.name} - {user.points} pts
-          </li>
+            {PERIODS[tab].title}
+          </button>
         ))}
-      </ul>
+      </div>
+
+      {/* Leaderboard */}
+      <Leaderboard
+        title={PERIODS[activeTab].title}
+        periodLabel={PERIODS[activeTab].periodLabel}
+        onPrevious={handlePrevious}
+        period={activeTab === "overall" ? "allTime" : activeTab}
+        courseID={courseID}
+        // Wenn nötig, gib die weiteren User-Props mit (z.B. currentUserId)
+      />
     </div>
   );
 };
 
-export default CourseLeaderboard;
+export default CourseLeaderboards;
