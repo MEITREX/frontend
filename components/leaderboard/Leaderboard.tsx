@@ -114,7 +114,6 @@ export default function Leaderboard({
       }
       currentUserInfo {
         id
-        name
       }
     }
   `;
