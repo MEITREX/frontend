@@ -28,7 +28,7 @@ export default function ProfileForumActivity() {
       </Typography>
         {(data.forumActivityByUserId ?? []).length > 0 ? (<Stack spacing={2}>
             {data.forumActivityByUserId.map((a, idx) => (
-             <ForumActivity courseId={a.courseId} data={a} key={idx} />
+             <ForumActivity displayCourseName={true} data={a} key={a.post?.id || a.thread?.id || idx} />
             ))}
           </Stack>)
           : (

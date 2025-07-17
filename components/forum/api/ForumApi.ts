@@ -165,6 +165,7 @@ export const forumApiOpenQuestionQuery = graphql`
 export const forumApiForumActivityQuery = graphql`
     query ForumApiForumActivityQuery($id: UUID!) {
         forumActivity(id: $id) {
+        courseId
         creationTime
         thread {
           id
@@ -172,6 +173,7 @@ export const forumApiForumActivityQuery = graphql`
           title
         }
         post {
+          id
           content
           authorId
         }
@@ -190,6 +192,7 @@ export const forumApiOtherUserForumActivityQuery = graphql`
                 title
             }
             post {
+                id
                 content
                 authorId
             }
@@ -216,6 +219,7 @@ export const forumApiForumActivityUserQuery = graphql`
           title
         }
         post {
+          id
           content
           authorId
         }

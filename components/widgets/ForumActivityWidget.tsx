@@ -63,7 +63,7 @@ export default function ForumActivityWidget(){
       </Box>
       {(data.forumActivity ?? []).length > 0 ? (<Stack spacing={2}>
         {data.forumActivity.map((a, idx) => (
-          <ForumActivity data={a} key={idx} />
+          <ForumActivity data={a} key={a.post?.id || a.thread?.id || idx} />
         ))}
       </Stack>)
         : (
