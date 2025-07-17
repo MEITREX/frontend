@@ -3,6 +3,7 @@ import { NavbarIsTutor$key } from "@/__generated__/NavbarIsTutor.graphql";
 import { NavbarSemanticSearchQuery } from "@/__generated__/NavbarSemanticSearchQuery.graphql";
 import { NavbarStudentQuery } from "@/__generated__/NavbarStudentQuery.graphql";
 import logo from "@/assets/logo.svg";
+import StoreIcon from '@mui/icons-material/Store';
 import duration from "dayjs/plugin/duration";
 import Link from "next/link";
 
@@ -334,6 +335,12 @@ function NavbarBase({
           title="Course Catalog"
           icon={<CollectionsBookmark />}
           href="/courses"
+          exact
+        />
+        <NavbarLink
+          title="Items"
+          icon={<StoreIcon />}
+          href="/items"
           exact
         />
       </NavbarSection>
