@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Box,
-  Typography,
-  LinearProgress,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import { graphql, useMutation } from "react-relay";
 import { PlayerTypeSurveyEvaluateHexadTypeMutation } from "@/__generated__/PlayerTypeSurveyEvaluateHexadTypeMutation.graphql";
-import { questions } from "./questions";
+import CloseIcon from "@mui/icons-material/Close";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  LinearProgress,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useEffect, useState } from "react";
+import { graphql, useMutation } from "react-relay";
 import { PlayerTypes } from "../types";
+import { questions } from "./questions";
 
 type Answer = {
   question: string;
@@ -160,6 +161,40 @@ const SurveyPopup = ({ id }: { id: string }) => {
   const answeredCount = Object.keys(answers).length;
   const progress = (answeredCount / totalQuestions) * 100;
 
+  const adjectives = [
+    "Swift",
+    "Brave",
+    "Clever",
+    "Fierce",
+    "Tiny",
+    "Giant",
+    "Happy",
+    "Wild",
+    "Cunning",
+    "Lazy",
+  ];
+
+  const dinos = [
+    "T-Rex",
+    "Velociraptor",
+    "Triceratops",
+    "Stegosaurus",
+    "Spinosaurus",
+    "Brachiosaurus",
+    "Pachycephalosaurus",
+    "Ankylosaurus",
+  ];
+
+  function generateRandomNickname() {
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const dino = dinos[Math.floor(Math.random() * dinos.length)];
+    const number = Math.floor(1000 + Math.random() * 9000); // 4-stellige Zahl
+
+    return `${adj}${dino}${number}`;
+  }
+
+  const [nickname, setNickname] = useState(generateRandomNickname());
+
   if (isSkippedScreen) {
     return (
       <Dialog open={open} maxWidth="md" fullWidth>
@@ -273,11 +308,38 @@ const SurveyPopup = ({ id }: { id: string }) => {
                 gamification elements in a way that keeps you engaged and
                 personalizes your experience.
               </Typography>
+              {/* 🔤 Nickname Textfeld */}
+              <Box mt={4}>
+                <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                  Here you can enter your nick name for the application.
+                </Typography>
+                <TextField
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  fullWidth
+                  sx={{
+                    maxWidth: 400,
+                    mx: "auto",
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": {
+                        borderColor: "#f44336", // rot
+                        borderWidth: 2,
+                      },
+                      "&:hover fieldset": {
+                        borderColor: "#d32f2f",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#d32f2f",
+                      },
+                    },
+                  }}
+                />
+              </Box>
             </Box>
           </DialogContent>
           <DialogActions sx={{ px: 3 }}>
             <Button variant="contained" onClick={() => setIsStartScreen(false)}>
-              Start Survey
+              Start Survey and confirm nickname
             </Button>
           </DialogActions>
         </Dialog>
