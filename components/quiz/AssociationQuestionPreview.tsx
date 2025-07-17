@@ -19,7 +19,7 @@ export function AssociationQuestionPreview({ question }: Props) {
   const data = useFragment(AssociationQuestionPreviewFragment, question);
 
   return (
-    <>
+    <div className="flex flex-col gap-2 mt-2">
       {data.correctAssociations.map((elem, i) => (
         <div key={i} className="flex items-center">
           <div className="border rounded-sm px-2">
@@ -31,6 +31,6 @@ export function AssociationQuestionPreview({ question }: Props) {
           </div>
         </div>
       ))}
-    </>
+    </div>
   );
 }

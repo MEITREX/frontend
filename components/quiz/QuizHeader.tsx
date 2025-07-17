@@ -1,7 +1,7 @@
 import { QuizHeaderDeleteQuizMutation } from "@/__generated__/QuizHeaderDeleteQuizMutation.graphql";
 import { QuizHeaderFragment$key } from "@/__generated__/QuizHeaderFragment.graphql";
 import { updaterSetDelete } from "@/src/relay-helpers/common";
-import { Delete, Edit, AutoAwesome } from "@mui/icons-material";
+import { AutoAwesome, Delete, Edit } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback } from "react";
@@ -77,6 +77,14 @@ const QuizHeader = ({
             </Button>
             <Button
               sx={{ color: "text.secondary" }}
+              startIcon={<Edit />}
+              onClick={openEditQuizModal}
+            >
+              Edit Quiz
+            </Button>
+
+            <Button
+              sx={{ color: "text.secondary" }}
               startIcon={
                 isDeleteCommitInFlight ? (
                   <CircularProgress size={16} />
@@ -94,14 +102,6 @@ const QuizHeader = ({
               }}
             >
               Delete Quiz
-            </Button>
-
-            <Button
-              sx={{ color: "text.secondary" }}
-              startIcon={<Edit />}
-              onClick={openEditQuizModal}
-            >
-              Edit Quiz
             </Button>
           </div>
         }

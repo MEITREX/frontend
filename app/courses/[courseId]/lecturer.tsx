@@ -1,18 +1,23 @@
 "use client";
 
 import { lecturerLecturerCourseIdQuery } from "@/__generated__/lecturerLecturerCourseIdQuery.graphql";
-import { Button, IconButton, Typography } from "@mui/material";
+import { Button, Divider, IconButton, Typography } from "@mui/material";
 import { useParams } from "next/navigation";
 import { graphql, useLazyLoadQuery } from "react-relay";
 
 import { AddChapterModal } from "@/components/AddChapterModal";
+import { CodeAssessmentProviderCourseButton } from "@/components/CodeAssessmentProviderCourseButton";
 import { EditCourseModal } from "@/components/EditCourseModal";
 import { Heading } from "@/components/Heading";
 import { PageError } from "@/components/PageError";
+import {
+  codeAssessmentProvider,
+  providerConfig,
+} from "@/components/ProviderConfig";
 import { Add, People, Settings } from "@mui/icons-material";
 import { orderBy } from "lodash";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import React, { useState } from "react";
 import { LecturerChapter } from "./LecturerChapter";
 
 graphql`
@@ -35,6 +40,8 @@ graphql`
 
 export default function LecturerCoursePage() {
   const router = useRouter();
+
+  const provider = providerConfig[codeAssessmentProvider];
 
   // Get course id from url
   const { courseId } = useParams();
@@ -60,6 +67,11 @@ export default function LecturerCoursePage() {
 
           coursesByIds(ids: [$courseId]) {
             ...lecturerCourseFragment @relay(mask: false)
+          }
+
+          getExternalCourse(courseId: $courseId) {
+            url
+            courseTitle
           }
         }
       `,
@@ -93,6 +105,9 @@ export default function LecturerCoursePage() {
         title={course.title}
         action={
           <div className="flex gap-4 items-center">
+            <CodeAssessmentProviderCourseButton
+              externalCourse={query.getExternalCourse}
+            />
             <Button startIcon={<Add />} onClick={() => setOpenModal(true)}>
               Add chapter
             </Button>
@@ -121,16 +136,21 @@ export default function LecturerCoursePage() {
         {course.description}
       </Typography>
 
-      {orderBy(course.chapters.elements, [
-        (x) => new Date(x.startDate).getTime(),
-        "number",
-      ]).map((chapter) => (
-        <LecturerChapter
-          _mediaRecords={query}
-          _chapter={chapter}
-          key={chapter.id}
-        />
-      ))}
+      <div className="border-2 border-gray-300 rounded-3xl w-full overflow-hidden">
+        {orderBy(course.chapters.elements, [
+          (x) => new Date(x.startDate).getTime(),
+          "number",
+        ]).map((chapter, i) => (
+          <React.Fragment key={chapter.id}>
+            <LecturerChapter
+              _mediaRecords={query}
+              _chapter={chapter}
+              key={chapter.id}
+            />
+            {i < course.chapters.elements.length - 1 && <Divider />}
+          </React.Fragment>
+        ))}
+      </div>
     </main>
   );
 }

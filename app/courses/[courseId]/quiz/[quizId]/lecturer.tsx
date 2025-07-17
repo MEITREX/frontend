@@ -95,24 +95,24 @@ export default function LecturerQuiz() {
           content={content}
         />
 
-        {quiz.questionPool.map((question, i) => (
-          <div key={i}>
-            <QuestionPreview
-              mediaRecords={mediaSelectorQuery}
-              allSkillsQueryRef={queryReference}
-              question={question}
-            />
-          </div>
-        ))}
-
-        <div className="mt-8 flex flex-col items-start">
-          <AddQuestionButton
-            _allRecords={mediaSelectorQuery}
-            allSkillsQueryRef={queryReference}
-            assessmentId={content.id}
-            courseId={courseId}
-          />
+        <div className="mt-8 flex flex-col items-stretch">
+          {quiz.questionPool.map((question, i) => (
+            <div key={i}>
+              <QuestionPreview
+                mediaRecords={mediaSelectorQuery}
+                allSkillsQueryRef={queryReference}
+                question={question}
+              />
+            </div>
+          ))}
         </div>
+
+        <AddQuestionButton
+          _allRecords={mediaSelectorQuery}
+          allSkillsQueryRef={queryReference}
+          assessmentId={content.id}
+          courseId={courseId}
+        />
 
         <QuizModal
           onClose={() => setEditSetModalOpen(false)}

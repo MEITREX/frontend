@@ -13,7 +13,7 @@
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "prepare": "husky install",
-    "update-schema": "fetch-graphql-schema http://localhost:8080/graphql -o src/schema.graphql -r && ( [[ \"$OSTYPE\" == \"darwin\"* ]] && sed -i '' 's/Assessment,/Assessment \\&/' src/schema.graphql || sed -i 's/Assessment,/Assessment \\&/' src/schema.graphql )"
+    "update-schema": "node scripts/update-schema.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx,css,json}": "prettier --write"
@@ -43,7 +43,7 @@
     "eslint-config-next": "13.3.0",
     "formik": "^2.4.5",
     "framer-motion": "^10.18.0",
-    "immutable": "^5.0.3",
+    "immutable": "^5.1.1",
     "is-hotkey": "^0.2.0",
     "lodash": "^4.17.21",
     "next": "13.4.7",
@@ -57,8 +57,9 @@
     "react-dom": "18.2.0",
     "react-dropzone": "^14.2.3",
     "react-error-boundary": "^4.0.13",
+    "react-hot-toast": "^2.5.2",
     "react-oidc-context": "^2.3.1",
-    "react-pdf": "^7.7.1",
+    "react-pdf": "^7.7.3",
     "react-relay": "15.0.0",
     "recharts": "^2.12.5",
     "relay-runtime": "15.0.0",
@@ -78,6 +79,7 @@
     "concurrently": "^8.2.2",
     "eslint-config-prettier": "^8.10.0",
     "fetch-graphql-schema": "^0.2.1",
+    "format-graphql": "^1.5.0",
     "husky": "^8.0.3",
     "lint-staged": "^13.3.0",
     "prettier": "^2.8.8",

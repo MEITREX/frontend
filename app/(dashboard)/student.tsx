@@ -1,6 +1,7 @@
 "use client";
 
 import { studentStudentQuery } from "@/__generated__/studentStudentQuery.graphql";
+import { studentPlayerHexadScoreExistsQuery } from "@/__generated__/studentPlayerHexadScoreExistsQuery.graphql";
 import { CourseCard, yearDivisionToStringShort } from "@/components/CourseCard";
 import {
   Box,
@@ -13,10 +14,16 @@ import {
 import dayjs from "dayjs";
 import { chain } from "lodash";
 import Link from "next/link";
-import { Fragment, useState } from "react";
-import { useLazyLoadQuery } from "react-relay";
+import React, { Fragment, Suspense, useEffect, useState } from "react";
+import {
+  useLazyLoadQuery,
+  usePreloadedQuery,
+  useQueryLoader,
+} from "react-relay";
 import { graphql } from "relay-runtime";
-
+import SurveyPopup from "@/components/gamification/player-hexad-type-survey/PlayerTypeSurvey";
+import UserSettings from "@/components/settings/UserSettings";
+import { Settings } from "@/components/settings/types";
 export default function StudentPage() {
   const { currentUserInfo } = useLazyLoadQuery<studentStudentQuery>(
     graphql`
@@ -124,9 +131,72 @@ export default function StudentPage() {
 
     .value();
 
+  const existingSurveyResults = graphql`
+    query studentPlayerHexadScoreExistsQuery($id: UUID!) {
+      PlayerHexadScoreExists(userId: $id)
+    }
+  `;
+
+  function ExistLoader({ queryRef, userId }: { queryRef: any; userId: any }) {
+    const data = usePreloadedQuery<studentPlayerHexadScoreExistsQuery>(
+      existingSurveyResults,
+      queryRef
+    );
+
+    console.log("EXE", data.PlayerHexadScoreExists);
+
+    if (data.PlayerHexadScoreExists) {
+      return <div></div>;
+    } else {
+      return <SurveyPopup id={userId} />;
+    }
+  }
+
+  function GetPlayerHexadScore() {
+    const userId = currentUserInfo?.id;
+    const [queryRef, loadQuery] = useQueryLoader(existingSurveyResults);
+
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        loadQuery({ id: userId }, { fetchPolicy: "network-only" });
+      }, 1); // künstlicher Delay
+
+      return () => clearTimeout(timer);
+    }, [userId, loadQuery]);
+
+    return (
+      <Suspense fallback={<div>Loading...</div>}>
+        {queryRef && (
+          <ExistLoader queryRef={queryRef} userId={currentUserInfo.id} />
+        )}
+      </Suspense>
+    );
+  }
+
+  const [settings, setSettings] = useState<Settings | undefined>(undefined);
+
+  useEffect(() => {
+    // Do sth. with the settings...
+    console.log(settings);
+  }, [settings]);
+
+  if (!settings) {
+    return (
+      <>
+        <UserSettings
+          userId={currentUserInfo.id}
+          onSettingsLoaded={(loadedSettings) => {
+            setSettings(loadedSettings as Settings);
+          }}
+        />
+      </>
+    );
+  }
+
   return (
     <main>
       <div className="flex flex-wrap justify-between mb-10">
+        <GetPlayerHexadScore></GetPlayerHexadScore>
         <Typography variant="h1" gutterBottom>
           Dashboard
         </Typography>
