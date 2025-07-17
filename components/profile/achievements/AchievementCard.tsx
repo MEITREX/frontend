@@ -1,4 +1,5 @@
 import { Box, Card, Grid, LinearProgress, Typography } from "@mui/material";
+import AchievementImage from "./AchievementImage";
 import { Achievement } from "./types";
 
 interface AchievementProps {
@@ -33,18 +34,7 @@ export default function AchievementCard({
     >
       <Grid container spacing={2} alignItems="center">
         <Grid item>
-          <Box
-            component="img"
-            src={achievement.imageUrl}
-            alt={achievement.name}
-            sx={{
-              width: 64,
-              height: 64,
-              opacity: achievement.completed ? 1 : 0.4,
-              borderRadius: 2,
-              objectFit: "cover",
-            }}
-          />
+          <AchievementImage src={achievement.imageUrl} alt={achievement.name} completed={achievement.completed} />
         </Grid>
 
         <Grid item xs>

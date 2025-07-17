@@ -1,3 +1,4 @@
+import AchievementImage from "@/components/profile/achievements/AchievementImage";
 import { Achievement } from "@/components/profile/achievements/types";
 import { Box, Button, Grid, Tooltip, Typography } from "@mui/material";
 import Link from "next/link";
@@ -131,7 +132,7 @@ export default function LatestAchievements({
         mb={2}
       >
         <Typography variant="h6">Achievements</Typography>
-        <Link href="/profile" passHref>
+        <Link href="/profile/achievements" passHref>
           <Button
             size="small"
             variant="outlined"
@@ -143,7 +144,7 @@ export default function LatestAchievements({
               },
             }}
           >
-            Profile
+            All Achievements
           </Button>
         </Link>
       </Box>
@@ -183,7 +184,11 @@ export default function LatestAchievements({
                     justifyContent: "center",
                   }}
                 >
-                  {a!.achievement.imageUrl}
+                  <AchievementImage
+                    src={a?.achievement.imageUrl}
+                    alt={a?.achievement.name}
+                    completed={a?.achievement.completed}
+                  />
                 </Box>
               </Tooltip>
             </Box>

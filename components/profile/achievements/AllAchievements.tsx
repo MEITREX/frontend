@@ -1,3 +1,4 @@
+
 import { AllAchievementsCourseNamesQuery } from "@/__generated__/AllAchievementsCourseNamesQuery.graphql";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
@@ -55,7 +56,7 @@ export default function AllAchievements({
 
   console.log(groupedAchievements, "GGGGGGGGGGGRRRRRRRPOU");
   const coursesInAchievements = Object.keys(groupedAchievements);
-  console.log(coursesInAchievements, "courses");
+
 
   const { coursesByIds } = useLazyLoadQuery<AllAchievementsCourseNamesQuery>(
     graphql`
@@ -229,15 +230,6 @@ export default function AllAchievements({
 
               return dateB - dateA; // neuestes zuerst
             }
-          );
-
-          const visibleAchievements = sortedAchievements.slice(0, 11);
-          const hasMore = sortedAchievements.length > 11;
-
-          console.log(
-            filter,
-            courseAchievements[0].id,
-            courseAchievements[1].id
           );
 
           return (
