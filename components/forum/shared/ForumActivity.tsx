@@ -4,14 +4,24 @@ import UserPostInformation from "@/components/forum/shared/UserPostInformation";
 import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
 import React from "react";
 import CourseName from "./CourseName";
-import { ForumApiForumActivityQuery } from "@/__generated__/ForumApiForumActivityQuery.graphql";
+
+type ForumActivityEntry = {
+  courseId: string | null;
+  creationTime: string;
+  thread: {
+    id: string;
+    title: string;
+    creatorId: string;
+  };
+  post: {
+    id: string;
+    content: string;
+    authorId: string;
+  } | null;
+} | null;
 
 type Props = {
-  data: NonNullable<
-    NonNullable<
-      ForumApiForumActivityQuery["response"]["forumActivity"]["number"]
-    >
-  >;
+  data: ForumActivityEntry;
   displayCourseName?: boolean;
 };
 
@@ -150,8 +160,11 @@ export default function ForumActivity({
             fontSize: "0.875rem",
           }}
         >
-          <CourseName courseId={courseId} />
-        </Box>
+          {courseId ? (
+            <CourseName courseId={courseId} />
+          ) : (
+            <Box>Unknown Course</Box>
+          )}        </Box>
       )}
     </Box>
   );
