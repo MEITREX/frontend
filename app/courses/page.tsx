@@ -243,16 +243,18 @@ export default function StudentCourseList() {
                         },
                         onCompleted() {
                           addUserToForum({
-                            variables: {courseId: course.id},
+                            variables: { courseId: course.id },
                             onCompleted() {
                               console.log("Added User to Forum!");
                               router.push(`/courses/${course.id}`);
                             },
                             onError(error) {
-                              console.error("Failed to add User to Forum", error);
+                              console.error(
+                                "Failed to add User to Forum",
+                                error
+                              );
                             },
-                          })
-
+                          });
                         },
                         onError: setError,
                         updater(store) {

@@ -1,13 +1,3 @@
-
-
-export default function ForumActivityListUser({}){
-
-
-
-  return (
-    <div>
-
-
-    </div>
-  )
+export default function ForumActivityListUser({}) {
+  return <div></div>;
 }

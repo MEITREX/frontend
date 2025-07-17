@@ -338,10 +338,8 @@ export default function StudentCoursePage() {
           <ForumActivityWidget />
         </Grid>
 
-        <Grid item xs={6}>
-        </Grid>
+        <Grid item xs={6}></Grid>
       </Grid>
-
 
       {/* Tabs for Learning Progress and Chapters */}
       <Box sx={{ width: "100%" }}>
@@ -592,8 +590,8 @@ export default function StudentCoursePage() {
           </div>
         </CustomTabPanel>
         <CustomTabPanel value={value} index={3}>
-          <Suspense fallback={<SkeletonThreadList/>}>
-            <ForumOverview/>
+          <Suspense fallback={<SkeletonThreadList />}>
+            <ForumOverview />
           </Suspense>
         </CustomTabPanel>
       </Box>

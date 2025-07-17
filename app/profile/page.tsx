@@ -87,9 +87,7 @@ export default function ProfilePage() {
             profileTypeSortString={"not-achieved"}
           />
         )}
-        {tabIndex === 2 && (
-          <ProfileForumActivity />
-        )}
+        {tabIndex === 2 && <ProfileForumActivity />}
       </Box>
     </>
   );

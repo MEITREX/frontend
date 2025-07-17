@@ -6,7 +6,7 @@ import ForumActivity from "@/components/forum/shared/ForumActivity";
 import React from "react";
 import { ForumApiOtherUserForumActivityQuery } from "@/__generated__/ForumApiOtherUserForumActivityQuery.graphql";
 
-export default function OtherUserProfileForumActivity(){
+export default function OtherUserProfileForumActivity() {
   const params = useParams();
 
   const otherUserId = params.userId as string;
@@ -24,22 +24,29 @@ export default function OtherUserProfileForumActivity(){
         borderRadius: 2,
         p: 2,
         mb: 4,
-        height:"60vh",
-        overflowY:"auto",
+        height: "60vh",
+        overflowY: "auto",
       }}
     >
       <Typography variant="h6" gutterBottom>
-        Latest Forum Activities (only showing activity from forums shared with you)
+        Latest Forum Activities (only showing activity from forums shared with
+        you)
       </Typography>
-      {(data.otherUserForumActivityByUserId ?? []).length > 0 ? (<Stack spacing={2}>
+      {(data.otherUserForumActivityByUserId ?? []).length > 0 ? (
+        <Stack spacing={2}>
           {data.otherUserForumActivityByUserId.map((a, idx) => (
-            <ForumActivity displayCourseName={true} data={a} key={a.post?.id || a.thread?.id || idx} />
+            <ForumActivity
+              displayCourseName={true}
+              data={a}
+              key={a.post?.id || a.thread?.id || idx}
+            />
           ))}
-        </Stack>)
-        : (
-          <Box sx={{ p: 2, textAlign: 'center', color: 'gray' }}>
-            No Activity!
-          </Box>)}
+        </Stack>
+      ) : (
+        <Box sx={{ p: 2, textAlign: "center", color: "gray" }}>
+          No Activity!
+        </Box>
+      )}
     </Box>
-  )
+  );
 }

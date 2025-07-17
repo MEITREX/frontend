@@ -16,8 +16,8 @@ type Props = {
   creatorId: ThreadType["creatorId"];
   creationTime: ThreadType["creationTime"];
   numberOfPosts?: ThreadType["numberOfPosts"] | undefined;
-  displayDate?:boolean;
-  displayPB?:boolean;
+  displayDate?: boolean;
+  displayPB?: boolean;
 };
 
 export default function UserPostInformation({
@@ -62,20 +62,26 @@ export default function UserPostInformation({
           variant="caption"
           onClick={() => {
             if (!userInfo) return;
-            const isOwnProfile = loggedInUser.currentUserInfo.id === userInfo.id;
-            const profileUrl = isOwnProfile ? '/profile' : `/profile/${userInfo.id}`;
+            const isOwnProfile =
+              loggedInUser.currentUserInfo.id === userInfo.id;
+            const profileUrl = isOwnProfile
+              ? "/profile"
+              : `/profile/${userInfo.id}`;
             router.push(profileUrl);
-          }}        >
+          }}
+        >
           {userInfo.userName ?? "unknown"}
         </Typography>
       )}
 
-      {displayDate && <Stack direction="row" spacing={0.5} alignItems="center">
-        <CalendarTodayIcon fontSize="small" />
-        <Typography variant="caption">
-          {format(new Date(creationTime as string), "MMMM d, yyyy, hh:mm a")}
-        </Typography>
-      </Stack>}
+      {displayDate && (
+        <Stack direction="row" spacing={0.5} alignItems="center">
+          <CalendarTodayIcon fontSize="small" />
+          <Typography variant="caption">
+            {format(new Date(creationTime as string), "MMMM d, yyyy, hh:mm a")}
+          </Typography>
+        </Stack>
+      )}
 
       {numberOfPosts !== undefined && (
         <Stack direction="row" spacing={0.5} alignItems="center">

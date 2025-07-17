@@ -6,12 +6,9 @@ import { useParams, usePathname } from "next/navigation";
 import { ForumApiOpenQuestionQuery } from "@/__generated__/ForumApiOpenQuestionQuery.graphql";
 import ThreadList from "@/components/forum/thread/ThreadList";
 
-
-
-export default function OpenQuestionWidget(){
+export default function OpenQuestionWidget() {
   const params = useParams();
   const courseId = params.courseId as string;
-
 
   const data = useLazyLoadQuery<ForumApiOpenQuestionQuery>(
     forumApiOpenQuestionQuery,
@@ -40,7 +37,9 @@ export default function OpenQuestionWidget(){
         alignItems="center"
         mb={1}
       >
-        <Typography mt={1} ml={1} variant="h6">Open Question</Typography>
+        <Typography mt={1} ml={1} variant="h6">
+          Open Question
+        </Typography>
         <Link href="/profile" passHref>
           <Button
             size="small"
@@ -61,11 +60,10 @@ export default function OpenQuestionWidget(){
         {(data.openQuestionByCourseId ?? []).length > 0 ? (
           <ThreadList threads={data.openQuestionByCourseId} />
         ) : (
-          <Box sx={{ p: 2, textAlign: 'center', color: 'gray' }}>
-           There are currently no open Questions!
+          <Box sx={{ p: 2, textAlign: "center", color: "gray" }}>
+            There are currently no open Questions!
           </Box>
         )}
-
       </Box>
     </Box>
   );

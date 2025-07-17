@@ -28,7 +28,10 @@ import { Dayjs } from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { graphql, useMutation } from "react-relay";
-import { forumApiAddUserToForumMutation, forumApiCreateForumMutation } from "@/components/forum/api/ForumApi";
+import {
+  forumApiAddUserToForumMutation,
+  forumApiCreateForumMutation,
+} from "@/components/forum/api/ForumApi";
 import { ForumApiCreateForumMutation } from "@/__generated__/ForumApiCreateForumMutation.graphql";
 import { ForumApiAddUserToForumMutation } from "@/__generated__/ForumApiAddUserToForumMutation.graphql";
 
@@ -144,7 +147,6 @@ export default function NewCourse() {
         }
         _addChapter(0);
       },
-
     });
   }
 
@@ -158,7 +160,6 @@ export default function NewCourse() {
       console.error("Forum setup failed:", error);
     }
   };
-
 
   const steps: StepInfo[] = [
     {

@@ -6,15 +6,19 @@ import React from "react";
 import CourseName from "./CourseName";
 import { ForumApiForumActivityQuery } from "@/__generated__/ForumApiForumActivityQuery.graphql";
 
-
 type Props = {
   data: NonNullable<
-    NonNullable<ForumApiForumActivityQuery["response"]["forumActivity"]["number"]>
+    NonNullable<
+      ForumApiForumActivityQuery["response"]["forumActivity"]["number"]
+    >
   >;
   displayCourseName?: boolean;
 };
 
-export default function ForumActivity({ data, displayCourseName = false }: Props) {
+export default function ForumActivity({
+  data,
+  displayCourseName = false,
+}: Props) {
   if (!data) return null;
   const { creationTime, thread, post, courseId } = data;
 
@@ -149,7 +153,6 @@ export default function ForumActivity({ data, displayCourseName = false }: Props
           <CourseName courseId={courseId} />
         </Box>
       )}
-
     </Box>
   );
 }

@@ -1,8 +1,19 @@
-import { Box, Button, Divider, Grid, Stack, Tooltip, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Divider,
+  Grid,
+  Stack,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import Link from "next/link";
 import { useLazyLoadQuery, useQueryLoader } from "react-relay";
 import { ForumApiOpenQuestionQuery } from "@/__generated__/ForumApiOpenQuestionQuery.graphql";
-import { forumApiForumActivityQuery, forumApiOpenQuestionQuery } from "@/components/forum/api/ForumApi";
+import {
+  forumApiForumActivityQuery,
+  forumApiOpenQuestionQuery,
+} from "@/components/forum/api/ForumApi";
 import { useParams } from "next/navigation";
 import { ForumApiForumActivityQuery } from "@/__generated__/ForumApiForumActivityQuery.graphql";
 import ContentViewer from "../forum/richTextEditor/ContentViewer";
@@ -11,11 +22,9 @@ import React from "react";
 import { format } from "date-fns";
 import ForumActivity from "@/components/forum/shared/ForumActivity";
 
-
-export default function ForumActivityWidget(){
+export default function ForumActivityWidget() {
   const params = useParams();
   const courseId = params.courseId as string;
-
 
   const data = useLazyLoadQuery<ForumApiForumActivityQuery>(
     forumApiForumActivityQuery,
@@ -61,15 +70,17 @@ export default function ForumActivityWidget(){
           </Button>
         </Link>
       </Box>
-      {(data.forumActivity ?? []).length > 0 ? (<Stack spacing={2}>
-        {data.forumActivity.map((a, idx) => (
-          <ForumActivity data={a} key={a.post?.id || a.thread?.id || idx} />
-        ))}
-      </Stack>)
-        : (
-        <Box sx={{ p: 2, textAlign: 'center', color: 'gray' }}>
-      No Activity!
-    </Box>)}
+      {(data.forumActivity ?? []).length > 0 ? (
+        <Stack spacing={2}>
+          {data.forumActivity.map((a, idx) => (
+            <ForumActivity data={a} key={a.post?.id || a.thread?.id || idx} />
+          ))}
+        </Stack>
+      ) : (
+        <Box sx={{ p: 2, textAlign: "center", color: "gray" }}>
+          No Activity!
+        </Box>
+      )}
     </Box>
   );
 }

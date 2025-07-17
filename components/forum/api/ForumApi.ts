@@ -1,23 +1,20 @@
 import { graphql } from "react-relay";
 
-
-export const forumApiCreateForumMutation = graphql `
-    mutation ForumApiCreateForumMutation($courseId: UUID!) {
-            createForum(courseId: $courseId) {
-                id
-            }
+export const forumApiCreateForumMutation = graphql`
+  mutation ForumApiCreateForumMutation($courseId: UUID!) {
+    createForum(courseId: $courseId) {
+      id
     }
-`
+  }
+`;
 
-export const forumApiAddUserToForumMutation = graphql `
-    mutation ForumApiAddUserToForumMutation($courseId: UUID!) {
-        addUserToForumCourse(courseId: $courseId){
-            id
-        }
+export const forumApiAddUserToForumMutation = graphql`
+  mutation ForumApiAddUserToForumMutation($courseId: UUID!) {
+    addUserToForumCourse(courseId: $courseId) {
+      id
     }
-`
-
-
+  }
+`;
 
 export const forumApiThreadDetailQuery = graphql`
   query ForumApiThreadDetailQuery($id: UUID!) {
@@ -121,7 +118,6 @@ export const forumApiUpvotePostMutation = graphql`
   }
 `;
 
-
 export const forumApiDownvotePostMutation = graphql`
   mutation ForumApiDownvotePostMutation($postId: UUID!) {
     downvotePost(postId: $postId) {
@@ -163,70 +159,69 @@ export const forumApiOpenQuestionQuery = graphql`
 `;
 
 export const forumApiForumActivityQuery = graphql`
-    query ForumApiForumActivityQuery($id: UUID!) {
-        forumActivity(id: $id) {
-        courseId
-        creationTime
-        thread {
-          id
-          creatorId
-          title
-        }
-        post {
-          id
-          content
-          authorId
-        }
-    }
-    }
-`
-
-export const forumApiOtherUserForumActivityQuery = graphql`
-    query ForumApiOtherUserForumActivityQuery($id: UUID!) {
-        otherUserForumActivityByUserId(otherUserId: $id) {
-            courseId
-            creationTime
-            thread {
-                id
-                creatorId
-                title
-            }
-            post {
-                id
-                content
-                authorId
-            }
-        }
-    }
-`
-
-export const forumApiCourseNameQuery = graphql`
-    query ForumApiCourseNameQuery($id: UUID!) {
-      coursesByIds(ids:[$id]){
+  query ForumApiForumActivityQuery($id: UUID!) {
+    forumActivity(id: $id) {
+      courseId
+      creationTime
+      thread {
+        id
+        creatorId
         title
       }
-    }
-`
-
-export const forumApiForumActivityUserQuery = graphql`
-    query ForumApiForumActivityUserQuery {
-      forumActivityByUserId {
-        courseId
-        creationTime
-        thread {
-          id
-          creatorId
-          title
-        }
-        post {
-          id
-          content
-          authorId
-        }
+      post {
+        id
+        content
+        authorId
       }
     }
-`
+  }
+`;
 
+export const forumApiOtherUserForumActivityQuery = graphql`
+  query ForumApiOtherUserForumActivityQuery($id: UUID!) {
+    otherUserForumActivityByUserId(otherUserId: $id) {
+      courseId
+      creationTime
+      thread {
+        id
+        creatorId
+        title
+      }
+      post {
+        id
+        content
+        authorId
+      }
+    }
+  }
+`;
+
+export const forumApiCourseNameQuery = graphql`
+  query ForumApiCourseNameQuery($id: UUID!) {
+    coursesByIds(ids: [$id]) {
+      title
+    }
+  }
+`;
+
+export const forumApiForumActivityUserQuery = graphql`
+  query ForumApiForumActivityUserQuery {
+    forumActivityByUserId {
+      courseId
+      creationTime
+      thread {
+        id
+        creatorId
+        title
+      }
+      post {
+        id
+        content
+        authorId
+      }
+    }
+  }
+`;
 
 export const forumApiSelectBestAnswerMutation = graphql`
   mutation ForumApiSelectBestAnswerMutation($postId: UUID!) {
