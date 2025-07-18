@@ -8,6 +8,8 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
+import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
+
 
 export default function PublicProfilePage() {
   const publicTabs = ["Achievements", "Forum", "Badges"];
@@ -116,6 +118,7 @@ export default function PublicProfilePage() {
             profileTypeSortString={"achieved"}
           />
         )}
+        {tabIndex === 1 && <OtherUserProfileForumActivity />}
       </Box>
     </Box>
   );

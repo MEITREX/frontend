@@ -32,7 +32,6 @@ type Recommendation = {
   id: string;
   text: string;
 };
-
 type TutorWidgetProps = {
   isAuthenticated: boolean;
 };
@@ -141,7 +140,7 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
     ...(isDragging ? { left: dragPos.x, top: dragPos.y } : dockPosition.style),
     display: "flex",
     flexDirection: "row-reverse",
-    alignItems: "flex-end",
+    alignItems: dockPosition.name === "bottom" ? "flex-end" : "flex-start",
     width: open ? CHAT_WIDTH + AVATAR_WIDTH : AVATAR_WIDTH,
     pointerEvents: "auto",
   };
@@ -343,7 +342,7 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
       {open && (
         <div
           style={{
-            //  background: "#fff",
+            background: "#fff",
             borderRadius: "18px 18px 0 18px",
             border: "0.5px solid lightgrey",
             boxShadow: "0 4px 24px rgba(80,80,80,0.13)",
