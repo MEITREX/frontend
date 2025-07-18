@@ -12,7 +12,7 @@ export const providerConfig: Record<ExternalServiceProvider, ProviderInfo> = {
   [ExternalServiceProvider.Github]: {
     name: "GitHub",
     authUrl: "https://github.com/login/oauth/authorize",
-    clientId: "Iv23liqWXtlgus3t6F7U"
+    clientId: "Iv23liqWXtlgus3t6F7U",
   },
 };
 
