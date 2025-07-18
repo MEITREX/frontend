@@ -144,14 +144,13 @@ export default function StudentCodeAssignment({
               <Button
                 sx={{
                   color: "#fff",
-                  backgroundColor: "#0bb049", // vibrant bright green (Material green A700)
+                  backgroundColor: "#0bb049",
                   fontWeight: 500,
                   textTransform: "none",
                   borderRadius: "8px",
-                  px: 2, // horizontal padding (theme spacing units)
-                  // py: 1, // vertical padding
+                  px: 2,
                   "&:hover": {
-                    backgroundColor: "#1b5e20", // darker green on hover
+                    backgroundColor: "#1b5e20",
                   },
                 }}
                 startIcon={<GitHub />}
