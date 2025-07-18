@@ -79,7 +79,7 @@ export default function LecturerCodeAssignment({
     if (contentRef && !allSkillsQueryRef) {
       loadAllSkillsQuery({ courseId });
     }
-  }, [courseId, loadAllSkillsQuery, allSkillsQueryRef]);
+  }, [courseId, loadAllSkillsQuery, allSkillsQueryRef, contentRef]);
 
   const { getGradingsForAssignment } =
     useLazyLoadQuery<LecturerCodeAssignmentGradingQuery>(
@@ -118,15 +118,18 @@ export default function LecturerCodeAssignment({
     );
 
   const assignment = findAssignmentsByAssessmentIds[0];
+  const initialRequiredPercentage = assignment
+    ? assignment.requiredPercentage
+    : null;
+  const [localRequiredPercentage, setLocalRequiredPercentage] = useState(
+    initialRequiredPercentage
+  );
   if (!assignment) {
     // should never happen
     return <PageError message="No assignment found with given id." />;
   }
 
   const studentGrades = getGradingsForAssignment;
-  const [localRequiredPercentage, setLocalRequiredPercentage] = useState(
-    assignment.requiredPercentage
-  );
   const requiredPoints =
     assignment.totalCredits !== null && localRequiredPercentage != null
       ? Math.round(assignment.totalCredits * localRequiredPercentage)
