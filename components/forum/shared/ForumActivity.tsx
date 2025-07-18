@@ -164,7 +164,8 @@ export default function ForumActivity({
             <CourseName courseId={courseId} />
           ) : (
             <Box>Unknown Course</Box>
-          )}        </Box>
+          )}{" "}
+        </Box>
       )}
     </Box>
   );
