@@ -319,6 +319,54 @@ enum AssignmentType {
   CODE_ASSIGNMENT
 }
 
+type Assignment {
+  assessmentId: UUID!
+  assignmentType: AssignmentType!
+  codeAssignmentMetadata: CodeAssignmentMetadata
+  content: Content
+  courseId: UUID!
+  date: DateTime
+  description: String
+  exercises: [Exercise!]
+  externalId: String
+  requiredPercentage: Float
+  totalCredits: Float
+}
+
+type AssignmentAssessment implements Assessment & Content {
+  aiProcessingProgress: AiEntityProcessingProgress!
+  assessmentMetadata: AssessmentMetadata!
+  assignment: Assignment
+  id: UUID!
+  isAvailableToBeWorkedOn: Boolean!
+  items: [Item!]!
+  metadata: ContentMetadata!
+  progressDataForUser(userId: UUID!): UserProgressData!
+  suggestedTags: [String!]!
+  userProgressData: UserProgressData!
+}
+
+type AssignmentCompletedFeedback {
+  correctness: Float!
+  success: Boolean!
+}
+
+type AssignmentMutation {
+  assessmentId: UUID!
+  createExercise(input: CreateExerciseInput!): Exercise!
+  createSubexercise(input: CreateSubexerciseInput!): Subexercise!
+  deleteExercise(itemId: UUID!): UUID!
+  deleteSubexercise(itemId: UUID!): UUID!
+  updateExercise(input: UpdateExerciseInput!): Exercise!
+  updateSubexercise(input: UpdateSubexerciseInput!): Subexercise!
+}
+
+enum AssignmentType {
+  CODE_ASSIGNMENT
+  EXERCISE_SHEET
+  PHYSICAL_TEST
+}
+
 input AssociationInput {
   #
   # id of the corresponding item
@@ -567,6 +615,14 @@ type CodeAssignmentMetadata {
 
   #
   # README content in HTML format for the assignment (optional, CODE_ASSIGNMENT only).
+  feedbackTableHtml: String
+  repoLink: String
+  status: String
+}
+
+type CodeAssignmentMetadata {
+  assignmentLink: String
+  invitationLink: String
   readmeHtml: String
 }
 
@@ -682,6 +738,8 @@ type ContentPayload {
 #
 # Type of the content
 enum ContentType {
+  ASSIGNMENT
+  FLASHCARDS
   MEDIA
   FLASHCARDS
   QUIZ
@@ -883,6 +941,16 @@ input CreateAssignmentInput {
   # The id of the exercise sheet in an external system like TMS. (optional)
   # This is needed for mapping grading data to assignments.
   externalId: String
+}
+
+input CreateAssignmentInput {
+  assignmentType: AssignmentType!
+  date: DateTime
+  description: String
+  exercises: [CreateExerciseInput!]
+  externalId: String
+  requiredPercentage: Float
+  totalCredits: Float
 }
 
 input CreateAssociationInput {
@@ -1141,6 +1209,13 @@ input CreateExerciseInput {
   number: String
 }
 
+input CreateExerciseInput {
+  itemId: UUID!
+  number: String
+  subexercises: [CreateSubexerciseInput!]!
+  totalExerciseCredits: Float!
+}
+
 input CreateFlashcardInput {
   #
   # id of the item the flashcard belongs to
@@ -1359,6 +1434,12 @@ input CreateSubexerciseInput {
 }
 
 # An RFC-3339 compliant Full Date Scalar
+  itemId: UUID!
+  number: String
+  parentExerciseId: UUID!
+  totalSubexerciseCredits: Float!
+}
+
 scalar Date
 
 # A slightly refined version of RFC-3339 compliant DateTime Scalar
@@ -1498,6 +1579,28 @@ type ExerciseGrading {
 #
 # An external Assignment such as the ones from TMS. These are needed for mapping
 # Meitrex Assignments to external ones for importing gradings.
+  itemId: UUID!
+  number: String
+  subexercises: [Subexercise!]!
+  totalExerciseCredits: Float!
+  tutorFeedback: String
+}
+
+input ExerciseCompletedInput {
+  achievedCredits: Float!
+  completedSubexercises: [SubexerciseCompletedInput]!
+  itemId: UUID!
+}
+
+type ExerciseGrading {
+  achievedCredits: Float!
+  itemId: UUID!
+  studentId: UUID!
+  subexerciseGradings: [SubexerciseGrading]!
+}
+
+directive @experimental_disableErrorPropagation on QUERY | MUTATION | SUBSCRIPTION
+
 type ExternalAssignment {
   externalId: String!
   sheetNo: Float!
@@ -1510,6 +1613,7 @@ type ExternalCourse {
 
   #
   # The url to the course.
+  courseTitle: String!
   url: String!
 }
 
@@ -1526,6 +1630,10 @@ type ExternalUserIdWithUser {
 # A flashcard is a set of two or more sides. Each side has a label and a text.
 # The label is used to specify which side of the flashcard is being shown to the user first for learning
 # and which sides he has to guess.
+  externalUserId: String!
+  userId: UUID!
+}
+
 type Flashcard {
   #
   # Unique identifier of this flashcard, which is the id of the corresponding item
@@ -1736,6 +1844,20 @@ type ForumActivityEntry {
   courseId: UUID
 }
 
+type Forum {
+  courseId: UUID!
+  id: UUID!
+  threads: [Thread!]!
+  userIds: [UUID!]!
+}
+
+type ForumActivityEntry {
+  courseId: UUID
+  creationTime: DateTime!
+  post: Post
+  thread: Thread!
+}
+
 enum Gamification {
   GAMIFICATION_ENABLED
   ADAPTIVE_GAMIFICATION_ENABLED
@@ -1745,6 +1867,11 @@ enum Gamification {
 input GenerateAccessTokenInput {
   provider: ExternalServiceProviderDto!
   authorizationCode: String!
+}
+
+input GenerateAccessTokenInput {
+  authorizationCode: String!
+  provider: ExternalServiceProviderDto!
 }
 
 input GenerateMediaRecordLinksInput {
@@ -1804,6 +1931,27 @@ type InfoThread implements Thread {
   threadContentReference: ThreadContentReference
 }
 
+type Grading {
+  achievedCredits: Float
+  assessmentId: UUID!
+  codeAssignmentGradingMetadata: CodeAssignmentGradingMetadata
+  date: DateTime
+  exerciseGradings: [ExerciseGrading!]
+  student: PublicUserInfo
+  studentId: UUID!
+}
+
+type InfoThread implements Thread {
+  creationTime: DateTime!
+  creatorId: UUID!
+  id: UUID!
+  info: Post!
+  numberOfPosts: Int!
+  posts: [Post!]!
+  threadContentReference: ThreadContentReference
+  title: String!
+}
+
 input IngestMediaRecordInput {
   # UUID of the media record of this document.
   id: UUID!
@@ -1812,6 +1960,8 @@ input IngestMediaRecordInput {
 input InputForum {
   id: UUID!
   courseId: UUID!
+  courseId: UUID!
+  id: UUID!
 }
 
 input InputInfoThread {
@@ -1833,6 +1983,23 @@ input InputQuestionThread {
   question: InputPost!
   answer: InputPost
   threadContentReference: InputThreadContentReferenceOnCreate
+  info: InputPost!
+  threadContentReference: InputThreadContentReferenceOnCreate
+  title: String!
+}
+
+input InputPost {
+  content: String!
+  id: UUID
+  threadId: UUID
+}
+
+input InputQuestionThread {
+  answer: InputPost
+  forumId: UUID!
+  question: InputPost!
+  threadContentReference: InputThreadContentReferenceOnCreate
+  title: String!
 }
 
 input InputThreadContentReference {
@@ -1840,6 +2007,9 @@ input InputThreadContentReference {
   threadId: UUID!
   timeStampSeconds: Int
   pageNumber: Int
+  pageNumber: Int
+  threadId: UUID!
+  timeStampSeconds: Int
 }
 
 input InputThreadContentReferenceOnCreate {
@@ -1851,6 +2021,10 @@ input InputThreadContentReferenceOnCreate {
 #
 # Filter for integer values.
 # If multiple filters are specified, they are combined with AND.
+  pageNumber: Int
+  timeStampSeconds: Int
+}
+
 input IntFilter {
   #
   # An integer value to match exactly.
@@ -1925,6 +2099,8 @@ input LogAssignmentCompletedInput {
 
   #
   # List of exercises that were completed in the assignment. Can be empty, if there are no exercises within the assignment.
+  achievedCredits: Float!
+  assessmentId: UUID!
   completedExercises: [ExerciseCompletedInput]!
 }
 
@@ -1963,6 +2139,12 @@ type ManualMappingInstance {
   # JSON Object containing all available information on the external student.
   externalStudentInfo: String!
 }
+type ManualMappingInstance {
+  externalStudentId: String!
+  externalStudentInfo: String!
+}
+
+directive @Max(value: Int! = 2147483647, message: String = "graphql.validation.Max.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 type MediaContent implements Content {
   #
@@ -2212,6 +2394,54 @@ type Mutation {
   # Updates an existing course with the given input and returns the updated course.
   # The course id must be a course id of an existing course.
   # 🔒 The user must be an admin in this course to perform this action.
+  addPost(post: InputPost!): Post
+  addThreadToContent(threadContentReference: InputThreadContentReference!): ThreadContentReference
+  addUserToForum(forumId: UUID!): Forum
+  addUserToForumCourse(courseId: UUID!): Forum
+  createAssignmentAssessment(assessmentInput: CreateAssessmentInput!, assignmentInput: CreateAssignmentInput!): AssignmentAssessment!
+  createChapter(input: CreateChapterInput!): Chapter!
+  createCourse(input: CreateCourseInput!): Course!
+  createFlashcardSetAssessment(assessmentInput: CreateAssessmentInput!, flashcardSetInput: CreateFlashcardSetInput!): FlashcardSetAssessment
+  createForum(courseId: UUID!): Forum
+  createInfoThread(thread: InputInfoThread!): InfoThread
+  createMediaContentAndLinkRecords(contentInput: CreateMediaContentInput!, mediaRecordIds: [UUID!]!): MediaContent!
+  createMediaRecord(input: CreateMediaRecordInput!): MediaRecord!
+  createMembership(input: CourseMembershipInput!): CourseMembership!
+  createQuestionThread(thread: InputQuestionThread!): QuestionThread
+  createQuizAssessment(assessmentInput: CreateAssessmentInput!, quizInput: CreateQuizInput!): QuizAssessment!
+  createSection(input: CreateSectionInput!): Section!
+  defaultSettings(userId: UUID!): Settings!
+  deleteChapter(id: UUID!): UUID!
+  deleteCourse(id: UUID!): UUID!
+  deleteFlashcardSet(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the flashcard set and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
+  deleteMediaRecord(id: UUID!): UUID!
+  deleteMembership(input: CourseMembershipInput!): CourseMembership!
+  deletePost(postId: UUID!): Post
+  deleteQuiz(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the quiz and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
+  deleteThread(threadId: UUID!): Thread
+  downvotePost(postId: UUID!): Post
+  evaluatePlayerHexadScore(input: PlayerAnswerInput!, userId: UUID!): PlayerHexadScore!
+  generateAccessToken(input: GenerateAccessTokenInput!): Boolean!
+  joinCourse(courseId: UUID!): CourseMembership!
+  leaveCourse(courseId: UUID!): CourseMembership!
+  logAssignmentCompleted(input: LogAssignmentCompletedInput!): AssignmentCompletedFeedback!
+  logFlashcardLearned(input: LogFlashcardLearnedInput!): FlashcardLearnedFeedback!
+  logMediaRecordWorkedOn(mediaRecordId: UUID!): MediaRecord!
+  logQuizCompleted(input: QuizCompletedInput!): QuizCompletionFeedback!
+  mutateAssignment(assessmentId: UUID!): AssignmentMutation!
+  mutateContent(contentId: UUID!): ContentMutation!
+  mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
+  mutateQuiz(assessmentId: UUID!): QuizMutation!
+  mutateSection(sectionId: UUID!): SectionMutation!
+  recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
+  recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
+  saveStudentMappings(courseId: UUID!, studentMappingInputs: [StudentMappingInput!]!): [String]!
+  selectAnswer(postId: UUID!): QuestionThread!
+  setLinkedMediaRecordsForContent(contentId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
+  setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
+  syncAssignmentsForCourse(courseId: UUID!): Boolean!
+  updateAssignment(assessmentId: UUID!, input: UpdateAssignmentInput!): Assignment!
+  updateChapter(input: UpdateChapterInput!): Chapter!
   updateCourse(input: UpdateCourseInput!): Course!
 
   #
@@ -2451,6 +2681,9 @@ type Mutation {
 
   # Creates a new section in a chapter.
   createSection(input: CreateSectionInput!): Section!
+  updatePost(post: InputPost!): Post
+  updateSettings(input: SettingsInput!, userId: UUID!): Settings!
+  upvotePost(postId: UUID!): Post
 }
 
 type Notification {
@@ -2567,6 +2800,16 @@ type Post {
   authorId: UUID!
   edited: Boolean!
   downvotedByUsers: [UUID]!
+  upvotedByUsers: [UUID]!
+}
+
+type Post {
+  authorId: UUID!
+  content: String!
+  creationTime: DateTime!
+  downvotedByUsers: [UUID]!
+  edited: Boolean!
+  id: UUID!
   upvotedByUsers: [UUID]!
 }
 
@@ -2698,6 +2941,44 @@ type Query {
   #     Returns all media records which the current user created.
   #
   #     🔒 If the mediaRecord is associated with coursed the user must be a member of at least one of the courses.
+  currentUserInfo: UserInfo!
+  dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
+  findAssignmentsByAssessmentIds(assessmentIds: [UUID!]!): [Assignment]!
+  findContentsByIds(ids: [UUID!]!): [Content]!
+  findFlashcardSetsByAssessmentIds(assessmentIds: [UUID!]!): [FlashcardSet]!
+  findMediaRecordsByIds(ids: [UUID!]!): [MediaRecord]!
+  findPublicUserInfos(ids: [UUID!]!): [PublicUserInfo]!
+  findQuizzesByAssessmentIds(assessmentIds: [UUID!]!): [Quiz]!
+  findUserInfos(ids: [UUID!]!): [UserInfo]!
+  findUserSettings(userId: UUID): Settings!
+  findUsersSettings(usersIds: [UUID]!): [Settings]!
+  flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
+  forum(id: UUID!): Forum
+  forumActivity(id: UUID!): [ForumActivityEntry!]!
+  forumActivityByUserId: [ForumActivityEntry!]!
+  forumByCourseId(id: UUID!): Forum
+  getExternalAssignments(courseId: UUID!): [ExternalAssignment!]!
+  getExternalCodeAssignments(courseId: UUID!): [String!]!
+  getExternalCourse(courseId: UUID!): ExternalCourse
+  getGradingsForAssignment(assessmentId: UUID!): [Grading!]!
+  getManualMappingInstances(courseId: UUID!): [ManualMappingInstance]!
+  getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
+  getSemanticallySimilarEntities(count: Int! = 10, courseWhitelist: [UUID!], excludeEntitiesWithSameParent: Boolean, segmentId: UUID!): [SemanticSearchResult!]!
+  isAccessTokenAvailable(provider: ExternalServiceProviderDto!): Boolean!
+  mediaRecords: [MediaRecord!]! @deprecated(reason: "In production there should probably be no way to get all media records of the system.")
+  mediaRecordsByContentIds(contentIds: [UUID!]!): [[MediaRecord!]!]!
+  mediaRecordsByIds(ids: [UUID!]!): [MediaRecord!]!
+  mediaRecordsForCourses(courseIds: [UUID!]!): [[MediaRecord!]!]!
+  mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
+  openQuestionByCourseId(id: UUID!): [Thread!]!
+  otherUserForumActivityByUserId(otherUserId: UUID!): [ForumActivityEntry!]!
+  PlayerHexadScoreExists(userId: UUID!): Boolean!
+  scoreboard(courseId: UUID!): [ScoreboardItem!]!
+  semanticSearch(count: Int! = 10, courseWhitelist: [UUID!], queryText: String!): [SemanticSearchResult!]!
+  suggestionsByChapterIds(amount: Int!, chapterIds: [UUID!]!, skillTypes: [SkillType!]! = []): [Suggestion!]!
+  thread(id: UUID!): Thread
+  threadsByContentId(id: UUID!): [Thread!]!
+  userCourseRewardScores(courseId: UUID!): RewardScores!
   userMediaRecords: [MediaRecord!]!
 
   #
@@ -2928,6 +3209,17 @@ type QuestionThread implements Thread {
 
 #
 # The type of a question.
+  creationTime: DateTime!
+  creatorId: UUID!
+  id: UUID!
+  numberOfPosts: Int!
+  posts: [Post!]!
+  question: Post!
+  selectedAnswer: Post
+  threadContentReference: ThreadContentReference
+  title: String!
+}
+
 enum QuestionType {
   MULTIPLE_CHOICE
   CLOZE
@@ -3122,6 +3414,10 @@ type QuizOutput {
   questionPool: [Question!]!
   modifiedQuestion: Question!
 }
+
+directive @Range(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Range.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @resolveTo(requiredSelectionSet: String, sourceName: String, sourceTypeName: String, sourceFieldName: String, sourceSelectionSet: String, sourceArgs: ResolveToSourceArgs, keyField: String, keysArg: String, pubsubTopic: String, filterBy: String, additionalArgs: ResolveToSourceArgs, result: String, resultType: String) on FIELD_DEFINITION
 
 scalar ResolveToSourceArgs
 
@@ -3578,6 +3874,19 @@ type Subexercise {
 
   #
   # Feedback given by a tutor on the exercise (optional).
+  externalStudentId: String!
+  meitrexStudentId: UUID!
+}
+
+input StudentMappingInput {
+  externalStudentId: String!
+  meitrexStudentId: UUID!
+}
+
+type Subexercise {
+  itemId: UUID!
+  number: String
+  totalSubexerciseCredits: Float!
   tutorFeedback: String
 }
 
@@ -3607,6 +3916,16 @@ type SubexerciseGrading {
 
 #
 # Represents a suggestion for a user to learn new content or review old content.
+  achievedCredits: Float!
+  itemId: UUID!
+}
+
+type SubexerciseGrading {
+  achievedCredits: Float!
+  itemId: UUID!
+  studentId: UUID!
+}
+
 type Suggestion {
   #
   # The content that is suggested to the user.
@@ -3630,6 +3949,13 @@ interface Thread {
   posts: [Post!]!
   numberOfPosts: Int!
   threadContentReference: ThreadContentReference
+  creationTime: DateTime
+  creatorId: UUID!
+  id: UUID!
+  numberOfPosts: Int!
+  posts: [Post!]!
+  threadContentReference: ThreadContentReference
+  title: String!
 }
 
 type ThreadContentReference {
@@ -3661,6 +3987,17 @@ type UnfinishedGrading {
 
   #
   # The number of times importing and parsing was tried. Might be useful for detecting and manually deleting broken gradings.
+  pageNumber: Int
+  threadId: UUID!
+  timeStampSeconds: Int
+}
+
+scalar Time
+
+type UnfinishedGrading {
+  assignmentId: UUID!
+  externalStudentId: String!
+  gradingJson: String!
   numberOfTries: Int!
 }
 
@@ -3676,6 +4013,10 @@ input UpdateAssessmentInput {
   #
   # items of the new assessments
   items: [ItemInput!]
+}
+
+input UpdateAssignmentInput {
+  requiredPercentage: Float
 }
 
 input UpdateAssignmentInput {
@@ -3867,6 +4208,13 @@ input UpdateExerciseInput {
   number: String
 }
 
+input UpdateExerciseInput {
+  itemId: UUID!
+  number: String
+  subexercises: [CreateSubexerciseInput!]!
+  totalExerciseCredits: Float!
+}
+
 input UpdateFlashcardInput {
   #
   # Id of the flashcard to update, which is the id of the corresponding item.
@@ -3992,6 +4340,11 @@ input UpdateSubexerciseInput {
 }
 
 # A Url scalar
+  itemId: UUID!
+  number: String
+  totalSubexerciseCredits: Float!
+}
+
 scalar Url
 
 type UserInfo {

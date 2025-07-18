@@ -3,11 +3,13 @@
 import { pagePublicProfileStudentQuery } from "@/__generated__/pagePublicProfileStudentQuery.graphql";
 import { pageUserAchievementsPublicQuery } from "@/__generated__/pageUserAchievementsPublicQuery.graphql";
 import AchievementList from "@/components/profile/AchievementList";
+import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
 import { Avatar, Box, Tab, Tabs, Typography } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
+
 
 export default function PublicProfilePage() {
   const publicTabs = ["Achievements", "Forum", "Badges"];
@@ -116,6 +118,7 @@ export default function PublicProfilePage() {
             profileTypeSortString={"achieved"}
           />
         )}
+        {tabIndex === 1 && <OtherUserProfileForumActivity />}
       </Box>
     </Box>
   );

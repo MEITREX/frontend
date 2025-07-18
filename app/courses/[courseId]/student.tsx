@@ -1,6 +1,6 @@
 "use client";
 import { studentCourseIdQuery } from "@/__generated__/studentCourseIdQuery.graphql";
-import { Button, Divider, IconButton, Typography } from "@mui/material";
+import { Button, Divider, Grid, IconButton, Typography } from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
@@ -29,13 +29,18 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+
 
 import { ChapterOverview } from "@/components/ChapterOverview";
 
 import { studentUserAchievementsWidgetQuery } from "@/__generated__/studentUserAchievementsWidgetQuery.graphql";
 import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
+import ForumOverview from "@/components/forum/ForumOverview";
+import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
 import AchievementPopUp from "@/components/profile/achievements/AchievementPopUp";
+import ForumActivityWidget from "@/components/widgets/ForumActivityWidget";
+import OpenQuestionWidget from "@/components/widgets/OpenQuestionWidget";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -361,16 +366,32 @@ export default function StudentCoursePage() {
         )}
       </div>
 
-      <AchievementWidget
-        achievements={mutableAchievements}
-        openAchievements={handleOpenAchievement}
-        course={course.id}
-      />
-      <AchievementPopUp
-        open={openAchievementDialog}
-        onClose={handleCloseAchievement}
-        selectedAchievement={selectedAchievement}
-      />
+
+      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+        <Grid item xs={6}>
+          <AchievementWidget
+            achievements={mutableAchievements}
+            openAchievements={handleOpenAchievement}
+            course={course.id}
+          />
+          <AchievementPopUp
+            open={openAchievementDialog}
+            onClose={handleCloseAchievement}
+            selectedAchievement={selectedAchievement}
+          />
+        </Grid>
+
+        <Grid item xs={6}>
+          <OpenQuestionWidget />
+        </Grid>
+
+        <Grid item xs={6}>
+          <ForumActivityWidget />
+        </Grid>
+
+        <Grid item xs={6}></Grid>
+      </Grid>
+
 
       {/* Tabs for Learning Progress and Chapters */}
       <Box sx={{ width: "100%" }}>
@@ -383,6 +404,7 @@ export default function StudentCoursePage() {
             <Tab label="Course Overview" {...a11yProps(0)} />
             <Tab label="Learning Progress" {...a11yProps(1)} />
             <Tab label="Chapters" {...a11yProps(2)} />
+            <Tab label="Forum" {...a11yProps(3)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
@@ -516,7 +538,7 @@ export default function StudentCoursePage() {
                   const categoryProgressValue = Math.floor(
                     Math.min(
                       (totalCategoryProgress * 100) /
-                        uniqueSkillsInCategory.length,
+                      uniqueSkillsInCategory.length,
                       100
                     )
                   );
@@ -528,9 +550,8 @@ export default function StudentCoursePage() {
                     >
                       <div className="flex items-center gap-2 w-full mb-2">
                         <CompetencyProgressbar
-                          competencyName={`${
-                            uniqueSkill.skillCategory
-                          } - ${Math.floor(categoryProgressValue)}%`}
+                          competencyName={`${uniqueSkill.skillCategory
+                            } - ${Math.floor(categoryProgressValue)}%`}
                           heightValue={15}
                           progressValue={categoryProgressValue}
                           color={stringToColor(uniqueSkill.skillCategory)}
@@ -619,7 +640,12 @@ export default function StudentCoursePage() {
             </div>
           </div>
         </CustomTabPanel>
+        <CustomTabPanel value={value} index={3}>
+          <Suspense fallback={<SkeletonThreadList />}>
+            <ForumOverview />
+          </Suspense>
+        </CustomTabPanel>
       </Box>
-    </main>
+    </main >
   );
 }
