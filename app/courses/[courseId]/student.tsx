@@ -29,21 +29,23 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+
 
 import { ChapterOverview } from "@/components/ChapterOverview";
 
-import { achievementsData } from "@/components/profile/AchievementData";
+import { studentUserAchievementsWidgetQuery } from "@/__generated__/studentUserAchievementsWidgetQuery.graphql";
+import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
+import ForumOverview from "@/components/forum/ForumOverview";
+import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
 import AchievementPopUp from "@/components/profile/achievements/AchievementPopUp";
+import ForumActivityWidget from "@/components/widgets/ForumActivityWidget";
+import OpenQuestionWidget from "@/components/widgets/OpenQuestionWidget";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import * as React from "react";
 import AchievementWidget from "./achievements/AchievementWidget";
-import ForumOverview from "@/components/forum/ForumOverview";
-import OpenQuestionWidget from "@/components/widgets/OpenQuestionWidget";
-import ForumActivityWidget from "@/components/widgets/ForumActivityWidget";
-import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -187,6 +189,37 @@ export default function StudentCoursePage() {
     }
   `);
 
+  const [studentUserLogin] = useMutation<studentUserLoginMutation>(graphql`
+    mutation studentUserLoginMutation($id: UUID!) {
+      loginUser(courseId: $id)
+    }
+  `);
+
+  const { achievementsByUserId } =
+    useLazyLoadQuery<studentUserAchievementsWidgetQuery>(
+      graphql`
+        query studentUserAchievementsWidgetQuery($id: UUID!) {
+          achievementsByUserId(userId: $id) {
+            id
+            name
+            imageUrl
+            description
+            courseId
+            userId
+            completed
+            requiredCount
+            completedCount
+            trackingStartTime
+            trackingEndTime
+          }
+        }
+      `,
+      { id: userId },
+      {
+        fetchPolicy: "network-only", // <-- wichtig!
+      }
+    );
+
   // Extract scoreboard
   const rows: Data[] = scoreboard
     .slice(0, 3)
@@ -201,13 +234,27 @@ export default function StudentCoursePage() {
   );
   const [openAchievementDialog, setOpenDialog] = useState(false);
 
+  // Extract course
+  const course = coursesByIds[0];
+
+  useEffect(() => {
+    if (course.id) {
+      studentUserLogin({
+        variables: { id: course.id },
+        onCompleted: () => {
+          console.log("Login registered");
+        },
+        onError: (e) => {
+          console.error("Login error:", e);
+        },
+      });
+    }
+  }, [course.id, studentUserLogin]);
+
   // Show 404 error page if id was not found
   if (coursesByIds.length == 0) {
     return <PageError message="No course found with given id." />;
   }
-
-  // Extract course
-  const course = coursesByIds[0];
 
   const categoriesPerPage = 3;
   const uniqueSkillCategories = Array.from(
@@ -265,6 +312,8 @@ export default function StudentCoursePage() {
     setOpenDialog(false);
   };
 
+  const mutableAchievements = [...achievementsByUserId];
+
   return (
     <main>
       <FormErrors error={error} onClose={() => setError(null)} />
@@ -320,8 +369,9 @@ export default function StudentCoursePage() {
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
         <Grid item xs={6}>
           <AchievementWidget
-            achievements={achievementsData}
+            achievements={mutableAchievements}
             openAchievements={handleOpenAchievement}
+            course={course.id}
           />
           <AchievementPopUp
             open={openAchievementDialog}
@@ -486,7 +536,7 @@ export default function StudentCoursePage() {
                   const categoryProgressValue = Math.floor(
                     Math.min(
                       (totalCategoryProgress * 100) /
-                        uniqueSkillsInCategory.length,
+                      uniqueSkillsInCategory.length,
                       100
                     )
                   );
@@ -498,9 +548,8 @@ export default function StudentCoursePage() {
                     >
                       <div className="flex items-center gap-2 w-full mb-2">
                         <CompetencyProgressbar
-                          competencyName={`${
-                            uniqueSkill.skillCategory
-                          } - ${Math.floor(categoryProgressValue)}%`}
+                          competencyName={`${uniqueSkill.skillCategory
+                            } - ${Math.floor(categoryProgressValue)}%`}
                           heightValue={15}
                           progressValue={categoryProgressValue}
                           color={stringToColor(uniqueSkill.skillCategory)}
@@ -595,6 +644,6 @@ export default function StudentCoursePage() {
           </Suspense>
         </CustomTabPanel>
       </Box>
-    </main>
+    </main >
   );
 }

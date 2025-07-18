@@ -1,14 +1,16 @@
+import AutorenewIcon from "@mui/icons-material/Autorenew";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import { Avatar, Box, Button, TextField } from "@mui/material";
+import { Avatar, Box, Button, IconButton, TextField } from "@mui/material";
 import { useState } from "react";
 
 interface GeneralPageProps {
   studentData: {
+    id: string;
     firstName: string;
     lastName: string;
-    email: string;
-    nickname: string;
+    //email: string;
+    userName: string;
   };
 }
 
@@ -30,6 +32,38 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
     }
     setEditMode(!editMode);
   };
+
+  const adjectives = [
+    "Swift",
+    "Brave",
+    "Clever",
+    "Fierce",
+    "Tiny",
+    "Giant",
+    "Happy",
+    "Wild",
+    "Cunning",
+    "Lazy",
+  ];
+
+  const dinos = [
+    "T-Rex",
+    "Velociraptor",
+    "Triceratops",
+    "Stegosaurus",
+    "Spinosaurus",
+    "Brachiosaurus",
+    "Pachycephalosaurus",
+    "Ankylosaurus",
+  ];
+
+  function generateRandomNickname() {
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const dino = dinos[Math.floor(Math.random() * dinos.length)];
+    const number = Math.floor(1000 + Math.random() * 9000); // 4-stellige Zahl
+
+    return `${adj}${dino}${number}`;
+  }
 
   return (
     <Box display="flex" gap={4} py={4}>
@@ -74,20 +108,37 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
           fullWidth
           disabled={!editMode}
         />
+        {/*
         <TextField
           label="Email"
-          value={newStudentData.email}
+          value={'N.A.'}
           onChange={handleChange("email")}
           fullWidth
           disabled={!editMode}
         />
-        <TextField
-          label="Nickname"
-          value={newStudentData.nickname}
-          onChange={handleChange("nickname")}
-          fullWidth
-          disabled={!editMode}
-        />
+         */}
+        <Box display="flex" alignItems="center" gap={1}>
+          <TextField
+            label="Nickname"
+            value={newStudentData.userName}
+            onChange={handleChange("userName")}
+            fullWidth
+            disabled={!editMode}
+          />
+          {editMode && (
+            <IconButton
+              onClick={() =>
+                setStudentData((prev) => ({
+                  ...prev,
+                  userName: generateRandomNickname(),
+                }))
+              }
+              size="large"
+            >
+              <AutorenewIcon sx={{ fontSize: 28, color: "#00a9d6" }} />
+            </IconButton>
+          )}
+        </Box>
       </Box>
     </Box>
   );

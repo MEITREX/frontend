@@ -28,7 +28,7 @@ export function StudentFlashcardSide({
   useEffect(() => {
     // Notify parent about knew changes
     onChange(knew);
-  }, [knew]);
+  }, [knew, onChange]);
 
   useEffect(() => {
     // Reset when side changes

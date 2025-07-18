@@ -1,5 +1,7 @@
 import { CourseCardFragment$key } from "@/__generated__/CourseCardFragment.graphql";
 import { YearDivision } from "@/__generated__/lecturerCreateCourseMutation.graphql";
+import { SuggestionFragment$key } from "@/__generated__/SuggestionFragment.graphql";
+import { PageView, usePageView } from "@/src/currentView";
 import {
   Card,
   CardContent,
@@ -12,8 +14,6 @@ import {
 import dayjs from "dayjs";
 import { graphql, useFragment } from "react-relay";
 import { Suggestion } from "./Suggestion";
-import { PageView, usePageView } from "@/src/currentView";
-import { SuggestionFragment$key } from "@/__generated__/SuggestionFragment.graphql";
 
 export const yearDivisionToString: Record<YearDivision, string> = {
   FIRST_SEMESTER: "Winter semester",

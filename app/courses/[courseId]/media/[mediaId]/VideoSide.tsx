@@ -141,10 +141,13 @@ export function VideoSide({
     : 0;
 
   useEffect(() => {
-    if (videoRef.current && searchParams.get("videoPosition")) {
-      videoRef.current.currentTime = Number(searchParams.get("videoPosition"));
+    const videoElement = videoRef.current;
+    const position = searchParams.get("videoPosition");
+
+    if (videoElement && position) {
+      videoElement.currentTime = Number(position);
     }
-  }, [videoRef.current]);
+  }, [searchParams]);
 
   const groupedSegments = segments.reduce((prev, cur) => {
     let l = last(prev);

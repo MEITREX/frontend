@@ -1,7 +1,9 @@
 import { Box, Card, Grid, LinearProgress, Typography } from "@mui/material";
+import AchievementImage from "./AchievementImage";
+import { Achievement } from "./types";
 
 interface AchievementProps {
-  achievement: any;
+  achievement: Achievement;
   showProgress?: boolean;
   onClick?: () => void;
 }
@@ -11,13 +13,17 @@ export default function AchievementCard({
   showProgress = false,
   onClick,
 }: AchievementProps) {
-  const progressValue =
-    achievement.targetCount > 0
-      ? Math.min(
-          (achievement.currentCount / achievement.targetCount) * 100,
-          100
-        )
-      : 0;
+  let progressValue = 0;
+
+  if (achievement.requiredCount) {
+    progressValue =
+      achievement.requiredCount! > 0
+        ? Math.min(
+            (achievement.completedCount! / achievement.requiredCount!) * 100,
+            100
+          )
+        : 0;
+  }
 
   return (
     <Card
@@ -27,16 +33,16 @@ export default function AchievementCard({
     >
       <Grid container spacing={2} alignItems="center">
         <Grid item>
-          <Box
-            fontSize="2.5rem"
-            sx={{ opacity: achievement.achieved ? 1 : 0.4 }}
-          >
-            {achievement.icon}
-          </Box>
+          <AchievementImage
+            src={achievement.imageUrl}
+            alt={achievement.name}
+            completed={achievement.completed}
+          />
         </Grid>
+
         <Grid item xs>
           <Typography variant="subtitle1" fontWeight="bold">
-            {achievement.title}
+            {achievement.name}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             {achievement.description}
@@ -50,7 +56,7 @@ export default function AchievementCard({
                 sx={{ height: 8, borderRadius: 4 }}
               />
               <Typography variant="caption" color="text.secondary">
-                {achievement.currentCount}/{achievement.targetCount}
+                {achievement.completedCount}/{achievement.requiredCount}
               </Typography>
             </Box>
           )}

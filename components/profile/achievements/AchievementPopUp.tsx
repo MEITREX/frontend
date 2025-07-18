@@ -1,3 +1,4 @@
+import { AchievementPopUpCourseNamesPopUpQuery } from "@/__generated__/AchievementPopUpCourseNamesPopUpQuery.graphql";
 import {
   Box,
   Button,
@@ -6,11 +7,14 @@ import {
   DialogTitle,
   Typography,
 } from "@mui/material";
+import { useLazyLoadQuery } from "react-relay";
+import { graphql } from "relay-runtime";
+import { Achievement } from "./types";
 
 interface AchievementPopUpProps {
   open: boolean;
   onClose: () => void;
-  selectedAchievement: any;
+  selectedAchievement: Achievement | null;
 }
 
 export default function AchievementPopUp({
@@ -18,11 +22,26 @@ export default function AchievementPopUp({
   onClose,
   selectedAchievement,
 }: AchievementPopUpProps) {
-  const courses = [
-    { id: "all", name: "All" },
-    { id: "course1", name: "Physics 202" },
-    { id: "course2", name: "Informatik" },
-  ];
+  const CourseNameQuery = ({ courseId }: { courseId: string }) => {
+    const { coursesByIds } =
+      useLazyLoadQuery<AchievementPopUpCourseNamesPopUpQuery>(
+        graphql`
+          query AchievementPopUpCourseNamesPopUpQuery($id: [UUID!]!) {
+            coursesByIds(ids: $id) {
+              id
+              title
+            }
+          }
+        `,
+        { id: [courseId] }
+      );
+
+    return (
+      <div>
+        <strong>Course:</strong> {coursesByIds[0]?.title}
+      </div>
+    );
+  };
 
   return (
     <Dialog
@@ -32,23 +51,35 @@ export default function AchievementPopUp({
       fullWidth
       PaperProps={{
         sx: {
-          border: selectedAchievement?.achieved
+          border: selectedAchievement?.completed
             ? "2px solid gold"
             : "2px solid transparent",
           borderRadius: 2,
           p: 2,
           backgroundColor: "white",
-          boxShadow: selectedAchievement?.achieved
+          boxShadow: selectedAchievement?.completed
             ? "0 0 10px 2px rgba(255, 215, 0, 0.6)"
             : "none",
         },
       }}
     >
-      <DialogTitle textAlign="center">{selectedAchievement?.title}</DialogTitle>
+      <DialogTitle textAlign="center">{selectedAchievement?.name}</DialogTitle>
 
       <DialogContent>
         <Box textAlign="center" py={3}>
-          <Box fontSize={60}>{selectedAchievement?.icon}</Box>
+          <Box
+            component="img"
+            src={selectedAchievement?.imageUrl}
+            alt={selectedAchievement?.name}
+            sx={{
+              width: 120,
+              height: 120,
+              objectFit: "cover",
+              opacity: selectedAchievement?.completed ? 1 : 0.4,
+              borderRadius: 2,
+              mx: "auto",
+            }}
+          />
 
           <Typography mt={2} variant="body1">
             {selectedAchievement?.description}
@@ -56,15 +87,15 @@ export default function AchievementPopUp({
 
           <Typography mt={2} color="textSecondary">
             <strong>Completed:</strong>{" "}
-            {selectedAchievement?.achievedAt
-              ? new Date(selectedAchievement.achievedAt).toLocaleString()
+            {selectedAchievement?.trackingEndTime
+              ? new Date(selectedAchievement.trackingEndTime).toLocaleString()
               : "Not yet completed"}
           </Typography>
 
           <Typography mt={1} color="textSecondary">
-            <strong>Course:</strong>{" "}
-            {courses.find((c) => c.id === selectedAchievement?.courseId)
-              ?.name ?? selectedAchievement?.courseId}
+            {selectedAchievement?.courseId && (
+              <CourseNameQuery courseId={selectedAchievement.courseId} />
+            )}
           </Typography>
         </Box>
 
