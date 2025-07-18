@@ -173,9 +173,9 @@ export function EditContentModal({
   };
 
   const openCodeAssignment = () => {
-    // if (!allSkillsQueryRef) {
-    //   loadAllSkillsQuery({ courseId });
-    // }
+    if (!allSkillsQueryRef) {
+      loadAllSkillsQuery({ courseId });
+    }
     setOpenCodeAssignmentModal(true);
   };
   return (
@@ -374,7 +374,7 @@ export function EditContentModal({
           _chapter={chapter}
         />
       )}
-      {openCodeAssignmentModal && (
+      {openCodeAssignmentModal && allSkillsQueryRef && (
         <AddCodeAssignmentModal
           onClose={() => setOpenCodeAssignmentModal(false)}
           chapterId={chapterId}
