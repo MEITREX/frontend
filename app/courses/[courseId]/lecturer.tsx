@@ -41,6 +41,12 @@ graphql`
         ...LecturerChapter
       }
     }
+    skills {
+      id
+      skillName
+      skillCategory
+      isCustomSkill
+    }
   }
 `;
 
