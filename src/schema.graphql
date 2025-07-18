@@ -62,7 +62,7 @@ type AccessToken {
   externalUserId: String
 }
 
-type Achievement {
+type Achievement implements HasGoal {
   id: UUID
   name: String!
   imageUrl: String!
@@ -174,6 +174,149 @@ type AssessmentSemanticSearchResult implements SemanticSearchResult {
 
   # The assessment this search result is referencing.
   assessment: Assessment!
+}
+
+#
+# An assignment is an external source of tasks, which can be imported. This includes exercise sheets and physical tests.
+type Assignment {
+  #
+  # Identifier of the assignment, same as the identifier of the assessment.
+  assessmentId: UUID!
+
+  #
+  # Id of the course this assignment belongs to.
+  courseId: UUID!
+
+  #
+  # List of exercises making up the assignment.
+  # Optional for CODE_ASSIGNMENT since GH Classroom does not provide exercises.
+  exercises: [Exercise!]
+
+  #
+  # The date at which the assignment had to be handed in (optional).
+  date: DateTime
+
+  #
+  # Number of total credits in the assignment.
+  totalCredits: Float
+
+  #
+  # Type of the assignment, e.g. exercise sheet or physical test.
+  assignmentType: AssignmentType!
+
+  #
+  # Description of the assignment (optional).
+  description: String
+
+  #
+  # The required percentage to pass the assignment. A value between 0 and 1. Defaults to 0.5. (optional)
+  requiredPercentage: Float
+
+  #
+  # The id of the exercise sheet in an external system like TMS. (optional)
+  # This is needed for mapping grading data to assignments.
+  externalId: String
+
+  #
+  # CodeAssignmentMetadata contains metadata for the external code assignment.
+  codeAssignmentMetadata: CodeAssignmentMetadata
+
+  # The content this assignment belongs to.
+  content: Content
+}
+
+#
+# An assignment, assignment related fields are stored in the assignment service.
+type AssignmentAssessment implements Assessment & Content {
+  #
+  # Assessment metadata
+  assessmentMetadata: AssessmentMetadata!
+
+  #
+  # ID of the content
+  id: UUID!
+
+  #
+  # Metadata of the content
+  metadata: ContentMetadata!
+
+  #
+  # Progress data of the content for the current user.
+  userProgressData: UserProgressData!
+
+  #
+  # Progress data of the specified user.
+  progressDataForUser(userId: UUID!): UserProgressData!
+
+  #
+  # the items that belong to the Assignment
+  items: [Item!]!
+
+  #
+  # For the current user, returns true if this content could be worked on by the user (i.e. it is not locked), false
+  # if content is not available to be worked on (e.g. because previous stage has not been completed)
+  isAvailableToBeWorkedOn: Boolean!
+
+  # The assignment of the assessment.
+  # If this is null the system is in an inconsistent state and the assessment should be deleted.
+  assignment: Assignment
+
+  # The progress of processing the assessment. In particular when processing is done,
+  # the assessment's task contents will have been indexed for search.
+  aiProcessingProgress: AiEntityProcessingProgress!
+
+  # Tags suggested for this assessment by the AI system.
+  suggestedTags: [String!]!
+}
+
+#
+# Feedback data when "logAssignmentCompleted" is called.
+type AssignmentCompletedFeedback {
+  #
+  # Whether the assignment was passed or not.
+  success: Boolean!
+
+  #
+  # The percentage of achieved credits compared to total credits.
+  correctness: Float!
+}
+
+type AssignmentMutation {
+  #
+  # ID of the assignment that is being modified.
+  assessmentId: UUID!
+
+  #
+  # Creates a new exercise. Throws an error if the assignment does not exist.
+  createExercise(input: CreateExerciseInput!): Exercise!
+
+  #
+  # Updates an exercise. Throws an error if the exercise does not exist.
+  updateExercise(input: UpdateExerciseInput!): Exercise!
+
+  #
+  # Deletes the exercise with the specified ID. Throws an error if the exercise does not exist.
+  deleteExercise(itemId: UUID!): UUID!
+
+  #
+  # Creates a new subexercise. Throws an error if the assignment does not exist.
+  createSubexercise(input: CreateSubexerciseInput!): Subexercise!
+
+  #
+  # Updates a subexercise. Throws an error if the subexercise does not exist.
+  updateSubexercise(input: UpdateSubexerciseInput!): Subexercise!
+
+  #
+  # Deletes the subexercise with the specified ID. Throws an error if the subexercise does not exist.
+  deleteSubexercise(itemId: UUID!): UUID!
+}
+
+#
+# The type of assignment.
+enum AssignmentType {
+  EXERCISE_SHEET
+  PHYSICAL_TEST
+  CODE_ASSIGNMENT
 }
 
 input AssociationInput {
@@ -399,6 +542,34 @@ type ClozeTextElement {
   text: JSON!
 }
 
+type CodeAssignmentGradingMetadata {
+  #
+  # The repository link of for the external code assignment.
+  repoLink: String
+
+  #
+  # The pipeline status of the corresponding repository.
+  status: String
+
+  #
+  # The Github worfklow run log table HTML of the corresponding repository.
+  feedbackTableHtml: String
+}
+
+type CodeAssignmentMetadata {
+  #
+  # Link to the GitHub Classroom or equivalent (optional, CODE_ASSIGNMENT only).
+  assignmentLink: String
+
+  #
+  # Invitation link for students to join the assignment (optional, CODE_ASSIGNMENT only).
+  invitationLink: String
+
+  #
+  # README content in HTML format for the assignment (optional, CODE_ASSIGNMENT only).
+  readmeHtml: String
+}
+
 type CompositeProgressInformation {
   #
   # percentage of completedContents/totalContents
@@ -514,6 +685,7 @@ enum ContentType {
   MEDIA
   FLASHCARDS
   QUIZ
+  ASSIGNMENT
 }
 
 #
@@ -678,6 +850,39 @@ input CreateAssessmentInput {
   #
   # items of the new assessments
   items: [CreateItemInput!]
+}
+
+input CreateAssignmentInput {
+  #
+  # Number of total credits in the assignment. Optional for CODE_ASSIGNMENT.
+  # Can be set later when grades are available.
+  totalCredits: Float
+
+  #
+  # List of exercises in this Assignment
+  # Optional for CODE_ASSIGNMENT since GH Classroom does not provide exercises.
+  exercises: [CreateExerciseInput!]
+
+  #
+  # Type of the assignment, e.g. exercise sheet or physical test.
+  assignmentType: AssignmentType!
+
+  #
+  # The date at which the assignment had to be handed in (optional).
+  date: DateTime
+
+  #
+  # Description of the assignment (optional).
+  description: String
+
+  #
+  # The required percentage to pass the assignment. A value between 0 and 1. Defaults to 0.5. (optional)
+  requiredPercentage: Float
+
+  #
+  # The id of the exercise sheet in an external system like TMS. (optional)
+  # This is needed for mapping grading data to assignments.
+  externalId: String
 }
 
 input CreateAssociationInput {
@@ -918,6 +1123,24 @@ input CreateExactAnswerQuestionInputWithoutItem {
   hint: JSON
 }
 
+input CreateExerciseInput {
+  #
+  # the id of the item the exercise belongs to
+  itemId: UUID!
+
+  #
+  # The amount of credits that can be earned on this exercise including all sub-exercises. (Positive or zero)
+  totalExerciseCredits: Float!
+
+  #
+  # Sub-exercises making up the exercise, i.e. parts a),b),c),...
+  subexercises: [CreateSubexerciseInput!]!
+
+  #
+  # The number of the exercise on the exercise sheet, may be something such as 2 (optional).
+  number: String
+}
+
 input CreateFlashcardInput {
   #
   # id of the item the flashcard belongs to
@@ -1117,6 +1340,24 @@ input CreateStageInput {
   optionalContents: [UUID!]!
 }
 
+input CreateSubexerciseInput {
+  #
+  # the id of the item the subexercise belongs to
+  itemId: UUID!
+
+  #
+  # the id of the exercise this subexercise belongs to
+  parentExerciseId: UUID!
+
+  #
+  # The amount of credits that can be earned on this sub-exercise. (Positive or zero)
+  totalSubexerciseCredits: Float!
+
+  #
+  # The number of the exercise on the exercise sheet, may be something such as 2b (optional).
+  number: String
+}
+
 # An RFC-3339 compliant Full Date Scalar
 scalar Date
 
@@ -1197,6 +1438,79 @@ type ExactAnswerQuestion implements Question {
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
   item: Item!
+}
+
+type Exercise {
+  #
+  # Unique identifier of the exercise and the id of the corresponding item
+  itemId: UUID!
+
+  #
+  # The amount of credits that can be earned on this exercise including all sub-exercises.
+  totalExerciseCredits: Float!
+
+  #
+  # Sub-exercises making up the exercise, i.e. parts a),b),c),...
+  subexercises: [Subexercise!]!
+
+  #
+  # The number of the exercise on the exercise sheet, may be something such as 2 (optional).
+  number: String
+
+  #
+  # Feedback given by a tutor on the exercise (optional).
+  tutorFeedback: String
+}
+
+input ExerciseCompletedInput {
+  #
+  # ID of the exercise.
+  itemId: UUID!
+
+  #
+  # The absolute number of achieved credits.
+  achievedCredits: Float!
+
+  #
+  # List of subexercises that were completed in the exercise. Can be empty, if there are no subexercises within the exercise.
+  completedSubexercises: [SubexerciseCompletedInput]!
+}
+
+type ExerciseGrading {
+  #
+  # ID of the exercise.
+  itemId: UUID!
+
+  #
+  # ID of the student the exercise-grading belongs to.
+  studentId: UUID!
+
+  #
+  # The absolute number of achieved credits on the exercise.
+  achievedCredits: Float!
+
+  #
+  # List of subexercise-gradings for each subexercise in the exercise. Can be
+  # empty, if there are no subexercises within the exercise.
+  subexerciseGradings: [SubexerciseGrading]!
+}
+
+#
+# An external Assignment such as the ones from TMS. These are needed for mapping
+# Meitrex Assignments to external ones for importing gradings.
+type ExternalAssignment {
+  externalId: String!
+  sheetNo: Float!
+}
+
+type ExternalCourse {
+  #
+  # The name of the course.
+  courseTitle: String!
+
+  #
+  # The url to the course.
+  url: String!
 }
 
 enum ExternalServiceProviderDto {
@@ -1412,6 +1726,14 @@ type Forum {
   id: UUID!
   threads: [Thread!]!
   courseId: UUID!
+  userIds: [UUID!]!
+}
+
+type ForumActivityEntry {
+  creationTime: DateTime!
+  thread: Thread!
+  post: Post
+  courseId: UUID
 }
 
 enum Gamification {
@@ -1432,6 +1754,43 @@ input GenerateMediaRecordLinksInput {
 enum GlobalUserRole {
   SUPER_USER
   COURSE_CREATOR
+}
+
+#
+# A grading contains a user's achieved credits on an assignment and its exercises and subexercises.
+type Grading {
+  #
+  # ID of the assignment.
+  assessmentId: UUID!
+
+  #
+  # ID of the student the grading belongs to.
+  studentId: UUID!
+
+  #
+  # The date and time of when the tutor corrected the assignment.
+  date: DateTime
+
+  #
+  # The absolute number of achieved credits on the assignment.
+  achievedCredits: Float
+
+  #
+  # CodeAssignmentGradingMetadata contains metadata for the external code assignment grading.
+  codeAssignmentGradingMetadata: CodeAssignmentGradingMetadata
+
+  #
+  # List of exercise-gradings for each exercise in the assignment. Can be empty,
+  # if there are no exercises within the assignment.
+  exerciseGradings: [ExerciseGrading!]
+
+  # The user this grading belongs to.
+  student: PublicUserInfo
+}
+
+interface HasGoal {
+  courseId: UUID!
+  userId: UUID
 }
 
 type InfoThread implements Thread {
@@ -1555,6 +1914,20 @@ scalar JSON
 # 24-hour clock time value string in the format `hh:mm:ss` or `hh:mm:ss.sss`.
 scalar LocalTime
 
+input LogAssignmentCompletedInput {
+  #
+  # ID of the assignment.
+  assessmentId: UUID!
+
+  #
+  # The absolute number of achieved credits.
+  achievedCredits: Float!
+
+  #
+  # List of exercises that were completed in the assignment. Can be empty, if there are no exercises within the assignment.
+  completedExercises: [ExerciseCompletedInput]!
+}
+
 input LogFlashcardLearnedInput {
   #
   # The id of the flashcard that was learned.
@@ -1577,6 +1950,18 @@ input LogFlashcardSetLearnedInput {
   #
   # The percentage of flashcards in the set that the user knew.
   percentageSuccess: Float!
+}
+
+#
+# An object to represent a student where the backend could not automatically map the external student to a meitrex user.
+type ManualMappingInstance {
+  #
+  # Student Id in external system like TMS
+  externalStudentId: String!
+
+  #
+  # JSON Object containing all available information on the external student.
+  externalStudentInfo: String!
 }
 
 type MediaContent implements Content {
@@ -1916,6 +2301,18 @@ type Mutation {
   setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
 
   #
+  # create forum
+  createForum(courseId: UUID!): Forum
+
+  #
+  # add user to forum
+  addUserToForum(forumId: UUID!): Forum
+
+  #
+  # add user to forum for given courseId
+  addUserToForumCourse(courseId: UUID!): Forum
+
+  #
   # create question thread
   createQuestionThread(thread: InputQuestionThread!): QuestionThread
 
@@ -2010,6 +2407,33 @@ type Mutation {
   #   The purpose of this mutation is to allow testing of the skill level score and demonstrate the functionality.
   #   🔒 The user must be a super-user, otherwise an exception is thrown.
   recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
+
+  #
+  # Update top-level fields of an assignment.
+  # 🔒 The user must be an admin in the course the assignment belongs to.
+  updateAssignment(assessmentId: UUID!, input: UpdateAssignmentInput!): Assignment!
+
+  #
+  # Modify an assignment.
+  # 🔒 The user must be an admin in the course the assignment is in to perform this action.
+  mutateAssignment(assessmentId: UUID!): AssignmentMutation!
+
+  #
+  # Logs that a user's assignment score has been imported, i.e. the user has completed the assignment.
+  # 🔒 The user must be a tutor in the course the assignment is in to perform this action.
+  logAssignmentCompleted(input: LogAssignmentCompletedInput!): AssignmentCompletedFeedback!
+
+  #
+  # Saves mappings of meitrex users to external students.
+  # Used to deal with ManualMappingInstances.
+  # Returns list of all deleted ManualMappingInstance ids.
+  # Returns null if connection to UserService failed.
+  # 🔒 The user must be an admin in the course to perform this action.
+  saveStudentMappings(courseId: UUID!, studentMappingInputs: [StudentMappingInput!]!): [String]!
+
+  #
+  # Fetches assignment info from external code assessment provider for the given course
+  syncAssignmentsForCourse(courseId: UUID!): Boolean!
   evaluatePlayerHexadScore(userId: UUID!, input: PlayerAnswerInput!): PlayerHexadScore!
   loginUser(courseId: UUID): UUID
 
@@ -2021,6 +2445,9 @@ type Mutation {
 
   # Creates a new flashcard set assessment and a new, linked flashcard set with the given properties.
   createFlashcardSetAssessment(assessmentInput: CreateAssessmentInput!, flashcardSetInput: CreateFlashcardSetInput!): FlashcardSetAssessment
+
+  # Creates a new assignment assessment and a new, linked assignment with the given properties.
+  createAssignmentAssessment(assessmentInput: CreateAssessmentInput!, assignmentInput: CreateAssignmentInput!): AssignmentAssessment!
 
   # Creates a new section in a chapter.
   createSection(input: CreateSectionInput!): Section!
@@ -2307,6 +2734,22 @@ type Query {
   thread(id: UUID!): Thread
 
   #
+  # Returns open threads
+  openQuestionByCourseId(id: UUID!): [Thread!]!
+
+  #
+  # Returns latest activities
+  forumActivity(id: UUID!): [ForumActivityEntry!]!
+
+  #
+  # Returns latest activities by User Id
+  forumActivityByUserId: [ForumActivityEntry!]!
+
+  #
+  # Returns latest other user activities by User Id
+  otherUserForumActivityByUserId(otherUserId: UUID!): [ForumActivityEntry!]!
+
+  #
   # Get flashcards by their ids.
   # 🔒 The user must be enrolled in the course the flashcards belong to. Otherwise an error is thrown.
   flashcardsByIds(itemIds: [UUID!]!): [Flashcard!]!
@@ -2369,6 +2812,42 @@ type Query {
   # 🔒 The user must be enrolled in the course the quizzes belong to to access them. Otherwise null is returned for
   # an quiz if the user has no access to it.
   findQuizzesByAssessmentIds(assessmentIds: [UUID!]!): [Quiz]!
+
+  #
+  # Get assignment by assessment ID.
+  # If any of the assessment IDs are not found, the corresponding assignment will be null.
+  # 🔒 The user must be enrolled in the course the assignments belong to to access them. Otherwise null is returned for
+  # an assignment if the user has no access to it.
+  findAssignmentsByAssessmentIds(assessmentIds: [UUID!]!): [Assignment]!
+
+  #
+  # Get all gradings for one assignment
+  # 🔒 The user must be an admin in the course the assignment belongs to to access them. Otherwise null is returned for
+  # an assignment if the user has no access to it.
+  getGradingsForAssignment(assessmentId: UUID!): [Grading!]!
+
+  #
+  # Gets all the available external exercises.
+  # CourseId is the id of the course the user is currently working in.
+  # 🔒 The user must be an admin in the course. Otherwise null is returned.
+  getExternalAssignments(courseId: UUID!): [ExternalAssignment!]!
+
+  #
+  # Gets all the available external code exercises.
+  # CourseId is the id of the course the user is currently working in.
+  # 🔒 The user must be an admin in the course. Otherwise null is returned.
+  getExternalCodeAssignments(courseId: UUID!): [String!]!
+
+  #
+  # Get the corresponding external course for the given courseId.
+  # CourseId is the id of the course the user is currently working in.
+  # 🔒 The user must be an admin in the course. Otherwise null is returned.
+  getExternalCourse(courseId: UUID!): ExternalCourse
+
+  #
+  # Gets all manual student mappings, i.e. all students where the backend could not map to a meitrex user.
+  # 🔒 The user must be an admin in the course. Otherwise null is returned.
+  getManualMappingInstances(courseId: UUID!): [ManualMappingInstance]!
   getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
   PlayerHexadScoreExists(userId: UUID!): Boolean!
   achievementsByCourseId(courseId: UUID!): [Achievement!]!
@@ -3064,6 +3543,68 @@ input StringFilter {
   ignoreCase: Boolean! = false
 }
 
+type StudentMapping {
+  #
+  # Student Id in Meitrex
+  meitrexStudentId: UUID!
+
+  #
+  # Student Id in external system like TMS
+  externalStudentId: String!
+}
+
+input StudentMappingInput {
+  #
+  # Student Id in Meitrex
+  meitrexStudentId: UUID!
+
+  #
+  # Student Id in external system like TMS
+  externalStudentId: String!
+}
+
+type Subexercise {
+  #
+  # Unique identifier of the exercise and the id of the corresponding item
+  itemId: UUID!
+
+  #
+  # The amount of credits that can be earned on this sub-exercise.
+  totalSubexerciseCredits: Float!
+
+  #
+  # The number of the exercise on the exercise sheet, may be something such as 2b (optional).
+  number: String
+
+  #
+  # Feedback given by a tutor on the exercise (optional).
+  tutorFeedback: String
+}
+
+input SubexerciseCompletedInput {
+  #
+  # ID of the subexercise.
+  itemId: UUID!
+
+  #
+  # The absolute number of achieved credits.
+  achievedCredits: Float!
+}
+
+type SubexerciseGrading {
+  #
+  # ID of the subexercise.
+  itemId: UUID!
+
+  #
+  # ID of the student the subexercise-grading belongs to.
+  studentId: UUID!
+
+  #
+  # The absolute number of achieved credits on the subexercise.
+  achievedCredits: Float!
+}
+
 #
 # Represents a suggestion for a user to learn new content or review old content.
 type Suggestion {
@@ -3101,6 +3642,28 @@ type ThreadContentReference {
 # An RFC-3339 compliant Full Time Scalar
 scalar Time
 
+#
+# An Unfinished Grading is created, when importing and parsing gradings from external systems like TMS goes wrong
+# because the student id has to be mapped manually.
+# After an admin mapped ids manually, these unfinished gradings will be tried again.
+type UnfinishedGrading {
+  #
+  # Student Id in external system like TMS
+  externalStudentId: String!
+
+  #
+  # Assignment/HandIn id in MEITREX
+  assignmentId: UUID!
+
+  #
+  # JSON representation of the grading
+  gradingJson: String!
+
+  #
+  # The number of times importing and parsing was tried. Might be useful for detecting and manually deleting broken gradings.
+  numberOfTries: Int!
+}
+
 input UpdateAssessmentInput {
   #
   # Metadata for the new Content
@@ -3113,6 +3676,10 @@ input UpdateAssessmentInput {
   #
   # items of the new assessments
   items: [ItemInput!]
+}
+
+input UpdateAssignmentInput {
+  requiredPercentage: Float
 }
 
 input UpdateAssociationQuestionInput {
@@ -3282,6 +3849,24 @@ input UpdateExactAnswerQuestionInput {
   hint: JSON
 }
 
+input UpdateExerciseInput {
+  #
+  # Id of the exercise to update.
+  itemId: UUID!
+
+  #
+  # The amount of credits that can be earned on this exercise including all sub-exercises. (Positive or zero)
+  totalExerciseCredits: Float!
+
+  #
+  # Sub-exercises making up the exercise, i.e. parts a),b),c),...
+  subexercises: [CreateSubexerciseInput!]!
+
+  #
+  # The number of the exercise on the exercise sheet, may be something such as 2 (optional).
+  number: String
+}
+
 input UpdateFlashcardInput {
   #
   # Id of the flashcard to update, which is the id of the corresponding item.
@@ -3390,6 +3975,20 @@ input UpdateStageInput {
   #
   # updated List of UUIDs for content labeled as optional in this Stage
   optionalContents: [UUID!]!
+}
+
+input UpdateSubexerciseInput {
+  #
+  # Id of the subexercise to update.
+  itemId: UUID!
+
+  #
+  # The amount of credits that can be earned on this sub-exercise. (Positive or zero)
+  totalSubexerciseCredits: Float!
+
+  #
+  # The number of the exercise on the exercise sheet, may be something such as 2b (optional).
+  number: String
 }
 
 # A Url scalar
