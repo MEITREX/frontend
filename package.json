@@ -65,11 +65,8 @@
     "react-oidc-context": "^2.3.1",
     "react-pdf": "^7.7.3",
     "react-relay": "15.0.0",
-
     "react-router-dom": "^7.6.3",
-
     "react-resizable-panels": "^3.0.3",
-
     "recharts": "^2.12.5",
     "relay-runtime": "15.0.0",
     "slate": "^0.94.1",
