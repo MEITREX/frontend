@@ -1,4 +1,3 @@
-
 import { AllAchievementsCourseNamesQuery } from "@/__generated__/AllAchievementsCourseNamesQuery.graphql";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
@@ -54,9 +53,7 @@ export default function AllAchievements({
     {} as Record<string, any[]>
   );
 
-  console.log(groupedAchievements, "GGGGGGGGGGGRRRRRRRPOU");
   const coursesInAchievements = Object.keys(groupedAchievements);
-
 
   const { coursesByIds } = useLazyLoadQuery<AllAchievementsCourseNamesQuery>(
     graphql`

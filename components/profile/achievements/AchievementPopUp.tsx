@@ -43,12 +43,6 @@ export default function AchievementPopUp({
     );
   };
 
-  const courses = [
-    { id: "all", name: "All" },
-    { id: "course1", name: "Physics 202" },
-    { id: "course2", name: "Informatik" },
-  ];
-
   return (
     <Dialog
       open={open}

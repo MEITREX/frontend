@@ -14,7 +14,6 @@ export default function AchievementCard({
   onClick,
 }: AchievementProps) {
   let progressValue = 0;
-  console.log(achievement.imageUrl);
 
   if (achievement.requiredCount) {
     progressValue =
@@ -34,7 +33,11 @@ export default function AchievementCard({
     >
       <Grid container spacing={2} alignItems="center">
         <Grid item>
-          <AchievementImage src={achievement.imageUrl} alt={achievement.name} completed={achievement.completed} />
+          <AchievementImage
+            src={achievement.imageUrl}
+            alt={achievement.name}
+            completed={achievement.completed}
+          />
         </Grid>
 
         <Grid item xs>
