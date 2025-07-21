@@ -1,5 +1,7 @@
 "use client";
 
+import { ForumApiAddUserToForumMutation } from "@/__generated__/ForumApiAddUserToForumMutation.graphql";
+import { ForumApiCreateForumMutation } from "@/__generated__/ForumApiCreateForumMutation.graphql";
 import { lecturerCreateChapterMutation } from "@/__generated__/lecturerCreateChapterMutation.graphql";
 import {
   YearDivision,
@@ -7,6 +9,10 @@ import {
 } from "@/__generated__/lecturerCreateCourseMutation.graphql";
 import { yearDivisionToString } from "@/components/CourseCard";
 import { FormErrors } from "@/components/FormErrors";
+import {
+  forumApiAddUserToForumMutation,
+  forumApiCreateForumMutation,
+} from "@/components/forum/api/ForumApi";
 import { MultistepForm, StepInfo } from "@/components/MultistepForm";
 import {
   Backdrop,
@@ -28,12 +34,6 @@ import { Dayjs } from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { graphql, useMutation } from "react-relay";
-import {
-  forumApiAddUserToForumMutation,
-  forumApiCreateForumMutation,
-} from "@/components/forum/api/ForumApi";
-import { ForumApiCreateForumMutation } from "@/__generated__/ForumApiCreateForumMutation.graphql";
-import { ForumApiAddUserToForumMutation } from "@/__generated__/ForumApiAddUserToForumMutation.graphql";
 
 function TableRow({ label, value }: { label: string; value: string }) {
   return (
@@ -150,15 +150,13 @@ export default function NewCourse() {
     });
   }
 
-  const createAndSetupForum = async (courseId: string) => {
-    try {
-      await createForum({ variables: { courseId } });
-      console.log("Created forum");
-      await addUserToForum({ variables: { courseId } });
-      console.log("Added user to forum");
-    } catch (error) {
-      console.error("Forum setup failed:", error);
-    }
+  const createAndSetupForum = (courseId: string) => {
+    createForum({
+        variables: { courseId },
+        onCompleted() {
+          addUserToForum({ variables: { courseId } })
+        }
+      });
   };
 
   const steps: StepInfo[] = [
