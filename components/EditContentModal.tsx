@@ -1,9 +1,11 @@
 "use client";
 import { EditContentModalFragment$key } from "@/__generated__/EditContentModalFragment.graphql";
 import { EditContentModalUpdateStageMutation } from "@/__generated__/EditContentModalUpdateStageMutation.graphql";
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
+import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import { AddFlashcardSetModal } from "@/components/AddFlashcardSetModal";
-import { Add, Code, Edit, EditNote } from "@mui/icons-material";
+import { Add, Edit, EditNote } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
 import {
   Alert,
@@ -24,21 +26,10 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  graphql,
-  PreloadedQuery,
-  useFragment,
-  useLazyLoadQuery,
-  useMutation,
-  useQueryLoader,
-} from "react-relay";
+import { graphql, useFragment, useMutation, useQueryLoader } from "react-relay";
+import { AddCodeAssignmentModal } from "./AddCodeAssignmentModal";
 import { MediaContentModal } from "./MediaContentModal";
 import { QuizModal } from "./QuizModal";
-import { AddCodeAssignmentModal } from "./AddCodeAssignmentModal";
-import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
-import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
-import { EditContentModalExternalCourseQuery } from "@/__generated__/EditContentModalExternalCourseQuery.graphql";
-import { providerConfig, codeAssessmentProvider } from "./ProviderConfig";
 
 export function EditContentModal({
   chapterId,
@@ -133,20 +124,6 @@ export function EditContentModal({
       }
     `);
 
-  const provider = providerConfig[codeAssessmentProvider];
-
-  const data = useLazyLoadQuery<EditContentModalExternalCourseQuery>(
-    graphql`
-      query EditContentModalExternalCourseQuery($courseId: UUID!) {
-        getExternalCourse(courseId: $courseId) {
-          url
-          courseTitle
-        }
-      }
-    `,
-    { courseId }
-  );
-
   useEffect(() => {
     setOptionalRecords(_optionalRecords);
   }, [_optionalRecords]);
@@ -196,9 +173,9 @@ export function EditContentModal({
   };
 
   const openCodeAssignment = () => {
-    // if (!allSkillsQueryRef) {
-    //   loadAllSkillsQuery({ courseId });
-    // }
+    if (!allSkillsQueryRef) {
+      loadAllSkillsQuery({ courseId });
+    }
     setOpenCodeAssignmentModal(true);
   };
   return (
@@ -397,7 +374,7 @@ export function EditContentModal({
           _chapter={chapter}
         />
       )}
-      {openCodeAssignmentModal && data.getExternalCourse && (
+      {openCodeAssignmentModal && allSkillsQueryRef && (
         <AddCodeAssignmentModal
           onClose={() => setOpenCodeAssignmentModal(false)}
           chapterId={chapterId}
@@ -405,35 +382,6 @@ export function EditContentModal({
           allSkillsQueryRef={allSkillsQueryRef}
         />
       )}
-
-      <Dialog
-        open={openCodeAssignmentModal && !data.getExternalCourse}
-        onClose={() => setOpenCodeAssignmentModal(false)}
-      >
-        <DialogTitle>{provider.name} Action Required</DialogTitle>
-        <DialogContent>
-          <Alert severity="warning">
-            You must ensure a matching course exists on GitHub Classroom.
-          </Alert>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setOpenCodeAssignmentModal(false)}
-            color="primary"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={() => {
-              setOpenCodeAssignmentModal(false);
-              window.open("https://classroom.github.com/classrooms", "_blank");
-            }}
-            color="primary"
-          >
-            Go to {provider.name}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 }

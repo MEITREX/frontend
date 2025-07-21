@@ -142,7 +142,17 @@ export default function StudentCodeAssignment({
 
             {assignment.codeAssignmentMetadata?.invitationLink && (
               <Button
-                sx={{ color: "text.secondary" }}
+                sx={{
+                  color: "#fff",
+                  backgroundColor: "#0bb049",
+                  fontWeight: 500,
+                  textTransform: "none",
+                  borderRadius: "8px",
+                  px: 2,
+                  "&:hover": {
+                    backgroundColor: "#1b5e20",
+                  },
+                }}
                 startIcon={<GitHub />}
                 onClick={() => {
                   if (repoLink) {
@@ -156,7 +166,7 @@ export default function StudentCodeAssignment({
                   }
                 }}
               >
-                CLONE REPO
+                {repoLink ? "COPY LINK" : "START ASSIGNMENT"}
               </Button>
             )}
           </Box>
@@ -241,10 +251,14 @@ export default function StudentCodeAssignment({
           <Box>
             <Typography>
               <strong>Status:</strong>{" "}
-              {grading?.codeAssignmentGradingMetadata?.status?.replace(
-                "_",
-                " "
-              ) ?? "N/A"}
+              {grading?.codeAssignmentGradingMetadata?.status
+                ? grading.codeAssignmentGradingMetadata.status === "queued"
+                  ? "in progress"
+                  : grading.codeAssignmentGradingMetadata.status.replace(
+                      "_",
+                      " "
+                    )
+                : "N/A"}
             </Typography>
           </Box>
 
