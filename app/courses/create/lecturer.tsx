@@ -152,11 +152,11 @@ export default function NewCourse() {
 
   const createAndSetupForum = (courseId: string) => {
     createForum({
-        variables: { courseId },
-        onCompleted() {
-          addUserToForum({ variables: { courseId } })
-        }
-      });
+      variables: { courseId },
+      onCompleted() {
+        addUserToForum({ variables: { courseId } });
+      },
+    });
   };
 
   const steps: StepInfo[] = [

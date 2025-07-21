@@ -41,7 +41,6 @@ export default function AllAchievements({
   achievements,
   profileTypeSortString,
 }: AllAchievementsProps) {
-
   const groupedAchievements = filteredAchievements.reduce(
     (acc, achievement) => {
       const course = achievement.courseId || "Unknown Course";
@@ -195,7 +194,9 @@ export default function AllAchievements({
         </Tabs>
       </Box>
 
-      {(filteredAchievements.length === 0 || Object.keys(groupedAchievements).length === 0) ? (<Box
+      {filteredAchievements.length === 0 ||
+      Object.keys(groupedAchievements).length === 0 ? (
+        <Box
           sx={{
             border: "1px solid #ccc",
             borderRadius: 2,
@@ -208,56 +209,59 @@ export default function AllAchievements({
           <Typography variant="h6" color="text.secondary">
             There are no achievements which can be displayed
           </Typography>
-        </Box>): (Object.entries(groupedAchievements).map(
-        ([course, courseAchievements]: [any, Achievement[]]) => {
-          const sortedAchievements = courseAchievements.sort(
-            (a: Achievement, b: Achievement) => {
-              const dateA = a.completed
-                ? new Date(a.trackingEndTime!).getTime()
-                : null;
-              const dateB = b.completed
-                ? new Date(b.trackingEndTime!).getTime()
-                : null;
+        </Box>
+      ) : (
+        Object.entries(groupedAchievements).map(
+          ([course, courseAchievements]: [any, Achievement[]]) => {
+            const sortedAchievements = courseAchievements.sort(
+              (a: Achievement, b: Achievement) => {
+                const dateA = a.completed
+                  ? new Date(a.trackingEndTime!).getTime()
+                  : null;
+                const dateB = b.completed
+                  ? new Date(b.trackingEndTime!).getTime()
+                  : null;
 
-              if (dateA === null && dateB === null) return 0;
-              if (dateA === null) return 1; // a ist "schlechter", kommt später
-              if (dateB === null) return -1; // b ist "schlechter", kommt später
+                if (dateA === null && dateB === null) return 0;
+                if (dateA === null) return 1; // a ist "schlechter", kommt später
+                if (dateB === null) return -1; // b ist "schlechter", kommt später
 
-              return dateB - dateA; // neuestes zuerst
-            }
-          );
+                return dateB - dateA; // neuestes zuerst
+              }
+            );
 
-          return (
-            <Box key={course} sx={{ px: 2, pt: 2, mb: 2 }}>
-              <Grid
-                container
-                spacing={2}
-                sx={{
-                  marginLeft: 0,
-                  marginRight: 0,
-                  width: "100%",
-                  paddingLeft: 0,
-                }}
-              >
-                {sortedAchievements.map((a: Achievement, index: any) => {
-                  const isCountable =
-                    a.requiredCount != null && a.completedCount != null;
+            return (
+              <Box key={course} sx={{ px: 2, pt: 2, mb: 2 }}>
+                <Grid
+                  container
+                  spacing={2}
+                  sx={{
+                    marginLeft: 0,
+                    marginRight: 0,
+                    width: "100%",
+                    paddingLeft: 0,
+                  }}
+                >
+                  {sortedAchievements.map((a: Achievement, index: any) => {
+                    const isCountable =
+                      a.requiredCount != null && a.completedCount != null;
 
-                  return (
-                    <Grid item xs={12} sm={6} key={a.id}>
-                      <AchievementCard
-                        achievement={a}
-                        showProgress={isCountable && !a.completed}
-                        onClick={() => handleOpenAchievement(a)}
-                      />
-                    </Grid>
-                  );
-                })}
-              </Grid>
-            </Box>
-          );
-        }
-      )) }
+                    return (
+                      <Grid item xs={12} sm={6} key={a.id}>
+                        <AchievementCard
+                          achievement={a}
+                          showProgress={isCountable && !a.completed}
+                          onClick={() => handleOpenAchievement(a)}
+                        />
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              </Box>
+            );
+          }
+        )
+      )}
     </Box>
   );
 }
