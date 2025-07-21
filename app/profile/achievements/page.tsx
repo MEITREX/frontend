@@ -62,7 +62,7 @@ export default function GeneralPageWrapper() {
     }
   );
 
-  console.log(achievementsByUserId)
+  console.log(achievementsByUserId);
 
   const mutableAchievements = [...achievementsByUserId];
 

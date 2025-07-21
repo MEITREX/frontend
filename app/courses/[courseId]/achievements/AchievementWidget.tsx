@@ -159,14 +159,16 @@ export default function LatestAchievements({
               <AchievementCard
                 achievement={a!.achievement}
                 compact
-                showProgress={a!.achievement.completedCount != null && !a!.achievement.completed}
-                onClick={() => openAchievements(a!.achievement)}/>
+                showProgress={
+                  a!.achievement.completedCount != null &&
+                  !a!.achievement.completed
+                }
+                onClick={() => openAchievements(a!.achievement)}
+              />
             </Grid>
-
           ))}
         </Grid>
       </Box>
     </Box>
-
   );
 }

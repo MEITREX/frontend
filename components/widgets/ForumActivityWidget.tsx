@@ -1,14 +1,7 @@
 import { ForumApiForumActivityQuery } from "@/__generated__/ForumApiForumActivityQuery.graphql";
-import {
-  forumApiForumActivityQuery
-} from "@/components/forum/api/ForumApi";
+import { forumApiForumActivityQuery } from "@/components/forum/api/ForumApi";
 import ForumActivity from "@/components/forum/shared/ForumActivity";
-import {
-  Box,
-  Button,
-  Stack,
-  Typography
-} from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";

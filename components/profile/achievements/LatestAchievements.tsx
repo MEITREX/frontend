@@ -11,9 +11,8 @@ export default function LatestAchievements({
   openAchievements,
   achievements,
 }: LatestAchievementsProps) {
-
-  if(achievements.length === 0){
-    return(
+  if (achievements.length === 0) {
+    return (
       <Box
         sx={{
           border: "1px solid #ccc", // hellgrau
@@ -40,7 +39,7 @@ export default function LatestAchievements({
           </Typography>
         </Box>
       </Box>
-    )
+    );
   }
 
   return achievements.length > 0 ? (

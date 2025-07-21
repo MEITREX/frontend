@@ -31,7 +31,6 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 
-
 import { ChapterOverview } from "@/components/ChapterOverview";
 
 import { studentUserAchievementsWidgetQuery } from "@/__generated__/studentUserAchievementsWidgetQuery.graphql";
@@ -193,7 +192,7 @@ export default function StudentCoursePage() {
     mutation studentUserLoginMutation($id: UUID!) {
       loginUser(courseId: $id)
     }
-  `,);
+  `);
 
   const { achievementsByUserId } =
     useLazyLoadQuery<studentUserAchievementsWidgetQuery>(
@@ -238,7 +237,7 @@ export default function StudentCoursePage() {
   const course = coursesByIds[0];
 
   useEffect(() => {
-    console.log(course.id, 'course ID')
+    console.log(course.id, "course ID");
     if (course.id) {
       studentUserLogin({
         variables: { id: course.id },
@@ -537,7 +536,7 @@ export default function StudentCoursePage() {
                   const categoryProgressValue = Math.floor(
                     Math.min(
                       (totalCategoryProgress * 100) /
-                      uniqueSkillsInCategory.length,
+                        uniqueSkillsInCategory.length,
                       100
                     )
                   );
@@ -549,8 +548,9 @@ export default function StudentCoursePage() {
                     >
                       <div className="flex items-center gap-2 w-full mb-2">
                         <CompetencyProgressbar
-                          competencyName={`${uniqueSkill.skillCategory
-                            } - ${Math.floor(categoryProgressValue)}%`}
+                          competencyName={`${
+                            uniqueSkill.skillCategory
+                          } - ${Math.floor(categoryProgressValue)}%`}
                           heightValue={15}
                           progressValue={categoryProgressValue}
                           color={stringToColor(uniqueSkill.skillCategory)}
@@ -645,6 +645,6 @@ export default function StudentCoursePage() {
           </Suspense>
         </CustomTabPanel>
       </Box>
-    </main >
+    </main>
   );
 }

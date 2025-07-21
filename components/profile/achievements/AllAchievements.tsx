@@ -73,95 +73,95 @@ export default function AllAchievements({
   ) {
     return (
       <Box
-      sx={{
-        border: "1px solid #ccc", // hellgrau
-        borderRadius: 2, // leicht gerundete Ecken
-        p: 0, // etwas Innenabstand
-        mb: 4,
-        maxHeight: "800px", // maximale Höhe
-        overflowY: "auto", // vertikales Scrollen bei Overflow
-        paddingRight: 1, // optional: verhindert abgeschnittene Scrollbar
-      }}
-    >
-      <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 2,
-          px: 2,
-          position: "sticky",
-          top: 0,
-          backgroundColor: "white", // wichtig, sonst ist es transparent
-          zIndex: 1, // über Scroll-Content
-          p: 2,
-          borderBottom: "1px solid #eee",
-        }}
-      >
-        <Typography variant="h6" fontWeight="bold">
-          All Achievements
-        </Typography>
-
-        {profileTypeSortString === "not-achieved" && (
-          <Box sx={{ display: "flex", gap: 2 }}>
-            {/* Filter: Achieved / Not Achieved */}
-            <ToggleButtonGroup
-              value={filter}
-              exclusive
-              onChange={handleChange}
-              sx={{ mb: 2 }}
-              size="small"
-            >
-              <ToggleButton
-                value="achieved"
-                sx={{
-                  "&.Mui-selected": {
-                    backgroundColor: "#009bde", // dein Blauton
-                    color: "white",
-                    "&:hover": {
-                      backgroundColor: "#009bde",
-                    },
-                  },
-                }}
-              >
-                <EmojiEventsIcon sx={{ mr: 1 }} />
-                Achieved
-              </ToggleButton>
-              <ToggleButton
-                value="not-achieved"
-                sx={{
-                  "&.Mui-selected": {
-                    backgroundColor: "#009bde", // dein Blauton
-                    color: "white",
-                    "&:hover": {
-                      backgroundColor: "#009bde",
-                    },
-                  },
-                }}
-              >
-                <EmojiEventsOutlinedIcon sx={{ mr: 1 }} />
-                Not Achieved
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Box>
-        )}
-      </Box>
-
-       <Box
-        sx={{
-          border: "1px solid #ccc",
-          borderRadius: 2,
-          p: 4,
+          border: "1px solid #ccc", // hellgrau
+          borderRadius: 2, // leicht gerundete Ecken
+          p: 0, // etwas Innenabstand
           mb: 4,
-          textAlign: "center",
-          backgroundColor: "#f9f9f9",
+          maxHeight: "800px", // maximale Höhe
+          overflowY: "auto", // vertikales Scrollen bei Overflow
+          paddingRight: 1, // optional: verhindert abgeschnittene Scrollbar
         }}
       >
-        <Typography variant="h6" color="text.secondary">
-          There are no achievements which can be displayed
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+            px: 2,
+            position: "sticky",
+            top: 0,
+            backgroundColor: "white", // wichtig, sonst ist es transparent
+            zIndex: 1, // über Scroll-Content
+            p: 2,
+            borderBottom: "1px solid #eee",
+          }}
+        >
+          <Typography variant="h6" fontWeight="bold">
+            All Achievements
+          </Typography>
+
+          {profileTypeSortString === "not-achieved" && (
+            <Box sx={{ display: "flex", gap: 2 }}>
+              {/* Filter: Achieved / Not Achieved */}
+              <ToggleButtonGroup
+                value={filter}
+                exclusive
+                onChange={handleChange}
+                sx={{ mb: 2 }}
+                size="small"
+              >
+                <ToggleButton
+                  value="achieved"
+                  sx={{
+                    "&.Mui-selected": {
+                      backgroundColor: "#009bde", // dein Blauton
+                      color: "white",
+                      "&:hover": {
+                        backgroundColor: "#009bde",
+                      },
+                    },
+                  }}
+                >
+                  <EmojiEventsIcon sx={{ mr: 1 }} />
+                  Achieved
+                </ToggleButton>
+                <ToggleButton
+                  value="not-achieved"
+                  sx={{
+                    "&.Mui-selected": {
+                      backgroundColor: "#009bde", // dein Blauton
+                      color: "white",
+                      "&:hover": {
+                        backgroundColor: "#009bde",
+                      },
+                    },
+                  }}
+                >
+                  <EmojiEventsOutlinedIcon sx={{ mr: 1 }} />
+                  Not Achieved
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+          )}
+        </Box>
+
+        <Box
+          sx={{
+            border: "1px solid #ccc",
+            borderRadius: 2,
+            p: 4,
+            mb: 4,
+            textAlign: "center",
+            backgroundColor: "#f9f9f9",
+          }}
+        >
+          <Typography variant="h6" color="text.secondary">
+            There are no achievements which can be displayed
+          </Typography>
+        </Box>
       </Box>
-    </Box>
     );
   }
 

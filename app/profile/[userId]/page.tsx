@@ -10,7 +10,6 @@ import { useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 
-
 export default function PublicProfilePage() {
   const publicTabs = ["Achievements", "Forum", "Badges"];
   const [tabIndex, setTabIndex] = useState(0);

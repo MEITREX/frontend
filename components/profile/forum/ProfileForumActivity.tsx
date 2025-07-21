@@ -10,7 +10,7 @@ export default function ProfileForumActivity() {
     { fetchPolicy: "network-only" }
   );
 
-  console.log(data)
+  console.log(data);
 
   return (
     <Box
