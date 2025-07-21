@@ -193,7 +193,7 @@ export default function StudentCoursePage() {
     mutation studentUserLoginMutation($id: UUID!) {
       loginUser(courseId: $id)
     }
-  `);
+  `,);
 
   const { achievementsByUserId } =
     useLazyLoadQuery<studentUserAchievementsWidgetQuery>(
@@ -238,6 +238,7 @@ export default function StudentCoursePage() {
   const course = coursesByIds[0];
 
   useEffect(() => {
+    console.log(course.id, 'course ID')
     if (course.id) {
       studentUserLogin({
         variables: { id: course.id },

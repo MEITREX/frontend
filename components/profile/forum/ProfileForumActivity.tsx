@@ -1,15 +1,16 @@
-import { useLazyLoadQuery } from "react-relay";
-import { forumApiForumActivityUserQuery } from "@/components/forum/api/ForumApi";
 import { ForumApiForumActivityUserQuery } from "@/__generated__/ForumApiForumActivityUserQuery.graphql";
-import { Box, Stack, Typography } from "@mui/material";
+import { forumApiForumActivityUserQuery } from "@/components/forum/api/ForumApi";
 import ForumActivity from "@/components/forum/shared/ForumActivity";
-import React from "react";
+import { Box, Stack, Typography } from "@mui/material";
+import { useLazyLoadQuery } from "react-relay";
 
 export default function ProfileForumActivity() {
   const data = useLazyLoadQuery<ForumApiForumActivityUserQuery>(
     forumApiForumActivityUserQuery,
     { fetchPolicy: "network-only" }
   );
+
+  console.log(data)
 
   return (
     <Box

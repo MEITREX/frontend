@@ -1,6 +1,7 @@
 "use client";
 
 import { pagePrivateProfileStudentForumQuery } from "@/__generated__/pagePrivateProfileStudentForumQuery.graphql";
+import ProfileForumActivity from "@/components/profile/forum/ProfileForumActivity";
 import { Box, Tab, Tabs, Typography } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
@@ -81,12 +82,7 @@ export default function ForumPage() {
       </Tabs>
 
       {/* Dummy content */}
-      <Typography variant="h6" gutterBottom>
-        🗨️ Forum
-      </Typography>
-      <Typography>
-        This is the forum section of your profile. Coming soon!
-      </Typography>
+      <ProfileForumActivity />
     </Box>
   );
 }

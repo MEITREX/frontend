@@ -1,26 +1,17 @@
+import { ForumApiForumActivityQuery } from "@/__generated__/ForumApiForumActivityQuery.graphql";
+import {
+  forumApiForumActivityQuery
+} from "@/components/forum/api/ForumApi";
+import ForumActivity from "@/components/forum/shared/ForumActivity";
 import {
   Box,
   Button,
-  Divider,
-  Grid,
   Stack,
-  Tooltip,
-  Typography,
+  Typography
 } from "@mui/material";
 import Link from "next/link";
-import { useLazyLoadQuery, useQueryLoader } from "react-relay";
-import { ForumApiOpenQuestionQuery } from "@/__generated__/ForumApiOpenQuestionQuery.graphql";
-import {
-  forumApiForumActivityQuery,
-  forumApiOpenQuestionQuery,
-} from "@/components/forum/api/ForumApi";
 import { useParams } from "next/navigation";
-import { ForumApiForumActivityQuery } from "@/__generated__/ForumApiForumActivityQuery.graphql";
-import ContentViewer from "../forum/richTextEditor/ContentViewer";
-import UserPostInformation from "@/components/forum/shared/UserPostInformation";
-import React from "react";
-import { format } from "date-fns";
-import ForumActivity from "@/components/forum/shared/ForumActivity";
+import { useLazyLoadQuery } from "react-relay";
 
 export default function ForumActivityWidget() {
   const params = useParams();
