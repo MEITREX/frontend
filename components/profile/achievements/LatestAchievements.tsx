@@ -11,6 +11,38 @@ export default function LatestAchievements({
   openAchievements,
   achievements,
 }: LatestAchievementsProps) {
+
+  if(achievements.length === 0){
+    return(
+      <Box
+        sx={{
+          border: "1px solid #ccc", // hellgrau
+          borderRadius: 2, // leicht gerundete Ecken
+          p: 2, // etwas Innenabstand
+          mb: 4,
+        }}
+      >
+        <Typography variant="h6" gutterBottom>
+          Latest Achievements
+        </Typography>
+        <Box
+          sx={{
+            border: "1px solid #ccc",
+            borderRadius: 2,
+            p: 4,
+            mb: 4,
+            textAlign: "center",
+            backgroundColor: "#f9f9f9",
+          }}
+        >
+          <Typography variant="h6" color="text.secondary">
+            There are no achievements which can be displayed
+          </Typography>
+        </Box>
+      </Box>
+    )
+  }
+
   return achievements.length > 0 ? (
     <Box
       sx={{

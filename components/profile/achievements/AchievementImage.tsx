@@ -1,20 +1,24 @@
 import { Box } from "@mui/material";
 import { useState } from "react";
 
+interface AchievementImageProps {
+  src: string | undefined;
+  alt: string | undefined;
+  completed: boolean | undefined;
+  size?: number; // Neue optionale Größe
+}
+
 export default function AchievementImage({
   src,
   alt,
   completed,
-}: {
-  src: string | undefined;
-  alt: string | undefined;
-  completed: boolean | undefined;
-}) {
+  size = 64, // Standardgröße
+}: AchievementImageProps) {
   const [hasError, setHasError] = useState(false);
 
   const sharedStyles = {
-    width: 64,
-    height: 64,
+    width: size,
+    height: size,
     opacity: completed ? 1 : 0.4,
     borderRadius: 2,
     objectFit: "cover" as const,

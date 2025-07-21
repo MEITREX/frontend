@@ -1,6 +1,6 @@
-import AchievementImage from "@/components/profile/achievements/AchievementImage";
+import AchievementCard from "@/components/profile/achievements/AchievementCard";
 import { Achievement } from "@/components/profile/achievements/types";
-import { Box, Button, Grid, Tooltip, Typography } from "@mui/material";
+import { Box, Button, Grid, Typography } from "@mui/material";
 import Link from "next/link";
 
 interface LatestAchievementsProps {
@@ -121,9 +121,10 @@ export default function LatestAchievements({
         borderRadius: 2,
         p: 2,
         mb: 4,
-        minHeight: 400,
         maxWidth: 450,
         maxHeight: 400,
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <Box
@@ -149,53 +150,23 @@ export default function LatestAchievements({
           </Button>
         </Link>
       </Box>
-      <Grid container spacing={2}>
-        {getFilteredAchievements(achievements, course).map((a, index) => (
-          <Grid item xs={6} key={a!.key}>
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: 2,
-                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                cursor: "pointer",
-                transition: "transform 0.3s ease",
-                "&:hover": {
-                  transform: "scale(1.1)",
-                },
-              }}
-            >
-              <Typography
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                fontWeight={"bold"}
-              >
-                {a?.title}
-              </Typography>
-              <Tooltip title={a!.achievement.name}>
-                <Box
-                  onClick={() => openAchievements(a!.achievement)}
-                  sx={{
-                    fontSize: 40,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <AchievementImage
-                    src={a?.achievement.imageUrl}
-                    alt={a?.achievement.name}
-                    completed={a?.achievement.completed}
-                  />
-                </Box>
-              </Tooltip>
-            </Box>
-          </Grid>
-        ))}
-      </Grid>
+
+      {/* Scrollbarer Bereich */}
+      <Box sx={{ overflowY: "auto", flexGrow: 1 }}>
+        <Grid container spacing={2}>
+          {getFilteredAchievements(achievements, course).map((a, index) => (
+            <Grid item xs={12} key={a!.key}>
+              <AchievementCard
+                achievement={a!.achievement}
+                compact
+                showProgress={a!.achievement.completedCount != null && !a!.achievement.completed}
+                onClick={() => openAchievements(a!.achievement)}/>
+            </Grid>
+
+          ))}
+        </Grid>
+      </Box>
     </Box>
+
   );
 }
