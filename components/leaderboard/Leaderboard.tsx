@@ -143,7 +143,7 @@ export default function Leaderboard({
       : data?.allTime;
   const scores =
     raw && raw.length > 0 && raw[0]?.userScores
-      ? raw[0].userScores
+      ? [...raw[0].userScores].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
       : [];
 
   // displayUsers logic unchanged
