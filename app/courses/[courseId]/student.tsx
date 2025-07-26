@@ -34,6 +34,7 @@ import { useState } from "react";
 import { ChapterOverview } from "@/components/ChapterOverview";
 
 import CourseLeaderboards from "@/components/leaderboard/CourseLeaderboard";
+import LeaderboardWidget from '@/components/leaderboard/LeaderboardWidget';
 
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
@@ -81,6 +82,8 @@ function createData(name: string, power: number) {
 export default function StudentCoursePage() {
   // Get course id from url
   const { courseId: id } = useParams();
+  // derive ISO date string for leaderboard queries
+  const date = new Date().toISOString().slice(0, 10);
 
   // tabs
   const [value, setValue] = React.useState(0);
@@ -316,6 +319,20 @@ export default function StudentCoursePage() {
         </Box>
         <CustomTabPanel value={value} index={0}>
           <ChapterOverview _chapters={course} />
+          {/* Gamification Leaderboard Widget */}
+          <div className="mt-8 w-full flex justify-center">
+            <div className="w-full max-w-5xl">
+              <Typography variant="h2" component="h2" gutterBottom>
+                Leaderboard
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              <LeaderboardWidget
+                courseID={id}
+                date={date}
+                currentUserID={userId}
+              />
+            </div>
+          </div>
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
           <div className="flex flex-col gap-12">
