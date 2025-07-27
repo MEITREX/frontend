@@ -34,7 +34,7 @@ import { useState } from "react";
 import { ChapterOverview } from "@/components/ChapterOverview";
 
 import CourseLeaderboards from "@/components/leaderboard/CourseLeaderboard";
-import LeaderboardWidget from '@/components/leaderboard/LeaderboardWidget';
+import LeaderboardWidget from "@/components/leaderboard/LeaderboardWidget";
 
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
@@ -568,9 +568,9 @@ export default function StudentCoursePage() {
         <CustomTabPanel value={value} index={3}>
           {/* Leaderboard-Tab */}
           <CourseLeaderboards
-            courseId={id}
+            courseID={id}
             currentUserId={userId}
-
+            currentUserName={"Current User"}
             //currentUserProfileImage={profileImage} // optional!
           />
         </CustomTabPanel>

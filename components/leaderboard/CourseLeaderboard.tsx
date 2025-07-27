@@ -32,7 +32,9 @@ const CourseLeaderboards: React.FC<CourseLeaderboardsProps> = ({
   currentUserName,
   currentUserProfileImage,
 }) => {
-  const [activeTab, setActiveTab] = useState<"weekly" | "monthly" | "overall">("weekly");
+  const [activeTab, setActiveTab] = useState<"weekly" | "monthly" | "overall">(
+    "weekly"
+  );
 
   const handlePrevious = () => {
     alert("Vorheriger Zeitraum (Demo)");
@@ -75,8 +77,6 @@ const CourseLeaderboards: React.FC<CourseLeaderboardsProps> = ({
         periodLabel={PERIODS[activeTab].periodLabel}
         onPrevious={handlePrevious}
         period={activeTab === "overall" ? "allTime" : activeTab}
-        courseID={courseID}
-        // Wenn nötig, gib die weiteren User-Props mit (z.B. currentUserId)
       />
     </div>
   );
