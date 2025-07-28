@@ -1,7 +1,8 @@
 "use client";
 
-import { pagePrivateProfileStudentForumQuery } from "@/__generated__/pagePrivateProfileStudentForumQuery.graphql";
-import ProfileForumActivity from "@/components/profile/forum/ProfileForumActivity";
+import { pagePrivateProfileLeaderboardsQuery } from "@/__generated__/pagePrivateProfileLeaderboardsQuery.graphql";
+import ProfileLeaderboardPositions from "@/app/profile/leaderboard/ProfileLeaderboardPositions";
+//"@/components/profile/leaderboard/ProfileLeaderboardPositions";
 import { Box, Tab, Tabs, Typography } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
@@ -10,13 +11,10 @@ import { graphql } from "relay-runtime";
 const tabs = [
   { label: "General", path: "general" },
   { label: "Achievements", path: "achievements" },
-  { label: "Forum", path: "forum" },
-  { label: "Badges", path: "badges" },
-  { label: "Leaderboards", path: "leaderboards" },
-
+  { label: "Leaderboards", path: "leaderboard" },
 ];
 
-export default function ForumPage() {
+export default function LeaderboardPage() {
   const router = useRouter();
   const pathname = usePathname();
   const activeIndex = tabs.findIndex((tab) => pathname.includes(tab.path));
@@ -26,9 +24,9 @@ export default function ForumPage() {
   };
 
   const { currentUserInfo } =
-    useLazyLoadQuery<pagePrivateProfileStudentForumQuery>(
+    useLazyLoadQuery<pagePrivateProfileLeaderboardsQuery>(
       graphql`
-        query pagePrivateProfileStudentForumQuery {
+        query pagePrivateProfileLeaderboardsQuery {
           currentUserInfo {
             id
             userName
@@ -44,7 +42,7 @@ export default function ForumPage() {
         Hi, {currentUserInfo.userName}
       </Typography>
       <Typography variant="body1" color="text.secondary" mb={3}>
-        Welcome to your profile. Use the tabs to navigate.
+        Here you can see your leaderboard positions across your courses.
       </Typography>
 
       <Tabs
@@ -83,8 +81,7 @@ export default function ForumPage() {
         ))}
       </Tabs>
 
-      {/* Dummy content */}
-      <ProfileForumActivity />
+      <ProfileLeaderboardPositions />
     </Box>
   );
 }

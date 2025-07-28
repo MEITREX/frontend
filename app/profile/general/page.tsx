@@ -12,6 +12,7 @@ const tabs = [
   { label: "Achievements", path: "achievements" },
   { label: "Forum", path: "forum" },
   { label: "Badges", path: "badges" },
+  { label: "Leaderboards", path: "leaderboards" },
 ];
 
 export default function GeneralPageWrapper() {
