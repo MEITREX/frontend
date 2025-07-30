@@ -363,7 +363,9 @@ function GroupedTestResults({ html }: { html: string }) {
   });
 
   const [expanded, setExpanded] = useState<string | false>(false);
-  const [errorExpanded, setErrorExpanded] = useState<number | null>(null);
+  const [errorExpanded, setErrorExpanded] = useState<
+    Record<string, number | null>
+  >({});
 
   return (
     <Box>
@@ -425,19 +427,19 @@ function GroupedTestResults({ html }: { html: string }) {
                 <TableBody>
                   {tests.map(({ name, score, errorLog }, idx) => {
                     const hasError = score.startsWith("0") && errorLog;
-                    const isOpen = errorExpanded === idx;
+                    const isOpen = errorExpanded[prefix] === idx;
 
                     return (
                       <React.Fragment key={idx}>
                         <TableRow
-                          // hover={hasError}
-                          onClick={() =>
-                            hasError
-                              ? setErrorExpanded((prev) =>
-                                  prev === idx ? null : idx
-                                )
-                              : undefined
-                          }
+                          hover={!!hasError}
+                          onClick={() => {
+                            if (!hasError) return;
+                            setErrorExpanded((prev) => ({
+                              ...prev,
+                              [prefix]: prev[prefix] === idx ? null : idx,
+                            }));
+                          }}
                           sx={{
                             cursor: hasError ? "pointer" : "default",
                             "&:last-child td": { borderBottom: "none" },
@@ -459,12 +461,12 @@ function GroupedTestResults({ html }: { html: string }) {
                               <ExpandMore
                                 fontSize="small"
                                 sx={{
-                                  visibility: hasError ? "visible" : "hidden", // 👈 fixes alignment
+                                  visibility: hasError ? "visible" : "hidden",
                                   transform: isOpen
                                     ? "rotate(180deg)"
                                     : "rotate(0deg)",
                                   transition: "transform 0.2s ease-in-out",
-                                  color: hasError ? "#f44336" : "transparent", // prevent hover artifacts
+                                  color: hasError ? "#f44336" : "transparent",
                                 }}
                               />
                             </Box>
