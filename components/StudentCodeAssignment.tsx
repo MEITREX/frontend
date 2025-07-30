@@ -17,7 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
 import { ContentTags } from "./ContentTags";
@@ -341,28 +341,29 @@ function GroupedTestResults({ html }: { html: string }) {
   const doc = parser.parseFromString(html, "text/html");
   const rows = Array.from(doc.querySelectorAll("tbody tr"));
 
-  const groups: Record<string, { name: string; score: string }[]> = {};
+  const groups: Record<
+    string,
+    { name: string; score: string; errorLog?: string }[]
+  > = {};
 
   rows.forEach((row) => {
     const cells = row.querySelectorAll("td");
     if (cells.length >= 2) {
       const fullName = cells[0].textContent?.trim() || "Unknown";
       const score = cells[1].textContent?.trim() || "0";
+      const errorLog = cells[2]?.innerHTML?.replace(/<br\s*\/?>/g, "\n");
 
       const [rawPrefix, ...rest] = fullName.split(" - ");
       const prefix = rawPrefix.trim();
       const testName = rest.join(" - ").trim() || fullName;
 
       if (!groups[prefix]) groups[prefix] = [];
-      groups[prefix].push({ name: testName, score });
+      groups[prefix].push({ name: testName, score, errorLog });
     }
   });
 
   const [expanded, setExpanded] = useState<string | false>(false);
-  const handleChange =
-    (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
-      setExpanded(isExpanded ? panel : false);
-    };
+  const [errorExpanded, setErrorExpanded] = useState<number | null>(null);
 
   return (
     <Box>
@@ -372,7 +373,6 @@ function GroupedTestResults({ html }: { html: string }) {
           const [passed, total] = t.score.split("/").map(Number);
           return passed > 0 || total === 0;
         }).length;
-        console.log(tests);
 
         let achievedSum = 0;
         let maxSum = 0;
@@ -387,7 +387,7 @@ function GroupedTestResults({ html }: { html: string }) {
           <Accordion
             key={prefix}
             expanded={expanded === prefix}
-            onChange={handleChange(prefix)}
+            onChange={(_, isExp) => setExpanded(isExp ? prefix : false)}
             sx={{
               borderRadius: 1,
               mb: 1,
@@ -423,24 +423,74 @@ function GroupedTestResults({ html }: { html: string }) {
             <AccordionDetails sx={{ px: 2, py: 0 }}>
               <Table size="small">
                 <TableBody>
-                  {tests.map(({ name, score }, idx) => (
-                    <TableRow
-                      key={idx}
-                      sx={{
-                        "&:last-child td, &:last-child th": {
-                          borderBottom: "none",
-                        },
-                      }}
-                    >
-                      <TableCell>{name}</TableCell>
-                      <TableCell
-                        align="right"
-                        sx={{ pr: 12, whiteSpace: "nowrap" }}
-                      >
-                        {score}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {tests.map(({ name, score, errorLog }, idx) => {
+                    const hasError = score.startsWith("0") && errorLog;
+                    const isOpen = errorExpanded === idx;
+
+                    return (
+                      <React.Fragment key={idx}>
+                        <TableRow
+                          // hover={hasError}
+                          onClick={() =>
+                            hasError
+                              ? setErrorExpanded((prev) =>
+                                  prev === idx ? null : idx
+                                )
+                              : undefined
+                          }
+                          sx={{
+                            cursor: hasError ? "pointer" : "default",
+                            "&:last-child td": { borderBottom: "none" },
+                          }}
+                        >
+                          <TableCell>{name}</TableCell>
+                          <TableCell align="right" sx={{ pr: 8 }}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "flex-end",
+                                gap: 1,
+                                whiteSpace: "nowrap",
+                                cursor: hasError ? "pointer" : "default",
+                              }}
+                            >
+                              {score}
+                              <ExpandMore
+                                fontSize="small"
+                                sx={{
+                                  visibility: hasError ? "visible" : "hidden", // 👈 fixes alignment
+                                  transform: isOpen
+                                    ? "rotate(180deg)"
+                                    : "rotate(0deg)",
+                                  transition: "transform 0.2s ease-in-out",
+                                  color: hasError ? "#f44336" : "transparent", // prevent hover artifacts
+                                }}
+                              />
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+
+                        {hasError && isOpen && (
+                          <TableRow>
+                            <TableCell
+                              colSpan={2}
+                              sx={{
+                                whiteSpace: "pre-wrap",
+                                backgroundColor: "#f9f9f9",
+                                fontFamily: "monospace",
+                                fontSize: "0.85rem",
+                                borderBottom: "1px solid #eee",
+                              }}
+                              dangerouslySetInnerHTML={{
+                                __html: errorLog ?? "",
+                              }}
+                            />
+                          </TableRow>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </AccordionDetails>
