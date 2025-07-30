@@ -1,4 +1,5 @@
 import { PlayerTypeSurveyEvaluateHexadTypeMutation } from "@/__generated__/PlayerTypeSurveyEvaluateHexadTypeMutation.graphql";
+import { PlayerTypeSurveySetNicknameMutation } from "@/__generated__/PlayerTypeSurveySetNicknameMutation.graphql";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import CloseIcon from "@mui/icons-material/Close";
 import {
@@ -54,6 +55,19 @@ const SurveyPopup = ({ id }: { id: string }) => {
             type
             value
           }
+        }
+      }
+    `);
+
+  const [PlayerTypeSurveySetNicknameMutation] =
+    useMutation<PlayerTypeSurveySetNicknameMutation>(graphql`
+      mutation PlayerTypeSurveySetNicknameMutation(
+        $id: UUID!
+        $nickname: String!
+      ) {
+        setNickname(userId: $id, nickname: $nickname) {
+            nickname
+
         }
       }
     `);
@@ -196,6 +210,23 @@ const SurveyPopup = ({ id }: { id: string }) => {
     return `${adj}${dino}${number}`;
   }
 
+  const handlSubmitNickname = (nickname: string) => {
+    PlayerTypeSurveySetNicknameMutation({
+      variables: {
+        id: id,
+        nickname: nickname
+      },
+      onError() {
+        console.log('Error setting nickname')
+      },
+      onCompleted() {
+       console.log('Set nickname successfully')
+       setIsNicknameScreen(false);
+       setIsStartScreen(true);
+      },
+    })
+  }
+
   const [nickname, setNickname] = useState(generateRandomNickname());
 
   if (isNicknameScreen) {
@@ -260,8 +291,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
           <Button
             variant="contained"
             onClick={() => {
-              setIsNicknameScreen(false);
-              setIsStartScreen(true);
+              handlSubmitNickname(nickname)
             }}
           >
             Continue

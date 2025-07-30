@@ -2383,6 +2383,7 @@ type Mutation {
   generateAccessToken(input: GenerateAccessTokenInput!): Boolean!
   updateSettings(userId: UUID!, input: SettingsInput!): Settings!
   defaultSettings(userId: UUID!): Settings!
+  setNickname(userId: UUID!, nickname: String!): UserInfo!
 
   #
   # Modify a quiz.
@@ -3999,6 +4000,7 @@ type UserInfo {
   userName: String!
   firstName: String!
   lastName: String!
+  nickname: String!
   realmRoles: [GlobalUserRole!]!
 
   # The course memberships of the user.
