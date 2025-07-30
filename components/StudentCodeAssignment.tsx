@@ -368,7 +368,20 @@ function GroupedTestResults({ html }: { html: string }) {
     <Box>
       {Object.entries(groups).map(([prefix, tests]) => {
         const totalTests = tests.length;
-        const passedTests = tests.filter((t) => t.score !== "0").length;
+        const passedTests = tests.filter((t) => {
+          const [passed, total] = t.score.split("/").map(Number);
+          return passed > 0 || total === 0;
+        }).length;
+        console.log(tests);
+
+        let achievedSum = 0;
+        let maxSum = 0;
+
+        tests.forEach(({ score }) => {
+          const [achieved, max] = score.split("/").map(Number);
+          if (!isNaN(achieved)) achievedSum += achieved;
+          if (!isNaN(max)) maxSum += max;
+        });
 
         return (
           <Accordion
@@ -395,13 +408,15 @@ function GroupedTestResults({ html }: { html: string }) {
                   margin: 0,
                   alignItems: "center",
                 },
+                display: "flex",
+                justifyContent: "space-between",
               }}
             >
               <Typography fontWeight="bold" sx={{ flexGrow: 1 }}>
                 {prefix}
               </Typography>
               <Typography color="text.secondary">
-                {passedTests}/{totalTests} passed
+                {passedTests}/{totalTests} passed {achievedSum}/{maxSum} pts.
               </Typography>
             </AccordionSummary>
 
@@ -418,7 +433,12 @@ function GroupedTestResults({ html }: { html: string }) {
                       }}
                     >
                       <TableCell>{name}</TableCell>
-                      <TableCell align="center">{score}</TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{ pr: 12, whiteSpace: "nowrap" }}
+                      >
+                        {score}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
