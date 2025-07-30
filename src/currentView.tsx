@@ -55,7 +55,7 @@ export function PageViewProvider({ children }: { children: React.ReactNode }) {
         pageView ?? PageView.Student
       );
     }
-  }, [pageView]);
+  }, [pageView, currentUserInfo.realmRoles, setPageView]);
 
   useEffect(() => {
     const isTutor =
