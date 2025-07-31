@@ -1,7 +1,8 @@
 "use client"
 
-import { Tab, Tabs } from "@mui/material";
+import { Box, Tab, Tabs } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
+
 
 const tabs = [
   { label: "Profile Picture", path: "picture" },
@@ -21,8 +22,19 @@ export default function InventoryLayout({ children }: { children: React.ReactNod
     router.push(`/items/inventory/${tabs[newValue].path}`);
     };
 
+
+
     return (
-        <div>
+        <Box
+          sx={{
+            p: 4,
+            border: "1px solid",
+            borderColor: "grey.300",
+            borderRadius: 3,
+            backgroundColor: "background.paper",
+            boxShadow: 1,
+          }}
+        >
         <Tabs
                 value={activeIndex}
                 onChange={handleChange}
@@ -56,7 +68,10 @@ export default function InventoryLayout({ children }: { children: React.ReactNod
                   />
                 ))}
               </Tabs>
-              {children}
-              </div>
+
+                {children}
+
+
+          </Box>
     );
 }
