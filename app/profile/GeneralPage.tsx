@@ -24,10 +24,9 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
   const [GeneralPageSetNicknameMutation] =
       useMutation<GeneralPageSetNicknameMutation>(graphql`
         mutation GeneralPageSetNicknameMutation(
-          $id: UUID!
           $nickname: String!
         ) {
-          setNickname(userId: $id, nickname: $nickname) {
+          setNickname(nickname: $nickname) {
               nickname
 
           }
@@ -46,7 +45,6 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
       console.log(newStudentData);
       GeneralPageSetNicknameMutation({
             variables: {
-              id: newStudentData.id,
               nickname: newStudentData.nickname
             },
             onError() {
@@ -97,6 +95,7 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
       {/* Profilbild-Platzhalter */}
       <Box display="flex" flexDirection="column" alignItems="center">
         <Avatar
+          variant="square"
           sx={{
             width: 120,
             height: 120,
@@ -135,15 +134,13 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
           fullWidth
           disabled={!editMode}
         />
-        {/*
         <TextField
-          label="Email"
-          value={'N.A.'}
-          onChange={handleChange("email")}
+          label="Username"
+          value={newStudentData.userName}
+          onChange={handleChange("userName")}
           fullWidth
           disabled={!editMode}
         />
-         */}
         <Box display="flex" alignItems="center" gap={1}>
           <TextField
             label="Nickname"

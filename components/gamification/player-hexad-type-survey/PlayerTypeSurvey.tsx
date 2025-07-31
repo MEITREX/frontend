@@ -62,10 +62,9 @@ const SurveyPopup = ({ id }: { id: string }) => {
   const [PlayerTypeSurveySetNicknameMutation] =
     useMutation<PlayerTypeSurveySetNicknameMutation>(graphql`
       mutation PlayerTypeSurveySetNicknameMutation(
-        $id: UUID!
         $nickname: String!
       ) {
-        setNickname(userId: $id, nickname: $nickname) {
+        setNickname(nickname: $nickname) {
             nickname
 
         }
@@ -213,7 +212,6 @@ const SurveyPopup = ({ id }: { id: string }) => {
   const handlSubmitNickname = (nickname: string) => {
     PlayerTypeSurveySetNicknameMutation({
       variables: {
-        id: id,
         nickname: nickname
       },
       onError() {
