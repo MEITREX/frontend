@@ -22,16 +22,13 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
   const [newStudentData, setStudentData] = useState(studentData);
 
   const [GeneralPageSetNicknameMutation] =
-      useMutation<GeneralPageSetNicknameMutation>(graphql`
-        mutation GeneralPageSetNicknameMutation(
-          $nickname: String!
-        ) {
-          setNickname(nickname: $nickname) {
-              nickname
-
-          }
+    useMutation<GeneralPageSetNicknameMutation>(graphql`
+      mutation GeneralPageSetNicknameMutation($nickname: String!) {
+        setNickname(nickname: $nickname) {
+          nickname
         }
-      `);
+      }
+    `);
 
   const handleChange =
     (field: keyof typeof studentData) =>
@@ -44,16 +41,16 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
       // Optional: hier speichern (API call etc.)
       console.log(newStudentData);
       GeneralPageSetNicknameMutation({
-            variables: {
-              nickname: newStudentData.nickname
-            },
-            onError() {
-              console.log('Error setting nickname')
-            },
-            onCompleted() {
-            console.log('Set nickname successfully')
-            },
-          })
+        variables: {
+          nickname: newStudentData.nickname,
+        },
+        onError() {
+          console.log("Error setting nickname");
+        },
+        onCompleted() {
+          console.log("Set nickname successfully");
+        },
+      });
     }
     setEditMode(!editMode);
   };

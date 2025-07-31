@@ -61,12 +61,9 @@ const SurveyPopup = ({ id }: { id: string }) => {
 
   const [PlayerTypeSurveySetNicknameMutation] =
     useMutation<PlayerTypeSurveySetNicknameMutation>(graphql`
-      mutation PlayerTypeSurveySetNicknameMutation(
-        $nickname: String!
-      ) {
+      mutation PlayerTypeSurveySetNicknameMutation($nickname: String!) {
         setNickname(nickname: $nickname) {
-            nickname
-
+          nickname
         }
       }
     `);
@@ -212,18 +209,18 @@ const SurveyPopup = ({ id }: { id: string }) => {
   const handlSubmitNickname = (nickname: string) => {
     PlayerTypeSurveySetNicknameMutation({
       variables: {
-        nickname: nickname
+        nickname: nickname,
       },
       onError() {
-        console.log('Error setting nickname')
+        console.log("Error setting nickname");
       },
       onCompleted() {
-       console.log('Set nickname successfully')
-       setIsNicknameScreen(false);
-       setIsStartScreen(true);
+        console.log("Set nickname successfully");
+        setIsNicknameScreen(false);
+        setIsStartScreen(true);
       },
-    })
-  }
+    });
+  };
 
   const [nickname, setNickname] = useState(generateRandomNickname());
 
@@ -289,7 +286,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
           <Button
             variant="contained"
             onClick={() => {
-              handlSubmitNickname(nickname)
+              handlSubmitNickname(nickname);
             }}
           >
             Continue
