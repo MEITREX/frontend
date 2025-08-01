@@ -1,7 +1,9 @@
+"use client"
+
 import { pageInventoryForUserQuery } from "@/__generated__/pageInventoryForUserQuery.graphql";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
-import DecoParser from "./../../../../components/DecoParser"
+import DecoParser from "../../../../components/DecoParser";
 
 export default function BackgroundPage() {
 
@@ -23,6 +25,15 @@ export default function BackgroundPage() {
             `,
             {}
           );
+
+      const itemIds = inventoryForUser.items.map(item => item.id);
+
+      console.log(itemIds)
+
+      const itemsParsed = DecoParser(itemIds, "colorThemes")
+
+      console.log(itemsParsed)
+
 
 
     return (
