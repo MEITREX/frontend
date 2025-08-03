@@ -82,6 +82,7 @@ export const GlobalStyleSetup = () => {
           "--color-muitheme-surface-a30": theme.palette.surfaceA[30],
           "--color-muitheme-surface-a40": theme.palette.surfaceA[40],
           "--color-muitheme-surface-a50": theme.palette.surfaceA[50],
+          "--color-muitheme-surface-a60": theme.palette.surfaceA[60],
 
           "--color-muitheme-assessment-quiz": theme.palette.assessment.quiz,
           "--color-muitheme-assessment-fc":

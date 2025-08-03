@@ -211,8 +211,9 @@ export default function LecturerFlashcards() {
                     flashcard={flashcard}
                   />
                   {/* unfortunately, this css must be adjusted to the one in Flashcard.tsx */}
-                  <div className="flex flex-row justify-between gap-x-2 mt-4">
+                  <div className="mb-4 mt-3 flex flex-row justify-between">
                     <Button
+                      variant="outlined"
                       disabled={isAddFlashcardOpen}
                       startIcon={<Edit />}
                       onClick={() => setEditingFlashcard(i)}
@@ -220,8 +221,9 @@ export default function LecturerFlashcards() {
                       Edit
                     </Button>
                     <Button
+                      variant="outlined"
                       disabled={isAddFlashcardOpen}
-                      sx={{ color: "red" }}
+                      color="warning"
                       startIcon={<Delete />}
                       onClick={() => {
                         if (
@@ -233,7 +235,7 @@ export default function LecturerFlashcards() {
                         }
                       }}
                     >
-                      Delete Flashcard
+                      Delete
                     </Button>
                   </div>
                 </>

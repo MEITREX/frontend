@@ -1,4 +1,4 @@
-import { createTheme } from "@mui/material";
+import { createTheme, Theme } from "@mui/material";
 import tailwindColors from "tailwindcss/colors";
 import {
   COLOR_BLIND,
@@ -10,6 +10,22 @@ import {
 } from "./colors";
 
 const commonStyles = {
+  components: {
+    MuiDialog: {
+      styleOverrides: {
+        paper: ({ theme }: { theme: Theme }) => ({
+          backgroundColor: theme.palette.surfaceA[0],
+        }),
+      },
+    },
+    MuiPopover: {
+      styleOverrides: {
+        paper: ({ theme }: { theme: Theme }) => ({
+          backgroundColor: theme.palette.surfaceA[0],
+        }),
+      },
+    },
+  },
   typography: {
     fontSize: 14,
     h1: {
@@ -23,9 +39,16 @@ const commonStyles = {
   },
 };
 
+const commonStylesPalette = {
+  warning: {
+    main: "#C72C48",
+  },
+};
+
 export const themeLight = createTheme({
   ...commonStyles,
   palette: {
+    ...commonStylesPalette,
     mode: "light",
     colorBlind: false,
 
@@ -38,13 +61,18 @@ export const themeLight = createTheme({
       quiz: tailwindColors.rose[200],
       media: tailwindColors.violet[200],
     },
+    // colors/ difficulty in inspiration of https://en.wikipedia.org/wiki/Bloom%27s_taxonomy
+    bloomsTaxonomy: {
+      REMEMBER: "#00FF7F",
+      UNDERSTAND: "#00FF00",
+      APPLY: "#7FFF00",
+      ANALYZE: "#FFFF00",
+      CREATE: "#FF7F00",
+      EVALUATE: "#FF0000",
+    },
 
     primary: {
       main: PRIMARY_LIGHT[10],
-    },
-
-    warning: {
-      main: "#C72C48",
     },
   },
 });
@@ -52,6 +80,7 @@ export const themeLight = createTheme({
 export const themeDark = createTheme({
   ...commonStyles,
   palette: {
+    ...commonStylesPalette,
     mode: "dark",
     colorBlind: false,
 
@@ -64,9 +93,17 @@ export const themeDark = createTheme({
       quiz: tailwindColors.rose[400],
       media: tailwindColors.violet[500],
     },
+    bloomsTaxonomy: {
+      REMEMBER: "#00FF7F",
+      UNDERSTAND: "#00FF00",
+      APPLY: "#7FFF00",
+      ANALYZE: "#FFFF00",
+      CREATE: "#FF7F00",
+      EVALUATE: "#FF0000",
+    },
 
     primary: {
-      main: PRIMARY_LIGHT[20],
+      main: PRIMARY_DARK[10],
     },
   },
 });
@@ -89,6 +126,14 @@ export const themeColorBlind = createTheme({
       flashcardSet: COLOR_BLIND.green,
       quiz: COLOR_BLIND.pink,
       media: COLOR_BLIND.lightBlue,
+    },
+    bloomsTaxonomy: {
+      REMEMBER: "#00FF7F",
+      UNDERSTAND: "#00FF00",
+      APPLY: "#7FFF00",
+      ANALYZE: "#FFFF00",
+      CREATE: "#FF7F00",
+      EVALUATE: "#FF0000",
     },
   },
 });

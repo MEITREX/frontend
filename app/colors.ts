@@ -32,6 +32,7 @@ export const SURFACE_LIGHT = {
   30: "#d3d3d3",
   40: "#c4c4c4",
   50: "#b6b6b6",
+  60: "#a8a8a8",
 } as const;
 
 export const SURFACE_LIGHT_TONAL = {
@@ -51,6 +52,7 @@ export const SURFACE_DARK = {
   30: "#575757",
   40: "#717171",
   50: "#8b8b8b",
+  60: "#a6a6a6",
 } as const;
 
 export const SURFACE_DARK_TONAL = {
@@ -60,6 +62,7 @@ export const SURFACE_DARK_TONAL = {
   30: "#5c6064",
   40: "#75797c",
   50: "#8f9295",
+  60: "#a9acaf",
 } as const;
 
 export const COLOR_BLIND = {

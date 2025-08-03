@@ -12,6 +12,7 @@ declare module "@mui/material/styles" {
       30: string;
       40: string;
       50: string;
+      60: string;
     };
     secondaryA: string,
     surfaceA: {
@@ -21,12 +22,21 @@ declare module "@mui/material/styles" {
       30: string;
       40: string;
       50: string;
+      60: string;
     };
 
     assessment: {
       quiz: string;
       flashcardSet: string;
       media: string;
+    };
+    bloomsTaxonomy: {
+      REMEMBER: string;
+      UNDERSTAND: string;
+      APPLY: string;
+      ANALYZE: string;
+      CREATE: string;
+      EVALUATE: string;
     };
   }
 
@@ -40,6 +50,7 @@ declare module "@mui/material/styles" {
       30: string;
       40: string;
       50: string;
+      60: string;
     };
     secondaryA: string,
     surfaceA: {
@@ -49,12 +60,21 @@ declare module "@mui/material/styles" {
       30: string;
       40: string;
       50: string;
+      60: string;
     };
 
     assessment: {
       quiz: string;
       flashcardSet: string;
       media: string;
+    };
+    bloomsTaxonomy: {
+      REMEMBER: string;
+      UNDERSTAND: string;
+      APPLY: string;
+      ANALYZE: string;
+      CREATE: string;
+      EVALUATE: string;
     };
   }
 }

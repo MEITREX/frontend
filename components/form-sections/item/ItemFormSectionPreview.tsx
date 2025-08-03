@@ -27,17 +27,22 @@ const ItemFormSectionPreview = ({ item }: ItemFormSectionPreviewProps) => {
         gap: 1,
       }}
     >
-      {item.associatedBloomLevels.map((level) => (
-        <Chip
-          key={level}
-          sx={{
-            backgroundColor: BLOOM_TAXONOMY_COLORS[level] + "45",
-            border: `solid 1px ${BLOOM_TAXONOMY_COLORS[level] + "48"}`,
-          }}
-          label={level[0].toUpperCase() + level.slice(1).toLowerCase()}
-          title="Bloom Taxonomy"
-        />
-      ))}
+      {item.associatedBloomLevels
+        // NOTE: can't grasp why this value was added here...
+        .filter((bloom) => bloom !== "%future added value")
+        .map((level) => (
+          <Chip
+            key={level}
+            sx={{
+              backgroundColor: (theme) =>
+                theme.palette.bloomsTaxonomy[level] + "65",
+              border: (theme) =>
+                `solid 1px ${theme.palette.bloomsTaxonomy[level] + "75"}`,
+            }}
+            label={level[0].toUpperCase() + level.slice(1).toLowerCase()}
+            title="Bloom Taxonomy"
+          />
+        ))}
       <Divider
         flexItem
         orientation="vertical"
@@ -57,10 +62,17 @@ const ItemFormSectionPreview = ({ item }: ItemFormSectionPreviewProps) => {
             </>
           }
           placement="top"
+          sx={{
+            "& > .MuiTooltip-tooltipPlacementTop": {
+              backgroundColor: "surfaceA.30",
+              color: "text.secondary",
+            },
+          }}
         >
           <Chip
             key={`${skill.skillCategory}-${skill.skillName}`}
             sx={{
+              backgroundColor: "surfaceA.30",
               maxWidth: "200px",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
@@ -80,14 +92,3 @@ const ItemFormSectionPreview = ({ item }: ItemFormSectionPreviewProps) => {
 };
 
 export default ItemFormSectionPreview;
-
-// colors/ difficulty in inspiration of https://en.wikipedia.org/wiki/Bloom%27s_taxonomy
-const BLOOM_TAXONOMY_COLORS: Record<BloomLevel, string> = {
-  REMEMBER: "#00FF7F",
-  UNDERSTAND: "#00FF00",
-  APPLY: "#7FFF00",
-  ANALYZE: "#FFFF00",
-  CREATE: "#FF7F00",
-  EVALUATE: "#FF0000",
-  "%future added value": "#FFFFFF",
-} as const;

@@ -15,20 +15,30 @@ export type Props = {
 export function FlashcardSidePreview({ sideData }: Props) {
   return (
     <>
-      <Card variant="outlined" className="min-w-[20rem] max-w-[30%]">
+      <Card
+        variant="outlined"
+        className="min-w-[20rem] max-w-[30%]"
+        sx={{ backgroundColor: "surfaceA.0" }}
+      >
         <CardHeader
           title={sideData.label}
           avatar={
             sideData.isQuestion ? (
-              <Help fontSize="large" sx={{ color: "grey.400" }} />
+              <Help
+                fontSize="large"
+                sx={{ color: "surfaceA.50" }}
+              />
             ) : (
-              <QuestionAnswer fontSize="large" sx={{ color: "grey.400" }} />
+              <QuestionAnswer
+                fontSize="large"
+                sx={{ color: "surfaceA.50" }}
+              />
             )
           }
           classes={{ action: "!my-0" }}
         />
         <CardContent>
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" color="textPrimary">
             {sideData.text}
           </Typography>
         </CardContent>

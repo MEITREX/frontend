@@ -123,8 +123,10 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
             ".Mui-disabled": {
               "-webkit-text-fill-color": "rgba(0, 0, 0, 0.87) !important",
             },
+            backgroundColor: (theme) =>
+              `color-mix(in srgb, ${theme.palette.surfaceA[0]} 66%, ${theme.palette.surfaceA[10]} 33%)`,
           }}
-          className="min-w-[16rem] "
+          className="min-w-[16rem]"
           label="Bloom Level"
           labelId="assessmentBloomLevelsLabel"
           value={item.associatedBloomLevels}

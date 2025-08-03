@@ -3,7 +3,7 @@ import { Typography } from "@mui/material";
 import { ReactElement, ReactNode } from "react";
 
 export function FormDivider() {
-  return <hr className="col-span-2 my-2" />;
+  return <hr className="col-span-2 my-2 border-meitrex_surface_a40" />;
 }
 
 export function FormSection({
@@ -37,8 +37,8 @@ export function FormActions({
   return (
     <>
       <FormDivider />
-      <div></div>
-      <div className="flex gap-2 items-center">{children}</div>
+      <div />
+      <div className="flex items-center gap-2">{children}</div>
     </>
   );
 }

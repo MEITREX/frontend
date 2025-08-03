@@ -40,8 +40,14 @@ const Flashcard = (props: FlashcardProps) => {
 
   return (
     <>
-      <div className="pt-4 pb-6 -mx-8 px-8 bg-gray-50 flex flex-col gap-y-2">
-        <Typography variant="overline" color="textSecondary">
+      <div className="-mx-2 flex flex-col gap-y-2 rounded-lg bg-meitrex_surface_a10 px-8 pb-6 pt-4">
+        <Typography
+          variant="overline"
+          color="text.secondary"
+          sx={{
+            color: "text.primary",
+          }}
+        >
           {props.title}
         </Typography>
 
@@ -67,7 +73,7 @@ const Flashcard = (props: FlashcardProps) => {
                 setSideData={props.setSideData}
                 operation={props.operation}
               />
-            )
+            ),
           )}
           {props.operation !== "view" &&
             (addNewFlashcardSide ? (
@@ -91,7 +97,7 @@ const Flashcard = (props: FlashcardProps) => {
       </div>
       {props.operation !== "view" && (
         // unfortunately, this css must be adjusted to the one in lecturer.tsx
-        <div className="flex gap-x-2 mt-4">
+        <div className="mb-4 mt-3 flex gap-x-2">
           <Tooltip title={errorMessage} disableHoverListener={isFlashcardValid}>
             {/* required for Tooltip to work */}
             <span>
@@ -105,7 +111,9 @@ const Flashcard = (props: FlashcardProps) => {
               </Button>
             </span>
           </Tooltip>
-          <Button onClick={props.onCancel}>Cancel</Button>
+          <Button variant="outlined" onClick={props.onCancel}>
+            Cancel
+          </Button>
         </div>
       )}
     </>

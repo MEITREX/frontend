@@ -41,29 +41,43 @@ export function FlashcardSide(props: FlashcardSideProps) {
         return newSideData;
       });
     },
-    [props]
+    [props],
   );
 
   return (
     <>
-      <Card variant="outlined" className="min-w-[20rem] max-w-[30%]">
+      <Card
+        variant="outlined"
+        className="min-w-[20rem] max-w-[30%]"
+        sx={{ backgroundColor: "surfaceA.0" }}
+      >
         <CardHeader
           title={sideData.label}
           avatar={
             sideData.isQuestion ? (
-              <Help fontSize="large" sx={{ color: "grey.400" }} />
+              <Help
+                fontSize="large"
+                sx={{ color: "surfaceA.60" }}
+              />
             ) : (
-              <QuestionAnswer fontSize="large" sx={{ color: "grey.400" }} />
+              <QuestionAnswer
+                fontSize="large"
+                sx={{ color: "surfaceA.60" }}
+              />
             )
           }
           action={
             isEditable && (
               <>
-                <IconButton onClick={() => setIsEditing(true)}>
+                <IconButton
+                  onClick={() => setIsEditing(true)}
+                  sx={{ color: "text.secondary" }}
+                >
                   <Edit fontSize="small" />
                 </IconButton>
 
                 <IconButton
+                  sx={{ color: "text.secondary" }}
                   // Inline since isEditable serves as type predicate
                   onClick={() => {
                     props.setSideData((prev) => {
@@ -83,7 +97,7 @@ export function FlashcardSide(props: FlashcardSideProps) {
           }}
         />
         <CardContent>
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" color="text.primary">
             {sideData.text}
           </Typography>
         </CardContent>

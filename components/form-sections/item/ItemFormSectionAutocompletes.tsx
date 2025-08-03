@@ -353,8 +353,8 @@ const ItemFormSectionAutocompletes = ({
     useState(false);
 
   return (
-    <Stack direction={stackDirection} spacing={1}>
-      <Stack direction="row" spacing={2}>
+    <Stack direction={stackDirection} spacing={2}>
+      <Stack direction="row" spacing={1}>
         <Autocomplete
           disabled={allSkillCategoriesSorted.length === 0}
           fullWidth
@@ -376,7 +376,11 @@ const ItemFormSectionAutocompletes = ({
           renderInput={(params) => (
             <TextField {...params} label="Knowledge Area" />
           )}
-          sx={{ width: 300 }}
+          sx={{
+            width: 300,
+            backgroundColor: (theme) =>
+              `color-mix(in srgb, ${theme.palette.surfaceA[0]} 66%, ${theme.palette.surfaceA[10]} 33%)`,
+          }}
           filterOptions={(options, params) => {
             const filtered = filterOptionsSkillCategory(options, params);
             if (params.inputValue !== "" && filtered.length === 0) {
@@ -457,7 +461,7 @@ const ItemFormSectionAutocompletes = ({
         </InfoPopover>
       </Stack>
 
-      <Stack direction="row" spacing={2}>
+      <Stack direction="row" spacing={1}>
         {!searchInAllCategories ? (
           <Autocomplete
             fullWidth
@@ -497,7 +501,11 @@ const ItemFormSectionAutocompletes = ({
               option.skillName === value.skillName
             }
             options={currentSkillsAvailableSorted}
-            sx={{ width: 300 }}
+            sx={{
+              width: 300,
+              backgroundColor: (theme) =>
+                `color-mix(in srgb, ${theme.palette.surfaceA[0]} 66%, ${theme.palette.surfaceA[10]} 33%)`,
+            }}
             getOptionLabel={(option) => option.skillName ?? ""}
             renderInput={(params) => <TextField {...params} label="Skills" />}
             renderTags={() => null}
@@ -548,7 +556,11 @@ const ItemFormSectionAutocompletes = ({
               skillsAndCategoriesAvailableSorted.length === 0
             }
             multiple
-            sx={{ width: 300 }}
+            sx={{
+              width: 300,
+              backgroundColor: (theme) =>
+                `color-mix(in srgb, ${theme.palette.surfaceA[0]} 66%, ${theme.palette.surfaceA[10]} 33%)`,
+            }}
             value={newSkillAndCategory}
             // render stuff
             renderInput={(params) => (
@@ -635,7 +647,7 @@ const ItemFormSectionAutocompletes = ({
                     title={!option.isCustomSkill ? option.skillCategory : ""}
                     variant="outlined"
                     size="small"
-                    sx={{ ml: 1 }}
+                    sx={{ mr: 0.5 }}
                   />
                 </Box>
               );
@@ -643,7 +655,7 @@ const ItemFormSectionAutocompletes = ({
           />
         )}
 
-        <InfoPopover>
+        <InfoPopover >
           {!searchInAllCategories ? (
             <Typography variant="body1">
               Search through the Skills of the selected Knowledge Area.

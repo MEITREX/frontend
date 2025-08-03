@@ -13,7 +13,7 @@ const InfoPopover = ({ children }: Props) => {
   return (
     <>
       <IconButton onClick={() => setPopoverVisible(true)} ref={popoverRef}>
-        <InfoIcon />
+        <InfoIcon sx={{ color: "surfaceA.60" }} />
       </IconButton>
       <Popover
         open={popoverVisible}

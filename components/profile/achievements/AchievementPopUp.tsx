@@ -85,14 +85,14 @@ export default function AchievementPopUp({
             {selectedAchievement?.description}
           </Typography>
 
-          <Typography mt={2} color="textSecondary">
+          <Typography mt={2} color="text.secondary">
             <strong>Completed:</strong>{" "}
             {selectedAchievement?.trackingEndTime
               ? new Date(selectedAchievement.trackingEndTime).toLocaleString()
               : "Not yet completed"}
           </Typography>
 
-          <Typography mt={1} color="textSecondary">
+          <Typography mt={1} color="text.secondary">
             {selectedAchievement?.courseId && (
               <CourseNameQuery courseId={selectedAchievement.courseId} />
             )}

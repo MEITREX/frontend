@@ -13,7 +13,7 @@ const FlashcardPreview = ({ title, flashcardSides, item }: FlashcardProps) => {
   return (
     <>
       <div className="pt-4 pb-6 -mx-8 px-8 bg-gray-50">
-        <Typography variant="overline" color="textSecondary">
+        <Typography variant="overline" color="text.secondary">
           {title}
         </Typography>
 
