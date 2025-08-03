@@ -75,6 +75,10 @@ export const itemFormSectionFragment = graphql`
       skillCategory
       isCustomSkill
     }
+    memberships {
+      userId
+      role
+    }
   }
 `;
 
