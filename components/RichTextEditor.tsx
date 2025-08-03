@@ -26,6 +26,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   styled,
+  useTheme,
 } from "@mui/material";
 import { clsx } from "clsx";
 import isHotkey from "is-hotkey";
@@ -518,11 +519,16 @@ const isMarkActive = (
 function Element(props: RenderElementProps) {
   const { attributes, children, element } = props;
   const style = { textAlign: element.align };
+
+  const theme = useTheme();
+
   switch (element.type) {
     case "block-quote":
       return (
         <blockquote
-          className="border-l-2 pl-4 sm:pl-4 dark:border-gray-700 my-2"
+          className={clsx("dark: my-2 border-l-2 pl-4 sm:pl-4", {
+            "border-gray-700": theme.palette.mode === "dark",
+          })}
           style={style}
           {...attributes}
         >

@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import clsx from "clsx";
+import { useTheme } from "@mui/material";
 
 // ----------- Globale Konstanten für fixe Strings -----------
 const MIN_WAIT_TIME = 800;
@@ -124,6 +126,8 @@ export default function TutorChat() {
     }
   };
 
+  const theme = useTheme();
+
   return (
     <div style={{ width: "100%" }}>
       {/* Chatverlauf */}
@@ -171,9 +175,18 @@ export default function TutorChat() {
                 />
               )}
               <span
+                className={clsx({
+                  "bg-[#e3f2fd]":
+                    msg.sender === "user" && theme.palette.mode === "light",
+                  "bg-[#f0f4c3]":
+                    msg.sender === "bot" && theme.palette.mode === "light",
+                  "bg-meitrex_surface_a30":
+                    msg.sender === "user" && theme.palette.mode === "dark",
+                  "bg-meitrex_surface_a20":
+                    msg.sender === "bot" && theme.palette.mode === "dark",
+                })}
                 style={{
                   display: "inline-block",
-                  background: msg.sender === "user" ? "#e3f2fd" : "#f0f4c3",
                   borderRadius: 12,
                   padding: "6px 10px",
                   maxWidth: 200,

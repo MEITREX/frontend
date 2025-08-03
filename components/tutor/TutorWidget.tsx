@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import TutorAvatar from "./TutorAvatar";
 import TutorChat from "./TutorChat";
+import clsx from "clsx";
+import { useTheme } from "@mui/material";
 
 const AVATAR_WIDTH = 60;
 const CHAT_WIDTH = 500;
@@ -16,7 +18,7 @@ const positions = [
 
 function getClosestPosition(
   clientY: number,
-  windowHeight: number
+  windowHeight: number,
 ): (typeof positions)[number] {
   const yTargets = [
     32, // top
@@ -38,7 +40,7 @@ type TutorWidgetProps = {
 
 export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
   const [dockPosition, setDockPosition] = useState<(typeof positions)[number]>(
-    positions[2]
+    positions[2],
   );
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -132,51 +134,6 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
     };
   }, [isDragging, dragOffset, mouseDownPosition]);
 
-  let style: React.CSSProperties = {
-    position: "fixed",
-    zIndex: 10000,
-    cursor: isDragging ? "grabbing" : "grab",
-    transition: isDragging ? "none" : "all 0.25s cubic-bezier(.4,2,.6,1)",
-    ...(isDragging ? { left: dragPos.x, top: dragPos.y } : dockPosition.style),
-    display: "flex",
-    flexDirection: "row-reverse",
-    alignItems: dockPosition.name === "bottom" ? "flex-end" : "flex-start",
-    width: open ? CHAT_WIDTH + AVATAR_WIDTH : AVATAR_WIDTH,
-    pointerEvents: "auto",
-  };
-
-  const recommendationBubbleStyle: React.CSSProperties = {
-    position: "absolute",
-    right: AVATAR_WIDTH + 4,
-    bottom: open ? 60 : 48,
-    maxWidth: 260,
-    background: "#fff",
-    color: "#222",
-    borderRadius: 18,
-    boxShadow: "0 2px 16px rgba(80,80,80,0.13)",
-    padding: "14px 16px 14px 14px",
-    zIndex: 10001,
-    fontSize: 15,
-    lineHeight: 1.5,
-    display: "flex",
-    alignItems: "center",
-    animation: "bubbleIn 0.4s cubic-bezier(.4,2,.6,1)",
-    minWidth: 0,
-  };
-
-  const bubbleArrowStyle: React.CSSProperties = {
-    content: '""',
-    position: "absolute",
-    right: -12,
-    bottom: 16,
-    width: 0,
-    height: 0,
-    borderTop: "10px solid transparent",
-    borderBottom: "10px solid transparent",
-    borderLeft: "12px solid #fff",
-    filter: "drop-shadow(0 1px 3px rgba(80,80,80,0.10))",
-  };
-
   function clearRecommendations() {
     setRecommendations([]);
   }
@@ -185,26 +142,73 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
     setShowWelcome(false);
   }
 
+  const theme = useTheme();
+
   return (
-    <div ref={widgetRef} style={style}>
+    <div
+      ref={widgetRef}
+      style={{
+        position: "fixed",
+        zIndex: 10000,
+        cursor: isDragging ? "grabbing" : "grab",
+        transition: isDragging ? "none" : "all 0.25s cubic-bezier(.4,2,.6,1)",
+        ...(isDragging
+          ? { left: dragPos.x, top: dragPos.y }
+          : dockPosition.style),
+        display: "flex",
+        flexDirection: "row-reverse",
+        alignItems: dockPosition.name === "bottom" ? "flex-end" : "flex-start",
+        width: open ? CHAT_WIDTH + AVATAR_WIDTH : AVATAR_WIDTH,
+        pointerEvents: "auto",
+      }}
+    >
       {/* Recommendation/Welcome Bubble */}
       {(showWelcome || recommendations.length > 0) && (
         <div
+          className={clsx("bg-meitrex_surface_a10", {
+            "text-white": theme.palette.mode === "dark",
+          })}
           style={{
-            ...recommendationBubbleStyle,
+            position: "absolute",
+            right: AVATAR_WIDTH + 4,
+            bottom: open ? 60 : 48,
+            maxWidth: 260,
+            color: "#222",
+            borderRadius: 18,
+            boxShadow: "0 2px 16px rgba(80,80,80,0.13)",
+            padding: "14px 16px 14px 14px",
+            zIndex: 2,
+            fontSize: 15,
+            lineHeight: 1.5,
+            display: "flex",
+            alignItems: "center",
+            animation: "bubbleIn 0.4s cubic-bezier(.4,2,.6,1)",
+            minWidth: 0,
             pointerEvents: "auto",
             top: undefined,
           }}
           tabIndex={-1}
         >
-          <span style={bubbleArrowStyle as any}></span>
+          <span
+            style={{
+              content: '""',
+              position: "absolute",
+              right: -12,
+              bottom: 16,
+              width: 0,
+              height: 0,
+              borderTop: "10px solid transparent",
+              borderBottom: "10px solid transparent",
+              borderLeft: "12px solid var(--color-muitheme-surface-a10)",
+              filter:
+                "drop-shadow(0 1px 3px var(--color-muitheme-surface-a10))",
+            }}
+          />
           {showWelcome ? (
             <div
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                width: "100%",
-              }}
+              className={clsx("flex w-full", {
+                "text-white": theme.palette.mode === "dark",
+              })}
             >
               <span style={{ flex: 1 }}>
                 Hallo, willkommen bei Meitrex!
@@ -213,10 +217,10 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
               </span>
               <button
                 onClick={handleCloseWelcome}
+                className="bg-meitrex_surface_a0"
                 style={{
                   background: "none",
                   border: "none",
-                  color: "#888",
                   fontSize: 20,
                   marginLeft: 8,
                   cursor: "pointer",
@@ -255,7 +259,7 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
                   <button
                     onClick={() =>
                       setRecommendations((old) =>
-                        old.filter((x) => x.id !== r.id)
+                        old.filter((x) => x.id !== r.id),
                       )
                     }
                     style={{
@@ -341,10 +345,9 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
       {/* Chat-Blase, nach links aufklappend */}
       {open && (
         <div
+          className="border-[3px] border-solid border-meitrex_surface_a20 bg-meitrex_surface_a0"
           style={{
-            background: "#fff",
             borderRadius: "18px 18px 0 18px",
-            border: "0.5px solid lightgrey",
             boxShadow: "0 4px 24px rgba(80,80,80,0.13)",
             padding: "16px 12px 12px 16px",
             minWidth: CHAT_WIDTH - 40,
