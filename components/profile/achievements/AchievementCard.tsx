@@ -1,61 +1,104 @@
-import { Box, Card, Grid, LinearProgress, Typography } from "@mui/material";
+import { Box, Card, LinearProgress, Typography } from "@mui/material";
+import AchievementImage from "./AchievementImage";
+import { Achievement } from "./types";
 
 interface AchievementProps {
-  achievement: any;
+  achievement: Achievement;
   showProgress?: boolean;
   onClick?: () => void;
+  compact?: boolean; // <- neu
 }
 
 export default function AchievementCard({
   achievement,
   showProgress = false,
   onClick,
+  compact,
 }: AchievementProps) {
-  const progressValue =
-    achievement.targetCount > 0
-      ? Math.min(
-          (achievement.currentCount / achievement.targetCount) * 100,
-          100
-        )
-      : 0;
+  let progressValue = 0;
+
+  if (achievement.requiredCount) {
+    progressValue =
+      achievement.requiredCount! > 0
+        ? Math.min(
+            (achievement.completedCount! / achievement.requiredCount!) * 100,
+            100
+          )
+        : 0;
+  }
 
   return (
     <Card
       variant="outlined"
-      sx={{ p: 2, cursor: onClick ? "pointer" : "default" }}
+      sx={{
+        p: compact ? 1 : 2,
+        cursor: onClick ? "pointer" : "default",
+        height: compact ? 67 : "auto",
+        display: "flex",
+        alignItems: "center",
+      }}
       onClick={onClick}
     >
-      <Grid container spacing={2} alignItems="center">
-        <Grid item>
-          <Box
-            fontSize="2.5rem"
-            sx={{ opacity: achievement.achieved ? 1 : 0.4 }}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          width: "100%",
+          overflow: "hidden",
+        }}
+      >
+        <Box sx={{ flexShrink: 0, mr: compact ? 1 : 2 }}>
+          <AchievementImage
+            src={achievement.imageUrl}
+            alt={achievement.name}
+            completed={achievement.completed}
+            size={compact ? 40 : 60}
+          />
+        </Box>
+
+        <Box sx={{ overflow: "hidden", minWidth: 0 }}>
+          <Typography
+            variant="subtitle2"
+            fontWeight="bold"
+            noWrap={compact}
+            sx={{
+              fontSize: compact ? "0.8rem" : "1rem",
+              whiteSpace: compact ? "nowrap" : "normal",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
           >
-            {achievement.icon}
-          </Box>
-        </Grid>
-        <Grid item xs>
-          <Typography variant="subtitle1" fontWeight="bold">
-            {achievement.title}
+            {achievement.name}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {achievement.description}
-          </Typography>
+
+          {!compact && (
+            <Typography variant="body2" color="text.secondary">
+              {achievement.description}
+            </Typography>
+          )}
 
           {showProgress && (
             <Box mt={1}>
               <LinearProgress
                 variant="determinate"
                 value={progressValue}
-                sx={{ height: 8, borderRadius: 4 }}
+                sx={{
+                  height: compact ? 4 : 6,
+                  borderRadius: 4,
+                }}
               />
-              <Typography variant="caption" color="text.secondary">
-                {achievement.currentCount}/{achievement.targetCount}
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ fontSize: compact ? "0.65rem" : "0.75rem" }}
+              >
+                {achievement.completedCount}/{achievement.requiredCount}
               </Typography>
             </Box>
           )}
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </Card>
   );
 }
