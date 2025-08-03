@@ -1,4 +1,6 @@
 import { PlayerTypeSurveyEvaluateHexadTypeMutation } from "@/__generated__/PlayerTypeSurveyEvaluateHexadTypeMutation.graphql";
+import { PlayerTypeSurveySetNicknameMutation } from "@/__generated__/PlayerTypeSurveySetNicknameMutation.graphql";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
 import CloseIcon from "@mui/icons-material/Close";
 import {
   Box,
@@ -7,6 +9,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   LinearProgress,
   TextField,
   Typography,
@@ -32,8 +35,9 @@ const SurveyPopup = ({ id }: { id: string }) => {
   const [confirmSkipOpen, setConfirmSkipOpen] = useState(false);
   const [isCompletedScreen, setIsCompletedScreen] = useState(false);
   const [isErrorScreen, setIsErrorScreen] = useState(false);
-  const [isStartScreen, setIsStartScreen] = useState(true);
+  const [isStartScreen, setIsStartScreen] = useState(false);
   const [isSkippedScreen, setIsSkippedScreen] = useState(false);
+  const [isNicknameScreen, setIsNicknameScreen] = useState(true);
 
   useEffect(() => {
     const savedAnswer = answers[currentQuestionIndex];
@@ -51,6 +55,15 @@ const SurveyPopup = ({ id }: { id: string }) => {
             type
             value
           }
+        }
+      }
+    `);
+
+  const [PlayerTypeSurveySetNicknameMutation] =
+    useMutation<PlayerTypeSurveySetNicknameMutation>(graphql`
+      mutation PlayerTypeSurveySetNicknameMutation($nickname: String!) {
+        setNickname(nickname: $nickname) {
+          nickname
         }
       }
     `);
@@ -193,7 +206,95 @@ const SurveyPopup = ({ id }: { id: string }) => {
     return `${adj}${dino}${number}`;
   }
 
+  const handlSubmitNickname = (nickname: string) => {
+    PlayerTypeSurveySetNicknameMutation({
+      variables: {
+        nickname: nickname,
+      },
+      onError() {
+        console.log("Error setting nickname");
+      },
+      onCompleted() {
+        console.log("Set nickname successfully");
+        setIsNicknameScreen(false);
+        setIsStartScreen(true);
+      },
+    });
+  };
+
   const [nickname, setNickname] = useState(generateRandomNickname());
+
+  if (isNicknameScreen) {
+    return (
+      <Dialog open={open} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ position: "relative" }}>
+          <Typography variant="h6" fontWeight="bold">
+            Pick your nickname
+          </Typography>
+
+          {/* Fortschrittsanzeige oben rechts */}
+          <Box
+            sx={{
+              position: "absolute",
+              right: 16,
+              top: 8,
+              fontSize: "1.2rem",
+              fontWeight: "bold",
+              color: "primary.main",
+            }}
+          >
+            1 / 2
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Box textAlign="center" py={4}>
+            <Typography variant="body1" mb={2}>
+              This nickname will be your public display name throughout the
+              application.
+            </Typography>
+            <TextField
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              fullWidth
+              sx={{
+                maxWidth: 400,
+                mx: "auto",
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "#f44336",
+                    borderWidth: 2,
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#d32f2f",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#d32f2f",
+                  },
+                },
+              }}
+            />
+
+            <IconButton
+              onClick={() => setNickname(generateRandomNickname())}
+              size="large"
+            >
+              <AutorenewIcon sx={{ fontSize: 28, color: "#00a9d6" }} />
+            </IconButton>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3 }}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              handlSubmitNickname(nickname);
+            }}
+          >
+            Continue
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  }
 
   if (isSkippedScreen) {
     return (
@@ -283,19 +384,19 @@ const SurveyPopup = ({ id }: { id: string }) => {
             />
           </Box>
           <DialogTitle>
-            <Button
-              onClick={() => setConfirmSkipOpen(true)}
+            {/* Fortschrittsanzeige oben rechts */}
+            <Box
               sx={{
                 position: "absolute",
-                right: 8,
+                right: 16,
                 top: 8,
-                minWidth: "auto",
-                padding: 1,
-                color: "grey.600",
+                fontSize: "1.2rem",
+                fontWeight: "bold",
+                color: "primary.main",
               }}
             >
-              <CloseIcon />
-            </Button>
+              2 / 2
+            </Box>
           </DialogTitle>
           <DialogContent>
             <Box textAlign="center" py={6}>
@@ -308,38 +409,11 @@ const SurveyPopup = ({ id }: { id: string }) => {
                 gamification elements in a way that keeps you engaged and
                 personalizes your experience.
               </Typography>
-              {/* 🔤 Nickname Textfeld */}
-              <Box mt={4}>
-                <Typography variant="subtitle2" color="text.secondary" mb={1}>
-                  Here you can enter your nick name for the application.
-                </Typography>
-                <TextField
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  fullWidth
-                  sx={{
-                    maxWidth: 400,
-                    mx: "auto",
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: "#f44336", // rot
-                        borderWidth: 2,
-                      },
-                      "&:hover fieldset": {
-                        borderColor: "#d32f2f",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#d32f2f",
-                      },
-                    },
-                  }}
-                />
-              </Box>
             </Box>
           </DialogContent>
           <DialogActions sx={{ px: 3 }}>
             <Button variant="contained" onClick={() => setIsStartScreen(false)}>
-              Start Survey and confirm nickname
+              Start Survey
             </Button>
           </DialogActions>
         </Dialog>

@@ -1,10 +1,10 @@
-import { Box, Button, Grid, Tooltip, Typography } from "@mui/material";
-import Link from "next/link";
-import { useLazyLoadQuery } from "react-relay";
-import { forumApiOpenQuestionQuery } from "@/components/forum/api/ForumApi";
-import { useParams, usePathname } from "next/navigation";
 import { ForumApiOpenQuestionQuery } from "@/__generated__/ForumApiOpenQuestionQuery.graphql";
+import { forumApiOpenQuestionQuery } from "@/components/forum/api/ForumApi";
 import ThreadList from "@/components/forum/thread/ThreadList";
+import { Box, Button, Typography } from "@mui/material";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useLazyLoadQuery } from "react-relay";
 
 export default function OpenQuestionWidget() {
   const params = useParams();

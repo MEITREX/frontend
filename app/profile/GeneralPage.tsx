@@ -1,13 +1,17 @@
+import { GeneralPageSetNicknameMutation } from "@/__generated__/GeneralPageSetNicknameMutation.graphql";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import { Avatar, Box, Button, TextField } from "@mui/material";
+import { Avatar, Box, Button, IconButton, TextField } from "@mui/material";
 import { useState } from "react";
+import { graphql, useMutation } from "react-relay";
 
 interface GeneralPageProps {
   studentData: {
+    id: string;
     firstName: string;
     lastName: string;
-    email: string;
+    userName: string;
     nickname: string;
   };
 }
@@ -16,6 +20,15 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
   const [editMode, setEditMode] = useState(false);
 
   const [newStudentData, setStudentData] = useState(studentData);
+
+  const [GeneralPageSetNicknameMutation] =
+    useMutation<GeneralPageSetNicknameMutation>(graphql`
+      mutation GeneralPageSetNicknameMutation($nickname: String!) {
+        setNickname(nickname: $nickname) {
+          nickname
+        }
+      }
+    `);
 
   const handleChange =
     (field: keyof typeof studentData) =>
@@ -27,15 +40,59 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
     if (editMode) {
       // Optional: hier speichern (API call etc.)
       console.log(newStudentData);
+      GeneralPageSetNicknameMutation({
+        variables: {
+          nickname: newStudentData.nickname,
+        },
+        onError() {
+          console.log("Error setting nickname");
+        },
+        onCompleted() {
+          console.log("Set nickname successfully");
+        },
+      });
     }
     setEditMode(!editMode);
   };
+
+  const adjectives = [
+    "Swift",
+    "Brave",
+    "Clever",
+    "Fierce",
+    "Tiny",
+    "Giant",
+    "Happy",
+    "Wild",
+    "Cunning",
+    "Lazy",
+  ];
+
+  const dinos = [
+    "T-Rex",
+    "Velociraptor",
+    "Triceratops",
+    "Stegosaurus",
+    "Spinosaurus",
+    "Brachiosaurus",
+    "Pachycephalosaurus",
+    "Ankylosaurus",
+  ];
+
+  function generateRandomNickname() {
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const dino = dinos[Math.floor(Math.random() * dinos.length)];
+    const number = Math.floor(1000 + Math.random() * 9000); // 4-stellige Zahl
+
+    return `${adj}${dino}${number}`;
+  }
 
   return (
     <Box display="flex" gap={4} py={4}>
       {/* Profilbild-Platzhalter */}
       <Box display="flex" flexDirection="column" alignItems="center">
         <Avatar
+          variant="square"
           sx={{
             width: 120,
             height: 120,
@@ -75,19 +132,34 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
           disabled={!editMode}
         />
         <TextField
-          label="Email"
-          value={newStudentData.email}
-          onChange={handleChange("email")}
+          label="Username"
+          value={newStudentData.userName}
+          onChange={handleChange("userName")}
           fullWidth
           disabled={!editMode}
         />
-        <TextField
-          label="Nickname"
-          value={newStudentData.nickname}
-          onChange={handleChange("nickname")}
-          fullWidth
-          disabled={!editMode}
-        />
+        <Box display="flex" alignItems="center" gap={1}>
+          <TextField
+            label="Nickname"
+            value={newStudentData.nickname}
+            onChange={handleChange("nickname")}
+            fullWidth
+            disabled={!editMode}
+          />
+          {editMode && (
+            <IconButton
+              onClick={() =>
+                setStudentData((prev) => ({
+                  ...prev,
+                  nickname: generateRandomNickname(),
+                }))
+              }
+              size="large"
+            >
+              <AutorenewIcon sx={{ fontSize: 28, color: "#00a9d6" }} />
+            </IconButton>
+          )}
+        </Box>
       </Box>
     </Box>
   );

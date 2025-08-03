@@ -1,3 +1,4 @@
+import { AllAchievementsCourseNamesQuery } from "@/__generated__/AllAchievementsCourseNamesQuery.graphql";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
 import {
@@ -9,7 +10,10 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
+import { useLazyLoadQuery } from "react-relay";
+import { graphql } from "relay-runtime";
 import AchievementCard from "./AchievementCard";
+import { Achievement } from "./types";
 
 interface AllAchievementsProps {
   courses: any[];
@@ -18,11 +22,12 @@ interface AllAchievementsProps {
     event: React.MouseEvent<HTMLElement>,
     newFilter: "achieved" | "not-achieved" | null
   ) => void;
-  achievements: any[];
+  achievements: Achievement[];
   selectedCourse: any;
   handleChangeCourse: (event: any, value: any) => void;
-  filteredAchievements: any[];
+  filteredAchievements: Achievement[];
   handleOpenAchievement: (a: any) => void;
+  profileTypeSortString: "achieved" | "not-achieved" | null;
 }
 
 export default function AllAchievements({
@@ -34,6 +39,7 @@ export default function AllAchievements({
   filteredAchievements,
   handleOpenAchievement,
   achievements,
+  profileTypeSortString,
 }: AllAchievementsProps) {
   const groupedAchievements = filteredAchievements.reduce(
     (acc, achievement) => {
@@ -47,16 +53,25 @@ export default function AllAchievements({
     {} as Record<string, any[]>
   );
 
-  const coursesNames = [
-    { id: "course1", name: "Physics 202" },
-    { id: "course2", name: "Informatik" },
-    { id: "course3", name: "DSA" },
-    { id: "course4", name: "PSE" },
-    { id: "course5", name: "Theo I" },
-    { id: "course6", name: "Mathe II" },
-    { id: "course7", name: "MCI" },
-    { id: "course8", name: "Mathe I" },
+  const achievementCourseIds = [
+    ...new Set(
+      achievements
+        .map((a) => a.courseId)
+        .filter((id): id is string => Boolean(id)) // Filtere undefined/null raus
+    ),
   ];
+
+  const { coursesByIds } = useLazyLoadQuery<AllAchievementsCourseNamesQuery>(
+    graphql`
+      query AllAchievementsCourseNamesQuery($id: [UUID!]!) {
+        coursesByIds(ids: $id) {
+          id
+          title
+        }
+      }
+    `,
+    { id: achievementCourseIds }
+  );
 
   return (
     <Box
@@ -89,47 +104,49 @@ export default function AllAchievements({
           All Achievements
         </Typography>
 
-        <Box sx={{ display: "flex", gap: 2 }}>
-          {/* Filter: Achieved / Not Achieved */}
-          <ToggleButtonGroup
-            value={filter}
-            exclusive
-            onChange={handleChange}
-            sx={{ mb: 2 }}
-            size="small"
-          >
-            <ToggleButton
-              value="achieved"
-              sx={{
-                "&.Mui-selected": {
-                  backgroundColor: "#009bde", // dein Blauton
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: "#009bde",
-                  },
-                },
-              }}
+        {profileTypeSortString === "not-achieved" && (
+          <Box sx={{ display: "flex", gap: 2 }}>
+            {/* Filter: Achieved / Not Achieved */}
+            <ToggleButtonGroup
+              value={filter}
+              exclusive
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+              size="small"
             >
-              <EmojiEventsIcon sx={{ mr: 1 }} />
-              Achieved
-            </ToggleButton>
-            <ToggleButton
-              value="not-achieved"
-              sx={{
-                "&.Mui-selected": {
-                  backgroundColor: "#009bde", // dein Blauton
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: "#009bde",
+              <ToggleButton
+                value="achieved"
+                sx={{
+                  "&.Mui-selected": {
+                    backgroundColor: "#009bde", // dein Blauton
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "#009bde",
+                    },
                   },
-                },
-              }}
-            >
-              <EmojiEventsOutlinedIcon sx={{ mr: 1 }} />
-              Not Achieved
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
+                }}
+              >
+                <EmojiEventsIcon sx={{ mr: 1 }} />
+                Achieved
+              </ToggleButton>
+              <ToggleButton
+                value="not-achieved"
+                sx={{
+                  "&.Mui-selected": {
+                    backgroundColor: "#009bde", // dein Blauton
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "#009bde",
+                    },
+                  },
+                }}
+              >
+                <EmojiEventsOutlinedIcon sx={{ mr: 1 }} />
+                Not Achieved
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
+        )}
       </Box>
 
       <Box mt={0} mb={4}>
@@ -145,12 +162,12 @@ export default function AllAchievements({
           }}
         >
           {courses.map((courseId) => {
-            const course = coursesNames.find((c) => c.id === courseId);
+            const course = coursesByIds.find((c) => c.id === courseId);
             return (
               <Tab
                 key={courseId}
                 value={courseId}
-                label={course ? course.name : courseId}
+                label={course ? course.title : courseId}
                 sx={{
                   textTransform: "none",
                   fontWeight: 500,
@@ -177,60 +194,73 @@ export default function AllAchievements({
         </Tabs>
       </Box>
 
-      {Object.entries(groupedAchievements).map(
-        ([course, courseAchievements]: any) => {
-          const sortedAchievements = courseAchievements.sort(
-            (a: any, b: any) => {
-              const dateA = a.achieved
-                ? new Date(a.achievedAt).getTime()
-                : null;
-              const dateB = b.achieved
-                ? new Date(b.achievedAt).getTime()
-                : null;
+      {filteredAchievements.length === 0 ||
+      Object.keys(groupedAchievements).length === 0 ? (
+        <Box
+          sx={{
+            border: "1px solid #ccc",
+            borderRadius: 2,
+            p: 4,
+            mb: 4,
+            textAlign: "center",
+            backgroundColor: "#f9f9f9",
+          }}
+        >
+          <Typography variant="h6" color="text.secondary">
+            There are no achievements which can be displayed
+          </Typography>
+        </Box>
+      ) : (
+        Object.entries(groupedAchievements).map(
+          ([course, courseAchievements]: [any, Achievement[]]) => {
+            const sortedAchievements = courseAchievements.sort(
+              (a: Achievement, b: Achievement) => {
+                const dateA = a.completed
+                  ? new Date(a.trackingEndTime!).getTime()
+                  : null;
+                const dateB = b.completed
+                  ? new Date(b.trackingEndTime!).getTime()
+                  : null;
 
-              if (dateA === null && dateB === null) return 0;
-              if (dateA === null) return 1; // a ist "schlechter", kommt später
-              if (dateB === null) return -1; // b ist "schlechter", kommt später
+                if (dateA === null && dateB === null) return 0;
+                if (dateA === null) return 1; // a ist "schlechter", kommt später
+                if (dateB === null) return -1; // b ist "schlechter", kommt später
 
-              return dateB - dateA; // neuestes zuerst
-            }
-          );
+                return dateB - dateA; // neuestes zuerst
+              }
+            );
 
-          const visibleAchievements = sortedAchievements.slice(0, 11);
-          const hasMore = sortedAchievements.length > 11;
+            return (
+              <Box key={course} sx={{ px: 2, pt: 2, mb: 2 }}>
+                <Grid
+                  container
+                  spacing={2}
+                  sx={{
+                    marginLeft: 0,
+                    marginRight: 0,
+                    width: "100%",
+                    paddingLeft: 0,
+                  }}
+                >
+                  {sortedAchievements.map((a: Achievement, index: any) => {
+                    const isCountable =
+                      a.requiredCount != null && a.completedCount != null;
 
-          console.log(filter, selectedCourse, course);
-
-          return (
-            <Box key={course} sx={{ px: 2, pt: 2, mb: 2 }}>
-              <Grid
-                container
-                spacing={2}
-                sx={{
-                  marginLeft: 0,
-                  marginRight: 0,
-                  width: "100%",
-                  paddingLeft: 0,
-                }}
-              >
-                {sortedAchievements.map((a: any, index: any) => {
-                  const isCountable =
-                    a.targetCount !== undefined && a.currentCount !== undefined;
-
-                  return (
-                    <Grid item xs={12} sm={6} key={a.id}>
-                      <AchievementCard
-                        achievement={a}
-                        showProgress={isCountable && !a.achieved}
-                        onClick={() => handleOpenAchievement(a)}
-                      />
-                    </Grid>
-                  );
-                })}
-              </Grid>
-            </Box>
-          );
-        }
+                    return (
+                      <Grid item xs={12} sm={6} key={a.id}>
+                        <AchievementCard
+                          achievement={a}
+                          showProgress={isCountable && !a.completed}
+                          onClick={() => handleOpenAchievement(a)}
+                        />
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              </Box>
+            );
+          }
+        )
       )}
     </Box>
   );

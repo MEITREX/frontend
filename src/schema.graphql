@@ -3,6 +3,20 @@ type AccessToken {
   externalUserId: String
 }
 
+type Achievement implements HasGoal {
+  completed: Boolean!
+  completedCount: Int
+  courseId: UUID!
+  description: String!
+  id: UUID
+  imageUrl: String!
+  name: String!
+  requiredCount: Int
+  trackingEndTime: DateTime
+  trackingStartTime: DateTime
+  userId: UUID
+}
+
 type AiEntityProcessingProgress {
   entityId: UUID!
   queuePosition: Int
@@ -733,6 +747,11 @@ type Grading {
   studentId: UUID!
 }
 
+interface HasGoal {
+  courseId: UUID!
+  userId: UUID
+}
+
 type InfoThread implements Thread {
   creationTime: DateTime!
   creatorId: UUID!
@@ -811,6 +830,10 @@ type ItemProgress {
 }
 
 scalar JSON
+
+type LectureQuestionResponse {
+  answer: String!
+}
 
 scalar LocalTime
 
@@ -959,6 +982,7 @@ type Mutation {
   leaveCourse(courseId: UUID!): CourseMembership!
   logAssignmentCompleted(input: LogAssignmentCompletedInput!): AssignmentCompletedFeedback!
   logFlashcardLearned(input: LogFlashcardLearnedInput!): FlashcardLearnedFeedback!
+  loginUser(courseId: UUID): UUID
   logMediaRecordWorkedOn(mediaRecordId: UUID!): MediaRecord!
   logQuizCompleted(input: QuizCompletedInput!): QuizCompletionFeedback!
   mutateAssignment(assessmentId: UUID!): AssignmentMutation!
@@ -970,8 +994,10 @@ type Mutation {
   recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
   saveStudentMappings(courseId: UUID!, studentMappingInputs: [StudentMappingInput!]!): [String]!
   selectAnswer(postId: UUID!): QuestionThread!
+  sendMessage(courseId: UUID, userInput: String!): LectureQuestionResponse!
   setLinkedMediaRecordsForContent(contentId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
   setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
+  setNickname(nickname: String!): UserInfo!
   syncAssignmentsForCourse(courseId: UUID!): Boolean!
   updateAssignment(assessmentId: UUID!, input: UpdateAssignmentInput!): Assignment!
   updateChapter(input: UpdateChapterInput!): Chapter!
@@ -1083,6 +1109,9 @@ type PublicUserInfo {
 }
 
 type Query {
+  _empty: String
+  achievementsByCourseId(courseId: UUID!): [Achievement!]!
+  achievementsByUserId(userId: UUID): [Achievement!]!
   contentsByChapterIds(chapterIds: [UUID!]!): [[Content!]!]!
   contentsByCourseIds(courseIds: [UUID!]!): [[Content!]!]
   contentsByIds(ids: [UUID!]!): [Content!]!
@@ -1598,6 +1627,7 @@ type UserInfo {
   id: UUID!
   lastName: String!
   mediaRecords: [MediaRecord!]!
+  nickname: String!
   realmRoles: [GlobalUserRole!]!
   unavailableCourseMemberships: [CourseMembership!]!
   userName: String!

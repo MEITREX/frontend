@@ -1,14 +1,18 @@
-import { Box, Button, Grid, Tooltip, Typography } from "@mui/material";
+import AchievementCard from "@/components/profile/achievements/AchievementCard";
+import { Achievement } from "@/components/profile/achievements/types";
+import { Box, Button, Grid, Typography } from "@mui/material";
 import Link from "next/link";
 
 interface LatestAchievementsProps {
-  openAchievements: (achievement: any) => void;
-  achievements: any[];
+  openAchievements: (achievement: Achievement) => void;
+  achievements: Achievement[];
+  course: string;
 }
 
 export default function LatestAchievements({
   openAchievements,
   achievements,
+  course,
 }: LatestAchievementsProps) {
   const top4Achievements = achievements.slice(0, 4); // oder .filter(...) nach Wunsch
 
@@ -24,68 +28,87 @@ export default function LatestAchievements({
     }
   }
 
-  function getFilteredAchievements(achievements: any[], courseId: string) {
+  function getFilteredAchievements(
+    achievements: Achievement[],
+    courseId: string
+  ) {
+    console.log(achievements, "ach");
     const courseAchievements = achievements.filter(
       (a) => a.courseId === courseId
     );
 
+    console.log(courseAchievements, "ach1");
+
     const completed = courseAchievements
-      .filter((a) => a.achievedAt)
+      .filter((a) => a.trackingEndTime)
       .sort(
         (a, b) =>
-          new Date(b.achievedAt!).getTime() - new Date(a.achievedAt!).getTime()
+          new Date(b.trackingEndTime!).getTime() -
+          new Date(a.trackingEndTime!).getTime()
       );
 
     const usedIds = new Set<string>();
     const lastCompleted = completed[0] || null;
-    if (lastCompleted) usedIds.add(lastCompleted.id);
+    if (lastCompleted) usedIds.add(lastCompleted.id!);
 
     const unlockedButNotCompleted = courseAchievements
-      .filter((a) => a.unlockedAt && !a.achievedAt && !usedIds.has(a.id))
+      .filter(
+        (a: Achievement) =>
+          a.trackingStartTime && !a.trackingEndTime && !usedIds.has(a.id!)
+      )
       .sort(
         (a, b) =>
-          new Date(b.unlockedAt!).getTime() - new Date(a.unlockedAt!).getTime()
+          new Date(b.trackingStartTime!).getTime() -
+          new Date(a.trackingStartTime!).getTime()
       );
 
     const lastUnlocked = unlockedButNotCompleted[0] || null;
-    if (lastUnlocked) usedIds.add(lastUnlocked.id);
+    if (lastUnlocked) usedIds.add(lastUnlocked.id!);
 
     const firstUnlockedPending =
       unlockedButNotCompleted
         .slice()
         .reverse()
-        .find((a) => !usedIds.has(a.id)) || null;
-    if (firstUnlockedPending) usedIds.add(firstUnlockedPending.id);
+        .find((a) => !usedIds.has(a.id!)) || null;
+    if (firstUnlockedPending) usedIds.add(firstUnlockedPending.id!);
 
     const notCompleted = courseAchievements.filter(
-      (a) => !a.achieved && !usedIds.has(a.id)
+      (a) => !a.completed && !usedIds.has(a.id!)
     );
     const randomNotCompleted =
       notCompleted.length > 0
         ? notCompleted[Math.floor(Math.random() * notCompleted.length)]
         : null;
-    if (randomNotCompleted) usedIds.add(randomNotCompleted.id);
+    if (randomNotCompleted) usedIds.add(randomNotCompleted.id!);
 
     // Rückgabe: Nur Achievements, die existieren
+
+    console.log(
+      lastCompleted,
+      lastUnlocked,
+      randomNotCompleted,
+      firstUnlockedPending
+    );
+
     return [
       lastCompleted && {
         key: "lastCompleted",
-        title: "Zuletzt abgeschlossen",
+        title: "Last completed",
         achievement: lastCompleted,
       },
       randomNotCompleted && {
         key: "randomNotCompleted",
-        title: "Zufällig noch nicht abgeschlossen",
+        title: "Random uncompleted",
         achievement: randomNotCompleted,
       },
       lastUnlocked && {
         key: "lastUnlocked",
-        title: "Zuletzt freigeschaltet (nicht abgeschlossen)",
+        title: "Last unlocked",
         achievement: lastUnlocked,
       },
       firstUnlockedPending && {
         key: "firstUnlockedPending",
-        title: "Frühestes freigeschaltet (nicht abgeschlossen)",
+        title: "Longest unlocked",
         achievement: firstUnlockedPending,
       },
     ].filter(Boolean); // entfernt alle null-Einträge
@@ -98,9 +121,10 @@ export default function LatestAchievements({
         borderRadius: 2,
         p: 2,
         mb: 4,
-        minHeight: 400,
         maxWidth: 450,
         maxHeight: 400,
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <Box
@@ -110,7 +134,7 @@ export default function LatestAchievements({
         mb={2}
       >
         <Typography variant="h6">Achievements</Typography>
-        <Link href="/profile" passHref>
+        <Link href="/profile/achievements" passHref>
           <Button
             size="small"
             variant="outlined"
@@ -126,49 +150,25 @@ export default function LatestAchievements({
           </Button>
         </Link>
       </Box>
-      <Grid container spacing={2}>
-        {getFilteredAchievements(achievements, "course1").map((a, index) => (
-          <Grid item xs={6} key={a.key}>
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: 2,
-                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                cursor: "pointer",
-                transition: "transform 0.3s ease",
-                "&:hover": {
-                  transform: "scale(1.1)",
-                },
-              }}
-            >
-              <Typography
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                fontWeight={"bold"}
-              >
-                {doHeadings(index)}
-              </Typography>
-              <Tooltip title={a.achievement.title}>
-                <Box
-                  onClick={() => openAchievements(a.achievement)}
-                  sx={{
-                    fontSize: 40,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {a.achievement.icon}
-                </Box>
-              </Tooltip>
-            </Box>
-          </Grid>
-        ))}
-      </Grid>
+
+      {/* Scrollbarer Bereich */}
+      <Box sx={{ overflowY: "auto", flexGrow: 1 }}>
+        <Grid container spacing={2}>
+          {getFilteredAchievements(achievements, course).map((a, index) => (
+            <Grid item xs={12} key={a!.key}>
+              <AchievementCard
+                achievement={a!.achievement}
+                compact
+                showProgress={
+                  a!.achievement.completedCount != null &&
+                  !a!.achievement.completed
+                }
+                onClick={() => openAchievements(a!.achievement)}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
     </Box>
   );
 }
