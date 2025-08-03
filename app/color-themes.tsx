@@ -25,6 +25,13 @@ const commonStyles = {
         }),
       },
     },
+    MuiCard: {
+      styleOverrides: {
+        root: ({ theme }: { theme: Theme }) => ({
+          backgroundColor: theme.palette.surfaceA[10],
+        }),
+      },
+    },
   },
   typography: {
     fontSize: 14,

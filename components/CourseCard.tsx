@@ -10,10 +10,12 @@ import {
   Divider,
   Link,
   Typography,
+  useTheme,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { graphql, useFragment } from "react-relay";
 import { Suggestion } from "./Suggestion";
+import clsx from "clsx";
 
 export const yearDivisionToString: Record<YearDivision, string> = {
   FIRST_SEMESTER: "Winter semester",
@@ -64,14 +66,16 @@ export function CourseCard({
         yearDivision
       }
     `,
-    _course
+    _course,
   );
+
+  const theme = useTheme();
 
   return (
     <Card variant="outlined" className="h-full" key={course.id}>
       <CardContent>
-        <div className="flex gap-4 items-center">
-          <div className="aspect-square min-w-[40px] grid">
+        <div className="flex items-center">
+          <div className="mr-4 grid aspect-square min-w-[40px]">
             <CircularProgress
               variant="determinate"
               value={100}
@@ -87,20 +91,16 @@ export function CourseCard({
               className="col-start-1 row-start-1"
             />
           </div>
-          <Typography
-            variant="h6"
-            component="div"
-            className="shrink overflow-hidden !ml-2"
-          >
+          <Typography variant="h6" component="div" className="overflow-hidden">
             <Link
               href={available ? `/courses/${course.id}` : undefined}
               underline="none"
-              color="black"
+              color="text.primary"
             >
               {course.title}
             </Link>
           </Typography>
-          <div className="grow"></div>
+          <div className="min-w-0 grow"/>
           <Chip
             label={
               course.yearDivision
