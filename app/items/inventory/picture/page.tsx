@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { pageInventoryForUserQuery } from "@/__generated__/pageInventoryForUserQuery.graphql";
 import { Box } from "@mui/material";
@@ -9,114 +9,117 @@ import DecoParser from "../../../../components/DecoParser";
 import { useSort } from "./../SortContext";
 
 export default function PicturePage() {
+  const { sortBy, showLocked } = useSort();
 
-    const { sortBy } = useSort();
+  type DecorationItem = {
+    id: string;
+    [key: string]: any; // Damit auch weitere Eigenschaften erlaubt sind
+  };
 
-    type DecorationItem = {
-        id: string;
-        [key: string]: any; // Damit auch weitere Eigenschaften erlaubt sind
-    };
+  const { inventoryForUser } = useLazyLoadQuery<pageInventoryForUserQuery>(
+    graphql`
+      query pageInventoryForUserQuery {
+        inventoryForUser {
+          items {
+            equipped
+            id
+            uniqueDescription
+            unlocked
+          }
+          unspentPoints
+          userId
+        }
+      }
+    `,
+    {}
+  );
 
-    const { inventoryForUser } =
-        useLazyLoadQuery<pageInventoryForUserQuery>(
-        graphql`
-            query pageInventoryForUserQuery {
-            inventoryForUser {
-                items {
-                equipped
-                id
-                uniqueDescription
-                unlocked
-                }
-                unspentPoints
-                userId
-            }
-            }
-        `,
-        {}
-        );
+  console.log(inventoryForUser, 'invvvvvvvvvvvvv')
 
-    const itemIds = inventoryForUser.items.map(item => item.id);
+  const itemIds = inventoryForUser.items.map((item) => item.id);
 
-    const itemsParsed = DecoParser(itemIds, "profilePics")
+  const itemsParsed = DecoParser(itemIds, "profilePics");
 
-    const itemStatusMap = Object.fromEntries(
-        inventoryForUser.items.map((item) => [
-        item.id,
-        { equipped: item.equipped, unlocked: item.unlocked },
-        ])
-    );
+  const itemStatusMap = Object.fromEntries(
+    inventoryForUser.items.map((item) => [
+      item.id,
+      { equipped: item.equipped, unlocked: item.unlocked },
+    ])
+  );
 
-    // 4. Parsed Items mit Status kombinieren
-    const itemsParsedMerged = itemsParsed.map((item: DecorationItem) => ({
-        ...item,
-        ...itemStatusMap[item.id],
-    }));
+  // 4. Parsed Items mit Status kombinieren
+  const itemsParsedMerged = itemsParsed.map((item: DecorationItem) => ({
+    ...item,
+    ...itemStatusMap[item.id],
+  }));
 
-    const sortedItems = useMemo(() => {
-        return [...itemsParsedMerged].sort((a, b) => {
-            if (sortBy === "name") return a.name.localeCompare(b.name);
-            if (sortBy === "rarity") {
-            const rarityOrder = ["common", "uncommon", "rare", "ultra_rare"];
-            return rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
-            }
-            return 0;
-        });
-        }, [itemsParsedMerged, sortBy]); // 👈 sortBy muss rein!
+  const sortedItems = useMemo(() => {
+    const filtered = showLocked
+      ? itemsParsedMerged
+      : itemsParsedMerged.filter((item) => item.unlocked);
 
+    return [...filtered].sort((a, b) => {
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      if (sortBy === "rarity") {
+        const rarityOrder = ["common", "uncommon", "rare", "ultra_rare"];
+        return rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
+      }
+      return 0;
+    });
+  }, [itemsParsedMerged, sortBy, showLocked]); // 👈 showLocked nicht vergessen!
 
-    console.log(sortedItems)
-    console.log(sortBy)
+  console.log(sortedItems);
+  console.log(sortBy);
 
-    return (
+  return (
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "repeat(6, 1fr)",
+        gap: 2,
+      }}
+    >
+      {sortedItems.map((pic) => (
         <Box
-        sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(6, 1fr)",
-            gap: 2,
-        }}
+          key={pic.id}
+          sx={{
+            position: "relative",
+            border: pic.equipped ? "2px solid green" : "1px solid #ccc",
+            borderRadius: 2,
+            opacity: pic.unlocked ? 1 : 0.4,
+            transition: "0.2s ease-in-out",
+          }}
         >
-        {sortedItems.map((pic) => (
-            <Box
-            key={pic.id}
-            sx={{
-                position: "relative",
-                border: pic.equipped ? "2px solid green" : "1px solid #ccc",
-                borderRadius: 2,
-                opacity: pic.unlocked ? 1 : 0.4,
-                transition: "0.2s ease-in-out",
+          <img
+            src={decodeURIComponent(pic.url)}
+            alt={pic.id}
+            style={{
+              width: "100%",
+              aspectRatio: "1 / 1",
+              objectFit: "cover",
+              borderRadius: 8,
             }}
+          />
+          {!pic.unlocked && (
+            <Box
+              sx={{
+                position: "absolute",
+                inset: 0,
+                backgroundColor: "rgba(0,0,0,0.4)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+                fontWeight: "bold",
+                fontSize: "0.9rem",
+                borderRadius: 2,
+              }}
             >
-            <img
-                src={decodeURIComponent(pic.url)}
-                alt={pic.id}
-                style={{
-                width: "100%",
-                aspectRatio: "1 / 1",
-                objectFit: "cover",
-                borderRadius: 8,
-                }}
-            />
-            {!pic.unlocked && (
-                <Box
-                sx={{
-                    position: "absolute",
-                    inset: 0,
-                    backgroundColor: "rgba(0,0,0,0.4)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontWeight: "bold",
-                    fontSize: "0.9rem",
-                    borderRadius: 2,
-                }}
-                >
-                Locked
-                </Box>
-            )}
+              Locked
             </Box>
-        ))}
+          )}
         </Box>
-    );
+      ))}
+    </Box>
+  );
 }
