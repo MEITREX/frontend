@@ -1,12 +1,12 @@
 "use client";
 
-import { pageInventoryForUserQuery } from "@/__generated__/pageInventoryForUserQuery.graphql";
 import { Box } from "@mui/material";
 import { useMemo } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import DecoParser from "../../../../components/DecoParser";
 import { useSort } from "./../SortContext";
+import { pageInventoryForUserBackgroundQuery } from "@/__generated__/pageInventoryForUserBackgroundQuery.graphql";
 
 export default function PicturePage() {
   const { sortBy, showLocked } = useSort();
@@ -16,9 +16,9 @@ export default function PicturePage() {
     [key: string]: any; // Damit auch weitere Eigenschaften erlaubt sind
   };
 
-  const { inventoryForUser } = useLazyLoadQuery<pageInventoryForUserQuery>(
+  const { inventoryForUser } = useLazyLoadQuery<pageInventoryForUserBackgroundQuery>(
     graphql`
-      query pageInventoryForUserQuery {
+      query pageInventoryForUserBackgroundQuery {
         inventoryForUser {
           items {
             equipped

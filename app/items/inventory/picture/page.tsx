@@ -1,8 +1,9 @@
 "use client";
 
-import { pageInventoryForUserQuery } from "@/__generated__/pageInventoryForUserQuery.graphql";
+import { pageInventoryForUserPictureQuery } from "@/__generated__/pageInventoryForUserPictureQuery.graphql";
+import DecorationPopup from "@/components/items/DecorationPopup";
 import { Box } from "@mui/material";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import DecoParser from "../../../../components/DecoParser";
@@ -16,9 +17,9 @@ export default function PicturePage() {
     [key: string]: any; // Damit auch weitere Eigenschaften erlaubt sind
   };
 
-  const { inventoryForUser } = useLazyLoadQuery<pageInventoryForUserQuery>(
+  const { inventoryForUser } = useLazyLoadQuery<pageInventoryForUserPictureQuery>(
     graphql`
-      query pageInventoryForUserQuery {
+      query pageInventoryForUserPictureQuery {
         inventoryForUser {
           items {
             equipped
@@ -71,7 +72,19 @@ export default function PicturePage() {
   console.log(sortedItems);
   console.log(sortBy);
 
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const handleToggleEquip = () => {
+    if (!selectedItem) return;
+
+    console.log('Toggled equiped state to')
+
+    // Popup schließen oder beibehalten
+    setSelectedItem(null);
+  };
+
   return (
+    <>
     <Box
       sx={{
         display: "grid",
@@ -82,12 +95,14 @@ export default function PicturePage() {
       {sortedItems.map((pic) => (
         <Box
           key={pic.id}
+          onClick={() => setSelectedItem(pic)}
           sx={{
             position: "relative",
             border: pic.equipped ? "2px solid green" : "1px solid #ccc",
             borderRadius: 2,
             opacity: pic.unlocked ? 1 : 0.4,
             transition: "0.2s ease-in-out",
+            cursor: "pointer", // 👈 hier
           }}
         >
           <img
@@ -121,5 +136,19 @@ export default function PicturePage() {
         </Box>
       ))}
     </Box>
+
+      {selectedItem && (
+        <DecorationPopup
+          open={true}
+          onClose={() => setSelectedItem(null)}
+          imageSrc={decodeURIComponent(selectedItem.url)}
+          imageAlt={selectedItem.id}
+          description={selectedItem.description || "No description available."}
+          equipped={selectedItem.equipped}
+          onToggleEquip={handleToggleEquip}
+          name={selectedItem.name}
+        />
+      )}
+      </>
   );
 }

@@ -13,7 +13,7 @@ const SortContext = createContext<SortContextType | undefined>(undefined);
 
 export const SortProvider = ({ children }: { children: React.ReactNode }) => {
   const [sortBy, setSortBy] = useState<"name" | "rarity">("name");
-  const [showLocked, setShowLocked] = useState<boolean>(true); // ✅ neu
+  const [showLocked, setShowLocked] = useState<boolean>(false); // ✅ neu
 
   return (
     <SortContext.Provider

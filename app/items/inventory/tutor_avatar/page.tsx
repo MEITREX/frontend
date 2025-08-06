@@ -1,6 +1,6 @@
 "use client";
 
-import { pageInventoryForUserQuery } from "@/__generated__/pageInventoryForUserQuery.graphql";
+import { pageInventoryForUserTutorQuery } from "@/__generated__/pageInventoryForUserTutorQuery.graphql";
 import { Box } from "@mui/material";
 import { useMemo } from "react";
 import { useLazyLoadQuery } from "react-relay";
@@ -16,9 +16,9 @@ export default function PicturePage() {
     [key: string]: any; // Damit auch weitere Eigenschaften erlaubt sind
   };
 
-  const { inventoryForUser } = useLazyLoadQuery<pageInventoryForUserQuery>(
+  const { inventoryForUser } = useLazyLoadQuery<pageInventoryForUserTutorQuery>(
     graphql`
-      query pageInventoryForUserQuery {
+      query pageInventoryForUserTutorQuery {
         inventoryForUser {
           items {
             equipped

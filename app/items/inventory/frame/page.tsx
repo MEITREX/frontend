@@ -7,6 +7,7 @@ import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import DecoParser from "../../../../components/DecoParser";
 import { useSort } from "./../SortContext";
+import { pageInventoryForUserFrameQuery } from "@/__generated__/pageInventoryForUserFrameQuery.graphql";
 
 export default function PicturePage() {
   const { sortBy, showLocked } = useSort();
@@ -16,9 +17,9 @@ export default function PicturePage() {
     [key: string]: any; // Damit auch weitere Eigenschaften erlaubt sind
   };
 
-  const { inventoryForUser } = useLazyLoadQuery<pageInventoryForUserQuery>(
+  const { inventoryForUser } = useLazyLoadQuery<pageInventoryForUserFrameQuery>(
     graphql`
-      query pageInventoryForUserQuery {
+      query pageInventoryForUserFrameQuery {
         inventoryForUser {
           items {
             equipped
