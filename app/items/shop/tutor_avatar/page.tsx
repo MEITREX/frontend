@@ -1,15 +1,14 @@
 "use client";
 
-import { pageEquipItemPictureMutation } from "@/__generated__/pageEquipItemPictureMutation.graphql";
-import { pageInventoryForUserPictureQuery } from "@/__generated__/pageInventoryForUserPictureQuery.graphql";
-import { pageUnequipItemPictureMutation } from "@/__generated__/pageUnequipItemPictureMutation.graphql";
+import { pageBuyItemTutorMutation } from "@/__generated__/pageBuyItemTutorMutation.graphql";
+import { pageShopForUserTutorQuery } from "@/__generated__/pageShopForUserTutorQuery.graphql";
 import DecorationPopup from "@/components/items/DecorationPopup";
 import { Box } from "@mui/material";
 import { useMemo, useState } from "react";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
 import DecoParser from "../../../../components/DecoParser";
-import { useSort } from "./../SortContext";
+import { useSort } from "./../SortContextShop";
 
 export default function PicturePage() {
   const { sortBy, showLocked } = useSort();
@@ -19,44 +18,27 @@ export default function PicturePage() {
     [key: string]: any; // Damit auch weitere Eigenschaften erlaubt sind
   };
 
-  const { inventoryForUser } =
-    useLazyLoadQuery<pageInventoryForUserPictureQuery>(
-      graphql`
-        query pageInventoryForUserPictureQuery {
-          inventoryForUser {
-            items {
-              equipped
-              id
-              uniqueDescription
-              unlocked
-            }
-            unspentPoints
-            userId
+  const { inventoryForUser } = useLazyLoadQuery<pageShopForUserTutorQuery>(
+    graphql`
+      query pageShopForUserTutorQuery {
+        inventoryForUser {
+          items {
+            equipped
+            id
+            uniqueDescription
+            unlocked
           }
+          unspentPoints
+          userId
         }
-      `,
-      {}
-    );
-
-  const [equipItem] = useMutation<pageEquipItemPictureMutation>(graphql`
-    mutation pageEquipItemPictureMutation($itemId: UUID!) {
-      equipItem(itemId: $itemId) {
-        items {
-          equipped
-          id
-          uniqueDescription
-          unlocked
-          unlockedTime
-        }
-        unspentPoints
-        userId
       }
-    }
-  `);
+    `,
+    {}
+  );
 
-  const [unequipItem] = useMutation<pageUnequipItemPictureMutation>(graphql`
-    mutation pageUnequipItemPictureMutation($itemId: UUID!) {
-      unequipItem(itemId: $itemId) {
+  const [buyItem] = useMutation<pageBuyItemTutorMutation>(graphql`
+    mutation pageBuyItemTutorMutation($itemId: UUID!) {
+      buyItem(itemId: $itemId) {
         items {
           equipped
           id
@@ -74,7 +56,7 @@ export default function PicturePage() {
 
   const itemIds = inventoryForUser.items.map((item) => item.id);
 
-  const itemsParsed = DecoParser(itemIds, "profilePics");
+  const itemsParsed = DecoParser(itemIds, "tutors");
 
   const itemStatusMap = Object.fromEntries(
     inventoryForUser.items.map((item) => [
@@ -109,34 +91,22 @@ export default function PicturePage() {
 
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const handleToggleEquip = () => {
+  const onToggleEquip = () => {
+    console.log("hi");
     if (!selectedItem) return;
 
-    if (selectedItem.equipped) {
-      unequipItem({
-        variables: {
-          itemId: selectedItem.id,
-        },
-        onError() {
-          console.log("Cant unequip item", selectedItem.id);
-        },
-        onCompleted() {
-          console.log("Unequiped item");
-        },
-      });
-    } else {
-      equipItem({
-        variables: {
-          itemId: selectedItem.id,
-        },
-        onError() {
-          console.log("Cant equip item", selectedItem.id);
-        },
-        onCompleted() {
-          console.log("Equiped item");
-        },
-      });
-    }
+    console.log("hiiii");
+    buyItem({
+      variables: {
+        itemId: selectedItem.id,
+      },
+      onError() {
+        console.log("Cant unequip item", selectedItem.id);
+      },
+      onCompleted() {
+        console.log("Unequiped item");
+      },
+    });
 
     // Popup schließen oder beibehalten
     setSelectedItem(null);
@@ -196,7 +166,7 @@ export default function PicturePage() {
         ))}
       </Box>
 
-      {selectedItem && selectedItem.unlocked && (
+      {selectedItem && (
         <DecorationPopup
           open={true}
           onClose={() => setSelectedItem(null)}
@@ -204,7 +174,7 @@ export default function PicturePage() {
           imageAlt={selectedItem.id}
           description={selectedItem.description || "No description available."}
           equipped={selectedItem.equipped}
-          onToggleEquip={handleToggleEquip}
+          onToggleEquip={onToggleEquip}
           name={selectedItem.name}
         />
       )}

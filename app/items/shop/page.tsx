@@ -1,8 +1,6 @@
-export default function ShopPage() {
-  return (
-    <div>
-      <h2>🛒 Shop</h2>
-      <p>Kaufe hier neue Items mit deiner Ingame-Währung.</p>
-    </div>
-  );
+// app/profile/page.tsx
+import { redirect } from "next/navigation";
+
+export default function InventoryPage() {
+  redirect("/items/shop/picture");
 }

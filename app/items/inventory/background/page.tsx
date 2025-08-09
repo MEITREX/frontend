@@ -1,12 +1,15 @@
 "use client";
 
+import { pageEquipItemBackgroundMutation } from "@/__generated__/pageEquipItemBackgroundMutation.graphql";
+import { pageInventoryForUserBackgroundQuery } from "@/__generated__/pageInventoryForUserBackgroundQuery.graphql";
+import { pageUnequipItemBackgroundMutation } from "@/__generated__/pageUnequipItemBackgroundMutation.graphql";
+import DecorationPopup from "@/components/items/DecorationPopup";
 import { Box } from "@mui/material";
-import { useMemo } from "react";
-import { useLazyLoadQuery } from "react-relay";
+import { useMemo, useState } from "react";
+import { useLazyLoadQuery, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
 import DecoParser from "../../../../components/DecoParser";
 import { useSort } from "./../SortContext";
-import { pageInventoryForUserBackgroundQuery } from "@/__generated__/pageInventoryForUserBackgroundQuery.graphql";
 
 export default function PicturePage() {
   const { sortBy, showLocked } = useSort();
@@ -16,29 +19,62 @@ export default function PicturePage() {
     [key: string]: any; // Damit auch weitere Eigenschaften erlaubt sind
   };
 
-  const { inventoryForUser } = useLazyLoadQuery<pageInventoryForUserBackgroundQuery>(
-    graphql`
-      query pageInventoryForUserBackgroundQuery {
-        inventoryForUser {
-          items {
-            equipped
-            id
-            uniqueDescription
-            unlocked
+  const { inventoryForUser } =
+    useLazyLoadQuery<pageInventoryForUserBackgroundQuery>(
+      graphql`
+        query pageInventoryForUserBackgroundQuery {
+          inventoryForUser {
+            items {
+              equipped
+              id
+              uniqueDescription
+              unlocked
+            }
+            unspentPoints
+            userId
           }
-          unspentPoints
-          userId
         }
+      `,
+      {}
+    );
+
+  const [equipItem] = useMutation<pageEquipItemBackgroundMutation>(graphql`
+    mutation pageEquipItemBackgroundMutation($itemId: UUID!) {
+      equipItem(itemId: $itemId) {
+        items {
+          equipped
+          id
+          uniqueDescription
+          unlocked
+          unlockedTime
+        }
+        unspentPoints
+        userId
       }
-    `,
-    {}
-  );
+    }
+  `);
+
+  const [unequipItem] = useMutation<pageUnequipItemBackgroundMutation>(graphql`
+    mutation pageUnequipItemBackgroundMutation($itemId: UUID!) {
+      unequipItem(itemId: $itemId) {
+        items {
+          equipped
+          id
+          uniqueDescription
+          unlocked
+          unlockedTime
+        }
+        unspentPoints
+        userId
+      }
+    }
+  `);
+
+  console.log(inventoryForUser, "invvvvvvvvvvvvv");
 
   const itemIds = inventoryForUser.items.map((item) => item.id);
 
-  const itemsParsed = DecoParser(itemIds, "colorThemes");
-
-  console.log(inventoryForUser)
+  const itemsParsed = DecoParser(itemIds, "profilePicFrames");
 
   const itemStatusMap = Object.fromEntries(
     inventoryForUser.items.map((item) => [
@@ -68,70 +104,110 @@ export default function PicturePage() {
     });
   }, [itemsParsedMerged, sortBy, showLocked]); // 👈 showLocked nicht vergessen!
 
+  console.log(sortedItems);
+  console.log(sortBy);
 
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const handleToggleEquip = () => {
+    if (!selectedItem) return;
+
+    if (selectedItem.equipped) {
+      unequipItem({
+        variables: {
+          itemId: selectedItem.id,
+        },
+        onError() {
+          console.log("Cant unequip item", selectedItem.id);
+        },
+        onCompleted() {
+          console.log("Unequiped item");
+        },
+      });
+    } else {
+      equipItem({
+        variables: {
+          itemId: selectedItem.id,
+        },
+        onError() {
+          console.log("Cant equip item", selectedItem.id);
+        },
+        onCompleted() {
+          console.log("Equiped item");
+        },
+      });
+    }
+
+    // Popup schließen oder beibehalten
+    setSelectedItem(null);
+  };
 
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gridTemplateColumns: "repeat(6, 1fr)",
-        gap: 2,
-      }}
-    >
-      {sortedItems.map((pic) => (
-        <Box
-          key={pic.id}
-          sx={{
-            position: "relative",
-            border: pic.equipped ? "2px solid green" : "1px solid #ccc",
-            borderRadius: 2,
-            opacity: pic.unlocked ? 1 : 0.4,
-            transition: "0.2s ease-in-out",
-          }}
-        >
+    <>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(6, 1fr)",
+          gap: 2,
+        }}
+      >
+        {sortedItems.map((pic) => (
           <Box
+            key={pic.id}
+            onClick={() => setSelectedItem(pic)}
             sx={{
-              width: "100%",
-              aspectRatio: "1 / 1",
-              backgroundColor: pic.backColor,
+              position: "relative",
+              border: pic.equipped ? "2px solid green" : "1px solid #ccc",
               borderRadius: 2,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              p: "15%", // Abstand für den inneren Farbkern
+              opacity: pic.unlocked ? 1 : 0.4,
+              transition: "0.2s ease-in-out",
+              cursor: "pointer", // 👈 hier
             }}
           >
-            <Box
-              sx={{
+            <img
+              src={decodeURIComponent(pic.url)}
+              alt={pic.id}
+              style={{
                 width: "100%",
-                height: "100%",
-                backgroundColor: pic.foreColor,
-                borderRadius: 1,
-                boxShadow: "0 0 4px rgba(0,0,0,0.1)", // Optional: für Tiefe
+                aspectRatio: "1 / 1",
+                objectFit: "cover",
+                borderRadius: 8,
               }}
             />
+            {!pic.unlocked && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  backgroundColor: "rgba(0,0,0,0.4)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "white",
+                  fontWeight: "bold",
+                  fontSize: "0.9rem",
+                  borderRadius: 2,
+                }}
+              >
+                Locked
+              </Box>
+            )}
           </Box>
+        ))}
+      </Box>
 
-          {!pic.unlocked && (
-            <Box
-              sx={{
-                position: "absolute",
-                inset: 0,
-                backgroundColor: "rgba(0,0,0,0.4)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-                fontWeight: "bold",
-                fontSize: "0.9rem",
-                borderRadius: 2,
-              }}
-            >
-              Locked
-            </Box>
-          )}
-        </Box>
-      ))}
-    </Box>
+      {selectedItem && selectedItem.unlocked && (
+        <DecorationPopup
+          open={true}
+          onClose={() => setSelectedItem(null)}
+          imageSrc={decodeURIComponent(selectedItem.url)}
+          imageAlt={selectedItem.id}
+          description={selectedItem.description || "No description available."}
+          equipped={selectedItem.equipped}
+          onToggleEquip={handleToggleEquip}
+          name={selectedItem.name}
+        />
+      )}
+    </>
   );
 }

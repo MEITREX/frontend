@@ -1,13 +1,15 @@
 "use client";
 
-import { pageInventoryForUserQuery } from "@/__generated__/pageInventoryForUserQuery.graphql";
+import { pageEquipItemFrameMutation } from "@/__generated__/pageEquipItemFrameMutation.graphql";
+import { pageInventoryForUserFrameQuery } from "@/__generated__/pageInventoryForUserFrameQuery.graphql";
+import { pageUnequipItemFrameMutation } from "@/__generated__/pageUnequipItemFrameMutation.graphql";
+import DecorationPopup from "@/components/items/DecorationPopup";
 import { Box } from "@mui/material";
-import { useMemo } from "react";
-import { useLazyLoadQuery } from "react-relay";
+import { useMemo, useState } from "react";
+import { useLazyLoadQuery, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
 import DecoParser from "../../../../components/DecoParser";
 import { useSort } from "./../SortContext";
-import { pageInventoryForUserFrameQuery } from "@/__generated__/pageInventoryForUserFrameQuery.graphql";
 
 export default function PicturePage() {
   const { sortBy, showLocked } = useSort();
@@ -34,6 +36,40 @@ export default function PicturePage() {
     `,
     {}
   );
+
+  const [equipItem] = useMutation<pageEquipItemFrameMutation>(graphql`
+    mutation pageEquipItemFrameMutation($itemId: UUID!) {
+      equipItem(itemId: $itemId) {
+        items {
+          equipped
+          id
+          uniqueDescription
+          unlocked
+          unlockedTime
+        }
+        unspentPoints
+        userId
+      }
+    }
+  `);
+
+  const [unequipItem] = useMutation<pageUnequipItemFrameMutation>(graphql`
+    mutation pageUnequipItemFrameMutation($itemId: UUID!) {
+      unequipItem(itemId: $itemId) {
+        items {
+          equipped
+          id
+          uniqueDescription
+          unlocked
+          unlockedTime
+        }
+        unspentPoints
+        userId
+      }
+    }
+  `);
+
+  console.log(inventoryForUser, "invvvvvvvvvvvvv");
 
   const itemIds = inventoryForUser.items.map((item) => item.id);
 
@@ -70,55 +106,107 @@ export default function PicturePage() {
   console.log(sortedItems);
   console.log(sortBy);
 
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const handleToggleEquip = () => {
+    if (!selectedItem) return;
+
+    if (selectedItem.equipped) {
+      unequipItem({
+        variables: {
+          itemId: selectedItem.id,
+        },
+        onError() {
+          console.log("Cant unequip item", selectedItem.id);
+        },
+        onCompleted() {
+          console.log("Unequiped item");
+        },
+      });
+    } else {
+      equipItem({
+        variables: {
+          itemId: selectedItem.id,
+        },
+        onError() {
+          console.log("Cant equip item", selectedItem.id);
+        },
+        onCompleted() {
+          console.log("Equiped item");
+        },
+      });
+    }
+
+    // Popup schließen oder beibehalten
+    setSelectedItem(null);
+  };
+
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gridTemplateColumns: "repeat(6, 1fr)",
-        gap: 2,
-      }}
-    >
-      {sortedItems.map((pic) => (
-        <Box
-          key={pic.id}
-          sx={{
-            position: "relative",
-            border: pic.equipped ? "2px solid green" : "1px solid #ccc",
-            borderRadius: 2,
-            opacity: pic.unlocked ? 1 : 0.4,
-            transition: "0.2s ease-in-out",
-          }}
-        >
-          <img
-            src={decodeURIComponent(pic.url)}
-            alt={pic.id}
-            style={{
-              width: "100%",
-              aspectRatio: "1 / 1",
-              objectFit: "cover",
-              borderRadius: 8,
+    <>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(6, 1fr)",
+          gap: 2,
+        }}
+      >
+        {sortedItems.map((pic) => (
+          <Box
+            key={pic.id}
+            onClick={() => setSelectedItem(pic)}
+            sx={{
+              position: "relative",
+              border: pic.equipped ? "2px solid green" : "1px solid #ccc",
+              borderRadius: 2,
+              opacity: pic.unlocked ? 1 : 0.4,
+              transition: "0.2s ease-in-out",
+              cursor: "pointer", // 👈 hier
             }}
-          />
-          {!pic.unlocked && (
-            <Box
-              sx={{
-                position: "absolute",
-                inset: 0,
-                backgroundColor: "rgba(0,0,0,0.4)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-                fontWeight: "bold",
-                fontSize: "0.9rem",
-                borderRadius: 2,
+          >
+            <img
+              src={decodeURIComponent(pic.url)}
+              alt={pic.id}
+              style={{
+                width: "100%",
+                aspectRatio: "1 / 1",
+                objectFit: "cover",
+                borderRadius: 8,
               }}
-            >
-              Locked
-            </Box>
-          )}
-        </Box>
-      ))}
-    </Box>
+            />
+            {!pic.unlocked && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  backgroundColor: "rgba(0,0,0,0.4)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "white",
+                  fontWeight: "bold",
+                  fontSize: "0.9rem",
+                  borderRadius: 2,
+                }}
+              >
+                Locked
+              </Box>
+            )}
+          </Box>
+        ))}
+      </Box>
+
+      {selectedItem && selectedItem.unlocked && (
+        <DecorationPopup
+          open={true}
+          onClose={() => setSelectedItem(null)}
+          imageSrc={decodeURIComponent(selectedItem.url)}
+          imageAlt={selectedItem.id}
+          description={selectedItem.description || "No description available."}
+          equipped={selectedItem.equipped}
+          onToggleEquip={handleToggleEquip}
+          name={selectedItem.name}
+        />
+      )}
+    </>
   );
 }

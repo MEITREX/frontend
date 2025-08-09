@@ -1,13 +1,13 @@
 import CloseIcon from "@mui/icons-material/Close";
 import {
-    Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    IconButton,
-    Typography,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Typography,
 } from "@mui/material";
 import React from "react";
 
@@ -61,9 +61,15 @@ const DecorationPopup: React.FC<Props> = ({
       </DialogContent>
 
       <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
-        <Button onClick={onToggleEquip} variant="contained">
-          {equipped ? "Unequip" : "Equip"}
-        </Button>
+        {typeof equipped === "boolean" ? (
+          <Button onClick={onToggleEquip} variant="contained">
+            {equipped ? "Unequip" : "Equip"}
+          </Button>
+        ) : (
+          <Button onClick={onToggleEquip} variant="contained">
+            Buy for {equipped} DP
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );

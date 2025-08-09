@@ -13,17 +13,10 @@ export default function parseDecorations(
 ): DecorationItem[] {
   const categoryArray = decorationsData[category];
 
-  console.log("decoParser", categoryArray)
-  console.log("IDSSSS", ids)
-
   if (!Array.isArray(categoryArray)) {
     console.warn(`Category "${category}" is not an array`);
     return [];
   }
-
-  console.log(ids.flatMap((id) => {
-    const match = categoryArray.find((item: DecorationItem) => item.id === id);
-    return match ? [match] : []}), "whoa")
 
   return ids.flatMap((id) => {
     const match = categoryArray.find((item: DecorationItem) => item.id === id);
