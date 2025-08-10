@@ -74,7 +74,11 @@ export default function PicturePage() {
 
   const itemIds = inventoryForUser.items.map((item) => item.id);
 
-  const itemsParsed = DecoParser(itemIds, "patternThemes");
+  const itemsParsedPatterns = DecoParser(itemIds, "patternThemes");
+
+  const itemsParsedColors = DecoParser(itemIds, "colorThemes");
+
+  const itemsParsed = itemsParsedColors.concat(itemsParsedPatterns);
 
   const itemStatusMap = Object.fromEntries(
     inventoryForUser.items.map((item) => [
@@ -88,6 +92,10 @@ export default function PicturePage() {
     ...item,
     ...itemStatusMap[item.id],
   }));
+
+  const numberItemsUnlocked = itemsParsedMerged.filter(
+    (item) => item.unlocked
+  ).length;
 
   const sortedItems = useMemo(() => {
     const filtered = showLocked
@@ -144,6 +152,11 @@ export default function PicturePage() {
 
   return (
     <>
+      <Box sx={{ mb: 2, width: "100%" }}>
+        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+          Items owned: {numberItemsUnlocked} / {itemsParsed.length}
+        </Typography>
+      </Box>
       <Box
         sx={{
           display: "grid",
@@ -176,10 +189,22 @@ export default function PicturePage() {
               onClick={() => setSelectedItem(pic)}
               sx={{
                 position: "relative",
-                border: `3px solid ${pic.unlocked ? "#80848c" : colors.border}`,
+                border: `3px solid ${
+                  pic.equipped
+                    ? "#096909" // grün
+                    : pic.unlocked
+                    ? colors.border // rarity-Farbe
+                    : "#000000d3" // grau
+                }`,
                 borderRadius: 3,
                 overflow: "hidden",
-                boxShadow: `0 0 0 3px ${colors.border}33`, // leichter Glow
+                boxShadow: `0 0 0 3px ${
+                  pic.equipped
+                    ? "#096909" // grün
+                    : pic.unlocked
+                    ? colors.border // rarity-Farbe
+                    : "#000000d3" // grau
+                }33`, // leichter Glow
                 backgroundColor: colors.bg,
                 cursor: "pointer",
                 transition: "transform .15s ease, box-shadow .15s ease",
@@ -218,11 +243,16 @@ export default function PicturePage() {
                   <Box
                     sx={{
                       backgroundColor: pic.backColor, // z. B. theme.palette.primary.main
-                      borderRadius: 1,
+                      borderRadius: 2,
                       overflow: "hidden",
                       aspectRatio: "1 / 1",
                       width: "171px", // oder flexibel anpassen
                       height: "171px",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
                     <Box
@@ -257,7 +287,7 @@ export default function PicturePage() {
                   sx={{
                     position: "absolute",
                     inset: 0,
-                    backgroundColor: "rgba(0,0,0,0.45)",
+                    backgroundColor: "rgba(0,0,0,0.85)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",

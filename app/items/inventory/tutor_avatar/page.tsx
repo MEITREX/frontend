@@ -4,7 +4,7 @@ import { pageEquipItemTutorMutation } from "@/__generated__/pageEquipItemTutorMu
 import { pageInventoryForUserTutorQuery } from "@/__generated__/pageInventoryForUserTutorQuery.graphql";
 import { pageUnequipItemTutorMutation } from "@/__generated__/pageUnequipItemTutorMutation.graphql";
 import DecorationPopup from "@/components/items/DecorationPopup";
-import { Box, GlobalStyles } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
@@ -88,6 +88,10 @@ export default function PicturePage() {
     ...itemStatusMap[item.id],
   }));
 
+  const numberItemsUnlocked = itemsParsedMerged.filter(
+    (item) => item.unlocked
+  ).length;
+
   const sortedItems = useMemo(() => {
     const filtered = showLocked
       ? itemsParsedMerged
@@ -143,6 +147,11 @@ export default function PicturePage() {
 
   return (
     <>
+      <Box sx={{ mb: 2, width: "100%" }}>
+        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+          Items owned: {numberItemsUnlocked} / {itemsParsed.length}
+        </Typography>
+      </Box>
       <Box
         sx={{
           display: "grid",

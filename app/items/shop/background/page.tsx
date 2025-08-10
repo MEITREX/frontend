@@ -56,8 +56,11 @@ export default function PicturePage() {
 
   const itemIds = inventoryForUser.items.map((item) => item.id);
 
-  const itemsParsed = DecoParser(itemIds, "patternThemes");
+  const itemsParsedPatterns = DecoParser(itemIds, "patternThemes");
 
+  const itemsParsedColors = DecoParser(itemIds, "colorThemes");
+
+  const itemsParsed = itemsParsedColors.concat(itemsParsedPatterns);
   const itemStatusMap = Object.fromEntries(
     inventoryForUser.items.map((item) => [
       item.id,
@@ -194,11 +197,16 @@ export default function PicturePage() {
                   <Box
                     sx={{
                       backgroundColor: pic.backColor, // z. B. theme.palette.primary.main
-                      borderRadius: 1,
+                      borderRadius: 2,
                       overflow: "hidden",
                       aspectRatio: "1 / 1",
                       width: "171px", // oder flexibel anpassen
                       height: "171px",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
                     <Box

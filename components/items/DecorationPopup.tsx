@@ -156,6 +156,11 @@ const DecorationPopup: React.FC<Props> = ({
                   aspectRatio: "1 / 1",
                   width: "100%", // oder flexibel anpassen
                   height: "100%",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 <Box

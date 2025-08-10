@@ -3,8 +3,8 @@
 import { createContext, useContext, useState } from "react";
 
 type SortContextType = {
-  sortBy: "name" | "rarity";
-  setSortBy: (value: "name" | "rarity") => void;
+  sortBy: "name" | "rarity" | "recency";
+  setSortBy: (value: "name" | "rarity" | "recency") => void;
   showLocked: boolean;
   setShowLocked: (value: boolean) => void;
 };
@@ -12,7 +12,7 @@ type SortContextType = {
 const SortContext = createContext<SortContextType | undefined>(undefined);
 
 export const SortProvider = ({ children }: { children: React.ReactNode }) => {
-  const [sortBy, setSortBy] = useState<"name" | "rarity">("name");
+  const [sortBy, setSortBy] = useState<"name" | "rarity" | "recency">("name");
   const [showLocked, setShowLocked] = useState<boolean>(false); // ✅ neu
 
   return (
