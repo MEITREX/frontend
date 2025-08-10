@@ -11,7 +11,7 @@ import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 
 export default function PublicProfilePage() {
-  const publicTabs = ["Achievements", "Forum", "Badges", "Leaderboards"];
+  const publicTabs = ["Achievements", "Forum", "Badges"];
   const [tabIndex, setTabIndex] = useState(0);
 
   const params = useParams();
@@ -118,17 +118,6 @@ export default function PublicProfilePage() {
           />
         )}
         {tabIndex === 1 && <OtherUserProfileForumActivity />}
-        {tabIndex === 3 && (
-          <Box>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Leaderboards
-            </Typography>
-            {/* Placeholder: Map over user's courses and display the user's leaderboard positions */}
-            <Typography variant="body1">
-              Hier werden die Leaderboardpositionen des Nutzers angezeigt (pro Kurs).
-            </Typography>
-          </Box>
-        )}
       </Box>
     </Box>
   );
