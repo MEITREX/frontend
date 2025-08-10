@@ -2,9 +2,7 @@
 
 import {
   Box,
-  Checkbox,
   FormControl,
-  FormControlLabel,
   InputLabel,
   MenuItem,
   Select,
@@ -31,7 +29,7 @@ export default function ShopLayout({
 
   const activeIndex = tabs.findIndex((tab) => pathname.includes(tab.path));
 
-  const { sortBy, setSortBy, showLocked, setShowLocked } = useSort();
+  const { sortBy, setSortBy } = useSort();
 
   const handleChange = (_: any, newValue: number) => {
     router.push(`/items/shop/${tabs[newValue].path}`);
@@ -108,17 +106,6 @@ export default function ShopLayout({
             <MenuItem value="rarity">Rarity</MenuItem>
           </Select>
         </FormControl>
-
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={showLocked}
-              onChange={(e) => setShowLocked(e.target.checked)}
-              color="primary"
-            />
-          }
-          label="Locked items anzeigen"
-        />
       </Box>
 
       {children}

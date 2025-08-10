@@ -4,7 +4,7 @@ import { pageEquipItemPictureMutation } from "@/__generated__/pageEquipItemPictu
 import { pageInventoryForUserPictureQuery } from "@/__generated__/pageInventoryForUserPictureQuery.graphql";
 import { pageUnequipItemPictureMutation } from "@/__generated__/pageUnequipItemPictureMutation.graphql";
 import DecorationPopup from "@/components/items/DecorationPopup";
-import { Box } from "@mui/material";
+import { Box, GlobalStyles, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
@@ -151,49 +151,106 @@ export default function PicturePage() {
           gap: 2,
         }}
       >
-        {sortedItems.map((pic) => (
-          <Box
-            key={pic.id}
-            onClick={() => setSelectedItem(pic)}
-            sx={{
-              position: "relative",
-              border: pic.equipped ? "2px solid green" : "1px solid #ccc",
-              borderRadius: 2,
-              opacity: pic.unlocked ? 1 : 0.4,
-              transition: "0.2s ease-in-out",
-              cursor: "pointer", // 👈 hier
-            }}
-          >
-            <img
-              src={decodeURIComponent(pic.url)}
-              alt={pic.id}
-              style={{
-                width: "100%",
-                aspectRatio: "1 / 1",
-                objectFit: "cover",
-                borderRadius: 8,
+        {sortedItems.map((pic) => {
+          const rarityKey = (pic.rarity || "common")
+            .toLowerCase()
+            .replace(/\s+/g, ""); // z.B. "ultrarare"
+          const rarityMap: Record<string, { border: string; bg: string }> = {
+            common: { border: "#26a0f5", bg: "#e3f2fd" }, // blau
+            uncommon: { border: "#d4af37", bg: "#fff8e1" }, // gold
+            rare: { border: "#8e44ad", bg: "#f3e5f5" }, // lila
+            ultra_rare: { border: "#e53935", bg: "#ffebee" }, // rot
+          };
+          const colors = rarityMap[rarityKey] ?? rarityMap.common;
+
+          const price = pic.sellCompensation; // nimm, was du hast
+          const rarityLabel =
+            pic.rarity === "ultra_rare"
+              ? "Ultra Rare"
+              : pic.rarity?.charAt(0).toUpperCase() +
+                (pic.rarity?.slice(1) ?? "Common");
+
+          return (
+            <Box
+              key={pic.id}
+              onClick={() => setSelectedItem(pic)}
+              sx={{
+                position: "relative",
+                border: `3px solid ${
+                  pic.equipped
+                    ? "#096909" // grün
+                    : pic.unlocked
+                    ? colors.border // rarity-Farbe
+                    : "#000000d3" // grau
+                }`,
+                borderRadius: 3,
+                overflow: "hidden",
+                boxShadow: `0 0 0 3px ${
+                  pic.equipped
+                    ? "#096909" // grün
+                    : pic.unlocked
+                    ? colors.border // rarity-Farbe
+                    : "#000000d3" // grau
+                }33`, // leichter Glow
+                backgroundColor: colors.bg,
+                cursor: "pointer",
+                transition: "transform .15s ease, box-shadow .15s ease",
+                "&:hover": { transform: "translateY(-2px)" },
               }}
-            />
-            {!pic.unlocked && (
-              <Box
-                sx={{
-                  position: "absolute",
-                  inset: 0,
-                  backgroundColor: "rgba(0,0,0,0.4)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "white",
-                  fontWeight: "bold",
-                  fontSize: "0.9rem",
-                  borderRadius: 2,
-                }}
-              >
-                Locked
+            >
+              {/* Bildbereich mit innerem schwarzen Rahmen (wie in deiner Skizze) */}
+              <Box sx={{ p: 1 }}>
+                <Box
+                  sx={{
+                    border: "3px solid #000",
+                    borderRadius: 2,
+                    overflow: "hidden",
+                    aspectRatio: "1 / 1",
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  <img
+                    src={decodeURIComponent(pic.url)}
+                    alt={pic.id}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                </Box>
               </Box>
-            )}
-          </Box>
-        ))}
+
+              {/* Info-Bereich */}
+              <Box sx={{ px: 2, pb: 2, pt: 1 }}>
+                <Typography variant="body2">
+                  <strong>Rarity:</strong> {rarityLabel || "Common"}
+                </Typography>
+              </Box>
+
+              {/* Obtained-Overlay: deckt die ganze Karte ab */}
+              {!pic.unlocked && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    inset: 0,
+                    backgroundColor: "rgba(0,0,0,0.85)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    fontWeight: "bold",
+                    fontSize: "0.95rem",
+                    zIndex: 1,
+                    pointerEvents: "none", // Klicks weiterreichen, wenn gewünscht
+                  }}
+                >
+                  Locked
+                </Box>
+              )}
+            </Box>
+          );
+        })}
       </Box>
 
       {selectedItem && selectedItem.unlocked && (
@@ -206,6 +263,7 @@ export default function PicturePage() {
           equipped={selectedItem.equipped}
           onToggleEquip={handleToggleEquip}
           name={selectedItem.name}
+          rarity={selectedItem.rarity}
         />
       )}
     </>
