@@ -5,7 +5,7 @@ import { pageInventoryForUserTutorQuery } from "@/__generated__/pageInventoryFor
 import { pageUnequipItemTutorMutation } from "@/__generated__/pageUnequipItemTutorMutation.graphql";
 import DecorationPopup from "@/components/items/DecorationPopup";
 import { Box, Typography } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
 import DecoParser from "../../../../components/DecoParser";
@@ -92,6 +92,10 @@ export default function PicturePage() {
     (item) => item.unlocked
   ).length;
 
+  console.log(numberItemsUnlocked, "num");
+
+  const equipedItem = itemsParsedMerged.find((item) => item.equipped);
+
   const sortedItems = useMemo(() => {
     const filtered = showLocked
       ? itemsParsedMerged
@@ -112,37 +116,67 @@ export default function PicturePage() {
 
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const handleToggleEquip = () => {
-    if (!selectedItem) return;
+  const handleToggleEquip = (_e: any, itemParameter?: any) => {
+    console.log("HandleToggleEquip");
 
-    if (selectedItem.equipped) {
+    const item = itemParameter ? itemParameter : selectedItem;
+
+    console.log(item, "DAS UNSER ITEM");
+
+    if (item.equipped && !itemParameter) {
       unequipItem({
         variables: {
-          itemId: selectedItem.id,
+          itemId: item.id,
         },
         onError() {
-          console.log("Cant unequip item", selectedItem.id);
+          console.log("Cant unequip item", item.id);
+          // Popup schließen oder beibehalten
+          setSelectedItem(null);
         },
         onCompleted() {
           console.log("Unequiped item");
+          // Popup schließen oder beibehalten
+          setSelectedItem(null);
         },
       });
     } else {
       equipItem({
         variables: {
-          itemId: selectedItem.id,
+          itemId: item.id,
         },
         onError() {
-          console.log("Cant equip item", selectedItem.id);
+          console.log("Cant equip item", item.id);
+          // Popup schließen oder beibehalten
+          setSelectedItem(null);
         },
         onCompleted() {
           console.log("Equiped item");
+          // Popup schließen oder beibehalten
+          setSelectedItem(null);
         },
       });
     }
+  };
 
-    // Popup schließen oder beibehalten
-    setSelectedItem(null);
+  const clickTimer = useRef<number | null>(null);
+
+  const handleClick = (e: React.MouseEvent, pic: any) => {
+    // Bei Doppelklick: Timer für Single-Click abbrechen und equip ausführen
+    if (e.detail === 2) {
+      if (clickTimer.current) {
+        window.clearTimeout(clickTimer.current);
+        clickTimer.current = null;
+      }
+      if (pic.unlocked) handleToggleEquip(pic);
+      return;
+    }
+
+    // Single-Click: leicht verzögern, falls gleich noch ein zweiter Klick kommt
+    if (clickTimer.current) window.clearTimeout(clickTimer.current);
+    clickTimer.current = window.setTimeout(() => {
+      setSelectedItem(pic);
+      clickTimer.current = null;
+    }, 220); // 200–300ms ist üblich
   };
 
   return (
@@ -181,7 +215,7 @@ export default function PicturePage() {
           return (
             <Box
               key={pic.id}
-              onClick={() => setSelectedItem(pic)}
+              onClick={(e) => handleClick(e, pic)}
               sx={{
                 position: "relative",
                 border: `3px solid ${
