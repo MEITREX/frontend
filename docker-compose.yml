@@ -10,6 +10,7 @@ services:
         NEXT_PUBLIC_OAUTH_REDIRECT_URL: "http://localhost:3005"
         NEXT_PUBLIC_OAUTH_CLIENT_ID: "frontend"
         NEXT_PUBLIC_OAUTH_AUTHORITY: "http://localhost:9009/realms/GITS"
+        NEXT_PUBLIC_GITHUB_CLIENT_ID: "Iv23liynxdcJafLw0ptQ"
     ports:
       - "3005:3000"
     networks:

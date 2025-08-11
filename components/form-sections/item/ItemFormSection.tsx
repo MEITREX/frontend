@@ -69,6 +69,7 @@ export const mapRelayItemToItem = (
 
 export const itemFormSectionFragment = graphql`
   fragment ItemFormSectionNewAllSkillsFragment on Course {
+    id
     skills {
       id
       skillName
