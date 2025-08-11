@@ -24,6 +24,9 @@ import frame_10 from '../../assets/lottery/animation/frame_10.png';
 import frame_11 from '../../assets/lottery/animation/frame_11.png';
 import frame_12 from '../../assets/lottery/animation/frame_12.png';
 
+import coins from '../../assets/lottery/coins.png';
+
+
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import { useLazyLoadQuery, useMutation } from "react-relay";
@@ -69,13 +72,12 @@ const rarityStyles: Record<Rarity, RarityStyle> = {
 
 export default function Lottery() {
 
-  /*
   const inventory = useLazyLoadQuery<LotteryApiUserInventoryQuery>(
     lotteryApiUserInventoryQuery,
     {},
     { fetchPolicy: "network-only" }
   );
-*/
+
 
   const [runLottery] = useMutation<LotteryApiLotteryRunMutation>(
     lotteryApiLotteryRunMutation
@@ -89,7 +91,8 @@ export default function Lottery() {
 
 // Dino Points
   const [dinoPoints, setDinoPoints] = useState<number>(1000);
-  const eggCost = 100;
+// EggCost needs to be the same as in the Backend
+  const eggCost = 3000;
 
 // Animation Frames
   const frames = [frame_1,  frame_2, frame_3, frame_4, frame_5, frame_6, frame_7, frame_8, frame_9, frame_10, frame_11, frame_12];
@@ -104,13 +107,12 @@ export default function Lottery() {
   const [celebrate, setCelebrate] = useState(false);
   const [rarity, setRarity] = useState<Rarity>('ULTRA_RARE');
 
-  /*
   useEffect(() => {
     if (inventory?.inventoryForUser?.unspentPoints != null) {
       setDinoPoints(inventory.inventoryForUser.unspentPoints);
     }
   }, [inventory]);
-*/
+
 
   // This useEffect is needed for the animation loop
   useEffect(() => {
@@ -263,15 +265,16 @@ export default function Lottery() {
         Item Lottery
       </Typography>
 
-      <Box mb={8}>
-        <Chip
-          icon={<StarIcon />}
-          label={`${dinoPoints} DP`}
-          color="secondary"
-          variant="filled"
-          sx={{ fontSize: '1rem', height: '2.5rem' }}
-        />
-      </Box>
+      <Button
+        sx={{mb:"58px"}}
+        variant="contained"
+        color="secondary"
+      >
+        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+          {dinoPoints}
+          <Image src={coins} alt="Coins" width={18} height={18} />
+        </Box>
+      </Button>
 
       {/* Confetti for rare items */}
       {celebrate && (
@@ -382,7 +385,10 @@ export default function Lottery() {
           disabled={dinoPoints < eggCost || isOpening}
           onClick={handleOpenEgg}
         >
-          Open Egg ({eggCost} DP)
+          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+            Open Egg: {eggCost}
+            <Image src={coins} alt="Coins" width={18} height={18} />
+          </Box>
         </Button>
       </Box>
       { !mute ? (<IconButton
