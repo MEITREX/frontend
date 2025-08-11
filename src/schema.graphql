@@ -991,6 +991,7 @@ type Mutation {
   loginUser(courseId: UUID): UUID
   logMediaRecordWorkedOn(mediaRecordId: UUID!): MediaRecord!
   logQuizCompleted(input: QuizCompletedInput!): QuizCompletionFeedback!
+  lotteryRun: UserItemComplete
   mutateAssignment(assessmentId: UUID!): AssignmentMutation!
   mutateContent(contentId: UUID!): ContentMutation!
   mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
@@ -1646,6 +1647,27 @@ type UserItem {
   uniqueDescription: String!
   unlocked: Boolean!
   unlockedTime: DateTime
+}
+
+type UserItemComplete {
+  backColor: String
+  description: String!
+  equipped: Boolean!
+  filename: String
+  foreColor: String
+  id: UUID!
+  moneyCost: Int!
+  name: String!
+  nickname: String
+  obtainableAsReward: Boolean!
+  obtainableInLottery: Boolean!
+  obtainableInShop: Boolean!
+  rarity: String!
+  sellCompensation: Int!
+  sold: Boolean!
+  unlocked: Boolean!
+  unlockedTime: DateTime
+  url: String
 }
 
 type UserProgressData {

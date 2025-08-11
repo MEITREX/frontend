@@ -26,11 +26,12 @@ import frame_12 from '../../assets/lottery/animation/frame_12.png';
 
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
-import { useLazyLoadQuery } from "react-relay";
-import { lotteryApiUserInventoryQuery } from "@/components/lottery/api/LotteryApi";
+import { useLazyLoadQuery, useMutation } from "react-relay";
+import { lotteryApiLotteryRunMutation, lotteryApiUserInventoryQuery } from "@/components/lottery/api/LotteryApi";
 import { LotteryApiUserInventoryQuery } from "@/__generated__/LotteryApiUserInventoryQuery.graphql";
+import { LotteryApiLotteryRunMutation } from "@/__generated__/LotteryApiLotteryRunMutation.graphql";
 
-type Rarity = 'default' | 'common' | 'uncommon' | 'rare' | 'ultra_rare';
+type Rarity = 'DEFAULT' | 'COMMON' | 'UNCOMMON' | 'RARE' | 'ULTRA_RARE';
 
 interface RarityStyle {
   border: string;
@@ -39,27 +40,27 @@ interface RarityStyle {
 }
 
 const rarityStyles: Record<Rarity, RarityStyle> = {
-  default: {
+  DEFAULT: {
     border: '2px solid #B0B0B0',
     background: 'linear-gradient(to bottom right, #f5f5f5, #e0e0e0)',
     color: '#B0B0B0'
   },
-  common: {
+  COMMON: {
     border: '2px solid #4B69FF',
     background: 'linear-gradient(to bottom right, #4B69FF, #1C3FAA)',
     color: '#4B69FF'
   },
-  uncommon: {
+  UNCOMMON: {
     border: '2px solid #8847FF',
     background: 'linear-gradient(to bottom right, #8847FF, #5E35B1)',
     color: '#8847FF'
   },
-  rare: {
+  RARE: {
     border: '2px solid #E53935',
     background: 'linear-gradient(to bottom right, #E53935, #B71C1C)',
     color: '#E53935'
   },
-  ultra_rare: {
+  ULTRA_RARE: {
     border: '2px solid #FFD700',
     background: 'radial-gradient(circle at center, #fff176, #fdd835, #f57f17)',
     color: '#FFD700'
@@ -67,7 +68,6 @@ const rarityStyles: Record<Rarity, RarityStyle> = {
 };
 
 export default function Lottery() {
-  // TODO CREATE MANY AND CLEAN FRAMES
 
   /*
   const inventory = useLazyLoadQuery<LotteryApiUserInventoryQuery>(
@@ -76,6 +76,11 @@ export default function Lottery() {
     { fetchPolicy: "network-only" }
   );
 */
+
+  const [runLottery] = useMutation<LotteryApiLotteryRunMutation>(
+    lotteryApiLotteryRunMutation
+  );
+
 
 // Audio
   const [mute, setMute] = useState(false);
@@ -90,13 +95,14 @@ export default function Lottery() {
   const frames = [frame_1,  frame_2, frame_3, frame_4, frame_5, frame_6, frame_7, frame_8, frame_9, frame_10, frame_11, frame_12];
   const crackingFrame = 6;
   const startCrackingSoundFrame = 1;
+
 // Animation
   const [isOpening, setIsOpening] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [isEggWobbling, setIsEggWobbling] = useState(true);
   const [showItem, setShowItem] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
-  const [rarity, setRarity] = useState<Rarity>('common');
+  const [rarity, setRarity] = useState<Rarity>('ULTRA_RARE');
 
   /*
   useEffect(() => {
@@ -106,6 +112,7 @@ export default function Lottery() {
   }, [inventory]);
 */
 
+  // This useEffect is needed for the animation loop
   useEffect(() => {
     if (!isOpening) return;
 
@@ -143,7 +150,7 @@ export default function Lottery() {
       } else {
         // Opening is done
         setShowItem(true);
-        if (rarity === "rare" || rarity === "ultra_rare") {
+        if (rarity === "RARE" || rarity === "ULTRA_RARE") {
           mute ? '' :sparkle.play();
           setCelebrate(true);
         }
@@ -154,14 +161,24 @@ export default function Lottery() {
 
     return () => {
     };
-  }, [isOpening, rarity]);
+  }, [isOpening]);
 
 
   const handleOpenEgg = () => {
     if (dinoPoints < eggCost || isOpening) return;
-    setDinoPoints(prev => prev - eggCost);
-    setIsEggWobbling(false);
-    setIsOpening(true);
+    runLottery({
+      variables: {},
+      onCompleted(item){
+        console.log(item);
+        //setRarity(item.lotteryRun?.rarity! as Rarity);
+        setDinoPoints(prev => prev - eggCost);
+        setIsEggWobbling(false);
+        setIsOpening(true);
+      },
+      onError(error) {
+        console.error("Lottery failed", error);
+      }
+    })
   };
 
 
@@ -261,13 +278,13 @@ export default function Lottery() {
         <Box
           sx={{
             position: 'absolute',
-            top: '50%',
+            top: 'calc(50% + 20px)',
             left: '50%',
             width: 600,
             height: 600,
             transform: 'translate(-50%, -50%)',
             pointerEvents: 'none',
-            zIndex: 1
+            zIndex: 999
           }}
         >
           <Confetti
@@ -342,9 +359,9 @@ export default function Lottery() {
             ...rarityStyles[rarity]
           }}
         >
-          <Typography>
-            {rarity.toUpperCase().replace("_", " ")}
-          </Typography>
+            <Typography>
+              {(rarity || "DEFAULT").replace("_", " ")}
+            </Typography>
           <Button
             size="small"
             variant="contained"

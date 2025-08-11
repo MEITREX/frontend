@@ -7,3 +7,18 @@ export const lotteryApiUserInventoryQuery = graphql`
         }
     }
 `;
+
+export const lotteryApiLotteryRunMutation = graphql `
+    mutation LotteryApiLotteryRunMutation {
+      lotteryRun {
+        name,
+        description,
+        rarity,
+        foreColor,
+        backColor,
+        url,
+        filename,
+      }
+    }
+
+`
