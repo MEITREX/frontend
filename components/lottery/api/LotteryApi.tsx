@@ -18,6 +18,23 @@ export const lotteryApiLotteryRunMutation = graphql`
       backColor
       url
       filename
+      id
+    }
+  }
+`;
+
+export const lotteryApiEquipMutation = graphql`
+  mutation LotteryApiEquipItemMutation($itemId: UUID!) {
+    equipItem(itemId: $itemId) {
+      items {
+        equipped
+        id
+        uniqueDescription
+        unlocked
+        unlockedTime
+      }
+      unspentPoints
+      userId
     }
   }
 `;

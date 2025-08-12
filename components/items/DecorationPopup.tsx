@@ -16,7 +16,7 @@ type Rarity = "common" | "uncommon" | "rare" | "ultra_rare";
 type Props = {
   open: boolean;
   onClose: () => void;
-  imageSrc: string;
+  imageSrc?: string;
   imageAlt: string;
   description: string;
   /** bool = equip/unequip, number = kaufen für Preis (DP) */
@@ -84,7 +84,7 @@ const DecorationPopup: React.FC<Props> = ({
       <DialogContent sx={{ pt: 0 }}>
         {/* Bildbereich mit schwarzem Innenrahmen */}
         <Box sx={{ p: 1 }}>
-          {foreColor == null && backColor == null && (
+          {foreColor == null && backColor == null && imageSrc != null && (
             <Box
               sx={{
                 border: "3px solid #000",
@@ -106,7 +106,7 @@ const DecorationPopup: React.FC<Props> = ({
               />
             </Box>
           )}
-          {foreColor != null && backColor == null && (
+          {foreColor != null && backColor == null && imageSrc != null && (
             <Box
               sx={{
                 border: "3px solid #000",

@@ -26,7 +26,6 @@ type ShopListItemProps = {
 };
 
 export default function ShopListItem({ itemStringType }: ShopListItemProps) {
-
   const [points, setPoints] = useState<number | null>(null);
 
   const { sortBy } = useSort();

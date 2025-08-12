@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { Box, Button, IconButton } from "@mui/material";
 import Image from "next/image";
-import { Box, Typography, Button, Chip, IconButton } from "@mui/material";
-import StarIcon from "@mui/icons-material/Star";
+import { useEffect, useState } from "react";
 import Confetti from "react-confetti";
 
 import frame_1 from "../../assets/lottery/animation/frame_1.png";
+import frame_10 from "../../assets/lottery/animation/frame_10.png";
+import frame_11 from "../../assets/lottery/animation/frame_11.png";
+import frame_12 from "../../assets/lottery/animation/frame_12.png";
 import frame_2 from "../../assets/lottery/animation/frame_2.png";
 import frame_3 from "../../assets/lottery/animation/frame_3.png";
 import frame_4 from "../../assets/lottery/animation/frame_4.png";
@@ -15,57 +17,39 @@ import frame_6 from "../../assets/lottery/animation/frame_6.png";
 import frame_7 from "../../assets/lottery/animation/frame_7.png";
 import frame_8 from "../../assets/lottery/animation/frame_8.png";
 import frame_9 from "../../assets/lottery/animation/frame_9.png";
-import frame_10 from "../../assets/lottery/animation/frame_10.png";
-import frame_11 from "../../assets/lottery/animation/frame_11.png";
-import frame_12 from "../../assets/lottery/animation/frame_12.png";
 
 import coins from "../../assets/lottery/coins.png";
 
-import VolumeUpIcon from "@mui/icons-material/VolumeUp";
-import VolumeOffIcon from "@mui/icons-material/VolumeOff";
-import { useLazyLoadQuery, useMutation } from "react-relay";
+import { LotteryApiLotteryRunMutation } from "@/__generated__/LotteryApiLotteryRunMutation.graphql";
+import { LotteryApiUserInventoryQuery } from "@/__generated__/LotteryApiUserInventoryQuery.graphql";
 import {
+  lotteryApiEquipMutation,
   lotteryApiLotteryRunMutation,
   lotteryApiUserInventoryQuery,
 } from "@/components/lottery/api/LotteryApi";
-import { LotteryApiUserInventoryQuery } from "@/__generated__/LotteryApiUserInventoryQuery.graphql";
-import { LotteryApiLotteryRunMutation } from "@/__generated__/LotteryApiLotteryRunMutation.graphql";
+import VolumeOffIcon from "@mui/icons-material/VolumeOff";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import { useLazyLoadQuery, useMutation } from "react-relay";
+import DecorationPopup from "../items/DecorationPopup";
 
-type Rarity = "DEFAULT" | "COMMON" | "UNCOMMON" | "RARE" | "ULTRA_RARE";
-
-interface RarityStyle {
-  border: string;
-  background: string;
-  color: string;
-}
-
-const rarityStyles: Record<Rarity, RarityStyle> = {
-  DEFAULT: {
-    border: "2px solid #B0B0B0",
-    background: "linear-gradient(to bottom right, #f5f5f5, #e0e0e0)",
-    color: "#B0B0B0",
-  },
-  COMMON: {
-    border: "2px solid #4B69FF",
-    background: "linear-gradient(to bottom right, #4B69FF, #1C3FAA)",
-    color: "#4B69FF",
-  },
-  UNCOMMON: {
-    border: "2px solid #8847FF",
-    background: "linear-gradient(to bottom right, #8847FF, #5E35B1)",
-    color: "#8847FF",
-  },
-  RARE: {
-    border: "2px solid #E53935",
-    background: "linear-gradient(to bottom right, #E53935, #B71C1C)",
-    color: "#E53935",
-  },
-  ULTRA_RARE: {
-    border: "2px solid #FFD700",
-    background: "radial-gradient(circle at center, #fff176, #fdd835, #f57f17)",
-    color: "#FFD700",
-  },
+type LotteryItem = {
+  id: string;
+  backColor: string | null;
+  description: string;
+  url: string | null;
+  foreColor: string | null;
+  name: string;
+  rarity: string;
 };
+
+const rarityStyles: Record<string, { border: string; bg: string }> = {
+  common: { border: "#26a0f5", bg: "#e3f2fd" }, // blau
+  uncommon: { border: "#d4af37", bg: "#fff8e1" }, // gold
+  rare: { border: "#8e44ad", bg: "#f3e5f5" }, // lila
+  ultra_rare: { border: "#e53935", bg: "#ffebee" }, // rot
+};
+
+type Rarity = "common" | "uncommon" | "rare" | "ultra_rare";
 
 export default function Lottery() {
   // TODO mark as duplicate when sell compensate
@@ -77,6 +61,10 @@ export default function Lottery() {
 
   const [runLottery] = useMutation<LotteryApiLotteryRunMutation>(
     lotteryApiLotteryRunMutation
+  );
+
+  const [equipItem] = useMutation<LotteryApiLotteryRunMutation>(
+    lotteryApiEquipMutation
   );
 
   // Audio
@@ -113,7 +101,8 @@ export default function Lottery() {
   const [isEggWobbling, setIsEggWobbling] = useState(true);
   const [showItem, setShowItem] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
-  const [rarity, setRarity] = useState<Rarity>("ULTRA_RARE");
+  const [rarity, setRarity] = useState<Rarity>("ultra_rare");
+  const [selectedItem, setSelectedItem] = useState<LotteryItem | null>(null);
 
   useEffect(() => {
     if (inventory?.inventoryForUser?.unspentPoints != null) {
@@ -159,7 +148,7 @@ export default function Lottery() {
       } else {
         // Opening is done
         setShowItem(true);
-        if (rarity === "RARE" || rarity === "ULTRA_RARE") {
+        if (rarity === "rare" || rarity === "ultra_rare") {
           mute ? "" : sparkle.play();
           setCelebrate(true);
         }
@@ -177,6 +166,8 @@ export default function Lottery() {
       variables: {},
       onCompleted(item) {
         console.log(item);
+        setSelectedItem(item.lotteryRun);
+        console.log(selectedItem)
         setRarity(item.lotteryRun?.rarity! as Rarity);
         setDinoPoints((prev) => prev - eggCost);
         setIsEggWobbling(false);
@@ -188,6 +179,24 @@ export default function Lottery() {
     });
   };
 
+  const handleEquipItem = () => {
+    equipItem({
+      variables: {
+        itemId: selectedItem?.id,
+      },
+      onError() {
+        console.log("Cant equip item", selectedItem?.id);
+        // Popup schließen oder beibehalten
+        setSelectedItem(null);
+      },
+      onCompleted() {
+        console.log("Equiped item");
+        // Popup schließen oder beibehalten
+        setSelectedItem(null);
+      },
+    });
+  };
+
   const handleCloseItem = () => {
     setCelebrate(false);
     setShowItem(false);
@@ -195,6 +204,8 @@ export default function Lottery() {
     setIsOpening(false);
     setCurrentFrame(0);
   };
+
+
 
   return (
     <Box
@@ -288,7 +299,7 @@ export default function Lottery() {
           }}
         >
           <Confetti
-            colors={[rarityStyles[rarity]?.color]}
+            colors={[rarityStyles[rarity]?.border]}
             width={600}
             height={600}
             numberOfPieces={300}
@@ -334,38 +345,22 @@ export default function Lottery() {
       </Box>
 
       {/* Jumping items contains lottery item */}
-      {showItem && (
-        <Box
-          sx={{
-            position: "absolute",
-            top: "calc(50% + 50px)",
-            left: "50%",
-            transform: "translate(-50%, -50%) scale(0)",
-            animation: "popItem 1.3s ease-out forwards",
-            zIndex: 3,
-            width: 200,
-            height: 140,
-            borderRadius: 2,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            fontWeight: "bold",
-            fontSize: "1rem",
-            gap: 1,
-            ...rarityStyles[rarity],
-          }}
-        >
-          <Typography>{(rarity || "DEFAULT").replace("_", " ")}</Typography>
-          <Button
-            size="small"
-            variant="contained"
-            color="secondary"
-            onClick={handleCloseItem}
-          >
-            Close
-          </Button>
-        </Box>
+      {showItem && selectedItem && (
+        <DecorationPopup
+          open={true}
+          onClose={() => setSelectedItem(null)}
+          imageSrc={selectedItem.url ? decodeURIComponent(selectedItem.url) : undefined}
+          imageAlt={selectedItem!.name}
+          description={selectedItem!.description || "No description available."}
+          equipped={false}
+          onToggleEquip={handleEquipItem}
+          name={selectedItem!.name}
+          rarity={selectedItem!.rarity as Rarity}
+          unspentPoints={dinoPoints}
+          backColor={selectedItem!.backColor ?? undefined}
+          foreColor={selectedItem!.foreColor ?? undefined}
+
+        />
       )}
 
       <Box mt={8}>
