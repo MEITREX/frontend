@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { InventoryListItemEquipItemMutation } from "@/__generated__/InventoryListItemEquipItemMutation.graphql";
 import { InventoryListItemInventoryForUserQuery } from "@/__generated__/InventoryListItemInventoryForUserQuery.graphql";
@@ -9,6 +9,8 @@ import { useMemo, useRef, useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 import DecoParser from "../DecoParser";
 import DecorationPopup from "./DecorationPopup";
+import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
+import ItemInventoryPictureOnly from "./ItemInventoryPictureOnly";
 import UnequipCard from "./UnequipCard";
 
 export type ItemStringType =
@@ -90,7 +92,15 @@ export default function InventoryListItem({
 
   const itemIds = inventoryForUser.items.map((item) => item.id);
 
-  const itemsParsed = DecoParser(itemIds, itemStringType);
+  let itemsParsed = DecoParser(itemIds, itemStringType);
+
+  if(itemStringType === "colorThemes"){
+    const itemsParsedPatternThemes = DecoParser(itemIds, "patternThemes")
+    itemsParsed = itemsParsed.concat(itemsParsedPatternThemes)
+  } else if(itemStringType === "patternThemes"){
+    const itemsParsedColorThemes = DecoParser(itemIds, "colorThemes")
+    itemsParsed = itemsParsed.concat(itemsParsedColorThemes)
+  }
 
   const itemStatusMap = Object.fromEntries(
     inventoryForUser.items.map((item) => [
@@ -223,7 +233,7 @@ export default function InventoryListItem({
           gap: 2,
         }}
       >
-        <UnequipCard equippedItem={equipedItem}></UnequipCard>
+        {itemStringType !== "tutors" && (<UnequipCard equippedItem={equipedItem}></UnequipCard>)}
         {sortedItems.map((pic) => {
           const rarityKey = (pic.rarity || "common")
             .toLowerCase()
@@ -272,27 +282,15 @@ export default function InventoryListItem({
               }}
             >
               {/* Bildbereich mit innerem schwarzen Rahmen (wie in deiner Skizze) */}
-              <Box sx={{ p: 1 }}>
-                <Box
-                  sx={{
-                    border: "3px solid #000",
-                    borderRadius: 2,
-                    overflow: "hidden",
-                    aspectRatio: "1 / 1",
-                    backgroundColor: "#fff",
-                  }}
-                >
-                  <img
-                    src={decodeURIComponent(pic.url)}
-                    alt={pic.id}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                </Box>
-              </Box>
+              {pic.foreColor ? (
+                <ItemInventoryPictureBackgrounds
+                  url={pic.url}
+                  backColor={pic.backColor}
+                  foreColor={pic.foreColor}
+                />
+              ) : (
+                <ItemInventoryPictureOnly url={pic.url} id={pic.id} />
+              )}
 
               {/* Info-Bereich */}
               <Box sx={{ px: 2, pb: 2, pt: 1 }}>
