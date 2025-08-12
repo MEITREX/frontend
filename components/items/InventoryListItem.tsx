@@ -94,12 +94,12 @@ export default function InventoryListItem({
 
   let itemsParsed = DecoParser(itemIds, itemStringType);
 
-  if(itemStringType === "colorThemes"){
-    const itemsParsedPatternThemes = DecoParser(itemIds, "patternThemes")
-    itemsParsed = itemsParsed.concat(itemsParsedPatternThemes)
-  } else if(itemStringType === "patternThemes"){
-    const itemsParsedColorThemes = DecoParser(itemIds, "colorThemes")
-    itemsParsed = itemsParsed.concat(itemsParsedColorThemes)
+  if (itemStringType === "colorThemes") {
+    const itemsParsedPatternThemes = DecoParser(itemIds, "patternThemes");
+    itemsParsed = itemsParsed.concat(itemsParsedPatternThemes);
+  } else if (itemStringType === "patternThemes") {
+    const itemsParsedColorThemes = DecoParser(itemIds, "colorThemes");
+    itemsParsed = itemsParsed.concat(itemsParsedColorThemes);
   }
 
   const itemStatusMap = Object.fromEntries(
@@ -233,7 +233,9 @@ export default function InventoryListItem({
           gap: 2,
         }}
       >
-        {itemStringType !== "tutors" && (<UnequipCard equippedItem={equipedItem}></UnequipCard>)}
+        {itemStringType !== "tutors" && (
+          <UnequipCard equippedItem={equipedItem}></UnequipCard>
+        )}
         {sortedItems.map((pic) => {
           const rarityKey = (pic.rarity || "common")
             .toLowerCase()

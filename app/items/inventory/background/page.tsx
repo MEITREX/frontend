@@ -5,8 +5,8 @@ import { Suspense } from "react";
 
 export default function BackgroundPage() {
   return (
-      <Suspense fallback={<div>Loading…</div>}>
-        <InventoryListItem itemStringType="colorThemes" />
-      </Suspense>
-    );
+    <Suspense fallback={<div>Loading…</div>}>
+      <InventoryListItem itemStringType="colorThemes" />
+    </Suspense>
+  );
 }

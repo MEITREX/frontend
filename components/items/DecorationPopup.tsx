@@ -26,6 +26,7 @@ type Props = {
   rarity?: Rarity;
   backColor?: string;
   foreColor?: string;
+  unspentPoints?: number;
 };
 
 const rarityColors: Record<string, { border: string; bg: string }> = {
@@ -47,6 +48,7 @@ const DecorationPopup: React.FC<Props> = ({
   rarity = "common",
   foreColor = null,
   backColor = null,
+  unspentPoints = 0,
 }) => {
   const isBuyMode = typeof equipped === "number";
   const colors = rarityColors[rarity] ?? rarityColors.common;
@@ -206,9 +208,15 @@ const DecorationPopup: React.FC<Props> = ({
       </DialogContent>
 
       <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
-        <Button onClick={onToggleEquip} variant="contained">
+        <Button
+          onClick={onToggleEquip}
+          variant="contained"
+          disabled={isBuyMode && unspentPoints < equipped}
+        >
           {isBuyMode
-            ? `Buy for ${equipped} DP`
+            ? unspentPoints < equipped
+              ? "Not enough DP" // ❌ zu wenig Punkte
+              : `Buy for ${equipped} DP`
             : equipped
             ? "Unequip"
             : "Equip"}
