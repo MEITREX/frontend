@@ -8,7 +8,7 @@ import { useMemo, useState } from "react";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
 import DecoParser from "../../../../components/DecoParser";
-import { useSort } from "./../SortContextShop";
+import { useSort } from "../../../contexts/SortContextShop";
 
 export default function PicturePage() {
   const { sortBy } = useSort();
@@ -142,7 +142,7 @@ export default function PicturePage() {
           };
           const colors = rarityMap[rarityKey] ?? rarityMap.common;
 
-          const price = pic.sellCompensation; // nimm, was du hast
+          const price = pic.moneyCost; // nimm, was du hast
           const rarityLabel =
             pic.rarity === "ultra_rare"
               ? "Ultra Rare"
@@ -272,7 +272,7 @@ export default function PicturePage() {
           imageSrc={decodeURIComponent(selectedItem.url)}
           imageAlt={selectedItem.id}
           description={selectedItem.description || "No description available."}
-          equipped={selectedItem.sellCompensation}
+          equipped={selectedItem.moneyCost}
           onToggleEquip={onToggleEquip}
           name={selectedItem.name}
           rarity={selectedItem.rarity}

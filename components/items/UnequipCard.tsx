@@ -3,14 +3,14 @@
 
 import { UnequipCardUnequipItemPictureMutation } from "@/__generated__/UnequipCardUnequipItemPictureMutation.graphql";
 import {
-    Box,
-    Button,
-    Card,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Typography,
+  Box,
+  Button,
+  Card,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
 } from "@mui/material";
 import * as React from "react";
 import { graphql, useMutation } from "react-relay";
@@ -83,13 +83,13 @@ export default function UnequipCard({ equippedItem }: UnequipCardProps) {
   }
 
   function onOpenPopup() {
-    setOpenDialog(true)
+    setOpenDialog(true);
   }
 
-function handleConfirm(): void {
-    onUnequip()
-    setOpenDialog(false)
-}
+  function handleConfirm(): void {
+    onUnequip();
+    setOpenDialog(false);
+  }
 
   return (
     <>
@@ -99,7 +99,7 @@ function handleConfirm(): void {
         tabIndex={disabled ? -1 : 0}
         aria-disabled={disabled}
         sx={{
-            height: "243px",
+          height: "243px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

@@ -9,7 +9,7 @@ import { useMemo, useRef, useState } from "react";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
 import DecoParser from "../../../../components/DecoParser";
-import { useSort } from "./../SortContext";
+import { useSort } from "../../../contexts/SortContext";
 
 export default function PicturePage() {
   const { sortBy, showLocked } = useSort();
@@ -28,6 +28,7 @@ export default function PicturePage() {
             id
             uniqueDescription
             unlocked
+            unlockedTime
           }
           unspentPoints
           userId
@@ -78,7 +79,11 @@ export default function PicturePage() {
   const itemStatusMap = Object.fromEntries(
     inventoryForUser.items.map((item) => [
       item.id,
-      { equipped: item.equipped, unlocked: item.unlocked },
+      {
+        equipped: item.equipped,
+        unlocked: item.unlocked,
+        unlockedTime: item.unlockedTime,
+      },
     ])
   );
 
@@ -167,7 +172,7 @@ export default function PicturePage() {
         window.clearTimeout(clickTimer.current);
         clickTimer.current = null;
       }
-      if (pic.unlocked) handleToggleEquip(pic);
+      if (pic.unlocked) handleToggleEquip(e, pic);
       return;
     }
 
@@ -218,13 +223,9 @@ export default function PicturePage() {
               onClick={(e) => handleClick(e, pic)}
               sx={{
                 position: "relative",
-                border: `3px solid ${
-                  pic.equipped
-                    ? "#096909" // grün
-                    : pic.unlocked
-                    ? colors.border // rarity-Farbe
-                    : "#000000d3" // grau
-                }`,
+                border: pic.unlocked
+                  ? `3px solid ${pic.equipped ? "#096909" : colors.border}`
+                  : "none",
                 borderRadius: 3,
                 overflow: "hidden",
                 boxShadow: `0 0 0 3px ${
@@ -235,9 +236,13 @@ export default function PicturePage() {
                     : "#000000d3" // grau
                 }33`, // leichter Glow
                 backgroundColor: colors.bg,
-                cursor: "pointer",
-                transition: "transform .15s ease, box-shadow .15s ease",
-                "&:hover": { transform: "translateY(-2px)" },
+                cursor: pic.unlocked ? "pointer" : "default",
+                transition: pic.unlocked
+                  ? "transform .15s ease, box-shadow .15s ease"
+                  : "none",
+                ...(pic.unlocked && {
+                  "&:hover": { transform: "translateY(-2px)" },
+                }),
               }}
             >
               {/* Bildbereich mit innerem schwarzen Rahmen (wie in deiner Skizze) */}

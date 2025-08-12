@@ -1,46 +1,55 @@
-"use client";
+"use client"
 
-import { pageEquipItemFrameMutation } from "@/__generated__/pageEquipItemFrameMutation.graphql";
-import { pageInventoryForUserFrameQuery } from "@/__generated__/pageInventoryForUserFrameQuery.graphql";
-import { pageUnequipItemFrameMutation } from "@/__generated__/pageUnequipItemFrameMutation.graphql";
-import DecorationPopup from "@/components/items/DecorationPopup";
-import UnequipCard from "@/components/items/UnequipCard";
+import { InventoryListItemEquipItemMutation } from "@/__generated__/InventoryListItemEquipItemMutation.graphql";
+import { InventoryListItemInventoryForUserQuery } from "@/__generated__/InventoryListItemInventoryForUserQuery.graphql";
+import { InventoryListItemUnquipItemMutation } from "@/__generated__/InventoryListItemUnquipItemMutation.graphql";
+import { useSort } from "@/app/contexts/SortContext";
 import { Box, Typography } from "@mui/material";
 import { useMemo, useRef, useState } from "react";
-import { useLazyLoadQuery, useMutation } from "react-relay";
-import { graphql } from "relay-runtime";
-import DecoParser from "../../../../components/DecoParser";
-import { useSort } from "../../../contexts/SortContext";
+import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
+import DecoParser from "../DecoParser";
+import DecorationPopup from "./DecorationPopup";
+import UnequipCard from "./UnequipCard";
 
-export default function PicturePage() {
+export type ItemStringType =
+  | "colorThemes"
+  | "patternThemes"
+  | "profilePicFrames"
+  | "profilePics"
+  | "tutors";
+
+type InventoryListItemProps = {
+  itemStringType: ItemStringType;
+};
+
+export default function InventoryListItem({
+  itemStringType,
+}: InventoryListItemProps) {
   const { sortBy, showLocked } = useSort();
 
-  type DecorationItem = {
-    id: string;
-    [key: string]: any; // Damit auch weitere Eigenschaften erlaubt sind
-  };
-
-  const { inventoryForUser } = useLazyLoadQuery<pageInventoryForUserFrameQuery>(
-    graphql`
-      query pageInventoryForUserFrameQuery {
-        inventoryForUser {
-          items {
-            equipped
-            id
-            uniqueDescription
-            unlocked
-            unlockedTime
+  const { inventoryForUser } =
+    useLazyLoadQuery<InventoryListItemInventoryForUserQuery>(
+      graphql`
+        query InventoryListItemInventoryForUserQuery {
+          inventoryForUser {
+            items {
+              equipped
+              id
+              uniqueDescription
+              unlocked
+              unlockedTime
+            }
+            unspentPoints
+            userId
           }
-          unspentPoints
-          userId
         }
-      }
-    `,
-    {}
-  );
+      `,
+      {},
+      { fetchPolicy: "network-only" } // optional, zum Testen hilfreich
+    );
 
-  const [equipItem] = useMutation<pageEquipItemFrameMutation>(graphql`
-    mutation pageEquipItemFrameMutation($itemId: UUID!) {
+  const [equipItem] = useMutation<InventoryListItemEquipItemMutation>(graphql`
+    mutation InventoryListItemEquipItemMutation($itemId: UUID!) {
       equipItem(itemId: $itemId) {
         items {
           equipped
@@ -55,27 +64,33 @@ export default function PicturePage() {
     }
   `);
 
-  const [unequipItem] = useMutation<pageUnequipItemFrameMutation>(graphql`
-    mutation pageUnequipItemFrameMutation($itemId: UUID!) {
-      unequipItem(itemId: $itemId) {
-        items {
-          equipped
-          id
-          uniqueDescription
-          unlocked
-          unlockedTime
+  const [unequipItem] =
+    useMutation<InventoryListItemUnquipItemMutation>(graphql`
+      mutation InventoryListItemUnquipItemMutation($itemId: UUID!) {
+        unequipItem(itemId: $itemId) {
+          items {
+            equipped
+            id
+            uniqueDescription
+            unlocked
+            unlockedTime
+          }
+          unspentPoints
+          userId
         }
-        unspentPoints
-        userId
       }
-    }
-  `);
+    `);
+
+  type DecorationItem = {
+    id: string;
+    [key: string]: any; // Damit auch weitere Eigenschaften erlaubt sind
+  };
 
   console.log(inventoryForUser, "invvvvvvvvvvvvv");
 
   const itemIds = inventoryForUser.items.map((item) => item.id);
 
-  const itemsParsed = DecoParser(itemIds, "profilePicFrames");
+  const itemsParsed = DecoParser(itemIds, itemStringType);
 
   const itemStatusMap = Object.fromEntries(
     inventoryForUser.items.map((item) => [
@@ -112,6 +127,15 @@ export default function PicturePage() {
       if (sortBy === "rarity") {
         const rarityOrder = ["common", "uncommon", "rare", "ultra_rare"];
         return rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
+      }
+      if (sortBy === "unlockedTime") {
+        const ta = a.unlockedTime
+          ? new Date(a.unlockedTime).getTime()
+          : -Infinity;
+        const tb = b.unlockedTime
+          ? new Date(b.unlockedTime).getTime()
+          : -Infinity;
+        return tb - ta; // neueste zuerst
       }
       return 0;
     });

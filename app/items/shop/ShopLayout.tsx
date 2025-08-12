@@ -10,7 +10,7 @@ import {
   Tabs,
 } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
-import { useSort } from "./SortContextShop"; // Pfad ggf. anpassen
+import { useSort } from "../../contexts/SortContextShop"; // Pfad ggf. anpassen
 
 const tabs = [
   { label: "Profile Picture", path: "picture" },
