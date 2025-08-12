@@ -1,8 +1,18 @@
+import Lottery from "@/components/lottery/Lottery";
+import { Box } from "@mui/material";
+
 export default function LotteryPage() {
   return (
-    <div>
-      <h2>🎁 Lottery</h2>
-      <p>Hier kannst du eine Lootbox öffnen und dein Glück versuchen!</p>
-    </div>
-  );
+  <Box
+      sx={{
+      border: "1px solid",
+      borderColor: "grey.300",
+      borderRadius: 3,
+      backgroundColor: "background.paper",
+      boxShadow: 1,
+    }}>
+    <Lottery/>
+  </Box>
+
+);
 }

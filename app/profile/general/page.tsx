@@ -1,11 +1,11 @@
 "use client";
 
+import { pagePrivateProfileStudentGeneralQuery } from "@/__generated__/pagePrivateProfileStudentGeneralQuery.graphql";
 import { Box, Tab, Tabs, Typography } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import GeneralPage from "../GeneralPage";
-import { pagePrivateProfileStudentGeneralQuery } from "@/__generated__/pagePrivateProfileStudentGeneralQuery.graphql";
 
 const tabs = [
   { label: "General", path: "general" },
@@ -33,6 +33,7 @@ export default function GeneralPageWrapper() {
             lastName
             firstName
             userName
+            nickname
           }
         }
       `,
