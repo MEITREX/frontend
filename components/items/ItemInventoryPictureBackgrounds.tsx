@@ -21,7 +21,7 @@ export default function ItemInventoryPictureOnly({
           borderRadius: 2,
           overflow: "hidden",
           backgroundImage: url ? `url(${decodeURIComponent(url)})` : undefined,
-          backgroundColor: url ? backColor : undefined,
+          backgroundColor: url ?  undefined : backColor,
           backgroundSize: "cover",
           backgroundPosition: "center",
           display: "flex",
