@@ -12,7 +12,7 @@ import {
   Tabs,
 } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
-import { useSort } from "./SortContext"; // Pfad ggf. anpassen
+import { useSort } from "../../contexts/SortContext"; // Pfad ggf. anpassen
 
 const tabs = [
   { label: "Profile Picture", path: "picture" },
@@ -105,12 +105,14 @@ export default function InventoryLayout({
             <InputLabel>Sort by</InputLabel>
             <Select
               value={sortBy ?? ""}
-              onChange={(e) => setSortBy(e.target.value as "name" | "rarity")}
+              onChange={(e) =>
+                setSortBy(e.target.value as "name" | "rarity" | "unlockedTime")
+              }
               label="Sort by"
             >
               <MenuItem value="name">Name</MenuItem>
               <MenuItem value="rarity">Rarity</MenuItem>
-              <MenuItem value="recency">Most recent</MenuItem>
+              <MenuItem value="unlockedTime">Most recent</MenuItem>
             </Select>
           </FormControl>
 
