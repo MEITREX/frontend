@@ -71,7 +71,7 @@ const rarityStyles: Record<Rarity, RarityStyle> = {
 };
 
 export default function Lottery() {
-
+// TODO mark as duplicate when sell compensate
   const inventory = useLazyLoadQuery<LotteryApiUserInventoryQuery>(
     lotteryApiUserInventoryQuery,
     {},
