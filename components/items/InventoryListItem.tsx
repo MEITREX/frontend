@@ -156,7 +156,7 @@ export default function InventoryListItem({
 
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const handleToggleEquip = (_e: any, itemParameter?: any) => {
+  const handleToggleEquip = (_e?: any, itemParameter?: any) => {
     console.log("HandleToggleEquip");
 
     const item = itemParameter ? itemParameter : selectedItem;

@@ -3,16 +3,16 @@ import { Box } from "@mui/material";
 
 export default function LotteryPage() {
   return (
-  <Box
+    <Box
       sx={{
-      border: "1px solid",
-      borderColor: "grey.300",
-      borderRadius: 3,
-      backgroundColor: "background.paper",
-      boxShadow: 1,
-    }}>
-    <Lottery/>
-  </Box>
-
-);
+        border: "1px solid",
+        borderColor: "grey.300",
+        borderRadius: 3,
+        backgroundColor: "background.paper",
+        boxShadow: 1,
+      }}
+    >
+      <Lottery />
+    </Box>
+  );
 }

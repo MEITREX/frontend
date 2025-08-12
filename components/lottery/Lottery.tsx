@@ -2,39 +2,36 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import {
-  Box,
-  Typography,
-  Button,
-  Chip, IconButton
-} from "@mui/material";
+import { Box, Typography, Button, Chip, IconButton } from "@mui/material";
 import StarIcon from "@mui/icons-material/Star";
-import Confetti from 'react-confetti';
+import Confetti from "react-confetti";
 
-import frame_1 from '../../assets/lottery/animation/frame_1.png';
-import frame_2 from '../../assets/lottery/animation/frame_2.png';
-import frame_3 from '../../assets/lottery/animation/frame_3.png';
-import frame_4 from '../../assets/lottery/animation/frame_4.png';
-import frame_5 from '../../assets/lottery/animation/frame_5.png';
-import frame_6 from '../../assets/lottery/animation/frame_6.png';
-import frame_7 from '../../assets/lottery/animation/frame_7.png';
-import frame_8 from '../../assets/lottery/animation/frame_8.png';
-import frame_9 from '../../assets/lottery/animation/frame_9.png';
-import frame_10 from '../../assets/lottery/animation/frame_10.png';
-import frame_11 from '../../assets/lottery/animation/frame_11.png';
-import frame_12 from '../../assets/lottery/animation/frame_12.png';
+import frame_1 from "../../assets/lottery/animation/frame_1.png";
+import frame_2 from "../../assets/lottery/animation/frame_2.png";
+import frame_3 from "../../assets/lottery/animation/frame_3.png";
+import frame_4 from "../../assets/lottery/animation/frame_4.png";
+import frame_5 from "../../assets/lottery/animation/frame_5.png";
+import frame_6 from "../../assets/lottery/animation/frame_6.png";
+import frame_7 from "../../assets/lottery/animation/frame_7.png";
+import frame_8 from "../../assets/lottery/animation/frame_8.png";
+import frame_9 from "../../assets/lottery/animation/frame_9.png";
+import frame_10 from "../../assets/lottery/animation/frame_10.png";
+import frame_11 from "../../assets/lottery/animation/frame_11.png";
+import frame_12 from "../../assets/lottery/animation/frame_12.png";
 
-import coins from '../../assets/lottery/coins.png';
+import coins from "../../assets/lottery/coins.png";
 
-
-import VolumeUpIcon from '@mui/icons-material/VolumeUp';
-import VolumeOffIcon from '@mui/icons-material/VolumeOff';
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import { useLazyLoadQuery, useMutation } from "react-relay";
-import { lotteryApiLotteryRunMutation, lotteryApiUserInventoryQuery } from "@/components/lottery/api/LotteryApi";
+import {
+  lotteryApiLotteryRunMutation,
+  lotteryApiUserInventoryQuery,
+} from "@/components/lottery/api/LotteryApi";
 import { LotteryApiUserInventoryQuery } from "@/__generated__/LotteryApiUserInventoryQuery.graphql";
 import { LotteryApiLotteryRunMutation } from "@/__generated__/LotteryApiLotteryRunMutation.graphql";
 
-type Rarity = 'DEFAULT' | 'COMMON' | 'UNCOMMON' | 'RARE' | 'ULTRA_RARE';
+type Rarity = "DEFAULT" | "COMMON" | "UNCOMMON" | "RARE" | "ULTRA_RARE";
 
 interface RarityStyle {
   border: string;
@@ -44,75 +41,86 @@ interface RarityStyle {
 
 const rarityStyles: Record<Rarity, RarityStyle> = {
   DEFAULT: {
-    border: '2px solid #B0B0B0',
-    background: 'linear-gradient(to bottom right, #f5f5f5, #e0e0e0)',
-    color: '#B0B0B0'
+    border: "2px solid #B0B0B0",
+    background: "linear-gradient(to bottom right, #f5f5f5, #e0e0e0)",
+    color: "#B0B0B0",
   },
   COMMON: {
-    border: '2px solid #4B69FF',
-    background: 'linear-gradient(to bottom right, #4B69FF, #1C3FAA)',
-    color: '#4B69FF'
+    border: "2px solid #4B69FF",
+    background: "linear-gradient(to bottom right, #4B69FF, #1C3FAA)",
+    color: "#4B69FF",
   },
   UNCOMMON: {
-    border: '2px solid #8847FF',
-    background: 'linear-gradient(to bottom right, #8847FF, #5E35B1)',
-    color: '#8847FF'
+    border: "2px solid #8847FF",
+    background: "linear-gradient(to bottom right, #8847FF, #5E35B1)",
+    color: "#8847FF",
   },
   RARE: {
-    border: '2px solid #E53935',
-    background: 'linear-gradient(to bottom right, #E53935, #B71C1C)',
-    color: '#E53935'
+    border: "2px solid #E53935",
+    background: "linear-gradient(to bottom right, #E53935, #B71C1C)",
+    color: "#E53935",
   },
   ULTRA_RARE: {
-    border: '2px solid #FFD700',
-    background: 'radial-gradient(circle at center, #fff176, #fdd835, #f57f17)',
-    color: '#FFD700'
-  }
+    border: "2px solid #FFD700",
+    background: "radial-gradient(circle at center, #fff176, #fdd835, #f57f17)",
+    color: "#FFD700",
+  },
 };
 
 export default function Lottery() {
-// TODO mark as duplicate when sell compensate
+  // TODO mark as duplicate when sell compensate
   const inventory = useLazyLoadQuery<LotteryApiUserInventoryQuery>(
     lotteryApiUserInventoryQuery,
     {},
     { fetchPolicy: "network-only" }
   );
 
-
   const [runLottery] = useMutation<LotteryApiLotteryRunMutation>(
     lotteryApiLotteryRunMutation
   );
 
-
-// Audio
+  // Audio
   const [mute, setMute] = useState(false);
-  const crackSound = new Audio('/sounds/egg-crack.mp3');
-  const sparkle = new Audio('/sounds/sparkle.mp3');
+  const crackSound = new Audio("/sounds/egg-crack.mp3");
+  const sparkle = new Audio("/sounds/sparkle.mp3");
 
-// Dino Points
+  // Dino Points
   const [dinoPoints, setDinoPoints] = useState<number>(1000);
-// EggCost needs to be the same as in the Backend
+  // EggCost needs to be the same as in the Backend
   const eggCost = 3000;
 
-// Animation Frames
-  const frames = [frame_1,  frame_2, frame_3, frame_4, frame_5, frame_6, frame_7, frame_8, frame_9, frame_10, frame_11, frame_12];
+  // Animation Frames
+  const frames = [
+    frame_1,
+    frame_2,
+    frame_3,
+    frame_4,
+    frame_5,
+    frame_6,
+    frame_7,
+    frame_8,
+    frame_9,
+    frame_10,
+    frame_11,
+    frame_12,
+  ];
   const crackingFrame = 6;
   const startCrackingSoundFrame = 1;
 
-// Animation
+  // Animation
   const [isOpening, setIsOpening] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [isEggWobbling, setIsEggWobbling] = useState(true);
   const [showItem, setShowItem] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
-  const [rarity, setRarity] = useState<Rarity>('ULTRA_RARE');
+  const [rarity, setRarity] = useState<Rarity>("ULTRA_RARE");
 
   useEffect(() => {
     if (inventory?.inventoryForUser?.unspentPoints != null) {
       setDinoPoints(inventory.inventoryForUser.unspentPoints);
     }
   }, [inventory]);
-  
+
   // This useEffect is needed for the animation loop
   useEffect(() => {
     if (!isOpening) return;
@@ -139,7 +147,7 @@ export default function Lottery() {
       setCurrentFrame(frameIndex);
 
       // The crack sound is 2,000 ms long, so start a little later to synchronise the sound with the crack animation.
-      if(frameIndex === startCrackingSoundFrame && !mute) {
+      if (frameIndex === startCrackingSoundFrame && !mute) {
         crackSound.play();
       }
 
@@ -152,7 +160,7 @@ export default function Lottery() {
         // Opening is done
         setShowItem(true);
         if (rarity === "RARE" || rarity === "ULTRA_RARE") {
-          mute ? '' :sparkle.play();
+          mute ? "" : sparkle.play();
           setCelebrate(true);
         }
       }
@@ -160,25 +168,24 @@ export default function Lottery() {
 
     playFrames();
 
-    return () => {
-    };
+    return () => {};
   }, [isOpening]);
 
   const handleOpenEgg = () => {
     if (dinoPoints < eggCost || isOpening) return;
     runLottery({
       variables: {},
-      onCompleted(item){
+      onCompleted(item) {
         console.log(item);
         setRarity(item.lotteryRun?.rarity! as Rarity);
-        setDinoPoints(prev => prev - eggCost);
+        setDinoPoints((prev) => prev - eggCost);
         setIsEggWobbling(false);
         setIsOpening(true);
       },
       onError(error) {
         console.error("Lottery failed", error);
-      }
-    })
+      },
+    });
   };
 
   const handleCloseItem = () => {
@@ -194,75 +201,73 @@ export default function Lottery() {
       p={4}
       textAlign="center"
       sx={{
-        position: 'relative',
-        '@keyframes eggWobble': {
-          '0%': { transform: 'rotate(0deg)' },
-          '25%': { transform: 'rotate(-5deg)' },
-          '50%': { transform: 'rotate(5deg)' },
-          '75%': { transform: 'rotate(-5deg)' },
-          '100%': { transform: 'rotate(0deg)' }
+        position: "relative",
+        "@keyframes eggWobble": {
+          "0%": { transform: "rotate(0deg)" },
+          "25%": { transform: "rotate(-5deg)" },
+          "50%": { transform: "rotate(5deg)" },
+          "75%": { transform: "rotate(-5deg)" },
+          "100%": { transform: "rotate(0deg)" },
         },
-        '@keyframes eggWobbleBounce': {
-          '0%': { transform: 'rotate(0deg) translateY(0)' },
-          '15%': { transform: 'rotate(-5deg) translateY(-35px)' },
-          '30%': { transform: 'rotate(5deg) translateY(0px)' },
-          '45%': { transform: 'rotate(-4deg) translateY(-20px)' },
-          '60%': { transform: 'rotate(4deg) translateY(0px)' },
-          '75%': { transform: 'rotate(-12deg) translateY(-10px)' },
-          '90%': { transform: 'rotate(12deg) translateY(0px)' },
-          '100%': { transform: 'rotate(0deg) translateY(0px)' }
+        "@keyframes eggWobbleBounce": {
+          "0%": { transform: "rotate(0deg) translateY(0)" },
+          "15%": { transform: "rotate(-5deg) translateY(-35px)" },
+          "30%": { transform: "rotate(5deg) translateY(0px)" },
+          "45%": { transform: "rotate(-4deg) translateY(-20px)" },
+          "60%": { transform: "rotate(4deg) translateY(0px)" },
+          "75%": { transform: "rotate(-12deg) translateY(-10px)" },
+          "90%": { transform: "rotate(12deg) translateY(0px)" },
+          "100%": { transform: "rotate(0deg) translateY(0px)" },
         },
-        '@keyframes popItem': {
-          '0%': {
-            transform: 'translate(-50%, -50%) scale(0.05)',
-            opacity: 0
+        "@keyframes popItem": {
+          "0%": {
+            transform: "translate(-50%, -50%) scale(0.05)",
+            opacity: 0,
           },
-          '10%': {
-            transform: 'translate(-50%, -65%) scale(0.15)',
-            opacity: 0.3
+          "10%": {
+            transform: "translate(-50%, -65%) scale(0.15)",
+            opacity: 0.3,
           },
-          '20%': {
-            transform: 'translate(-50%, -75%) scale(0.3)',
-            opacity: 0.6
+          "20%": {
+            transform: "translate(-50%, -75%) scale(0.3)",
+            opacity: 0.6,
           },
-          '30%': {
-            transform: 'translate(-50%, -85%) scale(0.45)',
-            opacity: 0.8
+          "30%": {
+            transform: "translate(-50%, -85%) scale(0.45)",
+            opacity: 0.8,
           },
-          '40%': {
-            transform: 'translate(-50%, -90%) scale(0.55)',
-            opacity: 1
+          "40%": {
+            transform: "translate(-50%, -90%) scale(0.55)",
+            opacity: 1,
           },
-          '50%': {
-            transform: 'translate(-50%, -100%) scale(0.65)',
-            opacity: 1
+          "50%": {
+            transform: "translate(-50%, -100%) scale(0.65)",
+            opacity: 1,
           },
-          '60%': {
-            transform: 'translate(-50%, -110%) scale(0.75)',
-            opacity: 1
+          "60%": {
+            transform: "translate(-50%, -110%) scale(0.75)",
+            opacity: 1,
           },
-          '70%': {
-            transform: 'translate(-50%, -120%) scale(0.85)',
-            opacity: 1
+          "70%": {
+            transform: "translate(-50%, -120%) scale(0.85)",
+            opacity: 1,
           },
-          '85%': {
-            transform: 'translate(-50%, -140%) scale(0.95)',
-            opacity: 1
+          "85%": {
+            transform: "translate(-50%, -140%) scale(0.95)",
+            opacity: 1,
           },
-          '100%': {
-            transform: 'translate(-50%, -160%) scale(1)',
-            opacity: 1
-          }
-        }
-
+          "100%": {
+            transform: "translate(-50%, -160%) scale(1)",
+            opacity: 1,
+          },
+        },
       }}
     >
-      <Button
-        sx={{mb:"78px"}}
-        variant="contained"
-        color="secondary"
-      >
-        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+      <Button sx={{ mb: "78px" }} variant="contained" color="secondary">
+        <Box
+          component="span"
+          sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
+        >
           {dinoPoints}
           <Image src={coins} alt="Coins" width={18} height={18} />
         </Box>
@@ -272,14 +277,14 @@ export default function Lottery() {
       {celebrate && (
         <Box
           sx={{
-            position: 'absolute',
-            top: 'calc(50% + 20px)',
-            left: '50%',
+            position: "absolute",
+            top: "calc(50% + 20px)",
+            left: "50%",
             width: 600,
             height: 600,
-            transform: 'translate(-50%, -50%)',
-            pointerEvents: 'none',
-            zIndex: 999
+            transform: "translate(-50%, -50%)",
+            pointerEvents: "none",
+            zIndex: 999,
           }}
         >
           <Confetti
@@ -296,25 +301,24 @@ export default function Lottery() {
       {/* Egg */}
       <Box
         sx={{
-          position: 'relative',
+          position: "relative",
           width: 150,
           height: 120,
-          margin: '0 auto',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'transform 0.2s',
-          transformOrigin: 'bottom center',
+          margin: "0 auto",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "transform 0.2s",
+          transformOrigin: "bottom center",
           animation:
             isOpening && currentFrame < frames.length - crackingFrame
-              ? 'eggWobbleBounce 0.6s ease-in-out infinite'
+              ? "eggWobbleBounce 0.6s ease-in-out infinite"
               : isEggWobbling
-                ? 'eggWobble 0.6s ease-in-out infinite'
-                : 'none',
-          zIndex: 2
+              ? "eggWobble 0.6s ease-in-out infinite"
+              : "none",
+          zIndex: 2,
         }}
       >
-
         {/*Egg*/}
         <Image
           src={frames[currentFrame]}
@@ -322,8 +326,8 @@ export default function Lottery() {
           width={150}
           height={120}
           style={{
-            objectFit: 'contain',
-            transform: 'scale(1.9) translate(30px, -10px)',
+            objectFit: "contain",
+            transform: "scale(1.9) translate(30px, -10px)",
             zIndex: 1,
           }}
         />
@@ -333,28 +337,26 @@ export default function Lottery() {
       {showItem && (
         <Box
           sx={{
-            position: 'absolute',
-            top: 'calc(50% + 50px)',
-            left: '50%',
-            transform: 'translate(-50%, -50%) scale(0)',
-            animation: 'popItem 1.3s ease-out forwards',
+            position: "absolute",
+            top: "calc(50% + 50px)",
+            left: "50%",
+            transform: "translate(-50%, -50%) scale(0)",
+            animation: "popItem 1.3s ease-out forwards",
             zIndex: 3,
             width: 200,
             height: 140,
             borderRadius: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 'bold',
-            fontSize: '1rem',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: "bold",
+            fontSize: "1rem",
             gap: 1,
-            ...rarityStyles[rarity]
+            ...rarityStyles[rarity],
           }}
         >
-            <Typography>
-              {(rarity || "DEFAULT").replace("_", " ")}
-            </Typography>
+          <Typography>{(rarity || "DEFAULT").replace("_", " ")}</Typography>
           <Button
             size="small"
             variant="contained"
@@ -366,7 +368,6 @@ export default function Lottery() {
         </Box>
       )}
 
-
       <Box mt={8}>
         <Button
           variant="contained"
@@ -374,13 +375,17 @@ export default function Lottery() {
           disabled={dinoPoints < eggCost || isOpening}
           onClick={handleOpenEgg}
         >
-          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+          <Box
+            component="span"
+            sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
+          >
             Open Egg: {eggCost}
             <Image src={coins} alt="Coins" width={18} height={18} />
           </Box>
         </Button>
       </Box>
-      { !mute ? (<IconButton
+      {!mute ? (
+        <IconButton
           color="primary"
           onClick={() => setMute(true)}
           sx={{
@@ -392,8 +397,9 @@ export default function Lottery() {
           }}
         >
           <VolumeUpIcon fontSize="large" />
-        </IconButton>):
-        (<IconButton
+        </IconButton>
+      ) : (
+        <IconButton
           onClick={() => setMute(false)}
           color="secondary"
           sx={{
@@ -405,8 +411,8 @@ export default function Lottery() {
           }}
         >
           <VolumeOffIcon fontSize="large" />
-        </IconButton>)
-      }
+        </IconButton>
+      )}
     </Box>
   );
 }

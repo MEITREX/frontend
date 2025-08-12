@@ -1,10 +1,12 @@
 import { ShopListItemBuyItemTutorMutation } from "@/__generated__/ShopListItemBuyItemTutorMutation.graphql";
 import { ShopListItemShopForUserTutorQuery } from "@/__generated__/ShopListItemShopForUserTutorQuery.graphql";
 import { useSort } from "@/app/contexts/SortContextShop";
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
+import coins from "../../assets/lottery/coins.png";
 import DecoParser from "../DecoParser";
 import DecorationPopup from "./DecorationPopup";
 import {
@@ -24,6 +26,9 @@ type ShopListItemProps = {
 };
 
 export default function ShopListItem({ itemStringType }: ShopListItemProps) {
+
+  const [points, setPoints] = useState<number | null>(null);
+
   const { sortBy } = useSort();
 
   type DecorationItem = {
@@ -65,6 +70,8 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
       }
     }
   `);
+
+  const currentPoints = points ?? inventoryForUser.unspentPoints;
 
   console.log(inventoryForUser, "invvvvvvvvvvvvv");
 
@@ -128,7 +135,8 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
       onError() {
         console.log("Cant unequip item", selectedItem.id);
       },
-      onCompleted() {
+      onCompleted(data) {
+        setPoints(data.buyItem!.unspentPoints);
         console.log("Unequiped item");
       },
     });
@@ -140,9 +148,15 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
   return (
     <>
       <Box sx={{ mb: 2, width: "100%" }}>
-        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-          Balance: {inventoryForUser.unspentPoints} DP
-        </Typography>
+        <Button variant="contained" color="secondary">
+          <Box
+            component="span"
+            sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
+          >
+            {currentPoints}
+            <Image src={coins} alt="Coins" width={18} height={18} />
+          </Box>
+        </Button>
       </Box>
       <Box
         sx={{
@@ -245,7 +259,7 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
           onToggleEquip={onToggleEquip}
           name={selectedItem.name}
           rarity={selectedItem.rarity}
-          unspentPoints={inventoryForUser.unspentPoints}
+          unspentPoints={currentPoints}
           backColor={selectedItem.backColor}
           foreColor={selectedItem.foreColor}
         />

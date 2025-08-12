@@ -53,7 +53,7 @@ const DecorationPopup: React.FC<Props> = ({
   const isBuyMode = typeof equipped === "number";
   const colors = rarityColors[rarity] ?? rarityColors.common;
 
-  console.log(imageSrc, foreColor, backColor, "HAALLLOO")
+  console.log(imageSrc, foreColor, backColor, "HAALLLOO");
 
   return (
     <Dialog
