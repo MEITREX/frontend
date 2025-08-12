@@ -170,7 +170,7 @@ export default function Lottery() {
       variables: {},
       onCompleted(item){
         console.log(item);
-        //setRarity(item.lotteryRun?.rarity! as Rarity);
+        setRarity(item.lotteryRun?.rarity! as Rarity);
         setDinoPoints(prev => prev - eggCost);
         setIsEggWobbling(false);
         setIsOpening(true);
