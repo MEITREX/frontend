@@ -112,8 +112,7 @@ export default function Lottery() {
       setDinoPoints(inventory.inventoryForUser.unspentPoints);
     }
   }, [inventory]);
-
-
+  
   // This useEffect is needed for the animation loop
   useEffect(() => {
     if (!isOpening) return;
@@ -165,7 +164,6 @@ export default function Lottery() {
     };
   }, [isOpening]);
 
-
   const handleOpenEgg = () => {
     if (dinoPoints < eggCost || isOpening) return;
     runLottery({
@@ -183,7 +181,6 @@ export default function Lottery() {
     })
   };
 
-
   const handleCloseItem = () => {
     setCelebrate(false);
     setShowItem(false);
@@ -191,7 +188,6 @@ export default function Lottery() {
     setIsOpening(false);
     setCurrentFrame(0);
   };
-
 
   return (
     <Box
@@ -261,12 +257,8 @@ export default function Lottery() {
 
       }}
     >
-      <Typography variant="h4" gutterBottom>
-        Item Lottery
-      </Typography>
-
       <Button
-        sx={{mb:"58px"}}
+        sx={{mb:"78px"}}
         variant="contained"
         color="secondary"
       >
@@ -322,7 +314,6 @@ export default function Lottery() {
           zIndex: 2
         }}
       >
-        {/*Glow-Layer */}
 
         {/*Egg*/}
         <Image
@@ -337,7 +328,6 @@ export default function Lottery() {
           }}
         />
       </Box>
-
 
       {/* Jumping items contains lottery item */}
       {showItem && (
@@ -373,7 +363,6 @@ export default function Lottery() {
           >
             Close
           </Button>
-
         </Box>
       )}
 
