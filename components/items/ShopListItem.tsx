@@ -52,7 +52,8 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
           }
         }
       `,
-      {}
+      {},
+      { fetchPolicy: "network-only" } // optional, zum Testen hilfreich
     );
 
   const [buyItem] = useMutation<ShopListItemBuyItemTutorMutation>(graphql`
