@@ -246,6 +246,8 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
           name={selectedItem.name}
           rarity={selectedItem.rarity}
           unspentPoints={inventoryForUser.unspentPoints}
+          backColor={selectedItem.backColor}
+          foreColor={selectedItem.foreColor}
         />
       )}
     </>

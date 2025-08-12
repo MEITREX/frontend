@@ -337,6 +337,8 @@ export default function InventoryListItem({
           onToggleEquip={handleToggleEquip}
           name={selectedItem.name}
           rarity={selectedItem.rarity}
+          backColor={selectedItem.backColor}
+          foreColor={selectedItem.foreColor}
         />
       )}
     </>
