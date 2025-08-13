@@ -19,7 +19,7 @@ type Props = {
   imageSrc?: string;
   imageAlt: string;
   description: string;
-  /** bool = equip/unequip, number = kaufen für Preis (DP) */
+  /** bool = equip/unequip, number = buy for certain prize (DP) */
   equipped: boolean | number;
   onToggleEquip: () => void;
   name: string;
@@ -27,13 +27,14 @@ type Props = {
   backColor?: string;
   foreColor?: string;
   unspentPoints?: number;
+  category?: string;
 };
 
 const rarityColors: Record<string, { border: string; bg: string }> = {
-  common: { border: "#26a0f5", bg: "#e3f2fd" }, // blau
+  common: { border: "#26a0f5", bg: "#e3f2fd" }, // blue
   uncommon: { border: "#d4af37", bg: "#fff8e1" }, // gold
-  rare: { border: "#8e44ad", bg: "#f3e5f5" }, // lila
-  ultra_rare: { border: "#e53935", bg: "#ffebee" }, // rot
+  rare: { border: "#8e44ad", bg: "#f3e5f5" }, // purpule
+  ultra_rare: { border: "#e53935", bg: "#ffebee" }, // red
 };
 
 const DecorationPopup: React.FC<Props> = ({
@@ -49,13 +50,13 @@ const DecorationPopup: React.FC<Props> = ({
   foreColor = null,
   backColor = null,
   unspentPoints = 0,
+  category = null,
 }) => {
   const isBuyMode = typeof equipped === "number";
   const colors = rarityColors[rarity] ?? rarityColors.common;
 
-  console.log(imageSrc, foreColor, backColor, "HAALLLOO");
-
   return (
+    // Dialog to show details for an item in the SHop or Inventory
     <Dialog
       open={open}
       onClose={onClose}
@@ -71,6 +72,7 @@ const DecorationPopup: React.FC<Props> = ({
         },
       }}
     >
+      {/* Title is the name of the item */}
       <DialogTitle sx={{ textAlign: "center", fontWeight: "bold" }}>
         {name}
         <IconButton
@@ -82,9 +84,12 @@ const DecorationPopup: React.FC<Props> = ({
       </DialogTitle>
 
       <DialogContent sx={{ pt: 0 }}>
-        {/* Bildbereich mit schwarzem Innenrahmen */}
+        {/* Picture of the item, has three cases. 1st only picture, 2nd foreground color and background picture, 3rd foreground and background color.
+        Profile picture, tutor pictur and profile picture frame are case 1. Case 2 are pattern themes, case 3 are color themes, both are profile backgrounds */}
         <Box sx={{ p: 1 }}>
+          {/* Case 1 */}
           {foreColor == null && backColor == null && imageSrc != null && (
+            // Border for item display
             <Box
               sx={{
                 border: "3px solid #000",
@@ -94,6 +99,7 @@ const DecorationPopup: React.FC<Props> = ({
                 backgroundColor: "#fff",
               }}
             >
+              {/* picture is whole picture */}
               <img
                 src={decodeURIComponent(imageSrc)}
                 alt={imageAlt}
@@ -106,7 +112,9 @@ const DecorationPopup: React.FC<Props> = ({
               />
             </Box>
           )}
+          {/* Case 2 */}
           {foreColor != null && backColor == null && imageSrc != null && (
+            // Border for item display
             <Box
               sx={{
                 border: "3px solid #000",
@@ -116,6 +124,7 @@ const DecorationPopup: React.FC<Props> = ({
                 backgroundColor: "#fff",
               }}
             >
+              {/* picture is bigger outside box */}
               <Box
                 sx={{
                   width: "100%",
@@ -130,10 +139,10 @@ const DecorationPopup: React.FC<Props> = ({
                   justifyContent: "center",
                 }}
               >
-                {/* ForeColor Box in der Mitte */}
+                {/* foreground color is bigger middle box */}
                 <Box
                   sx={{
-                    backgroundColor: foreColor, // z. B. theme.palette.secondary.main
+                    backgroundColor: foreColor,
                     borderRadius: 2,
                     width: "80%",
                     height: "80%",
@@ -142,7 +151,9 @@ const DecorationPopup: React.FC<Props> = ({
               </Box>
             </Box>
           )}
+          {/* Case 3 */}
           {foreColor != null && backColor != null && (
+            // Border for item display
             <Box
               sx={{
                 border: "3px solid #000",
@@ -152,13 +163,14 @@ const DecorationPopup: React.FC<Props> = ({
                 backgroundColor: "#fff",
               }}
             >
+              {/* background color is bigger outside box */}
               <Box
                 sx={{
-                  backgroundColor: backColor, // z. B. theme.palette.primary.main
+                  backgroundColor: backColor,
                   borderRadius: 0,
                   overflow: "hidden",
                   aspectRatio: "1 / 1",
-                  width: "100%", // oder flexibel anpassen
+                  width: "100%",
                   height: "100%",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
@@ -167,6 +179,7 @@ const DecorationPopup: React.FC<Props> = ({
                   justifyContent: "center",
                 }}
               >
+                {/* foreground color is smaller middle box */}
                 <Box
                   sx={{
                     backgroundColor: foreColor, // z. B. theme.palette.secondary.main
@@ -174,8 +187,8 @@ const DecorationPopup: React.FC<Props> = ({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    padding: 1.5, // Abstand für inneren Bereich
-                    width: "80%", // oder flexibel anpassen
+                    padding: 1.5,
+                    width: "80%",
                     height: "80%",
                   }}
                 >
@@ -187,8 +200,9 @@ const DecorationPopup: React.FC<Props> = ({
           )}
         </Box>
 
-        {/* Beschreibung + Infos */}
+        {/* Display further information */}
         <Box sx={{ px: 2, pb: 1 }}>
+          {/* Description below the item */}
           {description && (
             <Typography variant="body1" sx={{ mb: 1, textAlign: "center" }}>
               {description}
@@ -196,11 +210,13 @@ const DecorationPopup: React.FC<Props> = ({
           )}
 
           <Box sx={{ mt: 2 }}>
+            {/* Show the price if we are in the shop */}
             {isBuyMode && (
               <Typography variant="body2" sx={{ mb: 1 }}>
                 <strong>Price:</strong> {equipped} DP
               </Typography>
             )}
+            {/* Show rarity of the item */}
             <Typography variant="body2">
               <strong>Rarity:</strong>{" "}
               {rarity.charAt(0).toUpperCase() + rarity.slice(1)}
@@ -209,16 +225,22 @@ const DecorationPopup: React.FC<Props> = ({
         </Box>
       </DialogContent>
 
+      {/* Button where item can be equipped or unequipped in the inventory. In the shop item can be bought if user has enough currency */}
       <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
         <Button
           onClick={onToggleEquip}
           variant="contained"
-          disabled={isBuyMode && unspentPoints < equipped}
+          disabled={
+            (isBuyMode && unspentPoints < equipped) ||
+            (!isBuyMode && category === "tutors" && equipped)
+          }
         >
           {isBuyMode
             ? unspentPoints < equipped
-              ? "Not enough DP" // ❌ zu wenig Punkte
+              ? "Not enough DP"
               : `Buy for ${equipped} DP`
+            : category === "tutors" && equipped
+            ? "Tutor can not be unequipped. Equip other tutor to unequip this one"
             : equipped
             ? "Unequip"
             : "Equip"}

@@ -12,7 +12,7 @@ import {
   Tabs,
 } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
-import { useSort } from "../../contexts/SortContext"; // Pfad ggf. anpassen
+import { useSort } from "../../contexts/SortContext";
 
 const tabs = [
   { label: "Profile Picture", path: "picture" },
@@ -53,11 +53,12 @@ export default function InventoryLayout({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          flexWrap: "wrap", // für bessere Responsivität
+          flexWrap: "wrap",
           mb: 3,
           gap: 2,
         }}
       >
+        {/* Category tabs */}
         <Tabs
           value={activeIndex}
           onChange={handleChange}
@@ -91,14 +92,14 @@ export default function InventoryLayout({
             />
           ))}
         </Tabs>
-
+        {/* Sorting dropdown */}
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
             gap: 2,
             mb: 3,
-            ml: "auto", // optional: rechts ausrichten
+            ml: "auto",
           }}
         >
           <FormControl size="small" sx={{ minWidth: 160 }}>

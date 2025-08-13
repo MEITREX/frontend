@@ -1,11 +1,12 @@
 import { Box } from "@mui/material";
 
 interface ItemInventoryPictureBackgroundsProps {
-  url: string; // encoded URL deines Bildes
-  backColor: string;
-  foreColor: string;
+  url: string | null;
+  backColor: string | null;
+  foreColor: string | null;
 }
 
+// Picture in list card if background, so we have foreground color and background color or picture
 export default function ItemInventoryPictureOnly({
   url,
   backColor,
@@ -13,7 +14,6 @@ export default function ItemInventoryPictureOnly({
 }: ItemInventoryPictureBackgroundsProps) {
   return (
     <Box sx={{ p: 1 }}>
-      {/* Outer box mit backColor */}
       <Box
         sx={{
           width: "171px",
@@ -27,7 +27,7 @@ export default function ItemInventoryPictureOnly({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          mx: "auto", // <-- zentriert im Eltern-Container
+          mx: "auto",
         }}
       >
         <Box

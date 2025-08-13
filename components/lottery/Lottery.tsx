@@ -167,7 +167,7 @@ export default function Lottery() {
       onCompleted(item) {
         console.log(item);
         setSelectedItem(item.lotteryRun);
-        console.log(selectedItem)
+        console.log(selectedItem);
         setRarity(item.lotteryRun?.rarity! as Rarity);
         setDinoPoints((prev) => prev - eggCost);
         setIsEggWobbling(false);
@@ -204,8 +204,6 @@ export default function Lottery() {
     setIsOpening(false);
     setCurrentFrame(0);
   };
-
-
 
   return (
     <Box
@@ -349,7 +347,9 @@ export default function Lottery() {
         <DecorationPopup
           open={true}
           onClose={() => setSelectedItem(null)}
-          imageSrc={selectedItem.url ? decodeURIComponent(selectedItem.url) : undefined}
+          imageSrc={
+            selectedItem.url ? decodeURIComponent(selectedItem.url) : undefined
+          }
           imageAlt={selectedItem!.name}
           description={selectedItem!.description || "No description available."}
           equipped={false}
@@ -359,7 +359,6 @@ export default function Lottery() {
           unspentPoints={dinoPoints}
           backColor={selectedItem!.backColor ?? undefined}
           foreColor={selectedItem!.foreColor ?? undefined}
-
         />
       )}
 

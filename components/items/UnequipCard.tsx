@@ -19,6 +19,7 @@ type UnequipCardProps = {
   equippedItem?: any | null;
 };
 
+// First element in list, unequips the equiped item of a certain category
 export default function UnequipCard({ equippedItem }: UnequipCardProps) {
   const [unequipItem] =
     useMutation<UnequipCardUnequipItemPictureMutation>(graphql`
@@ -47,10 +48,11 @@ export default function UnequipCard({ equippedItem }: UnequipCardProps) {
     };
   }, []);
 
+  // Handles clicks, manages single or double click
   const handleClick: React.MouseEventHandler<HTMLDivElement> = (e) => {
     if (disabled) return;
 
-    // Doppelklick?
+    // Double click
     if (e.detail === 2) {
       if (clickTimer.current) {
         window.clearTimeout(clickTimer.current);
@@ -60,7 +62,7 @@ export default function UnequipCard({ equippedItem }: UnequipCardProps) {
       return;
     }
 
-    // Single-Klick leicht verzögern, falls noch ein zweiter Klick kommt
+    // Single click
     if (clickTimer.current) window.clearTimeout(clickTimer.current);
     clickTimer.current = window.setTimeout(() => {
       onOpenPopup();
@@ -68,20 +70,16 @@ export default function UnequipCard({ equippedItem }: UnequipCardProps) {
     }, 220);
   };
 
+  // Call mutation
   function onUnequip() {
     unequipItem({
       variables: {
         itemId: equippedItem.id,
       },
-      onError() {
-        console.log("Cant equip item", equippedItem.id);
-      },
-      onCompleted() {
-        console.log("Equiped item");
-      },
     });
   }
 
+  // Open unequip PopUp when single click
   function onOpenPopup() {
     setOpenDialog(true);
   }
@@ -116,6 +114,7 @@ export default function UnequipCard({ equippedItem }: UnequipCardProps) {
           },
         }}
       >
+        {/* Set text depending on if something is equiped */}
         <Box textAlign="center">
           <div style={{ fontWeight: 700, marginBottom: 8 }}>
             {disabled ? "Nothing equipped" : "Unequip current"}
@@ -128,6 +127,7 @@ export default function UnequipCard({ equippedItem }: UnequipCardProps) {
           </div>
         </Box>
       </Card>
+      {/* PopUp for single click */}
       <Dialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}

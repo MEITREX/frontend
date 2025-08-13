@@ -13,12 +13,32 @@ import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
 import ItemInventoryPictureOnly from "./ItemInventoryPictureOnly";
 import UnequipCard from "./UnequipCard";
 
+// Types for items
 export type ItemStringType =
   | "colorThemes"
   | "patternThemes"
   | "profilePicFrames"
   | "profilePics"
   | "tutors";
+
+// Rarity type for item
+type Rarity = "common" | "uncommon" | "rare" | "ultra_rare";
+
+// Decoration item type
+type DecorationItem = {
+  id: string;
+  backColor: string | null;
+  description: string;
+  url: string | null;
+  foreColor: string | null;
+  name: string;
+  rarity: Rarity;
+  sellCompensation: number;
+  moneyCost: number;
+  unlocked: boolean;
+  equipped: boolean;
+  unlockedTime: string | null;
+};
 
 type InventoryListItemProps = {
   itemStringType: ItemStringType;
@@ -28,6 +48,9 @@ export default function InventoryListItem({
   itemStringType,
 }: InventoryListItemProps) {
   const { sortBy, showLocked } = useSort();
+  const [selectedItem, setSelectedItem] = useState<DecorationItem | null>(null);
+  // Timer for double click
+  const clickTimer = useRef<number | null>(null);
 
   const { inventoryForUser } =
     useLazyLoadQuery<InventoryListItemInventoryForUserQuery>(
@@ -47,7 +70,7 @@ export default function InventoryListItem({
         }
       `,
       {},
-      { fetchPolicy: "network-only" } // optional, zum Testen hilfreich
+      { fetchPolicy: "network-only" }
     );
 
   const [equipItem] = useMutation<InventoryListItemEquipItemMutation>(graphql`
@@ -83,17 +106,13 @@ export default function InventoryListItem({
       }
     `);
 
-  type DecorationItem = {
-    id: string;
-    [key: string]: any; // Damit auch weitere Eigenschaften erlaubt sind
-  };
-
-  console.log(inventoryForUser, "invvvvvvvvvvvvv");
-
+  // Get IDs of all items for DecoParser
   const itemIds = inventoryForUser.items.map((item) => item.id);
 
+  // Parse items of given type
   let itemsParsed = DecoParser(itemIds, itemStringType);
 
+  // If the type is a profile background we need to merge the other profile background type into out items
   if (itemStringType === "colorThemes") {
     const itemsParsedPatternThemes = DecoParser(itemIds, "patternThemes");
     itemsParsed = itemsParsed.concat(itemsParsedPatternThemes);
@@ -102,6 +121,7 @@ export default function InventoryListItem({
     itemsParsed = itemsParsed.concat(itemsParsedColorThemes);
   }
 
+  // Map items from backend to JSON items
   const itemStatusMap = Object.fromEntries(
     inventoryForUser.items.map((item) => [
       item.id,
@@ -113,20 +133,21 @@ export default function InventoryListItem({
     ])
   );
 
-  // 4. Parsed Items mit Status kombinieren
-  const itemsParsedMerged = itemsParsed.map((item: DecorationItem) => ({
-    ...item,
+  // Combine backend and JSON data
+  const itemsParsedMerged = itemsParsed.map((item) => ({
+    ...(item as Partial<DecorationItem>),
     ...itemStatusMap[item.id],
-  }));
+  })) as DecorationItem[];
 
+  // Get amount of items user has in inventory to display later
   const numberItemsUnlocked = itemsParsedMerged.filter(
     (item) => item.unlocked
   ).length;
 
-  console.log(numberItemsUnlocked, "num");
-
+  // Find the equiped item for the UnequipCard
   const equipedItem = itemsParsedMerged.find((item) => item.equipped);
 
+  // Do the sorting depending on the context
   const sortedItems = useMemo(() => {
     const filtered = showLocked
       ? itemsParsedMerged
@@ -138,6 +159,7 @@ export default function InventoryListItem({
         const rarityOrder = ["common", "uncommon", "rare", "ultra_rare"];
         return rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
       }
+      // Sort newest first
       if (sortBy === "unlockedTime") {
         const ta = a.unlockedTime
           ? new Date(a.unlockedTime).getTime()
@@ -145,23 +167,15 @@ export default function InventoryListItem({
         const tb = b.unlockedTime
           ? new Date(b.unlockedTime).getTime()
           : -Infinity;
-        return tb - ta; // neueste zuerst
+        return tb - ta;
       }
       return 0;
     });
-  }, [itemsParsedMerged, sortBy, showLocked]); // 👈 showLocked nicht vergessen!
+  }, [itemsParsedMerged, sortBy, showLocked]);
 
-  console.log(sortedItems);
-  console.log(sortBy);
-
-  const [selectedItem, setSelectedItem] = useState(null);
-
+  // Handles all the equipment and equipment of items
   const handleToggleEquip = (_e?: any, itemParameter?: any) => {
-    console.log("HandleToggleEquip");
-
     const item = itemParameter ? itemParameter : selectedItem;
-
-    console.log(item, "DAS UNSER ITEM");
 
     if (item.equipped && !itemParameter) {
       unequipItem({
@@ -169,13 +183,9 @@ export default function InventoryListItem({
           itemId: item.id,
         },
         onError() {
-          console.log("Cant unequip item", item.id);
-          // Popup schließen oder beibehalten
           setSelectedItem(null);
         },
         onCompleted() {
-          console.log("Unequiped item");
-          // Popup schließen oder beibehalten
           setSelectedItem(null);
         },
       });
@@ -185,43 +195,39 @@ export default function InventoryListItem({
           itemId: item.id,
         },
         onError() {
-          console.log("Cant equip item", item.id);
-          // Popup schließen oder beibehalten
           setSelectedItem(null);
         },
         onCompleted() {
-          console.log("Equiped item");
-          // Popup schließen oder beibehalten
           setSelectedItem(null);
         },
       });
     }
   };
 
-  const clickTimer = useRef<number | null>(null);
-
-  const handleClick = (e: React.MouseEvent, pic: any) => {
-    // Bei Doppelklick: Timer für Single-Click abbrechen und equip ausführen
+  // Handels all clicks on cards and also manages double click
+  const handleClick = (e: React.MouseEvent, item: any) => {
+    // When double click, do equip and not show PopUp
     if (e.detail === 2) {
       if (clickTimer.current) {
         window.clearTimeout(clickTimer.current);
         clickTimer.current = null;
       }
-      if (pic.unlocked) handleToggleEquip(e, pic);
+      if (item.unlocked) handleToggleEquip(e, item);
       return;
     }
 
-    // Single-Click: leicht verzögern, falls gleich noch ein zweiter Klick kommt
+    // When single click show PopUp
     if (clickTimer.current) window.clearTimeout(clickTimer.current);
     clickTimer.current = window.setTimeout(() => {
-      setSelectedItem(pic);
+      setSelectedItem(item);
       clickTimer.current = null;
-    }, 220); // 200–300ms ist üblich
+    }, 220); // 200–300ms
   };
 
   return (
     <>
       <Box sx={{ mb: 2, width: "100%" }}>
+        {/* Amount of owned items */}
         <Typography variant="h6" sx={{ fontWeight: "bold" }}>
           Items owned: {numberItemsUnlocked} / {itemsParsed.length}
         </Typography>
@@ -234,75 +240,84 @@ export default function InventoryListItem({
         }}
       >
         {itemStringType !== "tutors" && (
+          // UnequipCard is shwon at the start of the list for all categories but tutor
           <UnequipCard equippedItem={equipedItem}></UnequipCard>
         )}
-        {sortedItems.map((pic) => {
-          const rarityKey = (pic.rarity || "common")
+        {sortedItems.map((item) => {
+          // Get rarity
+          const rarityKey = (item.rarity || "common")
             .toLowerCase()
-            .replace(/\s+/g, ""); // z.B. "ultrarare"
+            .replace(/\s+/g, "");
+
+          // Define colors for rarity
           const rarityMap: Record<string, { border: string; bg: string }> = {
-            common: { border: "#26a0f5", bg: "#e3f2fd" }, // blau
+            common: { border: "#26a0f5", bg: "#e3f2fd" }, // blue
             uncommon: { border: "#d4af37", bg: "#fff8e1" }, // gold
-            rare: { border: "#8e44ad", bg: "#f3e5f5" }, // lila
-            ultra_rare: { border: "#e53935", bg: "#ffebee" }, // rot
+            rare: { border: "#8e44ad", bg: "#f3e5f5" }, // purple
+            ultra_rare: { border: "#e53935", bg: "#ffebee" }, // red
           };
+
+          // Map rarity to color
           const colors = rarityMap[rarityKey] ?? rarityMap.common;
 
-          const price = pic.sellCompensation; // nimm, was du hast
+          // Define label to dsiplay
           const rarityLabel =
-            pic.rarity === "ultra_rare"
+            item.rarity === "ultra_rare"
               ? "Ultra Rare"
-              : pic.rarity?.charAt(0).toUpperCase() +
-                (pic.rarity?.slice(1) ?? "Common");
+              : item.rarity?.charAt(0).toUpperCase() +
+                (item.rarity?.slice(1) ?? "Common");
 
           return (
             <Box
-              key={pic.id}
-              onClick={(e) => handleClick(e, pic)}
+              key={item.id}
+              onClick={(e) => handleClick(e, item)}
               sx={{
                 position: "relative",
-                border: pic.unlocked
-                  ? `3px solid ${pic.equipped ? "#096909" : colors.border}`
+                border: item.unlocked
+                  ? `3px solid ${item.equipped ? "#096909" : colors.border}`
                   : "none",
                 borderRadius: 3,
                 overflow: "hidden",
                 boxShadow: `0 0 0 3px ${
-                  pic.equipped
-                    ? "#096909" // grün
-                    : pic.unlocked
-                    ? colors.border // rarity-Farbe
-                    : "#000000d3" // grau
-                }33`, // leichter Glow
+                  item.equipped
+                    ? "#096909" // green for equiped
+                    : item.unlocked
+                    ? colors.border // rarity color for unlocked
+                    : "#000000d3" // grey for locked
+                }33`, // small glow
                 backgroundColor: colors.bg,
-                cursor: pic.unlocked ? "pointer" : "default",
-                transition: pic.unlocked
+                cursor: item.unlocked ? "pointer" : "default",
+                transition: item.unlocked
                   ? "transform .15s ease, box-shadow .15s ease"
                   : "none",
-                ...(pic.unlocked && {
+                ...(item.unlocked && {
                   "&:hover": { transform: "translateY(-2px)" },
                 }),
               }}
             >
-              {/* Bildbereich mit innerem schwarzen Rahmen (wie in deiner Skizze) */}
-              {pic.foreColor ? (
+              {/* Display picture for item in list */}
+              {item.foreColor ? (
                 <ItemInventoryPictureBackgrounds
-                  url={pic.url}
-                  backColor={pic.backColor}
-                  foreColor={pic.foreColor}
+                  url={item.url ? item.url : null}
+                  backColor={item.backColor ? item.backColor : null}
+                  foreColor={item.foreColor}
                 />
               ) : (
-                <ItemInventoryPictureOnly url={pic.url} id={pic.id} />
+                <ItemInventoryPictureOnly
+                  url={item.url ? item.url : null}
+                  id={item.id}
+                />
               )}
 
-              {/* Info-Bereich */}
+              {/* Informations about item */}
               <Box sx={{ px: 2, pb: 2, pt: 1 }}>
                 <Typography variant="body2">
                   <strong>Rarity:</strong> {rarityLabel || "Common"}
                 </Typography>
               </Box>
 
-              {/* Obtained-Overlay: deckt die ganze Karte ab */}
-              {!pic.unlocked && (
+              {/* Obtained-Overlay: Covers item when locked */}
+              {!item.unlocked && (
                 <Box
                   sx={{
                     position: "absolute",
@@ -315,7 +330,7 @@ export default function InventoryListItem({
                     fontWeight: "bold",
                     fontSize: "0.95rem",
                     zIndex: 1,
-                    pointerEvents: "none", // Klicks weiterreichen, wenn gewünscht
+                    pointerEvents: "none",
                   }}
                 >
                   Locked
@@ -325,20 +340,27 @@ export default function InventoryListItem({
           );
         })}
       </Box>
-
+      {/* PopUp when unlocked card is single clicked */}
       {selectedItem && selectedItem.unlocked && (
         <DecorationPopup
           open={true}
           onClose={() => setSelectedItem(null)}
-          imageSrc={decodeURIComponent(selectedItem.url)}
+          imageSrc={
+            selectedItem.url ? decodeURIComponent(selectedItem.url) : undefined
+          }
           imageAlt={selectedItem.id}
           description={selectedItem.description || "No description available."}
           equipped={selectedItem.equipped}
           onToggleEquip={handleToggleEquip}
           name={selectedItem.name}
-          rarity={selectedItem.rarity}
-          backColor={selectedItem.backColor}
-          foreColor={selectedItem.foreColor}
+          rarity={selectedItem.rarity ? selectedItem.rarity : undefined}
+          backColor={
+            selectedItem.backColor ? selectedItem.backColor : undefined
+          }
+          foreColor={
+            selectedItem.foreColor ? selectedItem.foreColor : undefined
+          }
+          category={itemStringType}
         />
       )}
     </>

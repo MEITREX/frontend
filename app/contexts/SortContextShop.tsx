@@ -9,6 +9,7 @@ type SortContextType = {
 
 const SortContext = createContext<SortContextType | undefined>(undefined);
 
+// Can sort by name, by rarity
 export const SortProvider = ({ children }: { children: React.ReactNode }) => {
   const [sortBy, setSortBy] = useState<"name" | "rarity">("rarity");
 

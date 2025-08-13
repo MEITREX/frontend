@@ -1,9 +1,7 @@
-// app/items/inventory/layout.tsx
-
 "use client";
 
-import { SortProvider } from "../../contexts/SortContext"; // ✅ dein Context
-import InventoryLayout from "./InventoryLayout"; // ✅ deine Layout-Komponente
+import { SortProvider } from "../../contexts/SortContext";
+import InventoryLayout from "./InventoryLayout";
 
 export default function InventoryLayoutWrapper({
   children,
@@ -12,8 +10,6 @@ export default function InventoryLayoutWrapper({
 }) {
   return (
     <SortProvider>
-      {" "}
-      {/* 👈 HIER außen drum */}
       <InventoryLayout>{children}</InventoryLayout>
     </SortProvider>
   );

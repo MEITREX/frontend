@@ -11,11 +11,12 @@ type SortContextType = {
 
 const SortContext = createContext<SortContextType | undefined>(undefined);
 
+// Can sort by name, by rarity and by unlockedTime
 export const SortProvider = ({ children }: { children: React.ReactNode }) => {
   const [sortBy, setSortBy] = useState<"name" | "rarity" | "unlockedTime">(
     "name"
   );
-  const [showLocked, setShowLocked] = useState<boolean>(false); // ✅ neu
+  const [showLocked, setShowLocked] = useState<boolean>(false);
 
   return (
     <SortContext.Provider

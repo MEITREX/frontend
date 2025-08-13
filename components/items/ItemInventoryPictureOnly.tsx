@@ -1,10 +1,11 @@
 import { Box } from "@mui/material";
 
 interface ItemInventoryPictureOnlyProps {
-  url: string; // encoded URL deines Bildes
+  url: string | null; // encoded URL deines Bildes
   id: string; // ID des Items
 }
 
+// Picture in list card if tutor, profile picture of frame
 export default function ItemInventoryPictureOnly({
   url,
   id,
@@ -21,7 +22,7 @@ export default function ItemInventoryPictureOnly({
         }}
       >
         <img
-          src={decodeURIComponent(url)}
+          src={decodeURIComponent(url ? url : id)}
           alt={id}
           style={{
             width: "100%",

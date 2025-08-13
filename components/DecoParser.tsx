@@ -4,7 +4,7 @@ type DecorationCategory = keyof typeof decorationsData;
 
 type DecorationItem = {
   id: string;
-  [key: string]: any; // Damit auch weitere Eigenschaften erlaubt sind
+  [key: string]: any;
 };
 
 export default function parseDecorations(
