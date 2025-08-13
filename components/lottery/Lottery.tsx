@@ -6,10 +6,10 @@ import {
   Box,
   Typography,
   Button,
-  Chip, IconButton
+  IconButton
 } from "@mui/material";
-import StarIcon from "@mui/icons-material/Star";
 import Confetti from 'react-confetti';
+import CloseIcon from '@mui/icons-material/Close';
 
 import frame_1 from '../../assets/lottery/animation/frame_1.png';
 import frame_2 from '../../assets/lottery/animation/frame_2.png';
@@ -30,45 +30,57 @@ import coins from '../../assets/lottery/coins.png';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import { useLazyLoadQuery, useMutation } from "react-relay";
-import { lotteryApiLotteryRunMutation, lotteryApiUserInventoryQuery } from "@/components/lottery/api/LotteryApi";
+import {
+  lotteryApiLotteryEquipItemMutation,
+  lotteryApiLotteryRunMutation,
+  lotteryApiUserInventoryQuery
+} from "@/components/lottery/api/LotteryApi";
 import { LotteryApiUserInventoryQuery } from "@/__generated__/LotteryApiUserInventoryQuery.graphql";
 import { LotteryApiLotteryRunMutation } from "@/__generated__/LotteryApiLotteryRunMutation.graphql";
+import { LotteryApiLotteryEquipItemMutation } from "@/__generated__/LotteryApiLotteryEquipItemMutation.graphql";
 
 type Rarity = 'DEFAULT' | 'COMMON' | 'UNCOMMON' | 'RARE' | 'ULTRA_RARE';
 
 interface RarityStyle {
   border: string;
   background: string;
-  color: string;
 }
 
 const rarityStyles: Record<Rarity, RarityStyle> = {
   DEFAULT: {
     border: '2px solid #B0B0B0',
     background: 'linear-gradient(to bottom right, #f5f5f5, #e0e0e0)',
-    color: '#B0B0B0'
   },
   COMMON: {
-    border: '2px solid #4B69FF',
-    background: 'linear-gradient(to bottom right, #4B69FF, #1C3FAA)',
-    color: '#4B69FF'
+    border: '2px solid #26a0f5',
+    background: '#e3f2fd',
   },
   UNCOMMON: {
-    border: '2px solid #8847FF',
-    background: 'linear-gradient(to bottom right, #8847FF, #5E35B1)',
-    color: '#8847FF'
+    border: '2px solid #d4af37',
+    background: '#fff8e1',
   },
   RARE: {
-    border: '2px solid #E53935',
-    background: 'linear-gradient(to bottom right, #E53935, #B71C1C)',
-    color: '#E53935'
+    border: '2px solid #8e44ad',
+    background: '#f3e5f5',
   },
   ULTRA_RARE: {
-    border: '2px solid #FFD700',
-    background: 'radial-gradient(circle at center, #fff176, #fdd835, #f57f17)',
-    color: '#FFD700'
+    border: '2px solid #e53935',
+    background: '#ffebee',
   }
 };
+
+export interface LotteryRun {
+  id: string;
+  name: string;
+  description: string;
+  rarity: string;
+  foreColor: string | null;
+  backColor: string | null;
+  url: string | null;
+  filename: string | null;
+  sold: boolean;
+  sellCompensation: number;
+}
 
 export default function Lottery() {
 // TODO mark as duplicate when sell compensate
@@ -78,11 +90,13 @@ export default function Lottery() {
     { fetchPolicy: "network-only" }
   );
 
-
   const [runLottery] = useMutation<LotteryApiLotteryRunMutation>(
     lotteryApiLotteryRunMutation
   );
 
+  const [equipNewItem] = useMutation<LotteryApiLotteryEquipItemMutation>(
+    lotteryApiLotteryEquipItemMutation
+  );
 
 // Audio
   const [mute, setMute] = useState(false);
@@ -106,6 +120,10 @@ export default function Lottery() {
   const [showItem, setShowItem] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
   const [rarity, setRarity] = useState<Rarity>('ULTRA_RARE');
+
+  // Item
+  const [item, setItem] = useState<any>(null);
+  const [equip, setEquip] = useState<boolean>(false);
 
   useEffect(() => {
     if (inventory?.inventoryForUser?.unspentPoints != null) {
@@ -169,11 +187,14 @@ export default function Lottery() {
     runLottery({
       variables: {},
       onCompleted(item){
-        console.log(item);
+        // Start animation
         setRarity(item.lotteryRun?.rarity! as Rarity);
         setDinoPoints(prev => prev - eggCost);
         setIsEggWobbling(false);
         setIsOpening(true);
+
+        // Set item to display
+        setItem(item);
       },
       onError(error) {
         console.error("Lottery failed", error);
@@ -181,12 +202,27 @@ export default function Lottery() {
     })
   };
 
+  const equipItem = () => {
+    equipNewItem({
+      variables: { itemId: item.lotteryRun.id },
+      onCompleted() {
+        setEquip(true);
+      },
+      onError(error) {
+        console.error("Lottery failed", error);
+      }
+    });
+  };
+
+
   const handleCloseItem = () => {
     setCelebrate(false);
     setShowItem(false);
     setIsEggWobbling(true);
     setIsOpening(false);
     setCurrentFrame(0);
+    setEquip(false);
+    item.lotteryRun.sellCompensation ? setDinoPoints(dinoPoints + item.lotteryRun.sellCompensation) : '';
   };
 
   return (
@@ -283,7 +319,12 @@ export default function Lottery() {
           }}
         >
           <Confetti
-            colors={[rarityStyles[rarity]?.color]}
+            colors={[
+              rarity === 'RARE'
+                ? '#8e44ad'
+                : rarity === 'ULTRA_RARE'
+                  ? '#e53935'
+                  :'']}
             width={600}
             height={600}
             numberOfPieces={300}
@@ -314,8 +355,6 @@ export default function Lottery() {
           zIndex: 2
         }}
       >
-
-        {/*Egg*/}
         <Image
           src={frames[currentFrame]}
           alt={`Frame ${currentFrame}`}
@@ -340,7 +379,7 @@ export default function Lottery() {
             animation: 'popItem 1.3s ease-out forwards',
             zIndex: 3,
             width: 200,
-            height: 140,
+            height: 180,
             borderRadius: 2,
             display: 'flex',
             flexDirection: 'column',
@@ -349,24 +388,78 @@ export default function Lottery() {
             fontWeight: 'bold',
             fontSize: '1rem',
             gap: 1,
+            padding: '4px',
+            overflow: 'hidden',
             ...rarityStyles[rarity]
           }}
         >
-            <Typography>
-              {(rarity || "DEFAULT").replace("_", " ")}
-            </Typography>
-          <Button
-            size="small"
-            variant="contained"
-            color="secondary"
-            onClick={handleCloseItem}
+
+          <Typography
+            variant="body2"
+            noWrap
+            title={item.lotteryRun.name}
+            sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
           >
-            Close
-          </Button>
+            <strong>{item.lotteryRun.name}</strong>{' '}
+            {item.lotteryRun.sold && (
+              <span style={{ color: 'green', fontWeight: 'bold' }}>(Owned)</span>
+            )}
+          </Typography>
+
+          <Box sx={{ position: 'relative', width: 100, height: 100, border: '3px solid black', borderRadius: 3, overflow: 'hidden' }}>
+            {item.lotteryRun.url ? (
+              <Image src={item.lotteryRun.url} alt={item.lotteryRun.name} fill style={{ objectFit: 'fill' }} />
+            ) : (
+              <Box sx={{ width: '100%', height: '100%', bgcolor: item.lotteryRun.backColor || 'transparent', position: 'relative' }}>
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      width: '60%',
+                      height: '60%',
+                      bgcolor: item.lotteryRun.foreColor || 'transparent',
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                  />
+                )
+              </Box>
+
+            )}
+          </Box>
+
+
+          <Typography variant="body2">
+            {item.lotteryRun.rarity}
+          </Typography>
+
+          {item.lotteryRun.sold && item.lotteryRun.sellCompensation ? (
+              <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                <Typography>Sold for</Typography>
+                <Typography style={{color: 'green'}}>{item.lotteryRun.sellCompensation}</Typography>
+                <Image src={coins} alt="Coins" width={18} height={18} />
+              </Box>
+          ):
+            (<Button
+              onClick={equipItem}
+              variant="contained"
+              disabled={equip}
+            >
+              Equip
+            </Button>)
+          }
+
+          <IconButton
+            onClick={handleCloseItem}
+            size="small"
+            sx={{color: 'black', position: 'absolute', top: 0, right: 0 }}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
         </Box>
       )}
 
-
+      {/* Open egg button */}
       <Box mt={8}>
         <Button
           variant="contained"
@@ -380,6 +473,8 @@ export default function Lottery() {
           </Box>
         </Button>
       </Box>
+
+      {/* Mute Button */}
       { !mute ? (<IconButton
           color="primary"
           onClick={() => setMute(true)}
