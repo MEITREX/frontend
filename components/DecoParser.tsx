@@ -1,11 +1,20 @@
 import decorationsData from "./../itemSchema.json";
 
-type DecorationCategory = keyof typeof decorationsData;
+// Rarity type for item
+type Rarity = "common" | "uncommon" | "rare" | "ultra_rare";
 
+// Decoration item type
 type DecorationItem = {
   id: string;
-  [key: string]: any;
+  description: string;
+  url: string | null;
+  name: string;
+  rarity: Rarity;
+  sellCompensation: number;
+  moneyCost: number;
 };
+
+type DecorationCategory = keyof typeof decorationsData;
 
 export default function parseDecorations(
   ids: string[],
@@ -19,7 +28,9 @@ export default function parseDecorations(
   }
 
   return ids.flatMap((id) => {
-    const match = categoryArray.find((item: DecorationItem) => item.id === id);
+    const match = (categoryArray as DecorationItem[]).find(
+      (item) => item.id === id
+    );
     return match ? [match] : [];
   });
 }
