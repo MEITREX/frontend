@@ -1,16 +1,14 @@
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { LecturerCodeAssignment$key } from "@/__generated__/LecturerCodeAssignment.graphql";
-import { LecturerCodeAssignmentQuery } from "@/__generated__/LecturerCodeAssignmentQuery.graphql";
-import { ContentTags } from "./ContentTags";
-import { FormErrors } from "./FormErrors";
-import { Heading } from "./Heading";
-import { PageError } from "./PageError";
+import { LecturerCodeAssignmentCourseQuery } from "@/__generated__/LecturerCodeAssignmentCourseQuery.graphql";
 import { LecturerCodeAssignmentGradingQuery } from "@/__generated__/LecturerCodeAssignmentGradingQuery.graphql";
+import { LecturerCodeAssignmentQuery } from "@/__generated__/LecturerCodeAssignmentQuery.graphql";
+import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import { Edit, GitHub } from "@mui/icons-material";
 import {
   Box,
   Button,
   Divider,
-  Link,
   Menu,
   MenuItem,
   Paper,
@@ -24,6 +22,7 @@ import {
 } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import {
   graphql,
   useFragment,
@@ -32,10 +31,10 @@ import {
 } from "react-relay";
 import { DeleteAssignmentButton } from "./assignment/DeleteAssignmentButton";
 import { EditAssignmentModal } from "./assignment/EditAssignmentModal";
-import toast from "react-hot-toast";
-import { UUID } from "crypto";
-import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
-import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
+import { ContentTags } from "./ContentTags";
+import { FormErrors } from "./FormErrors";
+import { Heading } from "./Heading";
+import { PageError } from "./PageError";
 
 export default function LecturerCodeAssignment({
   contentRef,
@@ -55,6 +54,27 @@ export default function LecturerCodeAssignment({
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const { coursesByIds } = useLazyLoadQuery<LecturerCodeAssignmentCourseQuery>(
+    graphql`
+      query LecturerCodeAssignmentCourseQuery($courseId: UUID!) {
+        coursesByIds(ids: [$courseId]) {
+          id
+          memberships {
+            userId
+            role
+          }
+        }
+      }
+    `,
+    { courseId }
+  );
+
+  const studentIds = new Set(
+    coursesByIds[0].memberships
+      .filter((m) => m.role === "STUDENT")
+      .map((m) => m.userId)
+  );
 
   const content = useFragment(
     graphql`
@@ -89,7 +109,6 @@ export default function LecturerCodeAssignment({
             studentId
             achievedCredits
             student {
-              id
               userName
             }
           }
@@ -129,7 +148,10 @@ export default function LecturerCodeAssignment({
     return <PageError message="No assignment found with given id." />;
   }
 
-  const studentGrades = getGradingsForAssignment;
+  // only show grades of students
+  const studentGrades = getGradingsForAssignment.filter((g) =>
+    studentIds.has(g.studentId)
+  );
   const requiredPoints =
     assignment.totalCredits !== null && localRequiredPercentage != null
       ? Math.round(assignment.totalCredits * localRequiredPercentage)
