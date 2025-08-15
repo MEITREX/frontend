@@ -2,14 +2,14 @@ import { TutorChatSendMessageMutation } from "@/__generated__/TutorChatSendMessa
 import { Link } from "@mui/material";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
 import { useParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import {
   graphql,
   useMutation
 } from "react-relay";
-import dayjs from "dayjs";
-import duration from "dayjs/plugin/duration";
 
 dayjs.extend(duration);
 
@@ -114,9 +114,9 @@ export default function TutorChat() {
                   link: `/courses/${courseId}/media/${content.id}?page=${source.page + 1}`,
                   displayText: `${content.metadata.name} Seite: ${source.page + 1}`
                 });
-              } else if(sources.__typename === 'VideoSource'){
+              } else if(source.__typename === 'VideoSource'){
                 dayjs
-                  .duration(seg.startTime ?? 0, "seconds")
+                  .duration(source.startTime ?? 0, "seconds")
                   .format("HH:mm:ss")
                 urls.push({
                   link: `/courses/${courseId}/media/${content.id}?videoPosition=${source.page + 1}`,
@@ -185,7 +185,7 @@ export default function TutorChat() {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (!loading && input.trim()) {
+      if (!isInFlight && input.trim()) {
         (document.activeElement as HTMLElement).blur();
         const form = (e.target as HTMLElement).closest("form");
         if (form) (form as HTMLFormElement).requestSubmit();
