@@ -30,6 +30,20 @@ enum AiEntityProcessingState {
   UNKNOWN
 }
 
+input AiGenQuestionContext {
+  description: String!
+  maxAnswersPerQuestion: Int! = 5
+  maxExactQuestions: Int! = 5
+  maxFreeTextQuestions: Int! = 5
+  maxMultipleChoiceQuestions: Int! = 5
+  maxNumericQuestions: Int! = 5
+  mediaRecordIds: [UUID]!
+  minExactQuestions: Int! = 1
+  minFreeTextQuestions: Int! = 1
+  minMultipleChoiceQuestions: Int! = 1
+  minNumericQuestions: Int! = 1
+}
+
 input AnswerInput {
   playerTypes: [PlayerType!]!
   text: String!
@@ -123,6 +137,7 @@ input AssociationInput {
 }
 
 type AssociationQuestion implements Question {
+  aiGenerated: Boolean!
   correctAssociations: [SingleAssociation!]!
   hint: JSON
   item: Item!
@@ -200,6 +215,7 @@ enum ClozeElementType {
 
 type ClozeQuestion implements Question {
   additionalWrongAnswers: [String!]!
+  aiGenerated: Boolean!
   allBlanks: [String!]!
   clozeElements: [ClozeElement!]!
   hint: JSON
@@ -574,7 +590,14 @@ type DocumentRecordSegment implements MediaRecordSegment {
   title: String
 }
 
+type DocumentSource implements Source {
+  mediaRecordId: UUID!
+  mediaRecords: [MediaRecord!]!
+  page: Int!
+}
+
 type ExactAnswerQuestion implements Question {
+  aiGenerated: Boolean!
   caseSensitive: Boolean!
   correctAnswers: [String!]!
   feedback: JSON
@@ -752,6 +775,10 @@ interface HasGoal {
   userId: UUID
 }
 
+type HintResponse {
+  hint: String!
+}
+
 type InfoThread implements Thread {
   creationTime: DateTime!
   creatorId: UUID!
@@ -812,6 +839,12 @@ input IntFilter {
   lessThan: Int
 }
 
+type Inventory {
+  items: [UserItem!]!
+  unspentPoints: Int!
+  userId: UUID!
+}
+
 type Item {
   associatedBloomLevels: [BloomLevel!]!
   associatedSkills: [Skill!]!
@@ -833,6 +866,7 @@ scalar JSON
 
 type LectureQuestionResponse {
   answer: String!
+  sources: [Source!]!
 }
 
 scalar LocalTime
@@ -939,6 +973,7 @@ input MultipleChoiceAnswerInput {
 }
 
 type MultipleChoiceQuestion implements Question {
+  aiGenerated: Boolean!
   answers: [MultipleChoiceAnswer!]!
   hint: JSON
   item: Item!
@@ -954,6 +989,7 @@ type Mutation {
   addThreadToContent(threadContentReference: InputThreadContentReference!): ThreadContentReference
   addUserToForum(forumId: UUID!): Forum
   addUserToForumCourse(courseId: UUID!): Forum
+  buyItem(itemId: UUID!): Inventory
   createAssignmentAssessment(assessmentInput: CreateAssessmentInput!, assignmentInput: CreateAssignmentInput!): AssignmentAssessment!
   createChapter(input: CreateChapterInput!): Chapter!
   createCourse(input: CreateCourseInput!): Course!
@@ -978,6 +1014,7 @@ type Mutation {
   downvotePost(postId: UUID!): Post
   evaluatePlayerHexadScore(input: PlayerAnswerInput!, userId: UUID!): PlayerHexadScore!
   generateAccessToken(input: GenerateAccessTokenInput!): Boolean!
+  generateHint(courseId: UUID!, questionText: String!): HintResponse!
   joinCourse(courseId: UUID!): CourseMembership!
   leaveCourse(courseId: UUID!): CourseMembership!
   logAssignmentCompleted(input: LogAssignmentCompletedInput!): AssignmentCompletedFeedback!
@@ -1028,6 +1065,7 @@ input NotificationInput {
 }
 
 type NumericQuestion implements Question {
+  aiGenerated: Boolean!
   correctAnswer: Float!
   feedback: JSON
   hint: JSON
@@ -1141,7 +1179,9 @@ type Query {
   getManualMappingInstances(courseId: UUID!): [ManualMappingInstance]!
   getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
   getSemanticallySimilarEntities(count: Int! = 10, courseWhitelist: [UUID!], excludeEntitiesWithSameParent: Boolean, segmentId: UUID!): [SemanticSearchResult!]!
+  inventoryForUser: Inventory!
   isAccessTokenAvailable(provider: ExternalServiceProviderDto!): Boolean!
+  itemsByUserId(userId: UUID!): [UserItem!]!
   mediaRecords: [MediaRecord!]! @deprecated(reason: "In production there should probably be no way to get all media records of the system.")
   mediaRecordsByContentIds(contentIds: [UUID!]!): [[MediaRecord!]!]!
   mediaRecordsByIds(ids: [UUID!]!): [MediaRecord!]!
@@ -1160,6 +1200,7 @@ type Query {
 }
 
 interface Question {
+  aiGenerated: Boolean!
   hint: JSON
   itemId: UUID!
   number: Int!
@@ -1215,6 +1256,10 @@ type Quiz {
   selectedQuestions: [Question!]!
 }
 
+type QuizAIGenAsyncResponse {
+  quiz: Quiz
+}
+
 type QuizAssessment implements Assessment & Content {
   aiProcessingProgress: AiEntityProcessingProgress!
   assessmentMetadata: AssessmentMetadata!
@@ -1246,6 +1291,7 @@ type QuizMutation {
   addMultipleChoiceQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateMultipleChoiceQuestionInputWithoutItem!): QuizOutput!
   addNumericQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateNumericQuestionInputWithoutItem!): QuizOutput!
   addSelfAssessmentQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateSelfAssessmentQuestionInputWithoutItem!): QuizOutput!
+  aiGenerateQuestionAsync(context: AiGenQuestionContext): QuizAIGenAsyncResponse
   assessmentId: UUID!
   removeQuestion(number: Int!): Quiz!
   setNumberOfRandomlySelectedQuestions(numberOfRandomlySelectedQuestions: Int!): Quiz!
@@ -1330,6 +1376,7 @@ type SectionMutation {
 }
 
 type SelfAssessmentQuestion implements Question {
+  aiGenerated: Boolean!
   hint: JSON
   itemId: UUID!
   number: Int!
@@ -1412,6 +1459,10 @@ enum SkillType {
 enum SortDirection {
   ASC
   DESC
+}
+
+interface Source {
+  mediaRecordId: UUID!
 }
 
 directive @specifiedBy(url: String!) on SCALAR
@@ -1633,6 +1684,13 @@ type UserInfo {
   userName: String!
 }
 
+type UserItem {
+  equipped: Boolean!
+  id: UUID!
+  uniqueDescription: String!
+  unlocked: Boolean!
+}
+
 type UserProgressData {
   contentId: UUID!
   isDueForReview: Boolean!
@@ -1661,6 +1719,12 @@ type VideoRecordSegment implements MediaRecordSegment {
   thumbnail: String!
   title: String
   transcript: String!
+}
+
+type VideoSource implements Source {
+  mediaRecordId: UUID!
+  mediaRecords: [MediaRecord!]!
+  startTime: Float!
 }
 
 enum YearDivision {
