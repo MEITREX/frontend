@@ -1,4 +1,5 @@
 import { TutorChatSendMessageMutation } from "@/__generated__/TutorChatSendMessageMutation.graphql";
+import { MessageSource, useAITutorStore } from "@/stores/aiTutorStore";
 import { Link } from "@mui/material";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -21,24 +22,12 @@ const BOT_ERROR_TEXT =
 const BOT_PLACEHOLDER =
   "Hallo! Ich bin dein Lern-Dino 🦖. Stell mir eine Frage!";
 
-// ----------- Message-Typ für den Chatverlauf -----------
-type Message = {
-  sender: "user" | "bot";
-  text: string;
-  sources: MessageSource[];
-};
-
-type MessageSource = {
-  displayText: string;
-  link: string;
-}
 
 const sendMessageMutation = graphql`
   mutation TutorChatSendMessageMutation($userInput: String!, $courseId: UUID) {
     sendMessage(userInput: $userInput, courseId: $courseId) {
       answer
       sources {
-        __typename
         ... on DocumentSource {
           page
           mediaRecords {
@@ -65,16 +54,19 @@ const sendMessageMutation = graphql`
 export default function TutorChat() {
   const [sendMessage, isInFlight] = useMutation<TutorChatSendMessageMutation>(sendMessageMutation);
   const [input, setInput] = useState("");
-  const [chatHistory, setChatHistory] = useState<Message[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const sendTimestamp = useRef<number | null>(null);
   const { courseId } = useParams();
 
+  const currentChat = useAITutorStore((state) => state.currentChat);
+  const addMessage = useAITutorStore((state) => state.addMessage);
+  const changeLatestMessage = useAITutorStore((state) => state.changeLatestMessage);
+
   // Automatisches Scrollen zum unteren Ende des Chatverlaufs
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatHistory]);
+  }, [currentChat]);
 
   // Textarea-Auto-Resize
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -88,39 +80,32 @@ export default function TutorChat() {
 
   // Hilfsfunktion: Ersetze letzte Bot-Nachricht
   function replaceLoadingMessage(text: string, sources: MessageSource[]) {
-    setChatHistory((prev) => {
-      const updated = [...prev];
-      updated[updated.length - 1] = {
-        sender: "bot",
-        text,
-        sources
-      };
-      return updated;
-    });
+    changeLatestMessage({sender: "bot", text, sources})
     sendTimestamp.current = null;
   }
 
   function generateLinks(sources) {
     const urls: MessageSource[] = [];
     if (!sources) return urls;
-    sources.forEach((source) => {
-      if ("mediaRecords" in source && source.mediaRecords) {
-        source.mediaRecords.forEach((mr) => {
+    sources.forEach((src) => {
+      if ("mediaRecords" in src && src.mediaRecords) {
+        console.log('Source: ', src)
+        src.mediaRecords.forEach((mr) => {
           if (mr.contents) {
             mr.contents.forEach((content) => {
               if(content.metadata.courseId !== courseId) return;
-              if(sources.__typename === 'DocumentSource'){
+              if('page' in src){
                 urls.push({
-                  link: `/courses/${courseId}/media/${content.id}?page=${source.page + 1}`,
-                  displayText: `${content.metadata.name} Seite: ${source.page + 1}`
+                  link: `/courses/${courseId}/media/${content.id}?page=${src.page + 1}`,
+                  displayText: `${content.metadata.name} Seite: ${src.page + 1}`
                 });
-              } else if(source.__typename === 'VideoSource'){
+              } else if('startTime' in src){
                 dayjs
-                  .duration(source.startTime ?? 0, "seconds")
+                  .duration(src.startTime ?? 0, "seconds")
                   .format("HH:mm:ss")
                 urls.push({
-                  link: `/courses/${courseId}/media/${content.id}?videoPosition=${source.page + 1}`,
-                  displayText: `${content.metadata.name} Zeitstempel: ${source.startTime}`
+                  link: `/courses/${courseId}/media/${content.id}?videoPosition=${src.page + 1}`,
+                  displayText: `${content.metadata.name} Zeitstempel: ${src.startTime}`
                 });
               }
             });
@@ -138,11 +123,8 @@ export default function TutorChat() {
     if (!prompt) return;
 
     // Chatverlauf ergänzen: Nutzerfrage und "Dino denkt nach..."
-    setChatHistory((prev) => [
-      ...prev,
-      { sender: "user", text: prompt, sources: [] },
-      { sender: "bot", text: BOT_THINKS_TEXT, sources: [] },
-    ]);
+    addMessage({ sender: "user", text: prompt, sources: [] });
+    addMessage({ sender: "bot", text: BOT_THINKS_TEXT, sources: [] });
     setInput("");
     sendTimestamp.current = Date.now();
 
@@ -153,7 +135,6 @@ export default function TutorChat() {
       },
       onCompleted: (data) => {
         let urls : MessageSource[] = []
-
         if(data?.sendMessage?.sources){
           urls = generateLinks(data.sendMessage.sources)
         }
@@ -180,8 +161,6 @@ export default function TutorChat() {
     });
   };
 
-  // Mit Enter senden, mit Shift+Enter Zeilenumbruch
-  // ACHTUNG: Typ MUSS HTMLDivElement sein, da MUI TextField multiline intern einen div verwendet!
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -198,20 +177,20 @@ export default function TutorChat() {
       {/* Chatverlauf */}
       <div
         style={{
-          maxHeight: 300,
+          maxHeight: 350,
           overflowY: "auto",
           marginBottom: 10,
           paddingRight: 5,
         }}
       >
-        {chatHistory.length === 0 && (
+        {currentChat.length === 0 && (
           <div style={{ color: "#aaa", textAlign: "right" }}>
             {BOT_PLACEHOLDER}
           </div>
         )}
-        {chatHistory.map((msg, idx) => {
+        {currentChat.map((msg, idx) => {
           const isThinking =
-            isInFlight && idx === chatHistory.length - 1 && msg.sender !== "user";
+            isInFlight && idx === currentChat.length - 1 && msg.sender !== "user";
           return (
             <div
               key={idx}
@@ -245,7 +224,7 @@ export default function TutorChat() {
                   background: msg.sender === "user" ? "#e3f2fd" : "#f0f4c3",
                   borderRadius: 12,
                   padding: "6px 10px",
-                  maxWidth: 200,
+                  maxWidth: 300,
                   wordBreak: "break-word",
                   textAlign: "left",
                   opacity: isThinking ? 0.7 : 1,
@@ -256,10 +235,10 @@ export default function TutorChat() {
                 {msg.text}
                 {msg.sources.length > 0 && (
                     <>
-                      <br /><br /> Quellen: <br />
+                      <br /><br />Quellen: <br />
                       {msg.sources.map((src,i) => (
                         <div key={i}>
-                          <Link href={src.link}>[{i + 1}]{" "}{src.displayText}</Link>
+                          <Link href={src.link} underline="none">{" "}[{i + 1}]{"  "}{src.displayText}</Link>
                         </div>
                       ))}
                     </>
