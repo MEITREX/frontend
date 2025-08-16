@@ -51,8 +51,8 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
   } | null>(null);
 
   const showChat = useAITutorStore((state) => state.showChat);
-  const openChat = useAITutorStore((state) => state.openChat)
-  const closeChat = useAITutorStore((state) => state.closeChat)
+  const openChat = useAITutorStore((state) => state.openChat);
+  const closeChat = useAITutorStore((state) => state.closeChat);
 
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [showWelcome, setShowWelcome] = useState(true);
@@ -124,7 +124,7 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
         Math.abs(mouseDownPosition.x - e.clientX) < 5 &&
         Math.abs(mouseDownPosition.y - e.clientY) < 5
       ) {
-        showChat ? closeChat() : openChat()
+        showChat ? closeChat() : openChat();
       }
       setMouseDownPosition(null);
     };

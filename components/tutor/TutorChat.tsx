@@ -1,4 +1,7 @@
-import { TutorChatSendMessageMutation } from "@/__generated__/TutorChatSendMessageMutation.graphql";
+import {
+  TutorChatSendMessageMutation,
+  TutorChatSendMessageMutation$data,
+} from "@/__generated__/TutorChatSendMessageMutation.graphql";
 import { MessageSource, useAITutorStore } from "@/stores/aiTutorStore";
 import { Link } from "@mui/material";
 import Button from "@mui/material/Button";
@@ -7,10 +10,7 @@ import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import { useParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import {
-  graphql,
-  useMutation
-} from "react-relay";
+import { graphql, useMutation } from "react-relay";
 
 dayjs.extend(duration);
 
@@ -21,7 +21,6 @@ const BOT_ERROR_TEXT =
   "Es gab ein Problem bei der Kommunikation mit dem Tutor.";
 const BOT_PLACEHOLDER =
   "Hallo! Ich bin dein Lern-Dino 🦖. Stell mir eine Frage!";
-
 
 const sendMessageMutation = graphql`
   mutation TutorChatSendMessageMutation($userInput: String!, $courseId: UUID) {
@@ -52,7 +51,8 @@ const sendMessageMutation = graphql`
 `;
 
 export default function TutorChat() {
-  const [sendMessage, isInFlight] = useMutation<TutorChatSendMessageMutation>(sendMessageMutation);
+  const [sendMessage, isInFlight] =
+    useMutation<TutorChatSendMessageMutation>(sendMessageMutation);
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -61,7 +61,9 @@ export default function TutorChat() {
 
   const currentChat = useAITutorStore((state) => state.currentChat);
   const addMessage = useAITutorStore((state) => state.addMessage);
-  const changeLatestMessage = useAITutorStore((state) => state.changeLatestMessage);
+  const changeLatestMessage = useAITutorStore(
+    (state) => state.changeLatestMessage
+  );
 
   // Automatisches Scrollen zum unteren Ende des Chatverlaufs
   useEffect(() => {
@@ -80,32 +82,41 @@ export default function TutorChat() {
 
   // Hilfsfunktion: Ersetze letzte Bot-Nachricht
   function replaceLoadingMessage(text: string, sources: MessageSource[]) {
-    changeLatestMessage({sender: "bot", text, sources})
+    changeLatestMessage({ sender: "bot", text, sources });
     sendTimestamp.current = null;
   }
 
-  function generateLinks(sources) {
+  function generateLinks(
+    sources: TutorChatSendMessageMutation$data["sendMessage"]["sources"]
+  ) {
     const urls: MessageSource[] = [];
     if (!sources) return urls;
+
     sources.forEach((src) => {
       if ("mediaRecords" in src && src.mediaRecords) {
-        console.log('Source: ', src)
+        console.log("Source: ", src);
         src.mediaRecords.forEach((mr) => {
           if (mr.contents) {
             mr.contents.forEach((content) => {
-              if(content.metadata.courseId !== courseId) return;
-              if('page' in src){
+              if (!content || content.metadata.courseId !== courseId) return;
+              if ("page" in src) {
                 urls.push({
-                  link: `/courses/${courseId}/media/${content.id}?page=${src.page + 1}`,
-                  displayText: `${content.metadata.name} Seite: ${src.page + 1}`
+                  link: `/courses/${courseId}/media/${content.id}?page=${
+                    src.page! + 1
+                  }`,
+                  displayText: `${content.metadata.name} Seite: ${
+                    src.page! + 1
+                  }`,
                 });
-              } else if('startTime' in src){
-                dayjs
+              } else if ("startTime" in src) {
+                const readableTime = dayjs
                   .duration(src.startTime ?? 0, "seconds")
-                  .format("HH:mm:ss")
+                  .format("HH:mm:ss");
                 urls.push({
-                  link: `/courses/${courseId}/media/${content.id}?videoPosition=${src.page + 1}`,
-                  displayText: `${content.metadata.name} Zeitstempel: ${src.startTime}`
+                  link: `/courses/${courseId}/media/${
+                    content.id
+                  }?videoPosition=${src.startTime! + 1}`,
+                  displayText: `${content.metadata.name} Zeitstempel: ${readableTime}`,
                 });
               }
             });
@@ -134,9 +145,9 @@ export default function TutorChat() {
         courseId: courseId,
       },
       onCompleted: (data) => {
-        let urls : MessageSource[] = []
-        if(data?.sendMessage?.sources){
-          urls = generateLinks(data.sendMessage.sources)
+        let urls: MessageSource[] = [];
+        if (data?.sendMessage?.sources) {
+          urls = generateLinks(data.sendMessage.sources);
         }
 
         const elapsed = Date.now() - (sendTimestamp.current ?? 0);
@@ -190,7 +201,9 @@ export default function TutorChat() {
         )}
         {currentChat.map((msg, idx) => {
           const isThinking =
-            isInFlight && idx === currentChat.length - 1 && msg.sender !== "user";
+            isInFlight &&
+            idx === currentChat.length - 1 &&
+            msg.sender !== "user";
           return (
             <div
               key={idx}
@@ -234,16 +247,21 @@ export default function TutorChat() {
               >
                 {msg.text}
                 {msg.sources.length > 0 && (
-                    <>
-                      <br /><br />Quellen: <br />
-                      {msg.sources.map((src,i) => (
-                        <div key={i}>
-                          <Link href={src.link} underline="none">{" "}[{i + 1}]{"  "}{src.displayText}</Link>
-                        </div>
-                      ))}
-                    </>
-                  )
-                }
+                  <>
+                    <br />
+                    <br />
+                    Quellen: <br />
+                    {msg.sources.map((src, i) => (
+                      <div key={i}>
+                        <Link href={src.link} underline="none">
+                          {" "}
+                          [{i + 1}]{"  "}
+                          {src.displayText}
+                        </Link>
+                      </div>
+                    ))}
+                  </>
+                )}
               </span>
             </div>
           );
