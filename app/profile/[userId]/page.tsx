@@ -9,7 +9,10 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
-import { CombinedLeaderboardCard, fetchCourseLeaderboards } from "@/app/profile/leaderboard/ProfileLeaderboardPositions";
+import {
+  CombinedLeaderboardCard,
+  fetchCourseLeaderboards,
+} from "@/app/profile/leaderboard/ProfileLeaderboardPositions";
 
 // Demo IDs & names to keep data consistent across own profile and public profile
 const DEMO_SELF_ID = "1c13eeec-ac59-4f76-a48b-cef2091dd022"; // me
@@ -51,16 +54,28 @@ export default function PublicProfilePage() {
 
   const findPublicUserInfos = data.findPublicUserInfos;
   // Fallback to demo self when backend is down
-  const currentUserInfo = (data as any).currentUserInfo ?? { id: DEMO_SELF_ID, userName: DEMO_SELF_NAME };
+  const currentUserInfo = (data as any).currentUserInfo ?? {
+    id: DEMO_SELF_ID,
+    userName: DEMO_SELF_NAME,
+  };
 
-  const [sharedLeaderboards, setSharedLeaderboards] = useState<Record<string, any>>({});
+  const [sharedLeaderboards, setSharedLeaderboards] = useState<
+    Record<string, any>
+  >({});
   const [loadingLB, setLoadingLB] = useState(false);
 
-  const viewed = (findPublicUserInfos && findPublicUserInfos.length > 0) ? findPublicUserInfos[0] : null;
+  const viewed =
+    findPublicUserInfos && findPublicUserInfos.length > 0
+      ? findPublicUserInfos[0]
+      : null;
   // Fallback to demo other when backend is down
   const viewedSafe = viewed ?? { id: DEMO_OTHER_ID, userName: DEMO_OTHER_NAME };
 
-  const isViewingOther = !!(currentUserInfo && viewedSafe && (currentUserInfo.id !== viewedSafe.id));
+  const isViewingOther = !!(
+    currentUserInfo &&
+    viewedSafe &&
+    currentUserInfo.id !== viewedSafe.id
+  );
 
   // 👉 Gemeinsame Kurse: komplett Dummy-gesteuert
   const sharedMemberships = (() => {
@@ -71,8 +86,14 @@ export default function PublicProfilePage() {
     const COURSE_SD_TITLE = "Software Design";
 
     const memberships: any[] = [
-      { courseId: COURSE_WE_ID, course: { id: COURSE_WE_ID, title: COURSE_WE_TITLE } },
-      { courseId: COURSE_SD_ID, course: { id: COURSE_SD_ID, title: COURSE_SD_TITLE } },
+      {
+        courseId: COURSE_WE_ID,
+        course: { id: COURSE_WE_ID, title: COURSE_WE_TITLE },
+      },
+      {
+        courseId: COURSE_SD_ID,
+        course: { id: COURSE_SD_ID, title: COURSE_SD_TITLE },
+      },
     ];
 
     return memberships;
@@ -85,11 +106,10 @@ export default function PublicProfilePage() {
       const today = new Date().toISOString().slice(0, 10);
       const result: Record<string, any> = {};
       for (const m of sharedMemberships) {
-        result[m.courseId] = await fetchCourseLeaderboards(
-          m.courseId,
-          today,
-          { id: (viewedSafe as any).id, name: (viewedSafe as any).userName }
-        );
+        result[m.courseId] = await fetchCourseLeaderboards(m.courseId, today, {
+          id: (viewedSafe as any).id,
+          name: (viewedSafe as any).userName,
+        });
       }
       setSharedLeaderboards(result);
     } finally {
@@ -99,7 +119,10 @@ export default function PublicProfilePage() {
 
   // Load once when memberships are available
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useState(() => { loadShared(); return undefined; });
+  useState(() => {
+    loadShared();
+    return undefined;
+  });
 
   /*
   const { achievementsByUserId } =
@@ -133,9 +156,7 @@ export default function PublicProfilePage() {
           {viewedSafe.userName}
         </Avatar>
         <Box>
-          <Typography variant="h5">
-            @{viewedSafe.userName}
-          </Typography>
+          <Typography variant="h5">@{viewedSafe.userName}</Typography>
         </Box>
       </Box>
 
@@ -177,22 +198,24 @@ export default function PublicProfilePage() {
 
       {/* Tab-Inhalte */}
       <Box>
-        {tabIndex === 0 && (
+        {tabIndex === 0 &&
           /* 
           <AchievementList
             achievements={achievementsByUserId.filter((a) => a.completed)}
             profileTypeSortString={"achieved"}
           />
           */
-          null
-        )} 
+          null}
         {tabIndex === 1 && <OtherUserProfileForumActivity />}
         {tabIndex === 3 && (
           <Box sx={{ mt: 2 }}>
-            {loadingLB && <Typography variant="body2">Loading leaderboards…</Typography>}
+            {loadingLB && (
+              <Typography variant="body2">Loading leaderboards…</Typography>
+            )}
             {!loadingLB && sharedMemberships.length === 0 && (
               <Typography variant="body2" color="text.secondary">
-                Ihr habt aktuell keine gemeinsamen Kurse – keine Leaderboard-Überschneidungen.
+                Ihr habt aktuell keine gemeinsamen Kurse – keine
+                Leaderboard-Überschneidungen.
               </Typography>
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -208,14 +231,16 @@ export default function PublicProfilePage() {
                       weekly={weekly}
                       monthly={monthly}
                       allTime={allTime}
-                      {...(isViewingOther ? {
-                        currentUserId: viewedSafe.id, // highlight the viewed user
-                        limitToUserIds: [viewedSafe.id, DEMO_SELF_ID],
-                        scoreCompareMode: 'vsCurrentPlayer',
-                        viewerUserId: DEMO_SELF_ID
-                      } : {
-                        currentUserId: viewedSafe.id
-                      })}
+                      {...(isViewingOther
+                        ? {
+                            currentUserId: viewedSafe.id, // highlight the viewed user
+                            limitToUserIds: [viewedSafe.id, DEMO_SELF_ID],
+                            scoreCompareMode: "vsCurrentPlayer",
+                            viewerUserId: DEMO_SELF_ID,
+                          }
+                        : {
+                            currentUserId: viewedSafe.id,
+                          })}
                     />
                   </Grid>
                 );
