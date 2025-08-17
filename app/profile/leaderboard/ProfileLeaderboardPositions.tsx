@@ -25,6 +25,11 @@ import {
   Button,
 } from "@mui/material";
 // Design-matched trophies (sizes and colors aligned to reference)
+// Demo IDs / Names used across own & public profile to keep data consistent
+const DEMO_SELF_ID = "1c13eeec-ac59-4f76-a48b-cef2091dd022"; // me
+const DEMO_SELF_NAME = "joniwo";
+const DEMO_OTHER_ID = "877d5a7b-6066-4bd4-8ebc-0efcddb97a15"; // viewed user
+const DEMO_OTHER_NAME = "seconduser";
 const designTrophies = [
   // Gold
   (
@@ -60,29 +65,61 @@ const designTrophies = [
     </svg>
   ),
 ];
-function CombinedLeaderboardCard({
+
+export function CombinedLeaderboardCard({
   title,
   weekly,
   monthly,
   allTime,
   currentUserId,
+  limitToUserIds,
+  scoreCompareMode,
+  viewerUserId,
 }: {
   title: string;
   weekly: UserScore[];
   monthly: UserScore[];
   allTime: UserScore[];
   currentUserId: string;
+  /** When set, only these user IDs are rendered (e.g., viewed + me in public profile) */
+  limitToUserIds?: string[];
+  /** Switch score bar: default compares to best; 'vsCurrentPlayer' compares viewer vs currentUserId */
+  scoreCompareMode?: 'best' | 'vsCurrentPlayer';
+  /** Logged-in viewer id (required for vsCurrentPlayer) */
+  viewerUserId?: string;
 }) {
   const [tab, setTab] = useState<0 | 1 | 2>(0);
   const handleTab = (_: React.SyntheticEvent, v: number) => setTab(v as 0 | 1 | 2);
 
   const timeframeLabel = tab === 0 ? "This Week" : tab === 1 ? "This Month" : "All Time";
-  const scores = tab === 0 ? weekly : tab === 1 ? monthly : allTime;
+  const scores = useMemo(() => {
+    const base = tab === 0 ? weekly : tab === 1 ? monthly : allTime;
+    if (!limitToUserIds || limitToUserIds.length === 0) return base;
+    const idSet = new Set(limitToUserIds);
+    return base.filter((s) => s.user && idSet.has(s.user.id));
+  }, [tab, weekly, monthly, allTime, limitToUserIds]);
 
   const topSorted = useMemo(() => [...scores].sort((a, b) => b.score - a.score), [scores]);
   const myRank = useMemo(() => rankOf(scores, currentUserId), [scores, currentUserId]);
   const myScore = topSorted.find((s) => s.user.id === currentUserId)?.score ?? 0;
   const best = topSorted[0]?.score ?? 0;
+
+  // Score bar perspective
+  let scoreBarMe = myScore;
+  let scoreBarTop = best;
+  let scoreBarLabel = `Your score vs. course best (${myScore} / ${best})`;
+  let scoreBarFullIfGreater = false;
+
+  if (scoreCompareMode === 'vsCurrentPlayer' && viewerUserId) {
+    const viewerScore = topSorted.find((s) => s.user.id === viewerUserId)?.score ?? 0;
+    const currentEntry = topSorted.find((s) => s.user.id === currentUserId);
+    const currentScore = currentEntry?.score ?? 0;
+    const currentName = currentEntry?.user?.name ?? 'player';
+    scoreBarMe = viewerScore;
+    scoreBarTop = currentScore;
+    scoreBarLabel = `Your score vs. ${currentName} (${viewerScore} / ${currentScore})`;
+    scoreBarFullIfGreater = true;
+  }
 
   const contextIndexes = useMemo(() => {
     if (!myRank || myRank <= 3) return [] as number[];
@@ -156,12 +193,15 @@ function CombinedLeaderboardCard({
           </button>
         </Box>
         <Box sx={{ flex: 1, textAlign: 'center' }}>
-          <Box sx={{ fontWeight: 800, fontSize: 28, letterSpacing: '.7px', width: '100%', textShadow: '0 2px 12px #fff7' }}>
-            {timeframeLabel} Leaderboard – {title}
-          </Box>
-          <Box sx={{ fontWeight: 600, fontSize: 17, letterSpacing: '.7px', color: '#79869a', width: '100%' }}>
+          <Typography component="div" sx={{ fontWeight: 900, fontSize: 30, lineHeight: 1.1, color: '#0b0b0b', mb: 0.5 }}>
+            {title}
+          </Typography>
+          <Typography component="div" sx={{ fontWeight: 700, fontSize: 18, letterSpacing: '.5px', color: '#2f3541', mb: 0.5 }}>
+            {timeframeLabel} Leaderboard
+          </Typography>
+          <Typography component="div" sx={{ fontWeight: 600, fontSize: 15, letterSpacing: '.5px', color: '#79869a' }}>
             {rangeLabel ?? ''}
-          </Box>
+          </Typography>
         </Box>
         <Box sx={{ flex: 'none', width: 60 }} />
       </Box>
@@ -230,7 +270,7 @@ function CombinedLeaderboardCard({
         <Chip size="small" label={`Players: ${scores.length}`} />
         <Chip size="small" label={`Best: ${best}`} />
       </Stack>
-      <ScoreBar me={myScore} top={best} />
+      <ScoreBar me={scoreBarMe} top={scoreBarTop} label={scoreBarLabel} fullIfGreater={scoreBarFullIfGreater} />
 
       {/* Top 3 */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, pb: 2, position: 'relative', zIndex: 2, boxShadow: '0 8px 32px -4px rgba(80,80,120,0.13)' }}>
@@ -258,6 +298,44 @@ function CombinedLeaderboardCard({
           );
         })}
       </Box>
+
+      {/* Sonderfall: Wenn aktueller Nutzer auf Platz 3 ist, zeige zusätzlich Platz 4 darunter */}
+      {myRank === 3 && topSorted[3] && (
+        <Box sx={{ mx: -3, mb: -3, mt: 0, background:'#c7ccda', borderBottomLeftRadius: 3, borderBottomRightRadius: 3, p: '6px 0', boxShadow: 'inset 0 2px 0 #b2b9c9' }}>
+          <Box sx={{ display:'flex', flexDirection:'column', gap: 1, px: 2 }}>
+            {(() => {
+              const item = topSorted[3]; // rank 4 is index 3
+              const isCurrent = item.user.id === currentUserId;
+              return (
+                <Box key={item.user.id}
+                  sx={{
+                    display:'flex', alignItems:'center', justifyContent:'space-between',
+                    borderRadius: 2, p: '8px 16px', minHeight: 52, fontSize: 18, background:'#fff',
+                    border: isCurrent ? '3px solid #000' : '2px solid #e1e6ea',
+                    fontWeight: isCurrent ? 800 : 600,
+                    boxShadow: isCurrent ? '0 2px 8px rgba(60,60,60,0.11)' : undefined,
+                  }}
+                >
+                  <Box sx={{ minWidth: 32, display:'flex', alignItems:'center', gap: 0.5 }}>
+                    <Typography sx={{ fontSize: 18 }}>4.</Typography>
+                  </Box>
+                  <Box sx={{ mr: 1.5 }}>
+                    <Avatar sx={{ width:38, height:38, borderRadius: 2, border: isCurrent ? '2.5px solid #222' : '2.5px solid #ddd', boxShadow: '0 1px 4px #0001' }}>
+                      {item.user.name?.slice(0,1)}
+                    </Avatar>
+                  </Box>
+                  <Box sx={{ flex:1, textAlign:'center', fontWeight: isCurrent ? 800 : 600, color: isCurrent ? '#000' : '#21262b', fontSize: 18, letterSpacing: '.5px' }}>
+                    {item.user.name}
+                  </Box>
+                  <Box sx={{ minWidth: 80, textAlign:'right', color: isCurrent ? '#222' : '#79869a', fontWeight: isCurrent ? 800 : 600, fontSize: 18 }}>
+                    {item.score} points
+                  </Box>
+                </Box>
+              );
+            })()}
+          </Box>
+        </Box>
+      )}
 
       {/* Untere Plätze: Kontext um aktuellen Nutzer (Rang-1 / Rang / Rang+1), ohne Top 3 duplizieren */}
       {myRank && myRank > 3 && contextRows.length > 0 && (
@@ -414,11 +492,11 @@ async function fetchCurrentUserInfo(): Promise<CurrentUser> {
     }
   }
 
-  // === Demo fallback (previous behavior) ===
+  // === Demo fallback (fixed IDs/Names for consistency) ===
   await delay(400);
   return {
-    id: "joniiiwo",
-    userName: "Jonathan Wolp",
+    id: DEMO_SELF_ID,
+    userName: DEMO_SELF_NAME,
     courseMemberships: [
       { courseId: "course-101", course: { id: "course-101", title: "Web Engineering" } },
       { courseId: "course-202", course: { id: "course-202", title: "Software Design" } },
@@ -429,15 +507,29 @@ async function fetchCurrentUserInfo(): Promise<CurrentUser> {
 /**
  * Create some deterministic-looking demo scores per course & timeframe.
  */
-async function fetchCourseLeaderboards(
+export async function fetchCourseLeaderboards(
   courseID: string,
   _date: string,
   currentUser: PublicUserInfo
 ): Promise<CourseLeaderboardPayload> {
   await delay(350);
 
-  const users: PublicUserInfo[] = [
-    { id: currentUser.id, name: currentUser.name }, // current user
+  // Normalize current to demo IDs if applicable
+  const normalizedCurrent: PublicUserInfo =
+    currentUser.id === DEMO_SELF_ID
+      ? { id: DEMO_SELF_ID, name: DEMO_SELF_NAME }
+      : currentUser.id === DEMO_OTHER_ID
+      ? { id: DEMO_OTHER_ID, name: DEMO_OTHER_NAME }
+      : currentUser;
+
+  // Always include counterpart so both users appear in public-profile leaderboards
+  const counterpart: PublicUserInfo =
+    normalizedCurrent.id === DEMO_SELF_ID
+      ? { id: DEMO_OTHER_ID, name: DEMO_OTHER_NAME }
+      : { id: DEMO_SELF_ID, name: DEMO_SELF_NAME };
+
+  // Base dummy users (exclude the two fixed if present)
+  const baseOthers: PublicUserInfo[] = [
     { id: `u-${courseID}-2`, name: "Bianca" },
     { id: `u-${courseID}-3`, name: "Chris" },
     { id: `u-${courseID}-4`, name: "Dee" },
@@ -449,9 +541,11 @@ async function fetchCourseLeaderboards(
     { id: `u-${courseID}-10`, name: "Jon" },
     { id: `u-${courseID}-11`, name: "Kim" },
     { id: `u-${courseID}-12`, name: "Luca" },
-  ];
+  ].filter(u => u.id !== normalizedCurrent.id && u.id !== counterpart.id);
 
-  // Simple pseudo-random generator based on courseID
+  let users: PublicUserInfo[] = [normalizedCurrent, counterpart, ...baseOthers];
+
+  // Pseudo-random based on courseID
   const rng = mulberry32(hashString(courseID));
   const makeScores = () =>
     users.map((u, i) => ({
@@ -459,35 +553,44 @@ async function fetchCourseLeaderboards(
       score: Math.round((i + 1) * 100 * rng()),
     }));
 
-  const weeklyScores = shuffle(makeScores(), rng);
-  const monthlyScores = shuffle(makeScores(), rng).map((s) => ({
-    ...s,
-    score: Math.round(s.score * 1.4),
-  }));
-  const allTimeScores = shuffle(makeScores(), rng).map((s) => ({
-    ...s,
-    score: Math.round(s.score * 2.2),
-  }));
+  let weeklyScores = shuffle(makeScores(), rng);
+  let monthlyScores = shuffle(makeScores(), rng).map((s) => ({ ...s, score: Math.round(s.score * 1.4) }));
+  let allTimeScores = shuffle(makeScores(), rng).map((s) => ({ ...s, score: Math.round(s.score * 2.2) }));
 
   function forceUserRank(scores: { user: PublicUserInfo; score: number }[], userId: string, targetRank: number) {
-    // sort copy to find target band
     const sorted = [...scores].sort((a, b) => b.score - a.score);
     const targetIndex = Math.max(0, Math.min(sorted.length - 1, targetRank - 1));
     const lowerBound = sorted[targetIndex]?.score ?? 0;
     const upperBound = sorted[targetIndex + 1]?.score ?? Math.max(0, lowerBound - 1);
-    // set current user's score between targetIndex and targetIndex+1
     const desired = upperBound + Math.max(1, Math.floor((lowerBound - upperBound) / 2));
     const idx = scores.findIndex((s) => s.user.id === userId);
-    if (idx >= 0) {
-      scores[idx] = { ...scores[idx], score: desired };
-    }
-    // Resort in-place by returning sorted copy
+    if (idx >= 0) scores[idx] = { ...scores[idx], score: desired };
     return scores.sort((a, b) => b.score - a.score);
   }
 
-  const weeklyForced = forceUserRank(weeklyScores, currentUser.id, 3);
-  const monthlyForced = forceUserRank(monthlyScores, currentUser.id, 4);
-  const allTimeForced = forceUserRank(allTimeScores, currentUser.id, 6);
+  // Variant placements for the current player (demo):
+  // - course-101 (Web Engineering): weekly 3, monthly 3, allTime 4
+  // - course-202 (Software Design): weekly 3, monthly 4, allTime 3
+  // Always put seconduser (DEMO_OTHER_ID) at rank 1 across all timeframes.
+  const targetRanks = (cid: string) => {
+    if (cid === "course-101") return { weekly: 2, monthly: 3, allTime: 4 } as const;
+    if (cid === "course-202") return { weekly: 3, monthly: 3, allTime: 2 } as const;
+    return { weekly: 2, monthly: 3, allTime: 4 } as const;
+  };
+  const tr = targetRanks(courseID);
+
+  const weeklyForced = forceUserRank(
+    forceUserRank(weeklyScores, DEMO_OTHER_ID, 1),
+    normalizedCurrent.id, tr.weekly
+  );
+  const monthlyForced = forceUserRank(
+    forceUserRank(monthlyScores, DEMO_OTHER_ID, 1),
+    normalizedCurrent.id, tr.monthly
+  );
+  const allTimeForced = forceUserRank(
+    forceUserRank(allTimeScores, DEMO_OTHER_ID, 1),
+    normalizedCurrent.id, tr.allTime
+  );
 
   return {
     weekly: [{ userScores: weeklyForced }],
@@ -555,8 +658,9 @@ function RankChip({ label, value }: { label: string; value?: number }) {
   );
 }
 
-function ScoreBar({ me, top }: { me: number; top: number }) {
-  const pct = Math.max(0, Math.min(100, Math.round((me / Math.max(top, 1)) * 100)));
+function ScoreBar({ me, top, label, fullIfGreater }: { me: number; top: number; label?: string; fullIfGreater?: boolean }) {
+  const pctRaw = Math.round((me / Math.max(top, 1)) * 100);
+  const pct = Math.max(0, Math.min(100, fullIfGreater && me >= top ? 100 : pctRaw));
   return (
     <Box>
       <LinearProgress
@@ -565,7 +669,7 @@ function ScoreBar({ me, top }: { me: number; top: number }) {
         sx={{ height: 10, borderRadius: 999 }}
       />
       <Typography variant="caption" sx={{ mt: 0.5, display: "block", letterSpacing: 0.2 }}>
-        Your score vs. course best ({me} / {top})
+        {label ?? `Your score vs. course best (${me} / {top})`}
       </Typography>
     </Box>
   );
@@ -771,11 +875,12 @@ export default function ProfileLeaderboardPositions() {
             throw new Error("No user found");
           }
         } catch (e) {
-          // fallback to demo
-          currentUserInfo = { id: "joniiiwo", userName: "Jonathan Wolp" };
+          // fallback to demo (fixed IDs/Names)
+          currentUserInfo = { id: DEMO_SELF_ID, userName: DEMO_SELF_NAME };
         }
       } else {
-        currentUserInfo = { id: "user-1", userName: "Jonathan Wolp" };
+        // no env provided -> demo self
+        currentUserInfo = { id: DEMO_SELF_ID, userName: DEMO_SELF_NAME };
       }
       // Always get courseMemberships from the dummy/demo function
       const me = {
