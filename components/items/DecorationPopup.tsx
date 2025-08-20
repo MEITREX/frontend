@@ -28,6 +28,7 @@ type Props = {
   foreColor?: string;
   unspentPoints?: number;
   category?: string;
+  publicProfil: boolean
 };
 
 const rarityColors: Record<string, { border: string; bg: string }> = {
@@ -51,6 +52,7 @@ const DecorationPopup: React.FC<Props> = ({
   backColor = null,
   unspentPoints = 0,
   category = null,
+  publicProfil
 }) => {
   const isBuyMode = typeof equipped === "number";
   const colors = rarityColors[rarity] ?? rarityColors.common;
@@ -226,7 +228,7 @@ const DecorationPopup: React.FC<Props> = ({
       </DialogContent>
 
       {/* Button where item can be equipped or unequipped in the inventory. In the shop item can be bought if user has enough currency */}
-      <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
+      {publicProfil === false && (<DialogActions sx={{ justifyContent: "center", pb: 2 }}>
         <Button
           onClick={onToggleEquip}
           variant="contained"
@@ -245,7 +247,7 @@ const DecorationPopup: React.FC<Props> = ({
             ? "Unequip"
             : "Equip"}
         </Button>
-      </DialogActions>
+      </DialogActions>)}
     </Dialog>
   );
 };

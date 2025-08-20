@@ -6,7 +6,7 @@ import { Suspense } from "react";
 export default function FramePage() {
   return (
     <Suspense fallback={<div>Loading…</div>}>
-      <InventoryListItem itemStringType="profilePicFrames" />
+      <InventoryListItem itemStringType="profilePicFrames" publicProfile={false} />
     </Suspense>
   );
 }
