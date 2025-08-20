@@ -42,11 +42,12 @@ type DecorationItem = {
 
 type InventoryListItemProps = {
   itemStringType: ItemStringType;
-  publicProfile: boolean
+  publicProfile: boolean;
 };
 
 export default function InventoryListItem({
-  itemStringType, publicProfile
+  itemStringType,
+  publicProfile,
 }: InventoryListItemProps) {
   const { sortBy, showLocked } = useSort();
   const [selectedItem, setSelectedItem] = useState<DecorationItem | null>(null);
@@ -346,16 +347,24 @@ export default function InventoryListItem({
         <DecorationPopup
           open={true}
           onClose={() => setSelectedItem(null)}
-          imageSrc={selectedItem.url ? decodeURIComponent(selectedItem.url) : undefined}
+          imageSrc={
+            selectedItem.url ? decodeURIComponent(selectedItem.url) : undefined
+          }
           imageAlt={selectedItem.id}
           description={selectedItem.description || "No description available."}
           equipped={selectedItem.equipped}
           onToggleEquip={handleToggleEquip}
           name={selectedItem.name}
           rarity={selectedItem.rarity ? selectedItem.rarity : undefined}
-          backColor={selectedItem.backColor ? selectedItem.backColor : undefined}
-          foreColor={selectedItem.foreColor ? selectedItem.foreColor : undefined}
-          category={itemStringType} publicProfil={publicProfile}        />
+          backColor={
+            selectedItem.backColor ? selectedItem.backColor : undefined
+          }
+          foreColor={
+            selectedItem.foreColor ? selectedItem.foreColor : undefined
+          }
+          category={itemStringType}
+          publicProfil={publicProfile}
+        />
       )}
     </>
   );

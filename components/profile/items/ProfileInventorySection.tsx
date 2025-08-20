@@ -2,15 +2,25 @@
 "use client";
 
 import { useSort } from "@/app/contexts/SortContext";
-import InventoryListItem, { ItemStringType } from "@/components/items/InventoryListItem";
-import { Box, FormControl, InputLabel, MenuItem, Select, Tab, Tabs } from "@mui/material";
+import InventoryListItem, {
+  ItemStringType,
+} from "@/components/items/InventoryListItem";
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Tab,
+  Tabs,
+} from "@mui/material";
 import { useState } from "react";
 
 const tabs: { label: string; type: ItemStringType }[] = [
-  { label: "Profile Picture",   type: "profilePics" },
-  { label: "Profile Frame",     type: "profilePicFrames" },
-  { label: "Profile Background",type: "colorThemes" },   // oder "patternThemes" – je nach Parser
-  { label: "Tutor Avatar",      type: "tutors" },
+  { label: "Profile Picture", type: "profilePics" },
+  { label: "Profile Frame", type: "profilePicFrames" },
+  { label: "Profile Background", type: "colorThemes" }, // oder "patternThemes" – je nach Parser
+  { label: "Tutor Avatar", type: "tutors" },
 ];
 
 export default function ProfileInventorySection() {
@@ -56,8 +66,12 @@ export default function ProfileInventorySection() {
                 fontWeight: 500,
                 color: "text.primary",
                 borderRadius: "10px",
-                border: i === activeIndex ? "2px solid #00a9d6" : "2px solid transparent",
-                backgroundColor: i === activeIndex ? "rgba(0, 169, 214, 0.1)" : "transparent",
+                border:
+                  i === activeIndex
+                    ? "2px solid #00a9d6"
+                    : "2px solid transparent",
+                backgroundColor:
+                  i === activeIndex ? "rgba(0, 169, 214, 0.1)" : "transparent",
                 transition: "all 0.2s ease-in-out",
                 "&:hover": { backgroundColor: "rgba(0, 169, 214, 0.1)" },
               }}
@@ -65,7 +79,15 @@ export default function ProfileInventorySection() {
           ))}
         </Tabs>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3, ml: "auto" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            mb: 3,
+            ml: "auto",
+          }}
+        >
           <FormControl size="small" sx={{ minWidth: 160 }}>
             <InputLabel>Sort by</InputLabel>
             <Select
@@ -85,7 +107,10 @@ export default function ProfileInventorySection() {
 
       {/* Content: genau eine Kategorie je nach aktivem Tab */}
       <Box sx={{ mt: 2 }}>
-        <InventoryListItem itemStringType={tabs[activeIndex].type} publicProfile={true} />
+        <InventoryListItem
+          itemStringType={tabs[activeIndex].type}
+          publicProfile={true}
+        />
       </Box>
     </Box>
   );

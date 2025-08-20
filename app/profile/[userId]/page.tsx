@@ -112,9 +112,11 @@ export default function PublicProfilePage() {
           />
         )}
         {tabIndex === 1 && <OtherUserProfileForumActivity />}
-        {tabIndex === 2 && (<SortProvider>
-          <ProfileInventorySection />
-          </SortProvider>) }
+        {tabIndex === 2 && (
+          <SortProvider>
+            <ProfileInventorySection />
+          </SortProvider>
+        )}
       </Box>
     </Box>
   );
