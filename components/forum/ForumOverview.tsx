@@ -14,6 +14,12 @@ import SkeletonThreadForm from "@/components/forum/skeleton/SkeletonThreadForm";
 import SkeletonThreadDetail from "./skeleton/SkeletonThreadDetail";
 import SkeletonThreadList from "./skeleton/SkeletonThreadList";
 
+/*
+  TODO: The navigation is done by displaying the necessary components via 'viewMode' variable.
+  In the future we should refactor the parent component of this component to a Layout.tsx-component!
+  With the help of the layout component we can use subroutes which would make everything a lot easier
+  and would prevent 'Prop Drilling'
+*/
 export default function ForumOverview() {
   const params = useParams();
   const pathname = usePathname();
@@ -25,11 +31,7 @@ export default function ForumOverview() {
   const isMediaPage = pathname.includes("/media/");
 
   const [selectedThreadId, setSelectedThreadId] = useState<string>("");
-  /*
-   The navigation is done by displaying the necessary components via 'viewMode'.
-   We cannot use Next.js folder routes because we also want to display the forum alongside the media content.
-   After CRUD operations we have to refetch, maybe we need to seperate components for the different views in the future
- */
+
   const [viewMode, setViewMode] = useState<
     "threadDetail" | "createNewThreadMediaContent" | "headerThreadList"
   >("headerThreadList");
