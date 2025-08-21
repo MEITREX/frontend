@@ -1,4 +1,5 @@
 import { AchievementPopUpCourseNamesPopUpQuery } from "@/__generated__/AchievementPopUpCourseNamesPopUpQuery.graphql";
+import AchievementParser from "@/components/AchievementParser";
 import {
   Box,
   Button,
@@ -69,8 +70,8 @@ export default function AchievementPopUp({
         <Box textAlign="center" py={3}>
           <Box
             component="img"
-            src={selectedAchievement?.imageUrl}
-            alt={selectedAchievement?.name}
+            src={AchievementParser(selectedAchievement ? selectedAchievement.name : "none") ?? undefined}
+            alt={"Test"}
             sx={{
               width: 120,
               height: 120,

@@ -2,9 +2,10 @@
 "use client";
 
 import { useSort } from "@/app/contexts/SortContext";
-import InventoryListItem, {
+import {
   ItemStringType,
 } from "@/components/items/InventoryListItem";
+import PublicProfileListItem from "@/components/items/PublicProfileListItem";
 import {
   Box,
   FormControl,
@@ -23,7 +24,11 @@ const tabs: { label: string; type: ItemStringType }[] = [
   { label: "Tutor Avatar", type: "tutors" },
 ];
 
-export default function ProfileInventorySection() {
+type ProfileInventorySectionProps = {
+  userId: string;
+};
+
+export default function ProfileInventorySection({userId}: ProfileInventorySectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const { sortBy, setSortBy, showLocked, setShowLocked } = useSort();
 
@@ -107,9 +112,10 @@ export default function ProfileInventorySection() {
 
       {/* Content: genau eine Kategorie je nach aktivem Tab */}
       <Box sx={{ mt: 2 }}>
-        <InventoryListItem
+        <PublicProfileListItem
           itemStringType={tabs[activeIndex].type}
           publicProfile={true}
+          userId={userId}
         />
       </Box>
     </Box>
