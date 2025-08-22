@@ -73,8 +73,8 @@ export default function AchievementPopUp({
             src={AchievementParser(selectedAchievement ? selectedAchievement.name : "none") ?? undefined}
             alt={"Test"}
             sx={{
-              width: 120,
-              height: 120,
+              width: 250,
+              height: 250,
               objectFit: "cover",
               opacity: selectedAchievement?.completed ? 1 : 0.4,
               borderRadius: 2,
