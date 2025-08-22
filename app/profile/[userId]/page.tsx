@@ -114,7 +114,7 @@ export default function PublicProfilePage() {
         {tabIndex === 1 && <OtherUserProfileForumActivity />}
         {tabIndex === 2 && (
           <SortProvider>
-            <ProfileInventorySection userId={userId}/>
+            <ProfileInventorySection userId={userId} />
           </SortProvider>
         )}
       </Box>

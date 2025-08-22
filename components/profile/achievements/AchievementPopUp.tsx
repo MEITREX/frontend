@@ -70,7 +70,11 @@ export default function AchievementPopUp({
         <Box textAlign="center" py={3}>
           <Box
             component="img"
-            src={AchievementParser(selectedAchievement ? selectedAchievement.name : "none") ?? undefined}
+            src={
+              AchievementParser(
+                selectedAchievement ? selectedAchievement.name : "none"
+              ) ?? undefined
+            }
             alt={"Test"}
             sx={{
               width: 250,

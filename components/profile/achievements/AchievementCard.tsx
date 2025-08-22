@@ -51,7 +51,10 @@ export default function AchievementCard({
       >
         <Box sx={{ flexShrink: 0, mr: compact ? 1 : 2 }}>
           <AchievementImage
-            src={AchievementParser(achievement ? achievement.name : "none") ?? undefined}
+            src={
+              AchievementParser(achievement ? achievement.name : "none") ??
+              undefined
+            }
             alt={achievement.name}
             completed={achievement.completed}
             size={compact ? 40 : 60}

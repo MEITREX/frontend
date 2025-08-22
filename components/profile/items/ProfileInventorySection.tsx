@@ -2,9 +2,7 @@
 "use client";
 
 import { useSort } from "@/app/contexts/SortContext";
-import {
-  ItemStringType,
-} from "@/components/items/InventoryListItem";
+import { ItemStringType } from "@/components/items/InventoryListItem";
 import PublicProfileListItem from "@/components/items/PublicProfileListItem";
 import {
   Box,
@@ -28,7 +26,9 @@ type ProfileInventorySectionProps = {
   userId: string;
 };
 
-export default function ProfileInventorySection({userId}: ProfileInventorySectionProps) {
+export default function ProfileInventorySection({
+  userId,
+}: ProfileInventorySectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const { sortBy, setSortBy, showLocked, setShowLocked } = useSort();
 

@@ -47,44 +47,39 @@ type PublicProfileListItemProps = {
 export default function PublicProfileListItem({
   itemStringType,
   publicProfile,
-  userId
+  userId,
 }: PublicProfileListItemProps) {
   const { sortBy, showLocked } = useSort();
   const [selectedItem, setSelectedItem] = useState<DecorationItem | null>(null);
-
 
   const { itemsByUserId } =
     useLazyLoadQuery<PublicProfileListItemInventoryForUserByIdQuery>(
       graphql`
         query PublicProfileListItemInventoryForUserByIdQuery($userId: UUID!) {
           itemsByUserId(userId: $userId) {
-              equipped
-              id
-              uniqueDescription
-              unlocked
-              unlockedTime
-
+            equipped
+            id
+            uniqueDescription
+            unlocked
+            unlockedTime
           }
         }
       `,
       {
-        userId: userId
+        userId: userId,
       },
-      { fetchPolicy: "network-only",
-         fetchKey: userId,   // <<— wichtig
-       }
-
+      {
+        fetchPolicy: "network-only",
+        fetchKey: userId, // <<— wichtig
+      }
     );
 
-
-
-
-  console.log(userId)
-  console.log(itemsByUserId)
+  console.log(userId);
+  console.log(itemsByUserId);
   // Get IDs of all items for DecoParser
   const itemIds = itemsByUserId.map((item) => item.id);
 
-  console.log(itemIds)
+  console.log(itemIds);
 
   // Parse items of given type
   let itemsParsed = DecoParser(itemIds, itemStringType);
@@ -110,7 +105,7 @@ export default function PublicProfileListItem({
     ])
   );
 
-  console.log(itemStatusMap)
+  console.log(itemStatusMap);
 
   // Combine backend and JSON data
   const itemsParsedMerged = itemsParsed.map((item) => ({
@@ -151,9 +146,6 @@ export default function PublicProfileListItem({
       return 0;
     });
   }, [itemsParsedMerged, sortBy, showLocked]);
-
-
-
 
   return (
     <>
