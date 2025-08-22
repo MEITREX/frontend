@@ -28,6 +28,7 @@ type Props = {
   foreColor?: string;
   unspentPoints?: number;
   category?: string;
+  publicProfil: boolean;
 };
 
 const rarityColors: Record<string, { border: string; bg: string }> = {
@@ -51,6 +52,7 @@ const DecorationPopup: React.FC<Props> = ({
   backColor = null,
   unspentPoints = 0,
   category = null,
+  publicProfil,
 }) => {
   const isBuyMode = typeof equipped === "number";
   const colors = rarityColors[rarity] ?? rarityColors.common;
@@ -226,26 +228,28 @@ const DecorationPopup: React.FC<Props> = ({
       </DialogContent>
 
       {/* Button where item can be equipped or unequipped in the inventory. In the shop item can be bought if user has enough currency */}
-      <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
-        <Button
-          onClick={onToggleEquip}
-          variant="contained"
-          disabled={
-            (isBuyMode && unspentPoints < equipped) ||
-            (!isBuyMode && category === "tutors" && equipped)
-          }
-        >
-          {isBuyMode
-            ? unspentPoints < equipped
-              ? "Not enough DP"
-              : `Buy for ${equipped} DP`
-            : category === "tutors" && equipped
-            ? "Tutor can not be unequipped. Equip other tutor to unequip this one"
-            : equipped
-            ? "Unequip"
-            : "Equip"}
-        </Button>
-      </DialogActions>
+      {publicProfil === false && (
+        <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
+          <Button
+            onClick={onToggleEquip}
+            variant="contained"
+            disabled={
+              (isBuyMode && unspentPoints < equipped) ||
+              (!isBuyMode && category === "tutors" && equipped)
+            }
+          >
+            {isBuyMode
+              ? unspentPoints < equipped
+                ? "Not enough DP"
+                : `Buy for ${equipped} DP`
+              : category === "tutors" && equipped
+              ? "Tutor can not be unequipped. Equip other tutor to unequip this one"
+              : equipped
+              ? "Unequip"
+              : "Equip"}
+          </Button>
+        </DialogActions>
+      )}
     </Dialog>
   );
 };

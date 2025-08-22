@@ -1,12 +1,10 @@
 "use client";
 
-import { InventoryListItemEquipItemMutation } from "@/__generated__/InventoryListItemEquipItemMutation.graphql";
-import { InventoryListItemInventoryForUserQuery } from "@/__generated__/InventoryListItemInventoryForUserQuery.graphql";
-import { InventoryListItemUnquipItemMutation } from "@/__generated__/InventoryListItemUnquipItemMutation.graphql";
+import { PublicProfileListItemInventoryForUserByIdQuery } from "@/__generated__/PublicProfileListItemInventoryForUserByIdQuery.graphql";
 import { useSort } from "@/app/contexts/SortContext";
 import { Box, Typography } from "@mui/material";
-import { useMemo, useRef, useState } from "react";
-import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
+import { useMemo, useState } from "react";
+import { graphql, useLazyLoadQuery } from "react-relay";
 import DecoParser from "../DecoParser";
 import DecorationPopup from "./DecorationPopup";
 import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
@@ -40,76 +38,48 @@ type DecorationItem = {
   unlockedTime: string | null;
 };
 
-type InventoryListItemProps = {
+type PublicProfileListItemProps = {
   itemStringType: ItemStringType;
   publicProfile: boolean;
+  userId: string;
 };
 
-export default function InventoryListItem({
+export default function PublicProfileListItem({
   itemStringType,
   publicProfile,
-}: InventoryListItemProps) {
+  userId,
+}: PublicProfileListItemProps) {
   const { sortBy, showLocked } = useSort();
   const [selectedItem, setSelectedItem] = useState<DecorationItem | null>(null);
-  // Timer for double click
-  const clickTimer = useRef<number | null>(null);
 
-  const { inventoryForUser } =
-    useLazyLoadQuery<InventoryListItemInventoryForUserQuery>(
+  const { itemsByUserId } =
+    useLazyLoadQuery<PublicProfileListItemInventoryForUserByIdQuery>(
       graphql`
-        query InventoryListItemInventoryForUserQuery {
-          inventoryForUser {
-            items {
-              equipped
-              id
-              uniqueDescription
-              unlocked
-              unlockedTime
-            }
-            unspentPoints
-            userId
-          }
-        }
-      `,
-      {},
-      { fetchPolicy: "network-only" }
-    );
-
-  const [equipItem] = useMutation<InventoryListItemEquipItemMutation>(graphql`
-    mutation InventoryListItemEquipItemMutation($itemId: UUID!) {
-      equipItem(itemId: $itemId) {
-        items {
-          equipped
-          id
-          uniqueDescription
-          unlocked
-          unlockedTime
-        }
-        unspentPoints
-        userId
-      }
-    }
-  `);
-
-  const [unequipItem] =
-    useMutation<InventoryListItemUnquipItemMutation>(graphql`
-      mutation InventoryListItemUnquipItemMutation($itemId: UUID!) {
-        unequipItem(itemId: $itemId) {
-          items {
+        query PublicProfileListItemInventoryForUserByIdQuery($userId: UUID!) {
+          itemsByUserId(userId: $userId) {
             equipped
             id
             uniqueDescription
             unlocked
             unlockedTime
           }
-          unspentPoints
-          userId
         }
+      `,
+      {
+        userId: userId,
+      },
+      {
+        fetchPolicy: "network-only",
+        fetchKey: userId, // <<— wichtig
       }
-    `);
+    );
 
+  console.log(userId);
+  console.log(itemsByUserId);
   // Get IDs of all items for DecoParser
-  const itemIds = inventoryForUser.items.map((item) => item.id);
+  const itemIds = itemsByUserId.map((item) => item.id);
+
+  console.log(itemIds);
 
   // Parse items of given type
   let itemsParsed = DecoParser(itemIds, itemStringType);
@@ -125,7 +95,7 @@ export default function InventoryListItem({
 
   // Map items from backend to JSON items
   const itemStatusMap = Object.fromEntries(
-    inventoryForUser.items.map((item) => [
+    itemsByUserId.map((item) => [
       item.id,
       {
         equipped: item.equipped,
@@ -134,6 +104,8 @@ export default function InventoryListItem({
       },
     ])
   );
+
+  console.log(itemStatusMap);
 
   // Combine backend and JSON data
   const itemsParsedMerged = itemsParsed.map((item) => ({
@@ -174,57 +146,6 @@ export default function InventoryListItem({
       return 0;
     });
   }, [itemsParsedMerged, sortBy, showLocked]);
-
-  // Handles all the equipment and equipment of items
-  const handleToggleEquip = (_e?: any, itemParameter?: any) => {
-    const item = itemParameter ? itemParameter : selectedItem;
-
-    if (item.equipped && !itemParameter) {
-      unequipItem({
-        variables: {
-          itemId: item.id,
-        },
-        onError() {
-          setSelectedItem(null);
-        },
-        onCompleted() {
-          setSelectedItem(null);
-        },
-      });
-    } else {
-      equipItem({
-        variables: {
-          itemId: item.id,
-        },
-        onError() {
-          setSelectedItem(null);
-        },
-        onCompleted() {
-          setSelectedItem(null);
-        },
-      });
-    }
-  };
-
-  // Handels all clicks on cards and also manages double click
-  const handleClick = (e: React.MouseEvent, item: any) => {
-    // When double click, do equip and not show PopUp
-    if (e.detail === 2) {
-      if (clickTimer.current) {
-        window.clearTimeout(clickTimer.current);
-        clickTimer.current = null;
-      }
-      if (item.unlocked) handleToggleEquip(e, item);
-      return;
-    }
-
-    // When single click show PopUp
-    if (clickTimer.current) window.clearTimeout(clickTimer.current);
-    clickTimer.current = window.setTimeout(() => {
-      setSelectedItem(item);
-      clickTimer.current = null;
-    }, 220); // 200–300ms
-  };
 
   return (
     <>
@@ -272,7 +193,7 @@ export default function InventoryListItem({
           return (
             <Box
               key={item.id}
-              onClick={(e) => handleClick(e, item)}
+              onClick={() => setSelectedItem(item)}
               sx={{
                 position: "relative",
                 border: item.unlocked
@@ -353,7 +274,7 @@ export default function InventoryListItem({
           imageAlt={selectedItem.id}
           description={selectedItem.description || "No description available."}
           equipped={selectedItem.equipped}
-          onToggleEquip={handleToggleEquip}
+          onToggleEquip={() => {}}
           name={selectedItem.name}
           rarity={selectedItem.rarity ? selectedItem.rarity : undefined}
           backColor={

@@ -262,6 +262,7 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
           foreColor={
             selectedItem.foreColor ? selectedItem.foreColor : undefined
           }
+          publicProfil={false}
         />
       )}
     </>
