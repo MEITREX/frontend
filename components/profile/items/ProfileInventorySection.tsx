@@ -113,6 +113,7 @@ export default function ProfileInventorySection({userId}: ProfileInventorySectio
       {/* Content: genau eine Kategorie je nach aktivem Tab */}
       <Box sx={{ mt: 2 }}>
         <PublicProfileListItem
+          key={userId}
           itemStringType={tabs[activeIndex].type}
           publicProfile={true}
           userId={userId}

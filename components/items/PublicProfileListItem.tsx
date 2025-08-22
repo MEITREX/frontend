@@ -70,13 +70,17 @@ export default function PublicProfileListItem({
       {
         userId: userId
       },
-      { fetchPolicy: "network-only" }
+      { fetchPolicy: "network-only",
+         fetchKey: userId,   // <<— wichtig
+       }
+
     );
 
 
 
 
   console.log(userId)
+  console.log(itemsByUserId)
   // Get IDs of all items for DecoParser
   const itemIds = itemsByUserId.map((item) => item.id);
 
