@@ -1,10 +1,10 @@
 import { ForumApiForumActivityQuery } from "@/__generated__/ForumApiForumActivityQuery.graphql";
 import { forumApiForumActivityQuery } from "@/components/forum/api/ForumApi";
 import ForumActivity from "@/components/forum/shared/ForumActivity";
-import { Box, Button, Stack, Typography } from "@mui/material";
-import Link from "next/link";
+import { Box, Stack } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
+import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
 
 export default function ForumActivityWidget() {
   const params = useParams();
@@ -19,41 +19,7 @@ export default function ForumActivityWidget() {
   );
 
   return (
-    <Box
-      sx={{
-        border: "1px solid #ccc",
-        borderRadius: 2,
-        p: 2,
-        mb: 4,
-        minHeight: 400,
-        maxWidth: 450,
-        maxHeight: 400,
-        overflowY: "auto",
-      }}
-    >
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-      >
-        <Typography variant="h6">Forum Activity</Typography>
-        <Link href="/profile" passHref>
-          <Button
-            size="small"
-            variant="outlined"
-            sx={{
-              backgroundColor: "#009bde",
-              color: "white",
-              "&:hover": {
-                backgroundColor: "#3369ad",
-              },
-            }}
-          >
-            Forum
-          </Button>
-        </Link>
-      </Box>
+    <WidgetWrapper title="Forum Activity" linkHref="/profile" linkLabel="Forum">
       {(data.forumActivity ?? []).length > 0 ? (
         <Stack spacing={2}>
           {data.forumActivity.map((a, idx) => (
@@ -65,6 +31,6 @@ export default function ForumActivityWidget() {
           No Activity!
         </Box>
       )}
-    </Box>
+    </WidgetWrapper>
   );
 }

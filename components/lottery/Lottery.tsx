@@ -233,7 +233,6 @@ export default function Lottery() {
 
   return (
     <Box
-      p={4}
       textAlign="center"
       sx={{
         position: "relative",
