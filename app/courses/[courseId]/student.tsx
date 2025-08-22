@@ -30,21 +30,15 @@ import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
-
 import { ChapterOverview } from "@/components/ChapterOverview";
-
-import { studentUserAchievementsWidgetQuery } from "@/__generated__/studentUserAchievementsWidgetQuery.graphql";
 import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
 import ForumOverview from "@/components/forum/ForumOverview";
 import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
-import AchievementPopUp from "@/components/profile/achievements/AchievementPopUp";
-import ForumActivityWidget from "@/components/widgets/ForumActivityWidget";
-import OpenQuestionWidget from "@/components/widgets/OpenQuestionWidget";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import * as React from "react";
-import AchievementWidget from "./achievements/AchievementWidget";
+import WidgetsOverview from "@/components/widgets/WidgetsOverview";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -194,31 +188,6 @@ export default function StudentCoursePage() {
     }
   `);
 
-  const { achievementsByUserId } =
-    useLazyLoadQuery<studentUserAchievementsWidgetQuery>(
-      graphql`
-        query studentUserAchievementsWidgetQuery($id: UUID!) {
-          achievementsByUserId(userId: $id) {
-            id
-            name
-            imageUrl
-            description
-            courseId
-            userId
-            completed
-            requiredCount
-            completedCount
-            trackingStartTime
-            trackingEndTime
-          }
-        }
-      `,
-      { id: userId },
-      {
-        fetchPolicy: "network-only", // <-- wichtig!
-      }
-    );
-
   // Extract scoreboard
   const rows: Data[] = scoreboard
     .slice(0, 3)
@@ -227,11 +196,6 @@ export default function StudentCoursePage() {
     );
 
   const [currentPage, setCurrentPage] = useState(0);
-
-  const [selectedAchievement, setSelectedAchievement] = useState<any | null>(
-    null
-  );
-  const [openAchievementDialog, setOpenDialog] = useState(false);
 
   // Extract course
   const course = coursesByIds[0];
@@ -304,16 +268,6 @@ export default function StudentCoursePage() {
     }
   };
 
-  const handleOpenAchievement = (achievement: any) => {
-    setSelectedAchievement(achievement);
-    setOpenDialog(true);
-  };
-  const handleCloseAchievement = () => {
-    setOpenDialog(false);
-  };
-
-  const mutableAchievements = [...achievementsByUserId];
-
   return (
     <main>
       <FormErrors error={error} onClose={() => setError(null)} />
@@ -366,30 +320,7 @@ export default function StudentCoursePage() {
         )}
       </div>
 
-      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-        <Grid item xs={6}>
-          <AchievementWidget
-            achievements={mutableAchievements}
-            openAchievements={handleOpenAchievement}
-            course={course.id}
-          />
-          <AchievementPopUp
-            open={openAchievementDialog}
-            onClose={handleCloseAchievement}
-            selectedAchievement={selectedAchievement}
-          />
-        </Grid>
-
-        <Grid item xs={6}>
-          <OpenQuestionWidget />
-        </Grid>
-
-        <Grid item xs={6}>
-          <ForumActivityWidget />
-        </Grid>
-
-        <Grid item xs={6}></Grid>
-      </Grid>
+      <WidgetsOverview userId={userId} courseId={course.id} />
 
       {/* Tabs for Learning Progress and Chapters */}
       <Box sx={{ width: "100%" }}>
