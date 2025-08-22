@@ -3,6 +3,7 @@ import OpenQuestionWidget from "@/components/widgets/components/OpenQuestionWidg
 import ForumActivityWidget from "@/components/widgets/components/ForumActivityWidget";
 import * as React from "react";
 import AchievementWidgetOverview from "./components/achievement/AchievementWidgetOverview";
+import LotteryWidget from "@/components/widgets/components/LotteryWidget";
 
 type Properties = {
   userId: string;
@@ -10,28 +11,34 @@ type Properties = {
 }
 
 export default function WidgetsOverview ({userId, courseId}: Properties) {
+  const widgets = [
+    { key: "achievements", component: <AchievementWidgetOverview userId={userId} courseId={courseId} /> },
+    { key: "questions", component: <OpenQuestionWidget /> },
+    { key: "forum", component: <ForumActivityWidget /> },
+    { key: "lottery", component: <LotteryWidget />},
+  ];
+
+  function getWidgets(order: string[]) {
+    return order.map((key) => widgets.find((w) => w.key === key)!);
+  }
+
+  // This is the order from the backend
+  const selectedWidgets = getWidgets(["forum", "achievements","questions", "lottery"]);
+
   return (
     <Box
       sx={{
-      border: "1px solid #e0e0e0",
-      borderRadius: 2,
-      p: 2,
+        border: "1px solid #e0e0e0",
+        borderRadius: 2,
+        p: 2,
       }}
     >
-      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-        <Grid item xs={6}>
-          <AchievementWidgetOverview userId={userId} courseId={courseId} />
-        </Grid>
-
-        <Grid item xs={6}>
-            <OpenQuestionWidget />
-        </Grid>
-
-        <Grid item xs={6}>
-          <ForumActivityWidget />
-        </Grid>
-
-        <Grid item xs={6}></Grid>
+      <Grid container spacing={2}>
+        {selectedWidgets.map((w) => (
+          <Grid item xs={6} key={w.key}>
+            {w.component}
+          </Grid>
+        ))}
       </Grid>
     </Box>
   );

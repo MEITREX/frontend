@@ -1,7 +1,7 @@
 import AchievementCard from "@/components/profile/achievements/AchievementCard";
 import { Achievement } from "@/components/profile/achievements/types";
-import { Box, Button, Grid, Typography } from "@mui/material";
-import Link from "next/link";
+import { Box, Grid } from "@mui/material";
+import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
 
 interface LatestAchievementsProps {
   openAchievements: (achievement: Achievement) => void;
@@ -115,43 +115,7 @@ export default function LatestAchievements({
   }
 
   return (
-    <Box
-      sx={{
-        border: "1px solid #ccc",
-        borderRadius: 2,
-        p: 2,
-        mb: 4,
-        minHeight: 400,
-        maxWidth: 450,
-        maxHeight: 400,
-        overflowY: "auto",
-      }}
-    >
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-      >
-        <Typography variant="h6">Achievements</Typography>
-        <Link href="/profile/achievements" passHref>
-          <Button
-            size="small"
-            variant="outlined"
-            sx={{
-              backgroundColor: "#009bde",
-              color: "white",
-              "&:hover": {
-                backgroundColor: "#3369ad",
-              },
-            }}
-          >
-            All Achievements
-          </Button>
-        </Link>
-      </Box>
-
-      {/* Scrollbarer Bereich */}
+    <WidgetWrapper title="Achievements" linkHref="/profile/achievements" linkLabel="All Achievements">
       <Box sx={{ overflowY: "auto", flexGrow: 1 }}>
         <Grid container spacing={2}>
           {getFilteredAchievements(achievements, course).map((a, index) => (
@@ -169,6 +133,6 @@ export default function LatestAchievements({
           ))}
         </Grid>
       </Box>
-    </Box>
+    </WidgetWrapper>
   );
 }
