@@ -297,15 +297,37 @@ export default function Lottery() {
         },
       }}
     >
-      <Button sx={{ mb: "78px" }} variant="contained" color="secondary">
-        <Box
-          component="span"
-          sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
+      <Box
+        sx={{
+          ml:"60px",
+          mb:"60px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 2,
+          position: "relative",
+        }}
+      >
+        <Button variant="contained" color="secondary">
+          <Box
+            component="span"
+            sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
+          >
+            {dinoPoints}
+            <Image src={coins} alt="Coins" width={18} height={18} />
+          </Box>
+        </Button>
+
+        {/* Mute Button */}
+        <IconButton
+          color={mute ? "secondary" : "primary"}
+          onClick={() => setMute(!mute)}
+          sx={{ width: 60, height: 60 }}
         >
-          {dinoPoints}
-          <Image src={coins} alt="Coins" width={18} height={18} />
-        </Box>
-      </Button>
+          {mute ? <VolumeOffIcon fontSize="large" /> : <VolumeUpIcon fontSize="large" />}
+        </IconButton>
+      </Box>
+
 
       {/* Confetti for rare items */}
       {celebrate && (
@@ -499,37 +521,6 @@ export default function Lottery() {
           </Box>
         </Button>
       </Box>
-
-      {/* Mute Button */}
-      {!mute ? (
-        <IconButton
-          color="primary"
-          onClick={() => setMute(true)}
-          sx={{
-            position: "absolute",
-            right: "20px",
-            top: "20px",
-            width: "60",
-            height: "60",
-          }}
-        >
-          <VolumeUpIcon fontSize="large" />
-        </IconButton>
-      ) : (
-        <IconButton
-          onClick={() => setMute(false)}
-          color="secondary"
-          sx={{
-            position: "absolute",
-            right: "20px",
-            top: "20px",
-            width: "60",
-            height: "60",
-          }}
-        >
-          <VolumeOffIcon fontSize="large" />
-        </IconButton>
-      )}
     </Box>
   );
 }
