@@ -11,6 +11,8 @@ type Properties = {
 }
 
 export default function WidgetsOverview ({userId, courseId}: Properties) {
+  const [numWidgetsToShow, setNumWidgetsToShow] = React.useState(2)
+
   const widgets = [
     { key: "achievements", component: <AchievementWidgetOverview userId={userId} courseId={courseId} /> },
     { key: "questions", component: <OpenQuestionWidget /> },
@@ -30,10 +32,23 @@ export default function WidgetsOverview ({userId, courseId}: Properties) {
       sx={{
         border: "1px solid #e0e0e0",
         borderRadius: 2,
-        p: 2,
+        p: 3,
+        position:"relative",
       }}
     >
-      <Grid container spacing={2}>
+      <WidgetSettings
+        numWidgets={numWidgetsToShow}
+        onNumWidgetsChange={(n) => setNumWidgetsToShow(n)}
+      />
+
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, 450px)",
+          gap: "16px",
+          justifyContent: "center",
+        }}
+      >
         {selectedWidgets.map((w) => (
           <Grid item xs={6} key={w.key}>
             {w.component}
