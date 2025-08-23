@@ -1,23 +1,15 @@
 "use client";
 
-import {
-  Button,
-  Menu,
-  MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Alert,
-} from "@mui/material";
-import { GitHub } from "@mui/icons-material";
-import { useRef, useState } from "react";
-import { useAccessTokenCheck } from "@/components/useAccessTokenCheck";
 import { ProviderAuthorizationDialog } from "@/components/ProviderAuthorizationDialog";
 import {
   codeAssessmentProvider,
   providerConfig,
 } from "@/components/ProviderConfig";
+import { useAccessTokenCheck } from "@/components/useAccessTokenCheck";
+import { GitHub } from "@mui/icons-material";
+import { Button, Menu, MenuItem } from "@mui/material";
+import { useRef, useState } from "react";
+import { ExternalCourseMissingDialog } from "./ExternalCourseMissingDialog";
 
 type Props = {
   externalCourse: {
@@ -105,29 +97,12 @@ export function CodeAssessmentProviderCourseButton({ externalCourse }: Props) {
         </MenuItem>
       </Menu>
 
-      <Dialog open={authDialogOpen} onClose={() => setAuthDialogOpen(false)}>
-        <DialogTitle>{provider.name} Action Required</DialogTitle>
-        <DialogContent>
-          <Alert severity="warning">
-            You must ensure a matching course exists on GitHub Classroom.
-          </Alert>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAuthDialogOpen(false)} color="primary">
-            Cancel
-          </Button>
-          <Button
-            onClick={() => {
-              console.log(externalCourse?.url);
-              setAuthDialogOpen(false);
-              window.open("https://classroom.github.com/classrooms", "_blank");
-            }}
-            color="primary"
-          >
-            Go to {provider.name}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {authDialogOpen && (
+        <ExternalCourseMissingDialog
+          onClose={() => setAuthDialogOpen(false)}
+          providerName={provider.name}
+        />
+      )}
     </>
   );
 }
