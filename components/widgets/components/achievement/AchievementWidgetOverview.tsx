@@ -2,8 +2,11 @@ import AchievementWidget from "@/components/widgets/components/achievement/Achie
 import AchievementPopUp from "@/components/profile/achievements/AchievementPopUp";
 import * as React from "react";
 import { useState } from "react";
-import { graphql, useLazyLoadQuery } from "react-relay";
-import { studentUserAchievementsWidgetQuery } from "@/__generated__/studentUserAchievementsWidgetQuery.graphql";
+import { useLazyLoadQuery } from "react-relay";
+import { widgetApiAchievementWidgetOverviewQuery } from "@/components/widgets/api/WidgetApi";
+import {
+  WidgetApiAchievementWidgetOverviewQuery
+} from "@/__generated__/WidgetApiAchievementWidgetOverviewQuery.graphql";
 
 type Properties = {
   userId: string;
@@ -12,24 +15,8 @@ type Properties = {
 
 export default function AchievementWidgetOverview({userId, courseId}: Properties) {
   const { achievementsByUserId } =
-    useLazyLoadQuery<studentUserAchievementsWidgetQuery>(
-      graphql`
-        query studentUserAchievementsWidgetQuery($id: UUID!) {
-          achievementsByUserId(userId: $id) {
-            id
-            name
-            imageUrl
-            description
-            courseId
-            userId
-            completed
-            requiredCount
-            completedCount
-            trackingStartTime
-            trackingEndTime
-          }
-        }
-      `,
+    useLazyLoadQuery<WidgetApiAchievementWidgetOverviewQuery>(
+      widgetApiAchievementWidgetOverviewQuery,
       { id: userId },
       {
         fetchPolicy: "network-only",

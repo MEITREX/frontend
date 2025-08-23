@@ -1,9 +1,13 @@
-import { Box, Grid } from "@mui/material";
-import OpenQuestionWidget from "@/components/widgets/components/OpenQuestionWidget";
-import ForumActivityWidget from "@/components/widgets/components/ForumActivityWidget";
+import {
+  Box,
+} from "@mui/material";
+import OpenQuestionWidget from "@/components/widgets/components/question/OpenQuestionWidget";
+import ForumActivityWidget from "@/components/widgets/components/forum/ForumActivityWidget";
 import * as React from "react";
 import AchievementWidgetOverview from "./components/achievement/AchievementWidgetOverview";
-import LotteryWidget from "@/components/widgets/components/LotteryWidget";
+import LotteryWidget from "@/components/widgets/components/lottery/LotteryWidget";
+import ItemWidget from "@/components/widgets/components/item/ItemWidget";
+import WidgetSettings from "@/components/widgets/common/WidgetSettings";
 
 type Properties = {
   userId: string;
@@ -18,14 +22,14 @@ export default function WidgetsOverview ({userId, courseId}: Properties) {
     { key: "questions", component: <OpenQuestionWidget /> },
     { key: "forum", component: <ForumActivityWidget /> },
     { key: "lottery", component: <LotteryWidget />},
+    { key: "item", component: <ItemWidget /> },
   ];
 
   function getWidgets(order: string[]) {
     return order.map((key) => widgets.find((w) => w.key === key)!);
   }
 
-  // This is the order from the backend
-  const selectedWidgets = getWidgets(["forum", "achievements","questions", "lottery"]);
+  const selectedWidgets = getWidgets(["item","lottery", "forum","questions", "lottery"]).slice(0, numWidgetsToShow);
 
   return (
     <Box
@@ -50,11 +54,11 @@ export default function WidgetsOverview ({userId, courseId}: Properties) {
         }}
       >
         {selectedWidgets.map((w) => (
-          <Grid item xs={6} key={w.key}>
+          <Box key={w.key}>
             {w.component}
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
     </Box>
   );
 }
