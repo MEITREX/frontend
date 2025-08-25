@@ -1,45 +1,24 @@
 "use client";
 
-import { InventoryListItemEquipItemMutation } from "@/__generated__/InventoryListItemEquipItemMutation.graphql";
-import { InventoryListItemInventoryForUserQuery } from "@/__generated__/InventoryListItemInventoryForUserQuery.graphql";
-import { InventoryListItemUnquipItemMutation } from "@/__generated__/InventoryListItemUnquipItemMutation.graphql";
+import { ItemsApiEquipItemMutation } from "@/__generated__/ItemsApiEquipItemMutation.graphql";
+import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
+import { ItemsApiUnequipItemMutation } from "@/__generated__/ItemsApiUnequipItemMutation.graphql";
 import { useSort } from "@/app/contexts/SortContext";
 import { Box, Typography } from "@mui/material";
 import { useMemo, useRef, useState } from "react";
-import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
-import DecoParser from "../DecoParser";
+import { useLazyLoadQuery, useMutation } from "react-relay";
+import {
+  equipItemMutation,
+  inventoryForUserQuery,
+  unequipItemMutation,
+} from "./api/ItemsApi";
 import DecorationPopup from "./DecorationPopup";
 import FeaturedItemCard from "./FeaturedItemCard";
 import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
 import ItemInventoryPictureOnly from "./ItemInventoryPictureOnly";
+import { getItemsMerged } from "./logic/GetItems";
+import { DecorationItem, ItemStringType, rarityMap } from "./types/Types";
 import UnequipCard from "./UnequipCard";
-
-// Types for items
-export type ItemStringType =
-  | "colorThemes"
-  | "patternThemes"
-  | "profilePicFrames"
-  | "profilePics"
-  | "tutors";
-
-// Rarity type for item
-type Rarity = "common" | "uncommon" | "rare" | "ultra_rare";
-
-// Decoration item type
-type DecorationItem = {
-  id: string;
-  backColor: string | null;
-  description: string;
-  url: string | null;
-  foreColor: string | null;
-  name: string;
-  rarity: Rarity;
-  sellCompensation: number;
-  moneyCost: number;
-  unlocked: boolean;
-  equipped: boolean;
-  unlockedTime: string | null;
-};
 
 type InventoryListItemProps = {
   itemStringType: ItemStringType;
@@ -55,92 +34,19 @@ export default function InventoryListItem({
   // Timer for double click
   const clickTimer = useRef<number | null>(null);
 
-  const { inventoryForUser } =
-    useLazyLoadQuery<InventoryListItemInventoryForUserQuery>(
-      graphql`
-        query InventoryListItemInventoryForUserQuery {
-          inventoryForUser {
-            items {
-              equipped
-              id
-              uniqueDescription
-              unlocked
-              unlockedTime
-            }
-            unspentPoints
-            userId
-          }
-        }
-      `,
-      {},
-      { fetchPolicy: "network-only" }
-    );
-
-  const [equipItem] = useMutation<InventoryListItemEquipItemMutation>(graphql`
-    mutation InventoryListItemEquipItemMutation($itemId: UUID!) {
-      equipItem(itemId: $itemId) {
-        items {
-          equipped
-          id
-          uniqueDescription
-          unlocked
-          unlockedTime
-        }
-        unspentPoints
-        userId
-      }
-    }
-  `);
-
-  const [unequipItem] =
-    useMutation<InventoryListItemUnquipItemMutation>(graphql`
-      mutation InventoryListItemUnquipItemMutation($itemId: UUID!) {
-        unequipItem(itemId: $itemId) {
-          items {
-            equipped
-            id
-            uniqueDescription
-            unlocked
-            unlockedTime
-          }
-          unspentPoints
-          userId
-        }
-      }
-    `);
-
-  // Get IDs of all items for DecoParser
-  const itemIds = inventoryForUser.items.map((item) => item.id);
-
-  // Parse items of given type
-  let itemsParsed = DecoParser(itemIds, itemStringType);
-
-  // If the type is a profile background we need to merge the other profile background type into out items
-  if (itemStringType === "colorThemes") {
-    const itemsParsedPatternThemes = DecoParser(itemIds, "patternThemes");
-    itemsParsed = itemsParsed.concat(itemsParsedPatternThemes);
-  } else if (itemStringType === "patternThemes") {
-    const itemsParsedColorThemes = DecoParser(itemIds, "colorThemes");
-    itemsParsed = itemsParsed.concat(itemsParsedColorThemes);
-  }
-
-  // Map items from backend to JSON items
-  const itemStatusMap = Object.fromEntries(
-    inventoryForUser.items.map((item) => [
-      item.id,
-      {
-        equipped: item.equipped,
-        unlocked: item.unlocked,
-        unlockedTime: item.unlockedTime,
-      },
-    ])
+  const { inventoryForUser } = useLazyLoadQuery<ItemsApiInventoryForUserQuery>(
+    inventoryForUserQuery,
+    {},
+    { fetchPolicy: "network-only" }
   );
 
+  const [equipItem] = useMutation<ItemsApiEquipItemMutation>(equipItemMutation);
+
+  const [unequipItem] =
+    useMutation<ItemsApiUnequipItemMutation>(unequipItemMutation);
+
   // Combine backend and JSON data
-  const itemsParsedMerged = itemsParsed.map((item) => ({
-    ...(item as Partial<DecorationItem>),
-    ...itemStatusMap[item.id],
-  })) as DecorationItem[];
+  const itemsParsedMerged = getItemsMerged(inventoryForUser, itemStringType);
 
   // Get amount of items user has in inventory to display later
   const numberItemsUnlocked = itemsParsedMerged.filter(
@@ -232,7 +138,7 @@ export default function InventoryListItem({
       <Box sx={{ mb: 2, width: "100%" }}>
         {/* Amount of owned items */}
         <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-          Items owned: {numberItemsUnlocked} / {itemsParsed.length}
+          Items owned: {numberItemsUnlocked} / {itemsParsedMerged.length}
         </Typography>
       </Box>
 
@@ -283,12 +189,6 @@ export default function InventoryListItem({
               .replace(/\s+/g, "");
 
             // Define colors for rarity
-            const rarityMap: Record<string, { border: string; bg: string }> = {
-              common: { border: "#26a0f5", bg: "#e3f2fd" }, // blue
-              uncommon: { border: "#d4af37", bg: "#fff8e1" }, // gold
-              rare: { border: "#8e44ad", bg: "#f3e5f5" }, // purple
-              ultra_rare: { border: "#e53935", bg: "#ffebee" }, // red
-            };
 
             // Map rarity to color
             const colors = rarityMap[rarityKey] ?? rarityMap.common;

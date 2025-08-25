@@ -1,7 +1,7 @@
 // components/UnequipCard.tsx
 "use client";
 
-import { UnequipCardUnequipItemPictureMutation } from "@/__generated__/UnequipCardUnequipItemPictureMutation.graphql";
+import { ItemsApiUnequipItemMutation } from "@/__generated__/ItemsApiUnequipItemMutation.graphql";
 import {
   Box,
   Button,
@@ -13,7 +13,8 @@ import {
   Typography,
 } from "@mui/material";
 import * as React from "react";
-import { graphql, useMutation } from "react-relay";
+import { useMutation } from "react-relay";
+import { unequipItemMutation } from "./api/ItemsApi";
 
 type UnequipCardProps = {
   equippedItem?: any | null;
@@ -22,21 +23,7 @@ type UnequipCardProps = {
 // First element in list, unequips the equiped item of a certain category
 export default function UnequipCard({ equippedItem }: UnequipCardProps) {
   const [unequipItem] =
-    useMutation<UnequipCardUnequipItemPictureMutation>(graphql`
-      mutation UnequipCardUnequipItemPictureMutation($itemId: UUID!) {
-        unequipItem(itemId: $itemId) {
-          items {
-            equipped
-            id
-            uniqueDescription
-            unlocked
-            unlockedTime
-          }
-          unspentPoints
-          userId
-        }
-      }
-    `);
+    useMutation<ItemsApiUnequipItemMutation>(unequipItemMutation);
 
   const clickTimer = React.useRef<number | null>(null);
   const disabled = !equippedItem;
@@ -97,12 +84,13 @@ export default function UnequipCard({ equippedItem }: UnequipCardProps) {
         tabIndex={disabled ? -1 : 0}
         aria-disabled={disabled}
         sx={{
-          height: "243px",
+          height: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           p: 2,
           border: "2px solid",
+          borderRadius: 3,
           borderColor: disabled ? "grey.400" : "orange",
           cursor: disabled ? "not-allowed" : "pointer",
           opacity: disabled ? 0.55 : 1,
