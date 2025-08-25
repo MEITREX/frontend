@@ -65,11 +65,11 @@ export default function FeaturedItemCard({
       )}
 
       {/* Informations about item */}
-              <Box sx={{ px: 2, pb: 2, pt: 1 }}>
-                <Typography variant="body2">
-                  <strong>Rarity:</strong> {item.rarity || "Common"}
-                </Typography>
-              </Box>
+      <Box sx={{ px: 2, pb: 2, pt: 1 }}>
+        <Typography variant="body2">
+          <strong>Rarity:</strong> {item.rarity || "Common"}
+        </Typography>
+      </Box>
     </Box>
   );
 }
