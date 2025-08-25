@@ -404,8 +404,8 @@ export default function Lottery() {
             transform: "translate(-50%, -50%) scale(0)",
             animation: "popItem 1.3s ease-out forwards",
             zIndex: 3,
-            width: 200,
-            height: 180,
+            width: 250,
+            height: 250,
             borderRadius: 2,
             display: "flex",
             flexDirection: "column",
@@ -419,19 +419,38 @@ export default function Lottery() {
             ...rarityStyles[rarity],
           }}
         >
-          <Typography
-            variant="body2"
-            noWrap
-            title={item.lotteryRun.name}
-            sx={{ overflow: "hidden", textOverflow: "ellipsis" }}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <Typography
+              variant="body1"
+              noWrap
+              title={item.lotteryRun.name}
+              sx={{ fontWeight: "bold" }}
+            >
+              {item.lotteryRun.name}
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{
+              px: 1,
+              py: 0.3,
+              borderRadius: 1,
+              bgcolor:
+                item.lotteryRun.rarity === "COMMON"
+                  ? "#e0e0e0"
+                  : item.lotteryRun.rarity === "UNCOMMON"
+                    ? "#d4af37"
+                    : item.lotteryRun.rarity === "RARE"
+                      ? "#8e44ad"
+                      : item.lotteryRun.rarity === "ULTRA_RARE" ? "#e53935"
+                        : "#e0e0e0" ,
+              color: "white",
+              fontSize: "0.75rem",
+              fontWeight: "bold",
+            }}
           >
-            <strong>{item.lotteryRun.name}</strong>{" "}
-            {item.lotteryRun.sold && (
-              <span style={{ color: "green", fontWeight: "bold" }}>
-                (Owned)
-              </span>
-            )}
-          </Typography>
+            {item.lotteryRun.rarity.replace("_", " ").toUpperCase()}
+          </Box>
 
           <Box
             sx={{
@@ -475,19 +494,33 @@ export default function Lottery() {
             )}
           </Box>
 
-          <Typography variant="body2">{item.lotteryRun.rarity}</Typography>
+          <Typography
+            variant="body2"
+            sx={{ textAlign: "center", minHeight: 30, fontStyle: "italic"}}
+          >
+            {item.lotteryRun.description || "No description"}
+          </Typography>
 
           {item.lotteryRun.sold && item.lotteryRun.sellCompensation ? (
             <Box
               component="span"
-              sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 0.5,
+                whiteSpace: "nowrap"
+              }}
             >
-              <Typography>Sold for</Typography>
-              <Typography style={{ color: "green" }}>
+              <span style={{ color: "green", fontWeight: "bold" }}>
+                (Owned)
+              </span>
+              <Typography component="span">Sold for</Typography>
+              <Typography component="span" style={{ color: "green" }}>
                 {item.lotteryRun.sellCompensation}
               </Typography>
               <Image src={coins} alt="Coins" width={18} height={18} />
             </Box>
+
           ) : (
             <Button onClick={equipItem} variant="contained" disabled={equip}>
               Equip
