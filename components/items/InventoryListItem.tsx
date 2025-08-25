@@ -9,6 +9,7 @@ import { useMemo, useRef, useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 import DecoParser from "../DecoParser";
 import DecorationPopup from "./DecorationPopup";
+import FeaturedItemCard from "./FeaturedItemCard";
 import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
 import ItemInventoryPictureOnly from "./ItemInventoryPictureOnly";
 import UnequipCard from "./UnequipCard";
@@ -234,6 +235,40 @@ export default function InventoryListItem({
           Items owned: {numberItemsUnlocked} / {itemsParsed.length}
         </Typography>
       </Box>
+
+      {/* 1) FEATURE-ROW: equipped (grün) + Unequip (orange) */}
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "repeat(6, 1fr)",
+        gap: 2,
+        alignItems: "start",
+        mb: 1.5,
+      }}
+    >
+      {equipedItem ? (
+        <FeaturedItemCard item={equipedItem} onClick={handleClick} />
+      ) : (
+        // Platzhalter, damit Unequip rechts bleibt, falls nichts equipped
+        <Box />
+      )}
+
+      {itemStringType !== "tutors" && publicProfile === false && (
+
+          <UnequipCard equippedItem={equipedItem} />
+
+      )}
+    </Box>
+
+      {/* 2) Divider wie im Screenshot */}
+    <Box
+      sx={{
+        height: 0,
+        borderTop: "3px solid #000",
+        mb: 2,
+      }}
+    />
+
       <Box
         sx={{
           display: "grid",
@@ -241,11 +276,8 @@ export default function InventoryListItem({
           gap: 2,
         }}
       >
-        {itemStringType !== "tutors" && publicProfile === false && (
-          // UnequipCard is shwon at the start of the list for all categories but tutor
-          <UnequipCard equippedItem={equipedItem}></UnequipCard>
-        )}
-        {sortedItems.map((item) => {
+
+        {sortedItems.filter((item) => !item.equipped).map((item) => {
           // Get rarity
           const rarityKey = (item.rarity || "common")
             .toLowerCase()

@@ -102,15 +102,15 @@ export default function UnequipCard({ equippedItem }: UnequipCardProps) {
           alignItems: "center",
           justifyContent: "center",
           p: 2,
-          border: "2px dashed",
-          borderColor: disabled ? "grey.400" : "primary.main",
+          border: "2px solid",
+          borderColor: disabled ? "grey.400" : "orange",
           cursor: disabled ? "not-allowed" : "pointer",
           opacity: disabled ? 0.55 : 1,
           userSelect: "none",
           outline: "none",
           "&:focus-visible": {
             boxShadow: (t) => `0 0 0 3px ${t.palette.primary.main}55`,
-            borderColor: "primary.main",
+            borderColor: "orange",
           },
         }}
       >
