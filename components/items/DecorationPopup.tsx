@@ -10,8 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import React from "react";
-
-type Rarity = "common" | "uncommon" | "rare" | "ultra_rare";
+import { Rarity, rarityMap } from "./types/Types";
 
 type Props = {
   open: boolean;
@@ -31,13 +30,6 @@ type Props = {
   publicProfil: boolean;
 };
 
-const rarityColors: Record<string, { border: string; bg: string }> = {
-  common: { border: "#26a0f5", bg: "#e3f2fd" }, // blue
-  uncommon: { border: "#d4af37", bg: "#fff8e1" }, // gold
-  rare: { border: "#8e44ad", bg: "#f3e5f5" }, // purpule
-  ultra_rare: { border: "#e53935", bg: "#ffebee" }, // red
-};
-
 const DecorationPopup: React.FC<Props> = ({
   open,
   onClose,
@@ -55,7 +47,7 @@ const DecorationPopup: React.FC<Props> = ({
   publicProfil,
 }) => {
   const isBuyMode = typeof equipped === "number";
-  const colors = rarityColors[rarity] ?? rarityColors.common;
+  const colors = rarityMap[rarity] ?? rarityMap.common;
 
   return (
     // Dialog to show details for an item in the SHop or Inventory

@@ -2,7 +2,6 @@
 "use client";
 
 import { useSort } from "@/app/contexts/SortContext";
-import { ItemStringType } from "@/components/items/InventoryListItem";
 import PublicProfileListItem from "@/components/items/PublicProfileListItem";
 import {
   Box,
@@ -14,6 +13,7 @@ import {
   Tabs,
 } from "@mui/material";
 import { useState } from "react";
+import { ItemStringType } from "../../items/types/Types";
 
 const tabs: { label: string; type: ItemStringType }[] = [
   { label: "Profile Picture", type: "profilePics" },
