@@ -4,11 +4,14 @@ import { NavbarSemanticSearchQuery } from "@/__generated__/NavbarSemanticSearchQ
 import { NavbarStudentQuery } from "@/__generated__/NavbarStudentQuery.graphql";
 import logo from "@/assets/logo.svg";
 import StoreIcon from "@mui/icons-material/Store";
+import coins from "assets/lottery/coins.png";
 import duration from "dayjs/plugin/duration";
+import Image from "next/image";
 import Link from "next/link";
 
 dayjs.extend(duration);
 
+import { useCurrency } from "@/app/contexts/CurrencyContext";
 import { PageView, usePageView } from "@/src/currentView";
 import {
   CollectionsBookmark,
@@ -21,7 +24,9 @@ import {
 import {
   Autocomplete,
   Avatar,
+  Box,
   Button,
+  Chip,
   CircularProgress,
   ClickAwayListener,
   Divider,
@@ -414,7 +419,7 @@ function SwitchPageViewButton() {
 
 function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
   const auth = useAuth();
-
+  const { points } = useCurrency();
   const tutor = useIsTutor(_isTutor);
 
   return (
@@ -454,6 +459,31 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
             </Link>
           </Tooltip>
         </ListItem>
+        <Divider />
+        <Box
+          sx={{
+            width: "100%",
+            height: "100%", // oder z. B. "200px" oder "calc(100vh - 64px)"
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 2,
+            marginBottom: 2,
+          }}
+        >
+          <Chip
+            color="secondary"
+            label={
+              <Box
+                sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
+              >
+                {points}
+                <Image src={coins} alt="Coins" width={18} height={18} />
+              </Box>
+            }
+            sx={{ fontWeight: "bold" }}
+          />
+        </Box>
 
         {tutor && (
           <>
