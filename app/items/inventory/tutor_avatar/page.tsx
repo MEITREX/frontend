@@ -6,7 +6,7 @@ import { Suspense } from "react";
 export default function TutorPage() {
   return (
     <Suspense fallback={<div>Loading…</div>}>
-      <InventoryListItem itemStringType="tutors" />
+      <InventoryListItem itemStringType="tutors" publicProfile={false} />
     </Suspense>
   );
 }

@@ -1,52 +1,50 @@
 "use client";
 
-import { ItemsApiEquipItemMutation } from "@/__generated__/ItemsApiEquipItemMutation.graphql";
-import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
-import { ItemsApiUnequipItemMutation } from "@/__generated__/ItemsApiUnequipItemMutation.graphql";
+import { ItemsApiItemInventoryForUserByIdQuery } from "@/__generated__/ItemsApiItemInventoryForUserByIdQuery.graphql";
 import { useSort } from "@/app/contexts/SortContext";
 import { Box, Typography } from "@mui/material";
-import { useMemo, useRef, useState } from "react";
-import { useLazyLoadQuery, useMutation } from "react-relay";
-import {
-  equipItemMutation,
-  inventoryForUserQuery,
-  unequipItemMutation,
-} from "./api/ItemsApi";
+import { useMemo, useState } from "react";
+import { useLazyLoadQuery } from "react-relay";
 import DecorationPopup from "./DecorationPopup";
 import FeaturedItemCard from "./FeaturedItemCard";
 import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
 import ItemInventoryPictureOnly from "./ItemInventoryPictureOnly";
-import { getItemsMerged } from "./logic/GetItems";
-import { DecorationItem, ItemStringType, rarityMap } from "./types/Types";
 import UnequipCard from "./UnequipCard";
+import { getItemsByUserQuery } from "./api/ItemsApi";
+import { getPublicProfileItemsMerged } from "./logic/GetItems";
+import { DecorationItem, ItemStringType, rarityMap } from "./types/Types";
 
-type InventoryListItemProps = {
+type PublicProfileListItemProps = {
   itemStringType: ItemStringType;
   publicProfile: boolean;
+  userId: string;
 };
 
-export default function InventoryListItem({
+export default function PublicProfileListItem({
   itemStringType,
   publicProfile,
-}: InventoryListItemProps) {
+  userId,
+}: PublicProfileListItemProps) {
   const { sortBy, showLocked } = useSort();
   const [selectedItem, setSelectedItem] = useState<DecorationItem | null>(null);
-  // Timer for double click
-  const clickTimer = useRef<number | null>(null);
 
-  const { inventoryForUser } = useLazyLoadQuery<ItemsApiInventoryForUserQuery>(
-    inventoryForUserQuery,
-    {},
-    { fetchPolicy: "network-only" }
-  );
-
-  const [equipItem] = useMutation<ItemsApiEquipItemMutation>(equipItemMutation);
-
-  const [unequipItem] =
-    useMutation<ItemsApiUnequipItemMutation>(unequipItemMutation);
+  const { itemsByUserId } =
+    useLazyLoadQuery<ItemsApiItemInventoryForUserByIdQuery>(
+      getItemsByUserQuery,
+      {
+        userId: userId,
+      },
+      {
+        fetchPolicy: "network-only",
+        fetchKey: userId, // <<— wichtig
+      }
+    );
 
   // Combine backend and JSON data
-  const itemsParsedMerged = getItemsMerged(inventoryForUser, itemStringType);
+  const itemsParsedMerged = getPublicProfileItemsMerged(
+    itemsByUserId,
+    itemStringType
+  );
 
   // Get amount of items user has in inventory to display later
   const numberItemsUnlocked = itemsParsedMerged.filter(
@@ -82,57 +80,6 @@ export default function InventoryListItem({
     });
   }, [itemsParsedMerged, sortBy, showLocked]);
 
-  // Handles all the equipment and equipment of items
-  const handleToggleEquip = (_e?: any, itemParameter?: any) => {
-    const item = itemParameter ? itemParameter : selectedItem;
-
-    if (item.equipped && !itemParameter) {
-      unequipItem({
-        variables: {
-          itemId: item.id,
-        },
-        onError() {
-          setSelectedItem(null);
-        },
-        onCompleted() {
-          setSelectedItem(null);
-        },
-      });
-    } else {
-      equipItem({
-        variables: {
-          itemId: item.id,
-        },
-        onError() {
-          setSelectedItem(null);
-        },
-        onCompleted() {
-          setSelectedItem(null);
-        },
-      });
-    }
-  };
-
-  // Handels all clicks on cards and also manages double click
-  const handleClick = (e: React.MouseEvent, item: any) => {
-    // When double click, do equip and not show PopUp
-    if (e.detail === 2) {
-      if (clickTimer.current) {
-        window.clearTimeout(clickTimer.current);
-        clickTimer.current = null;
-      }
-      if (item.unlocked) handleToggleEquip(e, item);
-      return;
-    }
-
-    // When single click show PopUp
-    if (clickTimer.current) window.clearTimeout(clickTimer.current);
-    clickTimer.current = window.setTimeout(() => {
-      setSelectedItem(item);
-      clickTimer.current = null;
-    }, 220); // 200–300ms
-  };
-
   return (
     <>
       <Box sx={{ mb: 2, width: "100%" }}>
@@ -153,7 +100,7 @@ export default function InventoryListItem({
         }}
       >
         {equipedItem ? (
-          <FeaturedItemCard item={equipedItem} onClick={handleClick} />
+          <FeaturedItemCard item={equipedItem} onClick={() => {}} />
         ) : (
           // Platzhalter, damit Unequip rechts bleibt, falls nichts equipped
           <Box />
@@ -188,8 +135,6 @@ export default function InventoryListItem({
               .toLowerCase()
               .replace(/\s+/g, "");
 
-            // Define colors for rarity
-
             // Map rarity to color
             const colors = rarityMap[rarityKey] ?? rarityMap.common;
 
@@ -203,7 +148,7 @@ export default function InventoryListItem({
             return (
               <Box
                 key={item.id}
-                onClick={(e) => handleClick(e, item)}
+                onClick={() => setSelectedItem(item)}
                 sx={{
                   position: "relative",
                   border: item.unlocked
@@ -234,7 +179,6 @@ export default function InventoryListItem({
                     url={item.url ? item.url : null}
                     backColor={item.backColor ? item.backColor : null}
                     foreColor={item.foreColor}
-                    ratio="1 / 1"
                   />
                 ) : (
                   <ItemInventoryPictureOnly
@@ -285,7 +229,7 @@ export default function InventoryListItem({
           imageAlt={selectedItem.id}
           description={selectedItem.description || "No description available."}
           equipped={selectedItem.equipped}
-          onToggleEquip={handleToggleEquip}
+          onToggleEquip={() => {}}
           name={selectedItem.name}
           rarity={selectedItem.rarity ? selectedItem.rarity : undefined}
           backColor={

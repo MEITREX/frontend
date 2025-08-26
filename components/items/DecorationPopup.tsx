@@ -10,8 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import React from "react";
-
-type Rarity = "common" | "uncommon" | "rare" | "ultra_rare";
+import { Rarity, rarityMap } from "./types/Types";
 
 type Props = {
   open: boolean;
@@ -28,13 +27,7 @@ type Props = {
   foreColor?: string;
   unspentPoints?: number;
   category?: string;
-};
-
-const rarityColors: Record<string, { border: string; bg: string }> = {
-  common: { border: "#26a0f5", bg: "#e3f2fd" }, // blue
-  uncommon: { border: "#d4af37", bg: "#fff8e1" }, // gold
-  rare: { border: "#8e44ad", bg: "#f3e5f5" }, // purpule
-  ultra_rare: { border: "#e53935", bg: "#ffebee" }, // red
+  publicProfil: boolean;
 };
 
 const DecorationPopup: React.FC<Props> = ({
@@ -51,9 +44,10 @@ const DecorationPopup: React.FC<Props> = ({
   backColor = null,
   unspentPoints = 0,
   category = null,
+  publicProfil,
 }) => {
   const isBuyMode = typeof equipped === "number";
-  const colors = rarityColors[rarity] ?? rarityColors.common;
+  const colors = rarityMap[rarity] ?? rarityMap.common;
 
   return (
     // Dialog to show details for an item in the SHop or Inventory
@@ -226,26 +220,28 @@ const DecorationPopup: React.FC<Props> = ({
       </DialogContent>
 
       {/* Button where item can be equipped or unequipped in the inventory. In the shop item can be bought if user has enough currency */}
-      <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
-        <Button
-          onClick={onToggleEquip}
-          variant="contained"
-          disabled={
-            (isBuyMode && unspentPoints < equipped) ||
-            (!isBuyMode && category === "tutors" && equipped)
-          }
-        >
-          {isBuyMode
-            ? unspentPoints < equipped
-              ? "Not enough DP"
-              : `Buy for ${equipped} DP`
-            : category === "tutors" && equipped
-            ? "Tutor can not be unequipped. Equip other tutor to unequip this one"
-            : equipped
-            ? "Unequip"
-            : "Equip"}
-        </Button>
-      </DialogActions>
+      {publicProfil === false && (
+        <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
+          <Button
+            onClick={onToggleEquip}
+            variant="contained"
+            disabled={
+              (isBuyMode && unspentPoints < equipped) ||
+              (!isBuyMode && category === "tutors" && equipped)
+            }
+          >
+            {isBuyMode
+              ? unspentPoints < equipped
+                ? "Not enough DP"
+                : `Buy for ${equipped} DP`
+              : category === "tutors" && equipped
+              ? "Tutor can not be unequipped. Equip other tutor to unequip this one"
+              : equipped
+              ? "Unequip"
+              : "Equip"}
+          </Button>
+        </DialogActions>
+      )}
     </Dialog>
   );
 };

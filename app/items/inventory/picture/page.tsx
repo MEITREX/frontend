@@ -6,7 +6,7 @@ import { Suspense } from "react";
 export default function PicturePage() {
   return (
     <Suspense fallback={<div>Loading…</div>}>
-      <InventoryListItem itemStringType="profilePics" />
+      <InventoryListItem itemStringType="profilePics" publicProfile={false} />
     </Suspense>
   );
 }
