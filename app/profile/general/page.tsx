@@ -1,7 +1,14 @@
 "use client";
 
 import { pagePrivateProfileStudentGeneralQuery } from "@/__generated__/pagePrivateProfileStudentGeneralQuery.graphql";
-import { Box, Tab, Tabs, Typography, LinearProgress, Stack } from "@mui/material";
+import {
+  Box,
+  Tab,
+  Tabs,
+  Typography,
+  LinearProgress,
+  Stack,
+} from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
@@ -46,8 +53,8 @@ export default function GeneralPageWrapper() {
     xpRequired: 500,
   };
 
-
-  const levelIconSrc = "/levels/level_" + String(currentUserLevelInfo.level ?? 0) + ".svg";
+  const levelIconSrc =
+    "/levels/level_" + String(currentUserLevelInfo.level ?? 0) + ".svg";
 
   return (
     <Box sx={{ p: 2 }}>
@@ -58,15 +65,37 @@ export default function GeneralPageWrapper() {
       {/* Level + XP overview */}
       {currentUserLevelInfo && (
         <Box sx={{ mb: 2 }}>
-          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
-            <img src={levelIconSrc} alt={`Level ${currentUserLevelInfo.level}`} width={48} height={48} style={{ display: 'block' }} />
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            sx={{ mb: 0.5 }}
+          >
+            <img
+              src={levelIconSrc}
+              alt={`Level ${currentUserLevelInfo.level}`}
+              width={48}
+              height={48}
+              style={{ display: "block" }}
+            />
             <Typography variant="body2" color="text.secondary">
-              {currentUserLevelInfo.xpInLevel} / {currentUserLevelInfo.xpRequired} XP
+              {currentUserLevelInfo.xpInLevel} /{" "}
+              {currentUserLevelInfo.xpRequired} XP
             </Typography>
           </Stack>
           <LinearProgress
             variant="determinate"
-            value={Math.max(0, Math.min(100, Math.round((currentUserLevelInfo.xpInLevel / Math.max(currentUserLevelInfo.xpRequired, 1)) * 100)))}
+            value={Math.max(
+              0,
+              Math.min(
+                100,
+                Math.round(
+                  (currentUserLevelInfo.xpInLevel /
+                    Math.max(currentUserLevelInfo.xpRequired, 1)) *
+                    100
+                )
+              )
+            )}
             sx={{ height: 10, borderRadius: 999 }}
           />
         </Box>

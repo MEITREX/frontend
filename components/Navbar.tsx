@@ -40,11 +40,20 @@ import {
   Box,
   LinearProgress,
 } from "@mui/material";
-import type { AutocompleteRenderOptionState, AutocompleteOwnerState } from "@mui/material/Autocomplete";
+import type {
+  AutocompleteRenderOptionState,
+  AutocompleteOwnerState,
+} from "@mui/material/Autocomplete";
 import ListItemSecondaryAction from "@mui/material/ListItemSecondaryAction";
 import { chain, debounce } from "lodash";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactElement, useCallback, useEffect, useState, useTransition } from "react";
+import {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
 import { useAuth } from "react-oidc-context";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
 
@@ -181,39 +190,33 @@ function NavbarBase({
         x.mediaRecordSegment.__typename === "DocumentRecordSegment"
       ) {
         const seg = x.mediaRecordSegment;
-        return seg.mediaRecord.contents
-          .filter(Boolean)
-          .map((content: any) => ({
-            breadcrumbs: `${content!.metadata.course.title} › ${
-              content!.metadata.name
-            }`,
-            title: seg.mediaRecord.name,
-            position: `Page ${seg.page + 1}`,
-            url: `/courses/${content!.metadata.course.id}/media/${
-              content!.id
-            }?selectedDocument=${seg.mediaRecord.id}&page=${seg.page + 1}`,
-          }));
+        return seg.mediaRecord.contents.filter(Boolean).map((content: any) => ({
+          breadcrumbs: `${content!.metadata.course.title} › ${
+            content!.metadata.name
+          }`,
+          title: seg.mediaRecord.name,
+          position: `Page ${seg.page + 1}`,
+          url: `/courses/${content!.metadata.course.id}/media/${
+            content!.id
+          }?selectedDocument=${seg.mediaRecord.id}&page=${seg.page + 1}`,
+        }));
       } else if (
         x.mediaRecordSegment &&
         x.mediaRecordSegment.__typename === "VideoRecordSegment"
       ) {
         const seg = x.mediaRecordSegment;
-        return seg.mediaRecord.contents
-          .filter(Boolean)
-          .map((content: any) => ({
-            breadcrumbs: `${content!.metadata.course.title} › ${
-              content!.metadata.name
-            }`,
-            title: seg.mediaRecord.name,
-            position: dayjs
-              .duration(seg.startTime ?? 0, "seconds")
-              .format("HH:mm:ss"),
-            url: `/courses/${content!.metadata.course.id}/media/${
-              content!.id
-            }?selectedVideo=${seg.mediaRecord.id}&videoPosition=${
-              seg.startTime
-            }`,
-          }));
+        return seg.mediaRecord.contents.filter(Boolean).map((content: any) => ({
+          breadcrumbs: `${content!.metadata.course.title} › ${
+            content!.metadata.name
+          }`,
+          title: seg.mediaRecord.name,
+          position: dayjs
+            .duration(seg.startTime ?? 0, "seconds")
+            .format("HH:mm:ss"),
+          url: `/courses/${content!.metadata.course.id}/media/${
+            content!.id
+          }?selectedVideo=${seg.mediaRecord.id}&videoPosition=${seg.startTime}`,
+        }));
       } else if (
         x.assessment &&
         x.assessment.__typename === "FlashcardSetAssessment"
@@ -240,7 +243,6 @@ function NavbarBase({
     .value() as SearchResultType[];
 
   const [isSearchPopupOpen, setSearchPopupOpen] = useState(false);
-
 
   return (
     <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
@@ -289,15 +291,23 @@ function NavbarBase({
           ): React.ReactNode => (
             <li {...props}>
               <div>
-                <div className="text-[10px] text-slate-500">{option.breadcrumbs}</div>
+                <div className="text-[10px] text-slate-500">
+                  {option.breadcrumbs}
+                </div>
                 {option.title}
                 {option.position && (
-                  <div className="text-[10px] text-slate-400">{option.position}</div>
+                  <div className="text-[10px] text-slate-400">
+                    {option.position}
+                  </div>
                 )}
               </div>
             </li>
           )}
-          options={term.length >= 3 ? (results as SearchResultType[]) : ([] as SearchResultType[])}
+          options={
+            term.length >= 3
+              ? (results as SearchResultType[])
+              : ([] as SearchResultType[])
+          }
           onInputChange={(_, value) => value && debouncedSetter(value)}
           renderInput={(params): React.ReactNode => (
             <TextField
@@ -329,7 +339,13 @@ function NavbarBase({
   );
 }
 
-function NavbarSection({ children, title }: { children: React.ReactNode; title?: string }) {
+function NavbarSection({
+  children,
+  title,
+}: {
+  children: React.ReactNode;
+  title?: string;
+}) {
   return (
     <div className="bg-white rounded-lg">
       <List
@@ -406,13 +422,19 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
   const tutor = useIsTutor(_isTutor);
 
   // Load level info without Relay (to avoid build-time artifact requirement)
-  const [levelInfo, setLevelInfo] = useState<{ level: number; xpInLevel: number; xpRequiredForLevelUp: number; userName?: string }>({ level: 3, xpInLevel: 240, xpRequiredForLevelUp: 500 });
+  const [levelInfo, setLevelInfo] = useState<{
+    level: number;
+    xpInLevel: number;
+    xpRequiredForLevelUp: number;
+    userName?: string;
+  }>({ level: 3, xpInLevel: 240, xpRequiredForLevelUp: 500 });
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ?? "/api/graphql";
+        const endpoint =
+          process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ?? "/api/graphql";
         const res = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -428,19 +450,29 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
         const li = json?.data?.currentUserLevelInfo;
         const un = json?.data?.currentUserInfo?.userName;
         if (!cancelled && li) {
-          setLevelInfo({ level: li.level ?? 3, xpInLevel: li.xpInLevel ?? 240, xpRequiredForLevelUp: li.xpRequiredForLevelUp ?? 500, userName: un });
+          setLevelInfo({
+            level: li.level ?? 3,
+            xpInLevel: li.xpInLevel ?? 240,
+            xpRequiredForLevelUp: li.xpRequiredForLevelUp ?? 500,
+            userName: un,
+          });
         }
       } catch (_) {
         // keep fallback
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const level = levelInfo.level;
   const xpInLevel = levelInfo.xpInLevel;
   const xpRequired = levelInfo.xpRequiredForLevelUp;
-  const percent = Math.max(0, Math.min(100, Math.round((xpInLevel / Math.max(1, xpRequired)) * 100)));
+  const percent = Math.max(
+    0,
+    Math.min(100, Math.round((xpInLevel / Math.max(1, xpRequired)) * 100))
+  );
 
   return (
     <div className="sticky bottom-0 py-3 -mt-3 bg-gradient-to-t from-slate-200 from-75% to-transparent">
@@ -448,10 +480,20 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
         <ListItem
           dense
           disableGutters
-          sx={{ alignItems: 'center', py: 1, '& .MuiListItemText-root': { my: 0 } }}
+          sx={{
+            alignItems: "center",
+            py: 1,
+            "& .MuiListItemText-root": { my: 0 },
+          }}
         >
           <ListItemAvatar sx={{ minWidth: 44 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
               <Link href={"/profile"}>
                 <Avatar src={auth.user?.profile?.picture} />
               </Link>
@@ -500,9 +542,9 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
         {/* XP/Level section below the name/profile/avatar, with padding top */}
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
             gap: 1.25,
             pt: 0.75,
             pb: 0.75,
@@ -514,12 +556,25 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
             alt={`Level ${level} icon`}
             width={50}
             height={50}
-            style={{ display: 'block' }}
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            style={{ display: "block" }}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
           />
-          <Box sx={{ minWidth: 160, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <LinearProgress variant="determinate" value={percent} sx={{ height: 8, borderRadius: 999 }} />
-            <Typography variant="caption" sx={{ mt: 0.25, display: 'block' }}>
+          <Box
+            sx={{
+              minWidth: 160,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+          >
+            <LinearProgress
+              variant="determinate"
+              value={percent}
+              sx={{ height: 8, borderRadius: 999 }}
+            />
+            <Typography variant="caption" sx={{ mt: 0.25, display: "block" }}>
               {xpInLevel} / {xpRequired} XP
             </Typography>
           </Box>
