@@ -6,6 +6,7 @@ import logo from "@/assets/logo.svg";
 import StoreIcon from "@mui/icons-material/Store";
 import duration from "dayjs/plugin/duration";
 import Link from "next/link";
+import dayjs from "dayjs";
 
 dayjs.extend(duration);
 
@@ -23,7 +24,6 @@ import {
   Avatar,
   Button,
   CircularProgress,
-  ClickAwayListener,
   Divider,
   IconButton,
   InputAdornment,
@@ -34,15 +34,17 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
-  Paper,
   TextField,
   Tooltip,
   Typography,
+  Box,
+  LinearProgress,
 } from "@mui/material";
-import dayjs from "dayjs";
+import type { AutocompleteRenderOptionState, AutocompleteOwnerState } from "@mui/material/Autocomplete";
+import ListItemSecondaryAction from "@mui/material/ListItemSecondaryAction";
 import { chain, debounce } from "lodash";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactElement, useCallback, useState, useTransition } from "react";
+import { ReactElement, useCallback, useEffect, useState, useTransition } from "react";
 import { useAuth } from "react-oidc-context";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
 
@@ -170,18 +172,18 @@ function NavbarBase({
     [setTerm, startTransition]
   );
 
-  const results = chain(searchResults.semanticSearch)
-    .orderBy((x) => x?.score)
+  const results: SearchResultType[] = chain(searchResults.semanticSearch ?? [])
+    .orderBy((x: any) => x?.score)
     .slice(0, 15)
-    .flatMap((x): SearchResultType[] => {
+    .flatMap((x: any): SearchResultType[] => {
       if (
         x.mediaRecordSegment &&
         x.mediaRecordSegment.__typename === "DocumentRecordSegment"
       ) {
         const seg = x.mediaRecordSegment;
         return seg.mediaRecord.contents
-          .filter((x) => !!x)
-          .map((content) => ({
+          .filter(Boolean)
+          .map((content: any) => ({
             breadcrumbs: `${content!.metadata.course.title} › ${
               content!.metadata.name
             }`,
@@ -197,8 +199,8 @@ function NavbarBase({
       ) {
         const seg = x.mediaRecordSegment;
         return seg.mediaRecord.contents
-          .filter((x) => !!x)
-          .map((content) => ({
+          .filter(Boolean)
+          .map((content: any) => ({
             breadcrumbs: `${content!.metadata.course.title} › ${
               content!.metadata.name
             }`,
@@ -235,28 +237,10 @@ function NavbarBase({
         return [];
       }
     })
-    .value();
+    .value() as SearchResultType[];
 
   const [isSearchPopupOpen, setSearchPopupOpen] = useState(false);
 
-  function SearchPopupPaper({ children }: { children?: any }) {
-    return (
-      <ClickAwayListener onClickAway={() => setSearchPopupOpen(false)}>
-        <Paper>
-          {children}
-          <Button
-            startIcon={<ManageSearch />}
-            onClick={() => {
-              router.push(`/search?query=${term}`);
-              setSearchPopupOpen(false);
-            }}
-          >
-            Detailed results
-          </Button>
-        </Paper>
-      </ClickAwayListener>
-    );
-  }
 
   return (
     <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
@@ -278,7 +262,7 @@ function NavbarBase({
       </div>
 
       <NavbarSection>
-        <Autocomplete
+        <Autocomplete<SearchResultType, false, false, true>
           freeSolo
           size="small"
           className="mx-2 mb-2"
@@ -287,7 +271,7 @@ function NavbarBase({
           autoHighlight
           open={isSearchPopupOpen}
           value={null}
-          getOptionLabel={(x) => ""}
+          getOptionLabel={(x) => (typeof x === "string" ? x : x?.title ?? "")}
           onChange={(_, newVal) => {
             if (typeof newVal == "string") {
               router.push(`/search?query=${newVal}`);
@@ -297,24 +281,25 @@ function NavbarBase({
             }
           }}
           filterOptions={(x) => x}
-          renderOption={(props, option) => (
-            <li {...props} key={option?.breadcrumbs}>
+          renderOption={(
+            props: React.HTMLAttributes<HTMLLIElement> & { key: any },
+            option: SearchResultType,
+            _state: AutocompleteRenderOptionState,
+            _owner: AutocompleteOwnerState<SearchResultType, false, false, true>
+          ): React.ReactNode => (
+            <li {...props}>
               <div>
-                <div className="text-[10px] text-slate-500">
-                  {option.breadcrumbs}
-                </div>
+                <div className="text-[10px] text-slate-500">{option.breadcrumbs}</div>
                 {option.title}
                 {option.position && (
-                  <div className="text-[10px] text-slate-400">
-                    {option.position}
-                  </div>
+                  <div className="text-[10px] text-slate-400">{option.position}</div>
                 )}
               </div>
             </li>
           )}
-          options={term.length >= 3 ? results ?? [] : []}
+          options={term.length >= 3 ? (results as SearchResultType[]) : ([] as SearchResultType[])}
           onInputChange={(_, value) => value && debouncedSetter(value)}
-          renderInput={(params) => (
+          renderInput={(params): React.ReactNode => (
             <TextField
               {...params}
               onClick={() => setSearchPopupOpen(true)}
@@ -328,7 +313,6 @@ function NavbarBase({
               }}
             />
           )}
-          PaperComponent={SearchPopupPaper}
         />
         <NavbarLink title="Dashboard" icon={<Dashboard />} href="/" exact />
         <NavbarLink
@@ -345,14 +329,16 @@ function NavbarBase({
   );
 }
 
-function NavbarSection({ children, title }: { children: any; title?: string }) {
+function NavbarSection({ children, title }: { children: React.ReactNode; title?: string }) {
   return (
     <div className="bg-white rounded-lg">
       <List
         subheader={
           title ? (
-            <ListSubheader className="rounded-lg">{title}</ListSubheader>
-          ) : undefined
+            <ListSubheader component="div" disableSticky className="rounded-lg">
+              {title}
+            </ListSubheader>
+          ) : null
         }
       >
         {children}
@@ -386,14 +372,14 @@ function NavbarLink({
         <div className="absolute w-2 inset-y-0 -left-2 bg-sky-800 rounded-l"></div>
       )}
       <ListItemButton onClick={() => router.push(href)}>
-        {icon && <ListItemIcon>{icon}</ListItemIcon>}
+        {icon ? <ListItemIcon>{icon}</ListItemIcon> : null}
         <ListItemText primary={title} />
       </ListItemButton>
     </div>
   );
 }
 
-function SwitchPageViewButton() {
+function SwitchPageViewButton(): JSX.Element | null {
   const [pageView, setPageView] = usePageView();
 
   switch (pageView) {
@@ -409,6 +395,8 @@ function SwitchPageViewButton() {
           <ListItemText primary="Switch to student view" />
         </ListItemButton>
       );
+    default:
+      return null;
   }
 }
 
@@ -417,44 +405,125 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
 
   const tutor = useIsTutor(_isTutor);
 
+  // Load level info without Relay (to avoid build-time artifact requirement)
+  const [levelInfo, setLevelInfo] = useState<{ level: number; xpInLevel: number; xpRequiredForLevelUp: number; userName?: string }>({ level: 3, xpInLevel: 240, xpRequiredForLevelUp: 500 });
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ?? "/api/graphql";
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            query: `query NavbarLevelQuery {
+              currentUserLevelInfo { level xpInLevel xpRequiredForLevelUp }
+              currentUserInfo { userName }
+            }`,
+          }),
+          credentials: "include",
+        });
+        const json = await res.json();
+        const li = json?.data?.currentUserLevelInfo;
+        const un = json?.data?.currentUserInfo?.userName;
+        if (!cancelled && li) {
+          setLevelInfo({ level: li.level ?? 3, xpInLevel: li.xpInLevel ?? 240, xpRequiredForLevelUp: li.xpRequiredForLevelUp ?? 500, userName: un });
+        }
+      } catch (_) {
+        // keep fallback
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const level = levelInfo.level;
+  const xpInLevel = levelInfo.xpInLevel;
+  const xpRequired = levelInfo.xpRequiredForLevelUp;
+  const percent = Math.max(0, Math.min(100, Math.round((xpInLevel / Math.max(1, xpRequired)) * 100)));
+
   return (
-    <div className="sticky bottom-0 py-6 -mt-6 bg-gradient-to-t from-slate-200 from-75% to-transparent">
+    <div className="sticky bottom-0 py-3 -mt-3 bg-gradient-to-t from-slate-200 from-75% to-transparent">
       <NavbarSection>
         <ListItem
-          secondaryAction={
-            <Tooltip title="Logout" placement="left">
-              <IconButton
-                edge="end"
-                aria-label="logout"
-                onClick={() => {
-                  window.localStorage.removeItem("meitrex-welcome-shown");
-                  auth.signoutRedirect({
-                    post_logout_redirect_uri:
-                      process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ??
-                      "http://localhost:3005",
-                  });
-                }}
-              >
-                <Logout />
-              </IconButton>
-            </Tooltip>
-          }
+          dense
+          disableGutters
+          sx={{ alignItems: 'center', py: 1, '& .MuiListItemText-root': { my: 0 } }}
         >
-          <ListItemAvatar>
-            <Link href={"/profile"}>
-              <Avatar src={auth.user?.profile?.picture} />
-            </Link>
+          <ListItemAvatar sx={{ minWidth: 44 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Link href={"/profile"}>
+                <Avatar src={auth.user?.profile?.picture} />
+              </Link>
+            </Box>
           </ListItemAvatar>
-          <ListItemText primary={auth.user?.profile?.name} />
+          <ListItemText
+            primary={
+              <Typography variant="body1" fontWeight={600}>
+                {auth.user?.profile?.name}
+              </Typography>
+            }
+            // XP/Level section removed from secondary, will be below
+          />
           <Tooltip title="Settings" placement="left">
-            <Link href="/settings/gamification">
-              <IconButton>
-                <Settings />
-              </IconButton>
-            </Link>
+            <span>
+              <Link href="/settings/gamification">
+                <IconButton component="span">
+                  <Settings />
+                </IconButton>
+              </Link>
+            </span>
           </Tooltip>
+          <ListItemSecondaryAction>
+            <Tooltip title="Logout" placement="left">
+              <span>
+                <IconButton
+                  edge="end"
+                  aria-label="logout"
+                  onClick={() => {
+                    window.localStorage.removeItem("meitrex-welcome-shown");
+                    auth.signoutRedirect({
+                      post_logout_redirect_uri:
+                        process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ??
+                        "http://localhost:3005",
+                    });
+                  }}
+                >
+                  <Logout />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </ListItemSecondaryAction>
         </ListItem>
-
+        {/* Divider between user info and XP/Level section */}
+        <Divider />
+        {/* XP/Level section below the name/profile/avatar, with padding top */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 1.25,
+            pt: 0.75,
+            pb: 0.75,
+            px: 2,
+          }}
+        >
+          <img
+            src={`/levels/level_${level}.svg`}
+            alt={`Level ${level} icon`}
+            width={50}
+            height={50}
+            style={{ display: 'block' }}
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+          />
+          <Box sx={{ minWidth: 160, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <LinearProgress variant="determinate" value={percent} sx={{ height: 8, borderRadius: 999 }} />
+            <Typography variant="caption" sx={{ mt: 0.25, display: 'block' }}>
+              {xpInLevel} / {xpRequired} XP
+            </Typography>
+          </Box>
+        </Box>
         {tutor && (
           <>
             <Divider />
@@ -523,9 +592,7 @@ export function Navbar() {
             />
           ))}
         </NavbarSection>
-      ) : (
-        <></>
-      )}
+      ) : null}
     </NavbarBase>
   );
 }
