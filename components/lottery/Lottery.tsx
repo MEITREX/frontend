@@ -32,36 +32,7 @@ import {
 import { LotteryApiUserInventoryQuery } from "@/__generated__/LotteryApiUserInventoryQuery.graphql";
 import { LotteryApiLotteryRunMutation } from "@/__generated__/LotteryApiLotteryRunMutation.graphql";
 import { LotteryApiLotteryEquipItemMutation } from "@/__generated__/LotteryApiLotteryEquipItemMutation.graphql";
-
-type Rarity = "DEFAULT" | "COMMON" | "UNCOMMON" | "RARE" | "ULTRA_RARE";
-
-interface RarityStyle {
-  border: string;
-  background: string;
-}
-
-const rarityStyles: Record<Rarity, RarityStyle> = {
-  DEFAULT: {
-    border: "2px solid #B0B0B0",
-    background: "linear-gradient(to bottom right, #f5f5f5, #e0e0e0)",
-  },
-  COMMON: {
-    border: "2px solid #26a0f5",
-    background: "#e3f2fd",
-  },
-  UNCOMMON: {
-    border: "2px solid #d4af37",
-    background: "#fff8e1",
-  },
-  RARE: {
-    border: "2px solid #8e44ad",
-    background: "#f3e5f5",
-  },
-  ULTRA_RARE: {
-    border: "2px solid #e53935",
-    background: "#ffebee",
-  },
-};
+import { Rarity, rarityMap } from "@/components/items/types/Types";
 
 export interface LotteryRun {
   id: string;
@@ -125,7 +96,7 @@ export default function Lottery() {
   const [isEggWobbling, setIsEggWobbling] = useState(true);
   const [showItem, setShowItem] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
-  const [rarity, setRarity] = useState<Rarity>("ULTRA_RARE");
+  const [rarity, setRarity] = useState<Rarity>("ultra_rare" as Rarity);
 
   // Item
   const [item, setItem] = useState<any>(null);
@@ -175,7 +146,7 @@ export default function Lottery() {
       } else {
         // Opening is done
         setShowItem(true);
-        if (rarity === "RARE" || rarity === "ULTRA_RARE") {
+        if (rarity === "rare" as Rarity || rarity === "ultra_rare" as Rarity) {
           mute ? "" : sparkle.play();
           setCelebrate(true);
         }
@@ -193,7 +164,7 @@ export default function Lottery() {
       variables: {},
       onCompleted(item) {
         // Start animation
-        setRarity(item.lotteryRun?.rarity! as Rarity);
+        setRarity(item.lotteryRun?.rarity!.toLowerCase() as Rarity);
         setDinoPoints((prev) => prev - eggCost);
         setIsEggWobbling(false);
         setIsOpening(true);
@@ -345,9 +316,9 @@ export default function Lottery() {
         >
           <Confetti
             colors={[
-              rarity === "RARE"
+              rarity === "rare" as Rarity
                 ? "#8e44ad"
-                : rarity === "ULTRA_RARE"
+                : rarity === "ultra_rare" as Rarity
                 ? "#e53935"
                 : "",
             ]}
@@ -416,7 +387,10 @@ export default function Lottery() {
             gap: 1,
             padding: "4px",
             overflow: "hidden",
-            ...rarityStyles[rarity],
+            borderWidth: 2,
+            borderStyle: "solid",
+            borderColor: rarityMap[rarity as Rarity].border,
+            background: rarityMap[rarity as Rarity].bg,
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
@@ -436,13 +410,13 @@ export default function Lottery() {
               py: 0.3,
               borderRadius: 1,
               bgcolor:
-                item.lotteryRun.rarity === "COMMON"
+                rarity === "common" as Rarity
                   ? "#e0e0e0"
-                  : item.lotteryRun.rarity === "UNCOMMON"
+                  : rarity === "uncommon" as Rarity
                     ? "#d4af37"
-                    : item.lotteryRun.rarity === "RARE"
+                    : rarity === "rare" as Rarity
                       ? "#8e44ad"
-                      : item.lotteryRun.rarity === "ULTRA_RARE" ? "#e53935"
+                      : rarity === "ultra_rare" as Rarity ? "#e53935"
                         : "#e0e0e0" ,
               color: "white",
               fontSize: "0.75rem",

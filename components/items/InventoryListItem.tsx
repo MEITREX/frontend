@@ -17,7 +17,12 @@ import FeaturedItemCard from "./FeaturedItemCard";
 import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
 import ItemInventoryPictureOnly from "./ItemInventoryPictureOnly";
 import { getItemsMerged } from "./logic/GetItems";
-import { DecorationItem, ItemStringType, rarityMap } from "./types/Types";
+import {
+  DecorationItem,
+  ItemStringType,
+  Rarity,
+  rarityMap,
+} from "./types/Types";
 import UnequipCard from "./UnequipCard";
 
 type InventoryListItemProps = {
@@ -191,7 +196,7 @@ export default function InventoryListItem({
             // Define colors for rarity
 
             // Map rarity to color
-            const colors = rarityMap[rarityKey] ?? rarityMap.common;
+            const colors = rarityMap[rarityKey as Rarity] ?? rarityMap.common;
 
             // Define label to dsiplay
             const rarityLabel =

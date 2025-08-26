@@ -4,36 +4,7 @@ import React from "react";
 import { useMutation } from "react-relay";
 import { LotteryApiLotteryEquipItemMutation } from "@/__generated__/LotteryApiLotteryEquipItemMutation.graphql";
 import { lotteryApiLotteryEquipItemMutation } from "@/components/lottery/api/LotteryApi";
-
-interface RarityStyle {
-  border: string;
-  background: string;
-}
-
-export type Rarity = "default" | "common" | "uncommon" | "rare" | "ultra_rare";
-
-const rarityStyles: Record<Rarity, RarityStyle> = {
-  default: {
-    border: "2px solid #B0B0B0",
-    background: "#e3f2fd",
-  },
-  common: {
-    border: "2px solid #26a0f5",
-    background: "#e3f2fd",
-  },
-  uncommon: {
-    border: "2px solid #d4af37",
-    background: "#fff8e1",
-  },
-  rare: {
-    border: "2px solid #8e44ad",
-    background: "#f3e5f5",
-  },
-  ultra_rare: {
-    border: "2px solid #e53935",
-    background: "#ffebee",
-  },
-};
+import { Rarity, rarityMap } from "@/components/items/types/Types";
 
 type Properties = {
   item: {
@@ -79,7 +50,10 @@ export default function Item({item, settings}: Properties) {
         justifyContent: "center",
         gap: 1,
         borderRadius: 2,
-        ...rarityStyles[item.rarity],
+        borderWidth: 2,
+        borderStyle: "solid",
+        borderColor: rarityMap[item.rarity].border,
+        background: rarityMap[item.rarity].bg,
       }}
     >
       {/* Name + Rarity */}
