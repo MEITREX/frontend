@@ -54,7 +54,13 @@ const sendMessageMutation = graphql`
         ... on VideoSource {
           startTime
           mediaRecords {
-            contentIds
+            contents {
+              id
+              metadata {
+                name
+                courseId
+              }
+            }
           }
         }
       }
@@ -112,7 +118,7 @@ export default function TutorChat() {
           if (mr.contents) {
             mr.contents.forEach((content) => {
               if (!content || content.metadata.courseId !== courseId) return;
-              if (src.page != undefined) {
+              if (src.__typename === "DocumentSource") {
                 urls.push({
                   link: `/courses/${courseId}/media/${content.id}?page=${
                     src.page + 1
@@ -121,7 +127,7 @@ export default function TutorChat() {
                     src.page + 1
                   }`,
                 });
-              } else if (src.startTime != undefined) {
+              } else if (src.__typename === "VideoSource") {
                 const readableTime = dayjs
                   .duration(src.startTime ?? 0, "seconds")
                   .format("HH:mm:ss");
