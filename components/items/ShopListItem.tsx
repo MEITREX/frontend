@@ -91,6 +91,7 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
           display: "grid",
           gridTemplateColumns: "repeat(6, 1fr)",
           gap: 2,
+          width: "100%",
         }}
       >
         {sortedItems.map((pic) => {
@@ -117,6 +118,7 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
               onClick={() => setSelectedItem(pic)}
               sx={{
                 position: "relative",
+                width: "100%",
                 border: `3px solid ${pic.unlocked ? "#80848c" : colors.border}`,
                 borderRadius: 3,
                 overflow: "hidden",
@@ -130,9 +132,10 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
               {/* Display picture for item in list */}
               {pic.foreColor ? (
                 <ItemInventoryPictureBackgrounds
-                  url={pic.url}
-                  backColor={pic.backColor}
+                  url={pic.url ? pic.url : null}
+                  backColor={pic.backColor ? pic.backColor : null}
                   foreColor={pic.foreColor}
+                  ratio="1 / 1"
                 />
               ) : (
                 <ItemInventoryPictureOnly url={pic.url} id={pic.id} />

@@ -234,6 +234,7 @@ export default function InventoryListItem({
                     url={item.url ? item.url : null}
                     backColor={item.backColor ? item.backColor : null}
                     foreColor={item.foreColor}
+                    ratio="1 / 1"
                   />
                 ) : (
                   <ItemInventoryPictureOnly
