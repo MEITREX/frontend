@@ -12,7 +12,12 @@ import ItemInventoryPictureOnly from "./ItemInventoryPictureOnly";
 import UnequipCard from "./UnequipCard";
 import { getItemsByUserQuery } from "./api/ItemsApi";
 import { getPublicProfileItemsMerged } from "./logic/GetItems";
-import { DecorationItem, ItemStringType, rarityMap } from "./types/Types";
+import {
+  DecorationItem,
+  ItemStringType,
+  Rarity,
+  rarityMap,
+} from "./types/Types";
 
 type PublicProfileListItemProps = {
   itemStringType: ItemStringType;
@@ -136,7 +141,7 @@ export default function PublicProfileListItem({
               .replace(/\s+/g, "");
 
             // Map rarity to color
-            const colors = rarityMap[rarityKey] ?? rarityMap.common;
+            const colors = rarityMap[rarityKey as Rarity] ?? rarityMap.common;
 
             // Define label to dsiplay
             const rarityLabel =

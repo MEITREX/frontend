@@ -3,7 +3,7 @@
 import { Box, Typography } from "@mui/material";
 import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
 import ItemInventoryPictureOnly from "./ItemInventoryPictureOnly";
-import { DecorationItem, rarityMap } from "./types/Types";
+import { DecorationItem, Rarity, rarityMap } from "./types/Types";
 
 // Kleine Featured-Karte (grüner Rand) für das equipte Item
 export default function FeaturedItemCard({
@@ -16,7 +16,7 @@ export default function FeaturedItemCard({
   // Farben wie unten im Hauptgrid
   const rarityKey = (item.rarity || "common").toLowerCase().replace(/\s+/g, "");
 
-  const colors = rarityMap[rarityKey] ?? rarityMap.common;
+  const colors = rarityMap[rarityKey as Rarity] ?? rarityMap.common;
 
   return (
     <Box

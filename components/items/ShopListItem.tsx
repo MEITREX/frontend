@@ -11,7 +11,12 @@ import DecorationPopup from "./DecorationPopup";
 import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
 import ItemInventoryPictureOnly from "./ItemInventoryPictureOnly";
 import { getItemsMerged } from "./logic/GetItems";
-import { DecorationItem, ItemStringType, rarityMap } from "./types/Types";
+import {
+  DecorationItem,
+  ItemStringType,
+  Rarity,
+  rarityMap,
+} from "./types/Types";
 
 type ShopListItemProps = {
   itemStringType: ItemStringType;
@@ -101,7 +106,7 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
             .replace(/\s+/g, "");
 
           // Map rarity to color
-          const colors = rarityMap[rarityKey] ?? rarityMap.common;
+          const colors = rarityMap[rarityKey as Rarity] ?? rarityMap.common;
 
           const price = pic.moneyCost;
 
