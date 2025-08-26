@@ -1,4 +1,7 @@
-import { TutorChatSendMessageMutation } from "@/__generated__/TutorChatSendMessageMutation.graphql";
+import {
+  TutorChatSendMessageMutation,
+  TutorChatSendMessageMutation$data,
+} from "@/__generated__/TutorChatSendMessageMutation.graphql";
 import { Link } from "@mui/material";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -6,10 +9,7 @@ import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import { useParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import {
-  graphql,
-  useMutation
-} from "react-relay";
+import { graphql, useMutation } from "react-relay";
 
 dayjs.extend(duration);
 
@@ -31,7 +31,7 @@ type Message = {
 type MessageSource = {
   displayText: string;
   link: string;
-}
+};
 
 const sendMessageMutation = graphql`
   mutation TutorChatSendMessageMutation($userInput: String!, $courseId: UUID) {
@@ -63,7 +63,8 @@ const sendMessageMutation = graphql`
 `;
 
 export default function TutorChat() {
-  const [sendMessage, isInFlight] = useMutation<TutorChatSendMessageMutation>(sendMessageMutation);
+  const [sendMessage, isInFlight] =
+    useMutation<TutorChatSendMessageMutation>(sendMessageMutation);
   const [input, setInput] = useState("");
   const [chatHistory, setChatHistory] = useState<Message[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -93,34 +94,40 @@ export default function TutorChat() {
       updated[updated.length - 1] = {
         sender: "bot",
         text,
-        sources
+        sources,
       };
       return updated;
     });
     sendTimestamp.current = null;
   }
 
-  function generateLinks(sources) {
+  function generateLinks(
+    sources: TutorChatSendMessageMutation$data["sendMessage"]["sources"]
+  ) {
     const urls: MessageSource[] = [];
     if (!sources) return urls;
-    sources.forEach((source) => {
-      if ("mediaRecords" in source && source.mediaRecords) {
-        source.mediaRecords.forEach((mr) => {
+    sources.forEach((src) => {
+      if ("mediaRecords" in src && src.mediaRecords) {
+        src.mediaRecords.forEach((mr) => {
           if (mr.contents) {
             mr.contents.forEach((content) => {
-              if(content.metadata.courseId !== courseId) return;
-              if(sources.__typename === 'DocumentSource'){
+              if (!content || content.metadata.courseId !== courseId) return;
+              if (src.page != undefined) {
                 urls.push({
-                  link: `/courses/${courseId}/media/${content.id}?page=${source.page + 1}`,
-                  displayText: `${content.metadata.name} Seite: ${source.page + 1}`
+                  link: `/courses/${courseId}/media/${content.id}?page=${
+                    src.page + 1
+                  }`,
+                  displayText: `${content.metadata.name} Seite: ${
+                    src.page + 1
+                  }`,
                 });
-              } else if(source.__typename === 'VideoSource'){
-                dayjs
-                  .duration(source.startTime ?? 0, "seconds")
-                  .format("HH:mm:ss")
+              } else if (src.startTime != undefined) {
+                const readableTime = dayjs
+                  .duration(src.startTime ?? 0, "seconds")
+                  .format("HH:mm:ss");
                 urls.push({
-                  link: `/courses/${courseId}/media/${content.id}?videoPosition=${source.page + 1}`,
-                  displayText: `${content.metadata.name} Zeitstempel: ${source.startTime}`
+                  link: `/courses/${courseId}/media/${content.id}?videoPosition=${src.startTime}`,
+                  displayText: `${content.metadata.name} Zeitstempel: ${readableTime}`,
                 });
               }
             });
@@ -152,10 +159,10 @@ export default function TutorChat() {
         courseId: courseId,
       },
       onCompleted: (data) => {
-        let urls : MessageSource[] = []
+        let urls: MessageSource[] = [];
 
-        if(data?.sendMessage?.sources){
-          urls = generateLinks(data.sendMessage.sources)
+        if (data?.sendMessage?.sources) {
+          urls = generateLinks(data.sendMessage.sources);
         }
 
         const elapsed = Date.now() - (sendTimestamp.current ?? 0);
@@ -211,7 +218,9 @@ export default function TutorChat() {
         )}
         {chatHistory.map((msg, idx) => {
           const isThinking =
-            isInFlight && idx === chatHistory.length - 1 && msg.sender !== "user";
+            isInFlight &&
+            idx === chatHistory.length - 1 &&
+            msg.sender !== "user";
           return (
             <div
               key={idx}
@@ -255,16 +264,18 @@ export default function TutorChat() {
               >
                 {msg.text}
                 {msg.sources.length > 0 && (
-                    <>
-                      <br /><br /> Quellen: <br />
-                      {msg.sources.map((src,i) => (
-                        <div key={i}>
-                          <Link href={src.link}>[{i + 1}]{" "}{src.displayText}</Link>
-                        </div>
-                      ))}
-                    </>
-                  )
-                }
+                  <>
+                    <br />
+                    <br /> Quellen: <br />
+                    {msg.sources.map((src, i) => (
+                      <div key={i}>
+                        <Link href={src.link}>
+                          [{i + 1}] {src.displayText}
+                        </Link>
+                      </div>
+                    ))}
+                  </>
+                )}
               </span>
             </div>
           );
