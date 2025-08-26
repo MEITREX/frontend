@@ -8,28 +8,55 @@ import AchievementWidgetOverview from "./components/achievement/AchievementWidge
 import LotteryWidget from "@/components/widgets/components/lottery/LotteryWidget";
 import ItemWidget from "@/components/widgets/components/item/ItemWidget";
 import WidgetSettings from "@/components/widgets/common/WidgetSettings";
+import { widgetApiSettingsQuery } from "@/components/widgets/api/WidgetApi";
+import { useLazyLoadQuery } from "react-relay";
+import { WidgetApiSettingsQuery } from "@/__generated__/WidgetApiSettingsQuery.graphql";
+import { useEffect } from "react";
+import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
 
 type Properties = {
   userId: string;
   courseId: string;
 }
 
+type MockedRecommendation = {
+  category: GamificationCategory;
+  requestFeedback: boolean;
+};
+
+const mockedRecommendations: MockedRecommendation[] = [
+  { category: "CUSTOMIZATION" as GamificationCategory, requestFeedback: true },
+  { category: "ALTRUISM" as GamificationCategory, requestFeedback: true },
+  { category: "RISK_REWARD" as GamificationCategory, requestFeedback: false },
+  { category: "ASSISTANCE" as GamificationCategory, requestFeedback: false },
+]
+
 export default function WidgetsOverview ({userId, courseId}: Properties) {
-  const [numWidgetsToShow, setNumWidgetsToShow] = React.useState(2)
+  const { currentUserWidgetSettings } = useLazyLoadQuery<WidgetApiSettingsQuery>(
+    widgetApiSettingsQuery,
+    { fetchPolicy: "store-or-network" },
+  );
+
+  const [numWidgetsToShow, setNumWidgetsToShow] = React.useState(
+    currentUserWidgetSettings?.numberOfRecommendations ?? 2
+  );
 
   const widgets = [
-    { key: "achievements", component: <AchievementWidgetOverview userId={userId} courseId={courseId} /> },
-    { key: "questions", component: <OpenQuestionWidget /> },
-    { key: "forum", component: <ForumActivityWidget /> },
-    { key: "lottery", component: <LotteryWidget />},
-    { key: "item", component: <ItemWidget /> },
+    {category:"INCENTIVE" as GamificationCategory, key: "achievements", component: <AchievementWidgetOverview userId={userId} courseId={courseId} /> },
+    {category:"ALTRUISM" as GamificationCategory, key: "questions", component: <OpenQuestionWidget /> },
+    {category:"ASSISTANCE" as GamificationCategory, key: "forum", component: <ForumActivityWidget /> },
+    {category:"RISK_REWARD" as GamificationCategory, key: "lottery", component: <LotteryWidget />},
+    {category:"CUSTOMIZATION" as GamificationCategory, key: "item", component: <ItemWidget /> },
   ];
 
-  function getWidgets(order: string[]) {
-    return order.map((key) => widgets.find((w) => w.key === key)!);
-  }
-
-  const selectedWidgets = getWidgets(["item","lottery", "forum","questions", "lottery"]).slice(0, numWidgetsToShow);
+  const selectedWidgets = widgets
+    .map(w => {
+      const recommendation = mockedRecommendations.find(r => r.category === w.category);
+      if (!recommendation) return null;
+      return { ...w, requestFeedback: recommendation.requestFeedback };
+    })
+    .filter((w): w is typeof widgets[0] & { requestFeedback: boolean } => w !== null)
+    .slice(0, numWidgetsToShow);
 
   return (
     <Box
@@ -41,6 +68,7 @@ export default function WidgetsOverview ({userId, courseId}: Properties) {
       }}
     >
       <WidgetSettings
+        refreshInterval={currentUserWidgetSettings.recommendationRefreshInterval}
         numWidgets={numWidgetsToShow}
         onNumWidgetsChange={(n) => setNumWidgetsToShow(n)}
       />
@@ -53,11 +81,12 @@ export default function WidgetsOverview ({userId, courseId}: Properties) {
           justifyContent: "center",
         }}
       >
-        {selectedWidgets.map((w) => (
+        {selectedWidgets.map(w => (
           <Box key={w.key}>
-            {w.component}
+            {React.cloneElement(w.component, { openFeedback: w.requestFeedback, category: w.category })}
           </Box>
         ))}
+
       </Box>
     </Box>
   );

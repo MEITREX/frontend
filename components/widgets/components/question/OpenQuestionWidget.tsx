@@ -5,8 +5,15 @@ import { Box } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
+import WidgetFeedback from "@/components/widgets/common/WidgetFeedback";
+import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
 
-export default function OpenQuestionWidget() {
+type Props = {
+  openFeedback?: boolean,
+  category?: GamificationCategory,
+}
+
+export default function OpenQuestionWidget({openFeedback, category}:Props) {
   const params = useParams();
   const courseId = params.courseId as string;
 
@@ -20,6 +27,7 @@ export default function OpenQuestionWidget() {
 
   return (
     <WidgetWrapper title="Open Questions" linkHref="/profile" linkLabel="Forum">
+      <WidgetFeedback openFeedback={openFeedback} category={category}/>
       <Box sx={{ display: "flex", flexDirection: "column" }}>
         {(data.openQuestionByCourseId ?? []).length > 0 ? (
           <ThreadList threads={data.openQuestionByCourseId} />

@@ -4,6 +4,7 @@ type AccessToken {
 }
 
 type Achievement implements HasGoal {
+  adaptive: Boolean!
   completed: Boolean!
   completedCount: Int
   courseId: UUID!
@@ -14,7 +15,7 @@ type Achievement implements HasGoal {
   requiredCount: Int
   trackingEndTime: DateTime
   trackingStartTime: DateTime
-  userId: UUID
+  userId: UUID!
 }
 
 type AiEntityProcessingProgress {
@@ -723,6 +724,22 @@ enum Gamification {
   GAMIFICATION_ENABLED
 }
 
+enum GamificationCategory {
+  ALTRUISM
+  ASSISTANCE
+  CUSTOMIZATION
+  IMMERSION
+  INCENTIVE
+  PROGRESSION
+  RISK_REWARD
+  SOCIALIZATION
+}
+
+type GamificationCategoryRecommendation {
+  category: GamificationCategory!
+  requestFeedback: Boolean!
+}
+
 input GenerateAccessTokenInput {
   authorizationCode: String!
   provider: ExternalServiceProviderDto!
@@ -748,8 +765,14 @@ type Grading {
 }
 
 interface HasGoal {
+  completed: Boolean!
+  completedCount: Int
   courseId: UUID!
-  userId: UUID
+  description: String!
+  requiredCount: Int
+  trackingEndTime: DateTime
+  trackingStartTime: DateTime
+  userId: UUID!
 }
 
 type InfoThread implements Thread {
@@ -836,6 +859,10 @@ type ItemProgress {
 }
 
 scalar JSON
+
+type LectureQuestionResponse {
+  answer: String!
+}
 
 scalar LocalTime
 
@@ -1001,6 +1028,9 @@ type Mutation {
   recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
   saveStudentMappings(courseId: UUID!, studentMappingInputs: [StudentMappingInput!]!): [String]!
   selectAnswer(postId: UUID!): QuestionThread!
+  sendMessage(courseId: UUID, userInput: String!): LectureQuestionResponse!
+  sendRecommendationFeedback(category: GamificationCategory!, feedback: RecommendationUserFeedback!): Boolean!
+  setCurrentUserWidgetSettings(settings: WidgetSettingsInput!): WidgetSettings!
   setLinkedMediaRecordsForContent(contentId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
   setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
   setNickname(nickname: String!): UserInfo!
@@ -1116,6 +1146,7 @@ type PublicUserInfo {
 }
 
 type Query {
+  _empty: String
   achievementsByCourseId(courseId: UUID!): [Achievement!]!
   achievementsByUserId(userId: UUID): [Achievement!]!
   contentsByChapterIds(chapterIds: [UUID!]!): [[Content!]!]!
@@ -1125,6 +1156,7 @@ type Query {
   courses(filter: CourseFilter, pagination: Pagination, sortBy: [String!], sortDirection: [SortDirection!]! = [ASC]): CoursePayload!
   coursesByIds(ids: [UUID!]!): [Course!]!
   currentUserInfo: UserInfo!
+  currentUserWidgetSettings: WidgetSettings!
   dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
   findAssignmentsByAssessmentIds(assessmentIds: [UUID!]!): [Assignment]!
   findContentsByIds(ids: [UUID!]!): [Content]!
@@ -1165,6 +1197,18 @@ type Query {
   threadsByContentId(id: UUID!): [Thread!]!
   userCourseRewardScores(courseId: UUID!): RewardScores!
   userMediaRecords: [MediaRecord!]!
+}
+
+type Quest implements HasGoal {
+  completed: Boolean!
+  completedCount: Int
+  courseId: UUID!
+  description: String!
+  name: String!
+  requiredCount: Int
+  trackingEndTime: DateTime
+  trackingStartTime: DateTime
+  userId: UUID!
 }
 
 interface Question {
@@ -1210,6 +1254,14 @@ enum QuestionType {
   MULTIPLE_CHOICE
   NUMERIC
   SELF_ASSESSMENT
+}
+
+type QuestSet {
+  forDay: Date
+  id: UUID!
+  name: String!
+  quests: [Quest!]!
+  rewardMultiplier: Float!
 }
 
 type Quiz {
@@ -1275,6 +1327,12 @@ type QuizOutput {
 }
 
 directive @Range(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Range.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+enum RecommendationUserFeedback {
+  JUST_RIGHT
+  LESS_OFTEN
+  MORE_OFTEN
+}
 
 directive @resolveTo(requiredSelectionSet: String, sourceName: String, sourceTypeName: String, sourceFieldName: String, sourceSelectionSet: String, sourceArgs: ResolveToSourceArgs, keyField: String, keysArg: String, pubsubTopic: String, filterBy: String, additionalArgs: ResolveToSourceArgs, result: String, resultType: String) on FIELD_DEFINITION
 
@@ -1698,6 +1756,16 @@ type VideoRecordSegment implements MediaRecordSegment {
   thumbnail: String!
   title: String
   transcript: String!
+}
+
+type WidgetSettings {
+  numberOfRecommendations: Int!
+  recommendationRefreshInterval: Int!
+}
+
+input WidgetSettingsInput {
+  numberOfRecommendations: Int!
+  recommendationRefreshInterval: Int!
 }
 
 enum YearDivision {

@@ -13,6 +13,36 @@ export const widgetApiItemInventoryForUserQuery = graphql`
   }
 `;
 
+export const widgetApiSettingsQuery = graphql`
+  query WidgetApiSettingsQuery {
+    currentUserWidgetSettings {
+      numberOfRecommendations
+      recommendationRefreshInterval
+    }
+  }
+`;
+
+export const widgetApiSettingsMutation = graphql`
+  mutation WidgetApiSettingsMutation($widgetSettingsInput: WidgetSettingsInput!) {
+    setCurrentUserWidgetSettings(settings: $widgetSettingsInput) {
+      numberOfRecommendations
+      recommendationRefreshInterval
+    }
+  }
+`;
+
+export const widgetApiRecommendationFeedbackMutation = graphql`
+    mutation WidgetApiRecommendationFeedbackMutation(
+        $category: GamificationCategory!,
+        $feedback: RecommendationUserFeedback!
+    ) {
+        sendRecommendationFeedback(category: $category, feedback: $feedback)
+    }
+`;
+
+
+
+
 export const widgetApiAchievementWidgetOverviewQuery = graphql`
   query WidgetApiAchievementWidgetOverviewQuery($id: UUID!) {
     achievementsByUserId(userId: $id) {

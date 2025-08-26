@@ -6,14 +6,41 @@ import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfi
 import SentimentSatisfiedIcon from '@mui/icons-material/SentimentSatisfied';
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
 import CloseIcon from '@mui/icons-material/Close';
+import { useMutation } from "react-relay";
+import {
+  widgetApiRecommendationFeedbackMutation,
+} from "@/components/widgets/api/WidgetApi";
+import {
+  GamificationCategory,
+  RecommendationUserFeedback,
+  WidgetApiRecommendationFeedbackMutation,
+} from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
 
-export default function WidgetFeedback() {
-  const [interval, setInterval] = useState(6);
-  const [open, setOpen] = useState(true);
+type Props = {
+  openFeedback?: boolean,
+  category?: GamificationCategory,
+}
 
-  const handleFeedback = (_: any, value: number) => {
-    // CALL API
-    setOpen(false);
+export default function WidgetFeedback({openFeedback, category}: Props ) {
+  const [recommendationFeedback] = useMutation<WidgetApiRecommendationFeedbackMutation>(
+    widgetApiRecommendationFeedbackMutation
+  );
+
+  const [open, setOpen] = useState(openFeedback);
+
+  const handleFeedback = (_: any, value: RecommendationUserFeedback) => {
+    recommendationFeedback({
+      variables: {
+        category: category as GamificationCategory,
+        feedback: value,
+      },
+      onCompleted() {
+        setOpen(false);
+      },
+      onError(error) {
+        console.error("Feedback failed", error);
+      },
+    });
   };
 
   if (!open) return null;
@@ -34,10 +61,9 @@ export default function WidgetFeedback() {
       gap:0.75,
     }}>
       <Typography variant="caption" align="center">
-        <strong>Would you like to get this widget recommended more often?</strong>
+        <strong>How often do you want to see this widget?</strong>
       </Typography>
       <ToggleButtonGroup
-        value={interval}
         exclusive
         onChange={handleFeedback}
         size="small"
@@ -47,32 +73,44 @@ export default function WidgetFeedback() {
           value="LESS_OFTEN"
           sx={{
             flex: 1,
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
             backgroundColor: "#ffcdd2",
             "&:hover": { backgroundColor: "#ef9a9a" },
           }}
         >
+          <Typography sx={{ whiteSpace: "nowrap" }}>Less often</Typography>
           <SentimentVeryDissatisfiedIcon color="error" />
-        </ToggleButton>
-
-        <ToggleButton
-          value="MORE_OFTEN"
-          sx={{
-            flex: 1,
-            backgroundColor: "#fff9c4",
-            "&:hover": { backgroundColor: "#fff59d" },
-          }}
-        >
-          <SentimentSatisfiedIcon color="warning" />
         </ToggleButton>
 
         <ToggleButton
           value="JUST_RIGHT"
           sx={{
             flex: 1,
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+            backgroundColor: "#fff9c4",
+            "&:hover": { backgroundColor: "#fff59d" },
+          }}
+        >
+          <Typography sx={{ whiteSpace: "nowrap" }}>Just right</Typography>
+          <SentimentSatisfiedIcon color="warning" />
+        </ToggleButton>
+
+        <ToggleButton
+          value="MORE_OFTEN"
+          sx={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
             backgroundColor: "#c8e6c9",
             "&:hover": { backgroundColor: "#a5d6a7" },
           }}
         >
+          <Typography sx={{ whiteSpace: "nowrap" }}>More often</Typography>
           <SentimentVerySatisfiedIcon color="success" />
         </ToggleButton>
 

@@ -2,28 +2,56 @@ import { Box, IconButton, Menu, MenuItem, ToggleButton, ToggleButtonGroup, Typog
 import SettingsIcon from "@mui/icons-material/Settings";
 import * as React from "react";
 import { useState } from "react";
+import { widgetApiSettingsMutation } from "@/components/widgets/api/WidgetApi";
+import { useMutation } from "react-relay";
+import { WidgetApiSettingsMutation } from "@/__generated__/WidgetApiSettingsMutation.graphql";
 
 type Props = {
-  numWidgets:number;
+  refreshInterval: number;
+  numWidgets: number;
   onNumWidgetsChange: (value:number) => void;
 }
 
-export default function WidgetSettings({numWidgets, onNumWidgetsChange}: Props) {
+export default function WidgetSettings({numWidgets, onNumWidgetsChange, refreshInterval}: Props) {
+  const [changeSettings] = useMutation<WidgetApiSettingsMutation>(
+    widgetApiSettingsMutation
+  );
+
+  const [interval, setInterval] = useState(refreshInterval);
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
-  const [interval, setInterval] = useState(6);
-
-  const handleIntervalChange = (_: any, value: number) => {
-    // CALL API
+  const handleIntervalChange = (_: unknown, value: number) => {
     setInterval(value);
+    updateSettings({
+      recommendationRefreshInterval: value,
+      numberOfRecommendations: numWidgets,
+    });
   };
 
-  const handleNumWidgetsChange = (_: any, value: number) => {
+  const handleNumWidgetsChange = (_: unknown, value: number) => {
     onNumWidgetsChange(value);
+    updateSettings({
+      recommendationRefreshInterval: interval,
+      numberOfRecommendations: value,
+    });
   };
+
+
+  function updateSettings(newSettings: {
+    recommendationRefreshInterval: number;
+    numberOfRecommendations: number;
+  }) {
+    changeSettings({
+      variables: { widgetSettingsInput: newSettings },
+      onError(error) {
+        console.error("Update Settings failed", error);
+      },
+    });
+  }
 
   return(
     <>
@@ -65,7 +93,7 @@ export default function WidgetSettings({numWidgets, onNumWidgetsChange}: Props) 
               size="small"
               fullWidth
             >
-              {[1, 2, 3, 4].map((n) => (
+              {[1, 2, 4].map((n) => (
                 <ToggleButton key={n} value={n} sx={{ flex: 1 }}>
                   {n}
                 </ToggleButton>
