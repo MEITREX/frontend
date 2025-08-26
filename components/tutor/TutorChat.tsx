@@ -99,23 +99,21 @@ export default function TutorChat() {
           if (mr.contents) {
             mr.contents.forEach((content) => {
               if (!content || content.metadata.courseId !== courseId) return;
-              if ("page" in src) {
+              if (src.page != undefined) {
                 urls.push({
                   link: `/courses/${courseId}/media/${content.id}?page=${
-                    src.page! + 1
+                    src.page + 1
                   }`,
                   displayText: `${content.metadata.name} Seite: ${
-                    src.page! + 1
+                    src.page + 1
                   }`,
                 });
-              } else if ("startTime" in src) {
+              } else if (src.startTime != undefined) {
                 const readableTime = dayjs
                   .duration(src.startTime ?? 0, "seconds")
                   .format("HH:mm:ss");
                 urls.push({
-                  link: `/courses/${courseId}/media/${
-                    content.id
-                  }?videoPosition=${src.startTime! + 1}`,
+                  link: `/courses/${courseId}/media/${content.id}?videoPosition=${src.startTime}`,
                   displayText: `${content.metadata.name} Zeitstempel: ${readableTime}`,
                 });
               }
@@ -249,14 +247,11 @@ export default function TutorChat() {
                 {msg.sources.length > 0 && (
                   <>
                     <br />
-                    <br />
-                    Quellen: <br />
+                    <br /> Quellen: <br />
                     {msg.sources.map((src, i) => (
                       <div key={i}>
-                        <Link href={src.link} underline="none">
-                          {" "}
-                          [{i + 1}]{"  "}
-                          {src.displayText}
+                        <Link href={src.link}>
+                          [{i + 1}] {src.displayText}
                         </Link>
                       </div>
                     ))}
