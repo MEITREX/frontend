@@ -45,6 +45,7 @@ import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import * as React from "react";
 import AchievementWidget from "./achievements/AchievementWidget";
+import QuestList from "./quests/QuestItem";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -390,6 +391,11 @@ export default function StudentCoursePage() {
 
         <Grid item xs={6}></Grid>
       </Grid>
+
+      {/* Quest */}
+      <Box marginBottom={2} marginTop={2}>
+        <QuestList></QuestList>
+      </Box>
 
       {/* Tabs for Learning Progress and Chapters */}
       <Box sx={{ width: "100%" }}>
