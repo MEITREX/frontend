@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import GeneralPage from "../GeneralPage";
+import Customization from "@/components/profile/customization/Customization";
 
 const tabs = [
   { label: "General", path: "general" },
@@ -42,19 +43,14 @@ export default function GeneralPageWrapper() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h4" gutterBottom>
-        Hi, {currentUserInfo.userName}
-      </Typography>
-      <Typography variant="body1" color="text.secondary" mb={3}>
-        Welcome to your profile. Use the tabs to navigate.
-      </Typography>
+      <Customization></Customization>
 
       <Tabs
         value={activeIndex}
         onChange={handleChange}
         textColor="primary"
         indicatorColor="primary"
-        sx={{ mb: 3, ".MuiTabs-indicator": { display: "none" } }}
+        sx={{mt:3, mb: 3, ".MuiTabs-indicator": { display: "none" } }}
       >
         {tabs.map((tab, index) => (
           <Tab

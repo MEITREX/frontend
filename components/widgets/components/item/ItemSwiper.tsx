@@ -5,7 +5,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { Box } from "@mui/material";
 import { Pagination, Autoplay, Navigation } from 'swiper/modules';
-import { useLazyLoadQuery, useMutation } from "react-relay";
+import { useLazyLoadQuery } from "react-relay";
 import { widgetApiItemInventoryForUserQuery } from "@/components/widgets/api/WidgetApi";
 import { WidgetApiItemInventoryForUserQuery } from "@/__generated__/WidgetApiItemInventoryForUserQuery.graphql";
 import Item from "@/components/widgets/components/item/Item";

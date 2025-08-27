@@ -63,6 +63,15 @@ export function getUnlockedItemsAndNotEquiped(
   );
 }
 
+export function getUnlockedItemAndEquiped(
+  inventoryForUser: any,
+  itemStringType?: string
+): DecorationItem | undefined {
+  return getItemsMerged(inventoryForUser, itemStringType).find(
+    (item) => item.unlocked && item.equipped
+  );
+}
+
 export function getPublicProfileItemsMerged(
   inventoryForUser: any,
   itemStringType?: string

@@ -89,21 +89,8 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
 
   return (
     <Box display="flex" gap={4} py={4}>
-      {/* Profilbild-Platzhalter */}
-      <Box display="flex" flexDirection="column" alignItems="center">
-        <Avatar
-          variant="square"
-          sx={{
-            width: 120,
-            height: 120,
-            fontSize: 40,
-          }}
-        >
-          {studentData.firstName.charAt(0)}
-        </Avatar>
-        <Box mt={1} color="text.secondary">
-          Profile picture
-        </Box>
+      {/* Eingabefelder */}
+      <Box flex={1} display="flex" flexDirection="column" gap={2}>
         <Button
           onClick={toggleEditMode}
           sx={{ mt: 2 }}
@@ -113,10 +100,6 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
         >
           {editMode ? "Save" : "Edit"}
         </Button>
-      </Box>
-
-      {/* Eingabefelder */}
-      <Box flex={1} display="flex" flexDirection="column" gap={2}>
         <TextField
           label="First Name"
           value={newStudentData.firstName}

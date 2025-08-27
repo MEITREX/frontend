@@ -28,13 +28,14 @@ type MockedRecommendation = {
 };
 
 const mockedRecommendations: MockedRecommendation[] = [
-  { category: "CUSTOMIZATION" as GamificationCategory, requestFeedback: true },
-  { category: "ALTRUISM" as GamificationCategory, requestFeedback: true },
+  { category: "CUSTOMIZATION" as GamificationCategory, requestFeedback: false },
+  { category: "ALTRUISM" as GamificationCategory, requestFeedback: false },
   { category: "RISK_REWARD" as GamificationCategory, requestFeedback: false },
   { category: "ASSISTANCE" as GamificationCategory, requestFeedback: false },
 ]
 
 export default function WidgetsOverview ({userId, courseId}: Properties) {
+  // ADD NEW WIDGETS HERE:
   const widgets = [
     {category:"INCENTIVE" as GamificationCategory, key: "achievements", component: <AchievementWidgetOverview userId={userId} courseId={courseId} /> },
     {category:"ALTRUISM" as GamificationCategory, key: "questions", component: <OpenQuestionWidget /> },
@@ -43,12 +44,13 @@ export default function WidgetsOverview ({userId, courseId}: Properties) {
     {category:"CUSTOMIZATION" as GamificationCategory, key: "item", component: <ItemWidget /> },
   ];
 
+  /*
   const data = useLazyLoadQuery<WidgetApiCurrentUserInfoQuery>(
     widgetApiCurrentUserInfoQuery,
     {},
     { fetchPolicy: "network-only" }
   );
-
+*/
   const { currentUserWidgetSettings } = useLazyLoadQuery<WidgetApiSettingsQuery>(
     widgetApiSettingsQuery,
     { fetchPolicy: "store-or-network" },
@@ -58,10 +60,11 @@ export default function WidgetsOverview ({userId, courseId}: Properties) {
     currentUserWidgetSettings?.numberOfRecommendations ?? 2
   );
 
-
+/*
   if (!data || !currentUserWidgetSettings) {
     return <p>Loading Wigets...</p>;
   }
+ */
 
   const selectedWidgets = widgets
     .map(w => {
