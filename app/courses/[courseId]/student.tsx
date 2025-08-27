@@ -38,6 +38,7 @@ import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutati
 import ForumOverview from "@/components/forum/ForumOverview";
 import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
 import AchievementPopUp from "@/components/profile/achievements/AchievementPopUp";
+import TutorWidget from "@/components/TutorWidget";
 import ForumActivityWidget from "@/components/widgets/ForumActivityWidget";
 import OpenQuestionWidget from "@/components/widgets/OpenQuestionWidget";
 import Box from "@mui/material/Box";
@@ -389,12 +390,14 @@ export default function StudentCoursePage() {
           <ForumActivityWidget />
         </Grid>
 
-        <Grid item xs={6}></Grid>
+        <Grid item xs={6}>
+          <TutorWidget />
+        </Grid>
       </Grid>
 
       {/* Quest */}
       <Box marginBottom={2} marginTop={2}>
-        <QuestList></QuestList>
+        <QuestList />
       </Box>
 
       {/* Tabs for Learning Progress and Chapters */}
