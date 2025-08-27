@@ -8,11 +8,14 @@ import AchievementWidgetOverview from "./components/achievement/AchievementWidge
 import LotteryWidget from "@/components/widgets/components/lottery/LotteryWidget";
 import ItemWidget from "@/components/widgets/components/item/ItemWidget";
 import WidgetSettings from "@/components/widgets/common/WidgetSettings";
-import { widgetApiSettingsQuery } from "@/components/widgets/api/WidgetApi";
+import {
+  widgetApiCurrentUserInfoQuery,
+  widgetApiSettingsQuery,
+} from "@/components/widgets/api/WidgetApi";
 import { useLazyLoadQuery } from "react-relay";
 import { WidgetApiSettingsQuery } from "@/__generated__/WidgetApiSettingsQuery.graphql";
-import { useEffect } from "react";
 import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
+import { WidgetApiCurrentUserInfoQuery } from "@/__generated__/WidgetApiCurrentUserInfoQuery.graphql";
 
 type Properties = {
   userId: string;
@@ -32,6 +35,20 @@ const mockedRecommendations: MockedRecommendation[] = [
 ]
 
 export default function WidgetsOverview ({userId, courseId}: Properties) {
+  const widgets = [
+    {category:"INCENTIVE" as GamificationCategory, key: "achievements", component: <AchievementWidgetOverview userId={userId} courseId={courseId} /> },
+    {category:"ALTRUISM" as GamificationCategory, key: "questions", component: <OpenQuestionWidget /> },
+    {category:"ASSISTANCE" as GamificationCategory, key: "forum", component: <ForumActivityWidget /> },
+    {category:"RISK_REWARD" as GamificationCategory, key: "lottery", component: <LotteryWidget />},
+    {category:"CUSTOMIZATION" as GamificationCategory, key: "item", component: <ItemWidget /> },
+  ];
+
+  const data = useLazyLoadQuery<WidgetApiCurrentUserInfoQuery>(
+    widgetApiCurrentUserInfoQuery,
+    {},
+    { fetchPolicy: "network-only" }
+  );
+
   const { currentUserWidgetSettings } = useLazyLoadQuery<WidgetApiSettingsQuery>(
     widgetApiSettingsQuery,
     { fetchPolicy: "store-or-network" },
@@ -41,13 +58,10 @@ export default function WidgetsOverview ({userId, courseId}: Properties) {
     currentUserWidgetSettings?.numberOfRecommendations ?? 2
   );
 
-  const widgets = [
-    {category:"INCENTIVE" as GamificationCategory, key: "achievements", component: <AchievementWidgetOverview userId={userId} courseId={courseId} /> },
-    {category:"ALTRUISM" as GamificationCategory, key: "questions", component: <OpenQuestionWidget /> },
-    {category:"ASSISTANCE" as GamificationCategory, key: "forum", component: <ForumActivityWidget /> },
-    {category:"RISK_REWARD" as GamificationCategory, key: "lottery", component: <LotteryWidget />},
-    {category:"CUSTOMIZATION" as GamificationCategory, key: "item", component: <ItemWidget /> },
-  ];
+
+  if (!data || !currentUserWidgetSettings) {
+    return <p>Loading Wigets...</p>;
+  }
 
   const selectedWidgets = widgets
     .map(w => {
@@ -86,7 +100,6 @@ export default function WidgetsOverview ({userId, courseId}: Properties) {
             {React.cloneElement(w.component, { openFeedback: w.requestFeedback, category: w.category })}
           </Box>
         ))}
-
       </Box>
     </Box>
   );

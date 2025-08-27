@@ -61,3 +61,20 @@ export const widgetApiAchievementWidgetOverviewQuery = graphql`
   }
 `;
 
+export const widgetApiCurrentUserInfoQuery = graphql`
+  query WidgetApiCurrentUserInfoQuery {
+    currentUserInfo {
+      courseMemberships {
+        courseId
+        course {
+          widgetRecommendations {
+            category
+            requestFeedback
+          }
+        }
+      }
+    }
+  }
+`;
+
+
