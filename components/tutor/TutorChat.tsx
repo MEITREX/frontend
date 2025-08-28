@@ -16,11 +16,9 @@ dayjs.extend(duration);
 
 // ----------- Globale Konstanten für fixe Strings -----------
 const MIN_WAIT_TIME = 800;
-const BOT_THINKS_TEXT = "Dino Tutor denkt nach...";
-const BOT_ERROR_TEXT =
-  "Es gab ein Problem bei der Kommunikation mit dem Tutor.";
-const BOT_PLACEHOLDER =
-  "Hallo! Ich bin dein Lern-Dino 🦖. Stell mir eine Frage!";
+const BOT_THINKS_TEXT = "Professor Dino is thinking...";
+const BOT_ERROR_TEXT = "There was a problem communicating with the tutor.";
+const BOT_PLACEHOLDER = "Hello! I am Professor Dino 🦖. Ask me a question!";
 
 const sendMessageMutation = graphql`
   mutation TutorChatSendMessageMutation($userInput: String!, $courseId: UUID) {
@@ -247,7 +245,9 @@ export default function TutorChat() {
                 {msg.sources.length > 0 && (
                   <>
                     <br />
-                    <br /> Quellen: <br />
+                    <br />
+                    Sources:
+                    <br />
                     {msg.sources.map((src, i) => (
                       <div key={i}>
                         <Link href={src.link}>
@@ -274,7 +274,7 @@ export default function TutorChat() {
           value={input}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          placeholder="Frage eingeben..."
+          placeholder="Ask a question..."
           disabled={isInFlight}
           multiline
           minRows={1}
@@ -295,16 +295,12 @@ export default function TutorChat() {
         <Button
           type="submit"
           variant="contained"
+          color="primary"
           disabled={isInFlight || !input.trim()}
           sx={{
             borderRadius: 4,
             height: 38,
             fontWeight: 600,
-            backgroundColor: "#81d4fa",
-            color: "#222",
-            "&:hover": {
-              backgroundColor: "#4fc3f7",
-            },
           }}
         >
           Senden
