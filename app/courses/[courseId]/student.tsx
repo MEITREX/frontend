@@ -39,8 +39,6 @@ import ForumOverview from "@/components/forum/ForumOverview";
 import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
 import AchievementPopUp from "@/components/profile/achievements/AchievementPopUp";
 import TutorWidget from "@/components/TutorWidget";
-import ForumActivityWidget from "@/components/widgets/ForumActivityWidget";
-import OpenQuestionWidget from "@/components/widgets/OpenQuestionWidget";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -380,14 +378,6 @@ export default function StudentCoursePage() {
             onClose={handleCloseAchievement}
             selectedAchievement={selectedAchievement}
           />
-        </Grid>
-
-        <Grid item xs={6}>
-          <OpenQuestionWidget />
-        </Grid>
-
-        <Grid item xs={6}>
-          <ForumActivityWidget />
         </Grid>
 
         <Grid item xs={6}>
