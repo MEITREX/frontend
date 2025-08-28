@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import TutorAvatar from "./TutorAvatar";
 import TutorChat from "./TutorChat";
 
-const AVATAR_WIDTH = 60;
+const AVATAR_WIDTH = 80;
 const CHAT_WIDTH = 500;
 
 const positions = [
