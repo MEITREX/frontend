@@ -5,8 +5,10 @@ import { widgetApiItemInventoryForUserQuery } from "@/components/widgets/api/Wid
 import { getUnlockedItemAndEquiped } from "@/components/items/logic/GetItems";
 import Image from "next/image";
 import React from "react";
+import ProfilePicAndBorder from "@/components/profile/header/common/ProfilePicAndBorder";
 
 type Props = {
+  componentHeight?: number;
   displayName: string;
   readonly inventoryForUser?: {
     readonly items: readonly {
@@ -18,7 +20,7 @@ type Props = {
   };
 };
 
-export default function ProfileCustomHeader({inventoryForUser, displayName}: Props) {
+export default function ProfileCustomHeader({inventoryForUser, displayName, componentHeight = 200}: Props) {
 
   const profilePic = getUnlockedItemAndEquiped(inventoryForUser,"profilePics");
   const background = getUnlockedItemAndEquiped(inventoryForUser,"patternThemes");
@@ -30,7 +32,7 @@ export default function ProfileCustomHeader({inventoryForUser, displayName}: Pro
       sx={{
         position: 'relative',
         width: '100%',
-        height: '200px',
+        height: `${componentHeight}px`,
         padding: "12px",
         border: '1px solid lightgray',
         borderRadius: '4px',
@@ -58,72 +60,7 @@ export default function ProfileCustomHeader({inventoryForUser, displayName}: Pro
           flexDirection: 'row'
         }}
       >
-        <Box
-          sx={{
-            position: 'relative',
-            width: '120px',
-            height: '120px',
-            borderRadius: 3,
-            overflow: 'hidden',
-          }}
-        >
-          {/* Frame */}
-          <Box
-            sx={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              ...(profilePicFrame?.url
-                  ? { // 1. Use Frame
-                    backgroundImage: `url(${profilePicFrame.url})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                  }
-                  : { // 2. Fallback when no frame selected
-                    bgcolor: '#089CDC',
-                  }
-              )
-            }}
-          />
-
-          {/* Profile Picture */}
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '80%',
-              height: '80%',
-              borderRadius: 2,
-              overflow: 'hidden',
-            }}
-          >
-            {profilePic
-              ? (
-                <Image
-                  src={profilePic.url as string}
-                  alt={profilePic.name}
-                  fill
-                  style={{ objectFit: 'cover' }}
-                />
-              )
-              : (
-                <Avatar
-                  variant="square"
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    fontSize: 40,
-                  }}
-                >
-                  P
-                </Avatar>
-              )
-            }
-          </Box>
-        </Box>
-
+        <ProfilePicAndBorder height={componentHeight*0.8} profilePic={profilePic} profilePicFrame={profilePicFrame} />
         <Typography
           sx={{
             mt: 1,
@@ -144,8 +81,8 @@ export default function ProfileCustomHeader({inventoryForUser, displayName}: Pro
           position: 'absolute',
           top: '16px',
           right: '16px',
-          width: '80px',
-          height: '80px',
+          width: `${(componentHeight)*0.4}px`,
+          height: `${(componentHeight)*0.4}px`,
           overflow: 'hidden',
         }}
       >
