@@ -23,16 +23,14 @@ import coins from "../../assets/lottery/coins.png";
 
 import { LotteryApiLotteryEquipItemMutation } from "@/__generated__/LotteryApiLotteryEquipItemMutation.graphql";
 import { LotteryApiLotteryRunMutation } from "@/__generated__/LotteryApiLotteryRunMutation.graphql";
-import { LotteryApiUserInventoryQuery } from "@/__generated__/LotteryApiUserInventoryQuery.graphql";
 import { useCurrency } from "@/app/contexts/CurrencyContext";
 import {
   lotteryApiLotteryEquipItemMutation,
   lotteryApiLotteryRunMutation,
-  lotteryApiUserInventoryQuery,
 } from "@/components/lottery/api/LotteryApi";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
-import { useLazyLoadQuery, useMutation } from "react-relay";
+import { useMutation } from "react-relay";
 
 type Rarity = "DEFAULT" | "COMMON" | "UNCOMMON" | "RARE" | "ULTRA_RARE";
 
@@ -78,12 +76,6 @@ export interface LotteryRun {
 }
 
 export default function Lottery() {
-  const inventory = useLazyLoadQuery<LotteryApiUserInventoryQuery>(
-    lotteryApiUserInventoryQuery,
-    {},
-    { fetchPolicy: "network-only" }
-  );
-
   const [runLottery] = useMutation<LotteryApiLotteryRunMutation>(
     lotteryApiLotteryRunMutation
   );
@@ -131,12 +123,6 @@ export default function Lottery() {
   // Item
   const [item, setItem] = useState<any>(null);
   const [equip, setEquip] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (inventory?.inventoryForUser?.unspentPoints != null) {
-      setPoints(inventory.inventoryForUser.unspentPoints);
-    }
-  }, [inventory]);
 
   // This useEffect is needed for the animation loop
   useEffect(() => {
