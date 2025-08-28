@@ -16,11 +16,10 @@ dayjs.extend(duration);
 
 // ----------- Globale Konstanten für fixe Strings -----------
 const MIN_WAIT_TIME = 800;
-const BOT_THINKS_TEXT = "Dino Tutor denkt nach...";
-const BOT_ERROR_TEXT =
-  "Es gab ein Problem bei der Kommunikation mit dem Tutor.";
+const BOT_THINKS_TEXT = "Tutor is thinking...";
+const BOT_ERROR_TEXT = "There was a problem communicating with the tutor.";
 const BOT_PLACEHOLDER =
-  "Hallo! Ich bin dein Lern-Dino 🦖. Stell mir eine Frage!";
+  "Hello! I am your personal tutor 🦖. Feel free to ask me a question!";
 
 const sendMessageMutation = graphql`
   mutation TutorChatSendMessageMutation($userInput: String!, $courseId: UUID) {
@@ -193,7 +192,7 @@ export default function TutorChat() {
         }}
       >
         {currentChat.length === 0 && (
-          <div style={{ color: "#aaa", textAlign: "right" }}>
+          <div style={{ color: "#aaa", textAlign: "center" }}>
             {BOT_PLACEHOLDER}
           </div>
         )}
@@ -247,7 +246,9 @@ export default function TutorChat() {
                 {msg.sources.length > 0 && (
                   <>
                     <br />
-                    <br /> Quellen: <br />
+                    <br />
+                    Sources:
+                    <br />
                     {msg.sources.map((src, i) => (
                       <div key={i}>
                         <Link href={src.link}>
@@ -274,7 +275,7 @@ export default function TutorChat() {
           value={input}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          placeholder="Frage eingeben..."
+          placeholder="Ask a question..."
           disabled={isInFlight}
           multiline
           minRows={1}
@@ -295,16 +296,12 @@ export default function TutorChat() {
         <Button
           type="submit"
           variant="contained"
+          color="primary"
           disabled={isInFlight || !input.trim()}
           sx={{
             borderRadius: 4,
             height: 38,
             fontWeight: 600,
-            backgroundColor: "#81d4fa",
-            color: "#222",
-            "&:hover": {
-              backgroundColor: "#4fc3f7",
-            },
           }}
         >
           Senden

@@ -10,6 +10,7 @@ interface TutorState {
   clearChat: () => void;
   addMessage: (messsage: Message) => void;
   changeLatestMessage: (message: Message) => void;
+  showHint: (hint: string) => void;
 }
 
 export type Message = {
@@ -42,10 +43,22 @@ export const useAITutorStore = create<TutorState>()(
           updated[updated.length - 1] = message;
           return { currentChat: updated };
         }),
+      showHint: (hint: string) =>
+        set({
+          showChat: true,
+          currentChat: [
+            {
+              sender: "bot",
+              sources: [],
+              text: "Hint: \n" + hint,
+            },
+          ],
+        }),
     }),
     {
       name: "tutor-storage",
       storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ currentChat: state.currentChat }), //only stores the currentChat
     }
   )
 );
