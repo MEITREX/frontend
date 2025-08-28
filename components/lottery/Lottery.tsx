@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import { Box, Typography, Button, IconButton } from "@mui/material";
-import Confetti from "react-confetti";
 import CloseIcon from "@mui/icons-material/Close";
+import { Box, Button, IconButton, Typography } from "@mui/material";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import Confetti from "react-confetti";
 
 import frame_1 from "../../assets/lottery/animation/frame_1.png";
+import frame_10 from "../../assets/lottery/animation/frame_10.png";
+import frame_11 from "../../assets/lottery/animation/frame_11.png";
+import frame_12 from "../../assets/lottery/animation/frame_12.png";
 import frame_2 from "../../assets/lottery/animation/frame_2.png";
 import frame_3 from "../../assets/lottery/animation/frame_3.png";
 import frame_4 from "../../assets/lottery/animation/frame_4.png";
@@ -15,23 +18,19 @@ import frame_6 from "../../assets/lottery/animation/frame_6.png";
 import frame_7 from "../../assets/lottery/animation/frame_7.png";
 import frame_8 from "../../assets/lottery/animation/frame_8.png";
 import frame_9 from "../../assets/lottery/animation/frame_9.png";
-import frame_10 from "../../assets/lottery/animation/frame_10.png";
-import frame_11 from "../../assets/lottery/animation/frame_11.png";
-import frame_12 from "../../assets/lottery/animation/frame_12.png";
 
 import coins from "../../assets/lottery/coins.png";
 
-import VolumeUpIcon from "@mui/icons-material/VolumeUp";
-import VolumeOffIcon from "@mui/icons-material/VolumeOff";
-import { useLazyLoadQuery, useMutation } from "react-relay";
+import { LotteryApiLotteryEquipItemMutation } from "@/__generated__/LotteryApiLotteryEquipItemMutation.graphql";
+import { LotteryApiLotteryRunMutation } from "@/__generated__/LotteryApiLotteryRunMutation.graphql";
+import { useCurrency } from "@/app/contexts/CurrencyContext";
 import {
   lotteryApiLotteryEquipItemMutation,
   lotteryApiLotteryRunMutation,
-  lotteryApiUserInventoryQuery,
 } from "@/components/lottery/api/LotteryApi";
-import { LotteryApiUserInventoryQuery } from "@/__generated__/LotteryApiUserInventoryQuery.graphql";
-import { LotteryApiLotteryRunMutation } from "@/__generated__/LotteryApiLotteryRunMutation.graphql";
-import { LotteryApiLotteryEquipItemMutation } from "@/__generated__/LotteryApiLotteryEquipItemMutation.graphql";
+import VolumeOffIcon from "@mui/icons-material/VolumeOff";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import { useMutation } from "react-relay";
 
 type Rarity = "DEFAULT" | "COMMON" | "UNCOMMON" | "RARE" | "ULTRA_RARE";
 
@@ -77,12 +76,6 @@ export interface LotteryRun {
 }
 
 export default function Lottery() {
-  const inventory = useLazyLoadQuery<LotteryApiUserInventoryQuery>(
-    lotteryApiUserInventoryQuery,
-    {},
-    { fetchPolicy: "network-only" }
-  );
-
   const [runLottery] = useMutation<LotteryApiLotteryRunMutation>(
     lotteryApiLotteryRunMutation
   );
@@ -97,7 +90,7 @@ export default function Lottery() {
   const sparkle = new Audio("/sounds/sparkle.mp3");
 
   // Dino Points
-  const [dinoPoints, setDinoPoints] = useState<number>(1000);
+  const { setPoints, points } = useCurrency();
   // EggCost needs to be the same as in the Backend
   const eggCost = 3000;
 
@@ -130,12 +123,6 @@ export default function Lottery() {
   // Item
   const [item, setItem] = useState<any>(null);
   const [equip, setEquip] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (inventory?.inventoryForUser?.unspentPoints != null) {
-      setDinoPoints(inventory.inventoryForUser.unspentPoints);
-    }
-  }, [inventory]);
 
   // This useEffect is needed for the animation loop
   useEffect(() => {
@@ -188,13 +175,14 @@ export default function Lottery() {
   }, [isOpening]);
 
   const handleOpenEgg = () => {
-    if (dinoPoints < eggCost || isOpening) return;
+    if (points! < eggCost || isOpening) return;
     runLottery({
       variables: {},
       onCompleted(item) {
         // Start animation
         setRarity(item.lotteryRun?.rarity! as Rarity);
-        setDinoPoints((prev) => prev - eggCost);
+        setPoints(points! - eggCost);
+
         setIsEggWobbling(false);
         setIsOpening(true);
 
@@ -227,7 +215,7 @@ export default function Lottery() {
     setCurrentFrame(0);
     setEquip(false);
     item.lotteryRun.sellCompensation
-      ? setDinoPoints(dinoPoints + item.lotteryRun.sellCompensation)
+      ? setPoints(points + item.lotteryRun.sellCompensation)
       : "";
   };
 
@@ -303,7 +291,7 @@ export default function Lottery() {
           component="span"
           sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
         >
-          {dinoPoints}
+          {points}
           <Image src={coins} alt="Coins" width={18} height={18} />
         </Box>
       </Button>
@@ -488,7 +476,7 @@ export default function Lottery() {
         <Button
           variant="contained"
           color="primary"
-          disabled={dinoPoints < eggCost || isOpening}
+          disabled={points! < eggCost || isOpening}
           onClick={handleOpenEgg}
         >
           <Box
