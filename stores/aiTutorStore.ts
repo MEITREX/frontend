@@ -10,6 +10,7 @@ interface TutorState {
   clearChat: () => void;
   addMessage: (messsage: Message) => void;
   changeLatestMessage: (message: Message) => void;
+  showHint: (hint: string) => void;
 }
 
 export type Message = {
@@ -41,6 +42,17 @@ export const useAITutorStore = create<TutorState>()(
           const updated = [...state.currentChat];
           updated[updated.length - 1] = message;
           return { currentChat: updated };
+        }),
+      showHint: (hint: string) =>
+        set({
+          showChat: true,
+          currentChat: [
+            {
+              sender: "bot",
+              sources: [],
+              text: "Hint: \n" + hint,
+            },
+          ],
         }),
     }),
     {
