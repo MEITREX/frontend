@@ -1,4 +1,3 @@
-// components/UnequipCard.tsx
 "use client";
 
 import { ItemsApiUnequipItemMutation } from "@/__generated__/ItemsApiUnequipItemMutation.graphql";

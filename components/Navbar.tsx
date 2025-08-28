@@ -463,7 +463,7 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
         <Box
           sx={{
             width: "100%",
-            height: "100%", // oder z. B. "200px" oder "calc(100vh - 64px)"
+            height: "100%",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",

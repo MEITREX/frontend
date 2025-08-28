@@ -142,7 +142,7 @@ export default function InventoryListItem({
         </Typography>
       </Box>
 
-      {/* 1) FEATURE-ROW: equipped (grün) + Unequip (orange) */}
+      {/* 1) FEATURE-ROW: equipped (green) + Unequip (orange) */}
       <Box
         sx={{
           display: "grid",
@@ -155,7 +155,6 @@ export default function InventoryListItem({
         {equipedItem ? (
           <FeaturedItemCard item={equipedItem} onClick={handleClick} />
         ) : (
-          // Platzhalter, damit Unequip rechts bleibt, falls nichts equipped
           <Box />
         )}
 
@@ -164,7 +163,7 @@ export default function InventoryListItem({
           equipedItem && <UnequipCard equippedItem={equipedItem} />}
       </Box>
 
-      {/* 2) Divider wie im Screenshot */}
+      {/* 2) Divider */}
       {equipedItem && (
         <Box
           sx={{
