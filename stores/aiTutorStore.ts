@@ -58,7 +58,7 @@ export const useAITutorStore = create<TutorState>()(
     {
       name: "tutor-storage",
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ currentChat: state.currentChat }) //only stores the currentChat
+      partialize: (state) => ({ currentChat: state.currentChat }), //only stores the currentChat
     }
   )
 );
