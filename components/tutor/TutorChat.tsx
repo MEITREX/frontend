@@ -16,9 +16,9 @@ dayjs.extend(duration);
 
 // ----------- Globale Konstanten für fixe Strings -----------
 const MIN_WAIT_TIME = 800;
-const BOT_THINKS_TEXT = "Professor Dino is thinking...";
+const BOT_THINKS_TEXT = "Tutor is thinking...";
 const BOT_ERROR_TEXT = "There was a problem communicating with the tutor.";
-const BOT_PLACEHOLDER = "Hello! I am Professor Dino 🦖. Ask me a question!";
+const BOT_PLACEHOLDER = "Hello! I am your personal tutor 🦖. Feel free to ask me a question!";
 
 const sendMessageMutation = graphql`
   mutation TutorChatSendMessageMutation($userInput: String!, $courseId: UUID) {
@@ -191,7 +191,7 @@ export default function TutorChat() {
         }}
       >
         {currentChat.length === 0 && (
-          <div style={{ color: "#aaa", textAlign: "right" }}>
+          <div style={{ color: "#aaa", textAlign: "center" }}>
             {BOT_PLACEHOLDER}
           </div>
         )}
