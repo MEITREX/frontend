@@ -134,7 +134,14 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isDragging, dragOffset, mouseDownPosition]);
+  }, [
+    isDragging,
+    dragOffset,
+    mouseDownPosition,
+    showChat,
+    closeChat,
+    openChat,
+  ]);
 
   let style: React.CSSProperties = {
     position: "fixed",
