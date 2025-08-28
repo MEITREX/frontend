@@ -4,6 +4,7 @@ import {
   Chip,
   Dialog,
   DialogContent,
+  Grid,
   IconButton,
   LinearProgress,
   Typography,
@@ -277,55 +278,66 @@ export default function QuestList({ userId }: { userId: string }) {
   return (
     <Box sx={{ mx: "auto" }}>
       <Typography
-        variant="h4"
-        sx={{ fontWeight: 800, mb: 0.5, textAlign: "center" }}
-      >
-        Daily Quests
-      </Typography>
-      <Typography
-        variant="body2"
-        sx={{
-          color: "text.secondary",
-          mb: 2.5,
-          textAlign: "center",
-          maxWidth: 400,
-          mx: "auto",
-        }}
-      >
-        Finish the quests below to earn additional Dino Points.
-        <br />
-        <strong>Careful:</strong> Quests are only temporarily available!
-      </Typography>
+  variant="h4"
+  sx={{ fontWeight: 800, mb: 0.5, textAlign: "center" }}
+>
+  Daily Quests
+</Typography>
 
-      <Box sx={{ p: 2, gap: 2, display: "flex", flexDirection: "column" }}>
-        <QuestItem
-          title="Gewinne ein Match"
-          description="Gewinne ein beliebiges Match im DinoBattle."
-          reward={300}
-          completed={false}
-          completedCount={1}
-          requiredCount={3}
-          onOpen={openDialog}
-        />
-        <QuestItem
-          title="Sammle Beeren"
-          description="Sammle 10 Beeren im Abenteuer-Modus."
-          reward={300}
-          completed={false}
-          completedCount={7}
-          requiredCount={10}
-          onOpen={openDialog}
-        />
-        <QuestItem
-          title="Login-Serie"
-          description="Logge dich 3 Tage in Folge ein."
-          reward={300}
-          completed
-          completedCount={3}
-          requiredCount={3}
-          onOpen={openDialog}
-        />
-      </Box>
+<Typography
+  variant="body2"
+  sx={{
+    color: "text.secondary",
+    mb: 2.5,
+    textAlign: "center",
+    maxWidth: 400,
+    mx: "auto",
+  }}
+>
+  Finish the quests below to earn additional Dino Points.
+  <br />
+  <strong>Careful:</strong> Quests are only temporarily available!
+</Typography>
+
+{/* Grid für 3 Spalten */}
+<Box sx={{ p: 2 }}>
+  <Grid container spacing={2}>
+    <Grid item xs={12} sm={4}>
+      <QuestItem
+        title="Gewinne ein Match"
+        description="Gewinne ein beliebiges Match im DinoBattle."
+        reward={300}
+        completed={false}
+        completedCount={1}
+        requiredCount={3}
+        onOpen={openDialog}
+      />
+    </Grid>
+    <Grid item xs={12} sm={4}>
+      <QuestItem
+        title="Sammle Beeren"
+        description="Sammle 10 Beeren im Abenteuer-Modus."
+        reward={300}
+        completed={false}
+        completedCount={7}
+        requiredCount={10}
+        onOpen={openDialog}
+      />
+    </Grid>
+    <Grid item xs={12} sm={4}>
+      <QuestItem
+        title="Login-Serie"
+        description="Logge dich 3 Tage in Folge ein."
+        reward={300}
+        completed
+        completedCount={3}
+        requiredCount={3}
+        onOpen={openDialog}
+      />
+    </Grid>
+  </Grid>
+</Box>
+
 
       <QuestDialog
         open={open}
