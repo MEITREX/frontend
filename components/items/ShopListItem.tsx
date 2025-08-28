@@ -18,11 +18,9 @@ type ShopListItemProps = {
 
 export default function ShopListItem({ itemStringType }: ShopListItemProps) {
   // Currency of user
-  const [points123, setPoints123] = useState<number | null>(null);
+  const { setPoints, points } = useCurrency();
   const { sortBy } = useSort();
   const [selectedItem, setSelectedItem] = useState<DecorationItem | null>(null);
-
-  const { setPoints, points } = useCurrency();
 
   const { inventoryForUser } = useLazyLoadQuery<ItemsApiInventoryForUserQuery>(
     inventoryForUserQuery,
