@@ -1,43 +1,16 @@
-import { ShopListItemBuyItemTutorMutation } from "@/__generated__/ShopListItemBuyItemTutorMutation.graphql";
-import { ShopListItemShopForUserTutorQuery } from "@/__generated__/ShopListItemShopForUserTutorQuery.graphql";
+import { ItemsApiBuyItemTutorMutation } from "@/__generated__/ItemsApiBuyItemTutorMutation.graphql";
+import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
+import { useCurrency } from "@/app/contexts/CurrencyContext";
 import { useSort } from "@/app/contexts/SortContextShop";
-import { Box, Button, Typography } from "@mui/material";
-import Image from "next/image";
+import { Box, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
 import { useLazyLoadQuery, useMutation } from "react-relay";
-import { graphql } from "relay-runtime";
-import coins from "../../assets/lottery/coins.png";
-import DecoParser from "../DecoParser";
+import { buyItemMutation, inventoryForUserQuery } from "./api/ItemsApi";
 import DecorationPopup from "./DecorationPopup";
 import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
 import ItemInventoryPictureOnly from "./ItemInventoryPictureOnly";
-
-export type ItemStringType =
-  | "colorThemes"
-  | "patternThemes"
-  | "profilePicFrames"
-  | "profilePics"
-  | "tutors";
-
-// Rarity type for item
-type Rarity = "common" | "uncommon" | "rare" | "ultra_rare";
-
-// Decoration item type
-type DecorationItem = {
-  id: string;
-  backColor: string | null;
-  description: string;
-  url: string | null;
-  foreColor: string | null;
-  name: string;
-  rarity: Rarity;
-  sellCompensation: number;
-  moneyCost: number;
-  unlocked: boolean;
-  equipped: boolean;
-  unlockedTime: string | null;
-  obtainableInShop: boolean;
-};
+import { getItemsMerged } from "./logic/GetItems";
+import { DecorationItem, ItemStringType, rarityMap } from "./types/Types";
 
 type ShopListItemProps = {
   itemStringType: ItemStringType;
@@ -45,77 +18,25 @@ type ShopListItemProps = {
 
 export default function ShopListItem({ itemStringType }: ShopListItemProps) {
   // Currency of user
-  const [points, setPoints] = useState<number | null>(null);
+  const [points123, setPoints123] = useState<number | null>(null);
   const { sortBy } = useSort();
   const [selectedItem, setSelectedItem] = useState<DecorationItem | null>(null);
 
-  const { inventoryForUser } =
-    useLazyLoadQuery<ShopListItemShopForUserTutorQuery>(
-      graphql`
-        query ShopListItemShopForUserTutorQuery {
-          inventoryForUser {
-            items {
-              equipped
-              id
-              uniqueDescription
-              unlocked
-            }
-            unspentPoints
-            userId
-          }
-        }
-      `,
-      {},
-      { fetchPolicy: "network-only" }
-    );
+  const { setPoints, points } = useCurrency();
 
-  const [buyItem] = useMutation<ShopListItemBuyItemTutorMutation>(graphql`
-    mutation ShopListItemBuyItemTutorMutation($itemId: UUID!) {
-      buyItem(itemId: $itemId) {
-        items {
-          equipped
-          id
-          uniqueDescription
-          unlocked
-          unlockedTime
-        }
-        unspentPoints
-        userId
-      }
-    }
-  `);
-
-  // Setting current currency of user, either from inventory or from buy
-  const currentPoints = points ?? inventoryForUser.unspentPoints;
-
-  // Get IDs of all items for DecoParser
-  const itemIds = inventoryForUser.items.map((item) => item.id);
-
-  // Parse items of given type
-  let itemsParsed = DecoParser(itemIds, itemStringType);
-
-  // If the type is a profile background we need to merge the other profile background type into out items
-  if (itemStringType === "colorThemes") {
-    const itemsParsedPatternThemes = DecoParser(itemIds, "patternThemes");
-    itemsParsed = itemsParsed.concat(itemsParsedPatternThemes);
-  } else if (itemStringType === "patternThemes") {
-    const itemsParsedColorThemes = DecoParser(itemIds, "colorThemes");
-    itemsParsed = itemsParsed.concat(itemsParsedColorThemes);
-  }
-
-  // Map items from backend to JSON items
-  const itemStatusMap = Object.fromEntries(
-    inventoryForUser.items.map((item) => [
-      item.id,
-      { equipped: item.equipped, unlocked: item.unlocked },
-    ])
+  const { inventoryForUser } = useLazyLoadQuery<ItemsApiInventoryForUserQuery>(
+    inventoryForUserQuery,
+    {},
+    { fetchPolicy: "network-only" }
   );
 
+  const [buyItem] = useMutation<ItemsApiBuyItemTutorMutation>(buyItemMutation);
+
+  // Setting current currency of user, either from inventory or from buy
+  const currentPoints = points ?? 0;
+
   // Combine backend and JSON data
-  const itemsParsedMerged = itemsParsed.map((item) => ({
-    ...(item as Partial<DecorationItem>),
-    ...itemStatusMap[item.id],
-  })) as DecorationItem[];
+  const itemsParsedMerged = getItemsMerged(inventoryForUser, itemStringType);
 
   // Do the sorting depending on the context
   const sortedItems = useMemo(() => {
@@ -146,7 +67,7 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
         setSelectedItem(null);
       },
       onCompleted(data) {
-        setPoints(data.buyItem!.unspentPoints);
+        setPoints(data.buyItem?.unspentPoints ?? 0);
         setSelectedItem(null);
       },
     });
@@ -154,23 +75,12 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
 
   return (
     <>
-      <Box sx={{ mb: 2, width: "100%" }}>
-        {/* Amount of owned currency */}
-        <Button variant="contained" color="secondary">
-          <Box
-            component="span"
-            sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
-          >
-            {currentPoints}
-            <Image src={coins} alt="Coins" width={18} height={18} />
-          </Box>
-        </Button>
-      </Box>
       <Box
         sx={{
           display: "grid",
           gridTemplateColumns: "repeat(6, 1fr)",
           gap: 2,
+          width: "100%",
         }}
       >
         {sortedItems.map((pic) => {
@@ -178,14 +88,6 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
           const rarityKey = (pic.rarity || "common")
             .toLowerCase()
             .replace(/\s+/g, "");
-
-          // Define colors for rarity
-          const rarityMap: Record<string, { border: string; bg: string }> = {
-            common: { border: "#26a0f5", bg: "#e3f2fd" }, // blue
-            uncommon: { border: "#d4af37", bg: "#fff8e1" }, // gold
-            rare: { border: "#8e44ad", bg: "#f3e5f5" }, // purple
-            ultra_rare: { border: "#e53935", bg: "#ffebee" }, // red
-          };
 
           // Map rarity to color
           const colors = rarityMap[rarityKey] ?? rarityMap.common;
@@ -205,6 +107,7 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
               onClick={() => setSelectedItem(pic)}
               sx={{
                 position: "relative",
+                width: "100%",
                 border: `3px solid ${pic.unlocked ? "#80848c" : colors.border}`,
                 borderRadius: 3,
                 overflow: "hidden",
@@ -218,9 +121,10 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
               {/* Display picture for item in list */}
               {pic.foreColor ? (
                 <ItemInventoryPictureBackgrounds
-                  url={pic.url}
-                  backColor={pic.backColor}
+                  url={pic.url ? pic.url : null}
+                  backColor={pic.backColor ? pic.backColor : null}
                   foreColor={pic.foreColor}
+                  ratio="1 / 1"
                 />
               ) : (
                 <ItemInventoryPictureOnly url={pic.url} id={pic.id} />

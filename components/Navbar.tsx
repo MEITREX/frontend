@@ -4,12 +4,15 @@ import { NavbarSemanticSearchQuery } from "@/__generated__/NavbarSemanticSearchQ
 import { NavbarStudentQuery } from "@/__generated__/NavbarStudentQuery.graphql";
 import logo from "@/assets/logo.svg";
 import StoreIcon from "@mui/icons-material/Store";
+import coins from "assets/lottery/coins.png";
 import duration from "dayjs/plugin/duration";
+import Image from "next/image";
 import Link from "next/link";
 import dayjs from "dayjs";
 
 dayjs.extend(duration);
 
+import { useCurrency } from "@/app/contexts/CurrencyContext";
 import { PageView, usePageView } from "@/src/currentView";
 import {
   CollectionsBookmark,
@@ -22,7 +25,9 @@ import {
 import {
   Autocomplete,
   Avatar,
+  Box,
   Button,
+  Chip,
   CircularProgress,
   Divider,
   IconButton,
@@ -37,7 +42,6 @@ import {
   TextField,
   Tooltip,
   Typography,
-  Box,
   LinearProgress,
 } from "@mui/material";
 import type {
@@ -418,7 +422,7 @@ function SwitchPageViewButton(): JSX.Element | null {
 
 function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
   const auth = useAuth();
-
+  const { points } = useCurrency();
   const tutor = useIsTutor(_isTutor);
 
   // Load level info without Relay (to avoid build-time artifact requirement)
@@ -516,12 +520,13 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
               </Link>
             </span>
           </Tooltip>
-          <ListItemSecondaryAction>
+          <Box sx={{ ml: 1 }}>
             <Tooltip title="Logout" placement="left">
               <span>
                 <IconButton
-                  edge="end"
                   aria-label="logout"
+                  size="small"
+                  sx={{ mr: 1 }}
                   onClick={() => {
                     window.localStorage.removeItem("meitrex-welcome-shown");
                     auth.signoutRedirect({
@@ -535,22 +540,25 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
                 </IconButton>
               </span>
             </Tooltip>
-          </ListItemSecondaryAction>
+          </Box>
         </ListItem>
-        {/* Divider between user info and XP/Level section */}
+        {/* Divider between user info and XP/Level & currency section */}
         <Divider />
-        {/* XP/Level section below the name/profile/avatar, with padding top */}
+
+        {/* XP/Level + Currency section (single row) */}
         <Box
           sx={{
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
+            justifyContent: "space-between",
             gap: 1.25,
             pt: 0.75,
             pb: 0.75,
             px: 2,
           }}
         >
+          {/* Level Icon */}
           <img
             src={`/levels/level_${level}.svg`}
             alt={`Level ${level} icon`}
@@ -561,8 +569,12 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
               (e.currentTarget as HTMLImageElement).style.display = "none";
             }}
           />
+
+          {/* Progress bar + XP */}
           <Box
             sx={{
+              flexGrow: 1,
+              mx: 1,
               minWidth: 160,
               display: "flex",
               flexDirection: "column",
@@ -578,6 +590,18 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
               {xpInLevel} / {xpRequired} XP
             </Typography>
           </Box>
+
+          {/* Currency Chip on the right */}
+          <Chip
+            color="secondary"
+            label={
+              <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}>
+                {points}
+                <Image src={coins} alt="Coins" width={18} height={18} />
+              </Box>
+            }
+            sx={{ fontWeight: "bold" }}
+          />
         </Box>
         {tutor && (
           <>

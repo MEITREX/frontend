@@ -5,6 +5,7 @@ import React, { useEffect, useMemo } from "react";
 
 import { ClientToaster } from "@/components/ClientToaster";
 import { PageLayout } from "@/components/PageLayout";
+import CurrencyHydrator from "@/components/currency/CurrencyHydrator";
 import TutorWidget from "@/components/tutor/TutorWidget";
 import { initRelayEnvironment } from "@/src/RelayEnvironment";
 import { PageView, PageViewProvider, usePageView } from "@/src/currentView";
@@ -26,6 +27,7 @@ import {
   useAuth,
 } from "react-oidc-context";
 import { RelayEnvironmentProvider } from "react-relay";
+import { CurrencyProvider } from "./contexts/CurrencyContext";
 import PageLoading from "./loading";
 
 dayjs.extend(isBetween);
@@ -139,8 +141,11 @@ function SigninContent({ children }: { children: React.ReactNode }) {
     return (
       <RelayEnvironmentProvider environment={environment}>
         <ThemeProvider theme={theme}>
-          <ClientToaster />
-          {children}
+          <CurrencyProvider>
+            <ClientToaster />
+            <CurrencyHydrator />
+            {children}
+          </CurrencyProvider>
         </ThemeProvider>
       </RelayEnvironmentProvider>
     );
