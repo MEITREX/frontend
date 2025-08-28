@@ -391,13 +391,13 @@ export default function StudentCoursePage() {
         </Grid>
 
         <Grid item xs={6}>
-          <TutorWidget />
+          <TutorWidget userId={userId} />
         </Grid>
       </Grid>
 
       {/* Quest */}
       <Box marginBottom={2} marginTop={2}>
-        <QuestList />
+        <QuestList userId={userId} />
       </Box>
 
       {/* Tabs for Learning Progress and Chapters */}

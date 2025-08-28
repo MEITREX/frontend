@@ -265,7 +265,7 @@ function QuestDialog({
   );
 }
 
-export default function QuestList() {
+export default function QuestList({ userId }: { userId: string }) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Quest | null>(null);
 
@@ -280,7 +280,7 @@ export default function QuestList() {
         variant="h4"
         sx={{ fontWeight: 800, mb: 0.5, textAlign: "center" }}
       >
-        Tägliche Quests
+        Daily Quests
       </Typography>
       <Typography
         variant="body2"
@@ -292,9 +292,9 @@ export default function QuestList() {
           mx: "auto",
         }}
       >
-        Schließe diese Quests ab, um Dino Points zu verdienen.
+        Finish the quests below to earn additional Dino Points.
         <br />
-        <strong>Achtung:</strong> Quests sind zeitlich begrenzt!
+        <strong>Careful:</strong> Quests are only temporarily available!
       </Typography>
 
       <Box sx={{ p: 2, gap: 2, display: "flex", flexDirection: "column" }}>

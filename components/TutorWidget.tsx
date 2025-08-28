@@ -1,11 +1,27 @@
+import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
 import dinoPic from "@/assets/logo.svg"; // dein Bild hier importieren
 import { Box, Typography } from "@mui/material";
 import Image from "next/image";
 import { useParams } from "next/navigation";
+import { useLazyLoadQuery } from "react-relay";
+import { inventoryForUserQuery } from "./items/api/ItemsApi";
+import { getItemsMerged } from "./items/logic/GetItems";
 
-export default function ForumActivityWidget() {
+export default function ForumActivityWidget({ userId }: { userId: string }) {
   const params = useParams();
   const courseId = params.courseId as string;
+
+  const { inventoryForUser } = useLazyLoadQuery<ItemsApiInventoryForUserQuery>(
+    inventoryForUserQuery,
+    {},
+    { fetchPolicy: "network-only" }
+  );
+
+  // Combine backend and JSON data
+  const itemsParsedMerged = getItemsMerged(inventoryForUser, "tutors");
+
+  // Find the equiped item for the UnequipCard
+  const equipedItem = itemsParsedMerged.find((item) => item.equipped);
 
   return (
     <Box
@@ -26,7 +42,7 @@ export default function ForumActivityWidget() {
       <Box display="flex" alignItems="flex-start" gap={2}>
         {/* Dino-Bild */}
         <Image
-          src={dinoPic}
+          src={decodeURIComponent(equipedItem ? equipedItem?.url : dinoPic)}
           alt="Dino"
           width={100}
           height={100}
