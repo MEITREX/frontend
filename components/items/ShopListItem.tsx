@@ -22,8 +22,6 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
   const { sortBy } = useSort();
   const [selectedItem, setSelectedItem] = useState<DecorationItem | null>(null);
 
-
-
   const { inventoryForUser } = useLazyLoadQuery<ItemsApiInventoryForUserQuery>(
     inventoryForUserQuery,
     {},

@@ -98,7 +98,7 @@ export default function Lottery() {
   const sparkle = new Audio("/sounds/sparkle.mp3");
 
   // Dino Points
-  const {setPoints, points} = useCurrency();
+  const { setPoints, points } = useCurrency();
   // EggCost needs to be the same as in the Backend
   const eggCost = 3000;
 
