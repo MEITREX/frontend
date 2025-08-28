@@ -1,15 +1,13 @@
 import { IconButton, Typography, Paper, Box } from "@mui/material";
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import { useState } from "react";
-import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
-import SentimentSatisfiedIcon from '@mui/icons-material/SentimentSatisfied';
-import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
-import CloseIcon from '@mui/icons-material/Close';
+import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
+import SentimentSatisfiedIcon from "@mui/icons-material/SentimentSatisfied";
+import SentimentVeryDissatisfiedIcon from "@mui/icons-material/SentimentVeryDissatisfied";
+import CloseIcon from "@mui/icons-material/Close";
 import { useMutation } from "react-relay";
-import {
-  widgetApiRecommendationFeedbackMutation,
-} from "@/components/widgets/api/WidgetApi";
+import { widgetApiRecommendationFeedbackMutation } from "@/components/widgets/api/WidgetApi";
 import {
   GamificationCategory,
   RecommendationUserFeedback,
@@ -17,14 +15,15 @@ import {
 } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
 
 type Props = {
-  openFeedback?: boolean,
-  category?: GamificationCategory,
-}
+  openFeedback?: boolean;
+  category?: GamificationCategory;
+};
 
-export default function WidgetFeedback({openFeedback, category}: Props ) {
-  const [recommendationFeedback] = useMutation<WidgetApiRecommendationFeedbackMutation>(
-    widgetApiRecommendationFeedbackMutation
-  );
+export default function WidgetFeedback({ openFeedback, category }: Props) {
+  const [recommendationFeedback] =
+    useMutation<WidgetApiRecommendationFeedbackMutation>(
+      widgetApiRecommendationFeedbackMutation
+    );
 
   const [open, setOpen] = useState(openFeedback);
 
@@ -48,18 +47,19 @@ export default function WidgetFeedback({openFeedback, category}: Props ) {
   return (
     <Box
       sx={{
-      position:"absolute",
-      width:"100%",
-      backgroundColor: "#f5f5f5",
-      top:"0px",
-      left:"0px",
-      p:2.5,
-      zIndex:9999,
-      borderRadius:2,
-      display:"flex",
-      flexDirection:"column",
-      gap:0.75,
-    }}>
+        position: "absolute",
+        width: "100%",
+        backgroundColor: "#f5f5f5",
+        top: "0px",
+        left: "0px",
+        p: 2.5,
+        zIndex: 9999,
+        borderRadius: 2,
+        display: "flex",
+        flexDirection: "column",
+        gap: 0.75,
+      }}
+    >
       <Typography variant="caption" align="center">
         <strong>How often do you want to see this widget?</strong>
       </Typography>

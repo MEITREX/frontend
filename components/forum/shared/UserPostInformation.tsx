@@ -45,7 +45,13 @@ export default function UserPostInformation({
   const userInfo = userInfos.findUserInfos[0];
 
   return (
-    <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="nowrap" overflow="hidden">
+    <Stack
+      direction="row"
+      spacing={1.5}
+      alignItems="center"
+      flexWrap="nowrap"
+      overflow="hidden"
+    >
       {displayPB && <Avatar sx={{ width: 24, height: 24 }}>A</Avatar>}
       {userInfo && (
         <Typography
@@ -75,7 +81,13 @@ export default function UserPostInformation({
       )}
 
       {displayDate && (
-        <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="nowrap" overflow="hidden">
+        <Stack
+          direction="row"
+          spacing={0.5}
+          alignItems="center"
+          flexWrap="nowrap"
+          overflow="hidden"
+        >
           <CalendarTodayIcon fontSize="small" />
           <Typography
             variant="caption"
@@ -88,11 +100,16 @@ export default function UserPostInformation({
             {format(new Date(creationTime as string), "MMMM d, yyyy, hh:mm a")}
           </Typography>
         </Stack>
-
       )}
 
       {numberOfPosts !== undefined && (
-        <Stack overflow="hidden" direction="row" spacing={0.5} alignItems="center" flexWrap="nowrap">
+        <Stack
+          overflow="hidden"
+          direction="row"
+          spacing={0.5}
+          alignItems="center"
+          flexWrap="nowrap"
+        >
           <ChatBubbleOutlineIcon fontSize="small" />
           <Typography variant="body2">{numberOfPosts}</Typography>
         </Stack>

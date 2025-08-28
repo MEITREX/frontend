@@ -7,16 +7,16 @@ type WidgetWrapperProps = {
   linkHref?: string;
   linkLabel?: string;
   children: React.ReactNode;
-  overflow?:string;
+  overflow?: string;
 };
 
 export default function WidgetWrapper({
-                                        title,
-                                        linkHref,
-                                        linkLabel,
-                                        children,
-                                        overflow = "auto"
-                                      }: WidgetWrapperProps) {
+  title,
+  linkHref,
+  linkLabel,
+  children,
+  overflow = "auto",
+}: WidgetWrapperProps) {
   return (
     <Box
       sx={{
@@ -27,8 +27,8 @@ export default function WidgetWrapper({
         maxWidth: 450,
         maxHeight: 400,
         minHeight: 400,
-        overflowY:overflow,
-        position:"relative"
+        overflowY: overflow,
+        position: "relative",
       }}
     >
       <Box display="flex" justifyContent="space-between" alignItems="center">

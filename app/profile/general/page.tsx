@@ -43,14 +43,14 @@ export default function GeneralPageWrapper() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <OwnProfileCustomHeader displayName={currentUserInfo.nickname}/>
+      <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
 
       <Tabs
         value={activeIndex}
         onChange={handleChange}
         textColor="primary"
         indicatorColor="primary"
-        sx={{mt:3, mb: 3, ".MuiTabs-indicator": { display: "none" } }}
+        sx={{ mt: 3, mb: 3, ".MuiTabs-indicator": { display: "none" } }}
       >
         {tabs.map((tab, index) => (
           <Tab

@@ -4,16 +4,17 @@ import * as React from "react";
 import { useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { widgetApiAchievementWidgetOverviewQuery } from "@/components/widgets/api/WidgetApi";
-import {
-  WidgetApiAchievementWidgetOverviewQuery
-} from "@/__generated__/WidgetApiAchievementWidgetOverviewQuery.graphql";
+import { WidgetApiAchievementWidgetOverviewQuery } from "@/__generated__/WidgetApiAchievementWidgetOverviewQuery.graphql";
 
 type Properties = {
   userId: string;
   courseId: string;
-}
+};
 
-export default function AchievementWidgetOverview({userId, courseId}: Properties) {
+export default function AchievementWidgetOverview({
+  userId,
+  courseId,
+}: Properties) {
   const { achievementsByUserId } =
     useLazyLoadQuery<WidgetApiAchievementWidgetOverviewQuery>(
       widgetApiAchievementWidgetOverviewQuery,

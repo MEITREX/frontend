@@ -421,12 +421,16 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
 
   const tutor = useIsTutor(_isTutor);
 
-  const { inventoryForUser } = useLazyLoadQuery<WidgetApiItemInventoryForUserQuery>(
-    widgetApiItemInventoryForUserQuery,
-    { fetchPolicy: "network-only" },
+  const { inventoryForUser } =
+    useLazyLoadQuery<WidgetApiItemInventoryForUserQuery>(
+      widgetApiItemInventoryForUserQuery,
+      { fetchPolicy: "network-only" }
+    );
+  const profilePic = getUnlockedItemAndEquiped(inventoryForUser, "profilePics");
+  const profilePicFrame = getUnlockedItemAndEquiped(
+    inventoryForUser,
+    "profilePicFrames"
   );
-  const profilePic = getUnlockedItemAndEquiped(inventoryForUser,"profilePics");
-  const profilePicFrame = getUnlockedItemAndEquiped(inventoryForUser,"profilePicFrames");
 
   return (
     <div className="sticky bottom-0 py-6 -mt-6 bg-gradient-to-t from-slate-200 from-75% to-transparent">

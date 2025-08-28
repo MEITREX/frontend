@@ -5,13 +5,19 @@ import ProfileCustomHeader from "@/components/profile/header/common/ProfileCusto
 
 type Props = {
   displayName: string;
-}
+};
 
-export default function OwnProfileCustomHeader({displayName}: Props) {
-  const { inventoryForUser } = useLazyLoadQuery<WidgetApiItemInventoryForUserQuery>(
-     widgetApiItemInventoryForUserQuery,
-     { fetchPolicy: "network-only" },
-   );
+export default function OwnProfileCustomHeader({ displayName }: Props) {
+  const { inventoryForUser } =
+    useLazyLoadQuery<WidgetApiItemInventoryForUserQuery>(
+      widgetApiItemInventoryForUserQuery,
+      { fetchPolicy: "network-only" }
+    );
 
-  return <ProfileCustomHeader inventoryForUser={inventoryForUser} displayName={displayName} />;
+  return (
+    <ProfileCustomHeader
+      inventoryForUser={inventoryForUser}
+      displayName={displayName}
+    />
+  );
 }

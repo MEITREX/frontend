@@ -17,14 +17,14 @@ type Properties = {
     foreColor: string | null;
     description: string;
     sold?: boolean;
-  }
+  };
   settings: {
     pictureWidth: string;
     pictureHeight: string;
-  }
-}
+  };
+};
 
-export default function Item({item, settings}: Properties) {
+export default function Item({ item, settings }: Properties) {
   const [equipNewItem] = useMutation<LotteryApiLotteryEquipItemMutation>(
     lotteryApiLotteryEquipItemMutation
   );
@@ -32,15 +32,14 @@ export default function Item({item, settings}: Properties) {
   const equipItem = (id: string) => {
     equipNewItem({
       variables: { itemId: id },
-      onCompleted() {
-      },
+      onCompleted() {},
       onError(error) {
         console.error("Equipping failed", error);
       },
     });
   };
 
-  return(
+  return (
     <Box
       sx={{
         padding: 1,
@@ -75,11 +74,12 @@ export default function Item({item, settings}: Properties) {
               item.rarity === "common"
                 ? "#e0e0e0"
                 : item.rarity === "uncommon"
-                  ? "#d4af37"
-                  : item.rarity === "rare"
-                    ? "#8e44ad"
-                    : item.rarity === "ultra_rare" ? "#e53935"
-                      : "#e0e0e0" ,
+                ? "#d4af37"
+                : item.rarity === "rare"
+                ? "#8e44ad"
+                : item.rarity === "ultra_rare"
+                ? "#e53935"
+                : "#e0e0e0",
             color: "white",
             fontSize: "0.75rem",
             fontWeight: "bold",
@@ -91,7 +91,8 @@ export default function Item({item, settings}: Properties) {
       {/* Date */}
       {item.unlockedTime && (
         <Typography variant="caption" color="text.secondary">
-          <strong>Unlocked: </strong>{new Date(item.unlockedTime).toLocaleDateString()}
+          <strong>Unlocked: </strong>
+          {new Date(item.unlockedTime).toLocaleDateString()}
         </Typography>
       )}
       {/* Picture */}
@@ -139,7 +140,7 @@ export default function Item({item, settings}: Properties) {
       {/* Description */}
       <Typography
         variant="body2"
-        sx={{ textAlign: "center", minHeight: 30, fontStyle: "italic"}}
+        sx={{ textAlign: "center", minHeight: 30, fontStyle: "italic" }}
       >
         {item.description || "No description"}
       </Typography>
@@ -148,7 +149,6 @@ export default function Item({item, settings}: Properties) {
       <Button onClick={() => equipItem(item.id)} variant="contained">
         Equip
       </Button>
-
     </Box>
   );
 }

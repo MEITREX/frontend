@@ -9,12 +9,11 @@ import WidgetFeedback from "@/components/widgets/common/WidgetFeedback";
 import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
 
 type Props = {
-  openFeedback?: boolean,
-  category?: GamificationCategory,
-}
+  openFeedback?: boolean;
+  category?: GamificationCategory;
+};
 
-
-export default function ForumActivityWidget({openFeedback, category}:Props) {
+export default function ForumActivityWidget({ openFeedback, category }: Props) {
   const params = useParams();
   const courseId = params.courseId as string;
 
@@ -28,7 +27,7 @@ export default function ForumActivityWidget({openFeedback, category}:Props) {
 
   return (
     <WidgetWrapper title="Forum Activity" linkHref="/profile" linkLabel="Forum">
-      <WidgetFeedback openFeedback={openFeedback} category={category}/>
+      <WidgetFeedback openFeedback={openFeedback} category={category} />
       {(data.forumActivity ?? []).length > 0 ? (
         <Stack spacing={2}>
           {data.forumActivity.map((a, idx) => (

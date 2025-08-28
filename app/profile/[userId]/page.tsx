@@ -65,7 +65,9 @@ export default function PublicProfilePage() {
 
   return (
     <Box sx={{ p: 4 }}>
-      <UserProfileCustomHeader displayName={userInfos.findUserInfos[0]?.nickname as string}/>
+      <UserProfileCustomHeader
+        displayName={userInfos.findUserInfos[0]?.nickname as string}
+      />
       {/* Tabs */}
       <Tabs
         value={tabIndex}

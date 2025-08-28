@@ -14,15 +14,16 @@ export const widgetApiItemInventoryForUserQuery = graphql`
 `;
 
 export const widgetApiItemsByUserIdQuery = graphql`
-query WidgetApiItemsByUserIdQuery($userId: UUID!) {
-  itemsByUserId(userId: $userId) {
-    equipped
-    id
-    uniqueDescription
-    unlocked
-    unlockedTime
+  query WidgetApiItemsByUserIdQuery($userId: UUID!) {
+    itemsByUserId(userId: $userId) {
+      equipped
+      id
+      uniqueDescription
+      unlocked
+      unlockedTime
+    }
   }
-}`
+`;
 
 export const widgetApiSettingsQuery = graphql`
   query WidgetApiSettingsQuery {
@@ -34,7 +35,9 @@ export const widgetApiSettingsQuery = graphql`
 `;
 
 export const widgetApiSettingsMutation = graphql`
-  mutation WidgetApiSettingsMutation($widgetSettingsInput: WidgetSettingsInput!) {
+  mutation WidgetApiSettingsMutation(
+    $widgetSettingsInput: WidgetSettingsInput!
+  ) {
     setCurrentUserWidgetSettings(settings: $widgetSettingsInput) {
       numberOfRecommendations
       recommendationRefreshInterval
@@ -43,16 +46,13 @@ export const widgetApiSettingsMutation = graphql`
 `;
 
 export const widgetApiRecommendationFeedbackMutation = graphql`
-    mutation WidgetApiRecommendationFeedbackMutation(
-        $category: GamificationCategory!,
-        $feedback: RecommendationUserFeedback!
-    ) {
-        sendRecommendationFeedback(category: $category, feedback: $feedback)
-    }
+  mutation WidgetApiRecommendationFeedbackMutation(
+    $category: GamificationCategory!
+    $feedback: RecommendationUserFeedback!
+  ) {
+    sendRecommendationFeedback(category: $category, feedback: $feedback)
+  }
 `;
-
-
-
 
 export const widgetApiAchievementWidgetOverviewQuery = graphql`
   query WidgetApiAchievementWidgetOverviewQuery($id: UUID!) {
@@ -87,5 +87,3 @@ export const widgetApiCurrentUserInfoQuery = graphql`
     }
   }
 `;
-
-

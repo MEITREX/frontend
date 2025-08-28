@@ -146,7 +146,10 @@ export default function Lottery() {
       } else {
         // Opening is done
         setShowItem(true);
-        if (rarity === "rare" as Rarity || rarity === "ultra_rare" as Rarity) {
+        if (
+          rarity === ("rare" as Rarity) ||
+          rarity === ("ultra_rare" as Rarity)
+        ) {
           mute ? "" : sparkle.play();
           setCelebrate(true);
         }
@@ -270,8 +273,8 @@ export default function Lottery() {
     >
       <Box
         sx={{
-          ml:"60px",
-          mb:"60px",
+          ml: "60px",
+          mb: "60px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -295,10 +298,13 @@ export default function Lottery() {
           onClick={() => setMute(!mute)}
           sx={{ width: 60, height: 60 }}
         >
-          {mute ? <VolumeOffIcon fontSize="large" /> : <VolumeUpIcon fontSize="large" />}
+          {mute ? (
+            <VolumeOffIcon fontSize="large" />
+          ) : (
+            <VolumeUpIcon fontSize="large" />
+          )}
         </IconButton>
       </Box>
-
 
       {/* Confetti for rare items */}
       {celebrate && (
@@ -316,9 +322,9 @@ export default function Lottery() {
         >
           <Confetti
             colors={[
-              rarity === "rare" as Rarity
+              rarity === ("rare" as Rarity)
                 ? "#8e44ad"
-                : rarity === "ultra_rare" as Rarity
+                : rarity === ("ultra_rare" as Rarity)
                 ? "#e53935"
                 : "",
             ]}
@@ -410,14 +416,15 @@ export default function Lottery() {
               py: 0.3,
               borderRadius: 1,
               bgcolor:
-                rarity === "common" as Rarity
+                rarity === ("common" as Rarity)
                   ? "#e0e0e0"
-                  : rarity === "uncommon" as Rarity
-                    ? "#d4af37"
-                    : rarity === "rare" as Rarity
-                      ? "#8e44ad"
-                      : rarity === "ultra_rare" as Rarity ? "#e53935"
-                        : "#e0e0e0" ,
+                  : rarity === ("uncommon" as Rarity)
+                  ? "#d4af37"
+                  : rarity === ("rare" as Rarity)
+                  ? "#8e44ad"
+                  : rarity === ("ultra_rare" as Rarity)
+                  ? "#e53935"
+                  : "#e0e0e0",
               color: "white",
               fontSize: "0.75rem",
               fontWeight: "bold",
@@ -470,7 +477,7 @@ export default function Lottery() {
 
           <Typography
             variant="body2"
-            sx={{ textAlign: "center", minHeight: 30, fontStyle: "italic"}}
+            sx={{ textAlign: "center", minHeight: 30, fontStyle: "italic" }}
           >
             {item.lotteryRun.description || "No description"}
           </Typography>
@@ -482,7 +489,7 @@ export default function Lottery() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 0.5,
-                whiteSpace: "nowrap"
+                whiteSpace: "nowrap",
               }}
             >
               <span style={{ color: "green", fontWeight: "bold" }}>
@@ -494,7 +501,6 @@ export default function Lottery() {
               </Typography>
               <Image src={coins} alt="Coins" width={18} height={18} />
             </Box>
-
           ) : (
             <Button onClick={equipItem} variant="contained" disabled={equip}>
               Equip

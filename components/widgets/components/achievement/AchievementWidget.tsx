@@ -115,7 +115,11 @@ export default function LatestAchievements({
   }
 
   return (
-    <WidgetWrapper title="Achievements" linkHref="/profile/achievements" linkLabel="All Achievements">
+    <WidgetWrapper
+      title="Achievements"
+      linkHref="/profile/achievements"
+      linkLabel="All Achievements"
+    >
       <Box sx={{ overflowY: "auto", flexGrow: 1 }}>
         <Grid container spacing={2}>
           {getFilteredAchievements(achievements, course).map((a, index) => (

@@ -20,79 +20,96 @@ type Props = {
   };
 };
 
-export default function ProfileCustomHeader({inventoryForUser, displayName, componentHeight = 200}: Props) {
+export default function ProfileCustomHeader({
+  inventoryForUser,
+  displayName,
+  componentHeight = 200,
+}: Props) {
+  const profilePic = getUnlockedItemAndEquiped(inventoryForUser, "profilePics");
+  const background = getUnlockedItemAndEquiped(
+    inventoryForUser,
+    "patternThemes"
+  );
+  const profilePicFrame = getUnlockedItemAndEquiped(
+    inventoryForUser,
+    "profilePicFrames"
+  );
+  const tutor = getUnlockedItemAndEquiped(inventoryForUser, "tutors");
 
-  const profilePic = getUnlockedItemAndEquiped(inventoryForUser,"profilePics");
-  const background = getUnlockedItemAndEquiped(inventoryForUser,"patternThemes");
-  const profilePicFrame = getUnlockedItemAndEquiped(inventoryForUser,"profilePicFrames");
-  const tutor = getUnlockedItemAndEquiped(inventoryForUser,"tutors");
-
-  return(
+  return (
     <Box
       sx={{
-        position: 'relative',
-        width: '100%',
+        position: "relative",
+        width: "100%",
         height: `${componentHeight}px`,
         padding: "12px",
-        border: '1px solid lightgray',
-        borderRadius: '4px',
+        border: "1px solid lightgray",
+        borderRadius: "4px",
         ...(background // 1. Check for background
-            ? background.url // 2. Check for url
-              ? { // Case A: Url
+          ? background.url // 2. Check for url
+            ? {
+                // Case A: Url
                 backgroundImage: `url(${background.url})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
               }
-              : { // Case B: background-color
+            : {
+                // Case B: background-color
                 bgcolor: background.backColor,
               }
-            : { // 3. 'background' undefined -> fallback color
-              bgcolor: '#f0f0f0',
-            }
-        )
+          : {
+              // 3. 'background' undefined -> fallback color
+              bgcolor: "#f0f0f0",
+            }),
       }}
     >
       {/* Profile Picture + Frame*/}
       <Box
         sx={{
-          display: 'flex',
-          flexDirection: 'row'
+          display: "flex",
+          flexDirection: "row",
         }}
       >
-        <ProfilePicAndBorder height={componentHeight*0.8} profilePic={profilePic} profilePicFrame={profilePicFrame} />
+        <ProfilePicAndBorder
+          height={componentHeight * 0.8}
+          profilePic={profilePic}
+          profilePicFrame={profilePicFrame}
+        />
         <Typography
           sx={{
             mt: 1,
             ml: 2,
             fontWeight: 400,
-            fontSize: '2rem',
-            color: background?.foreColor || 'black',
+            fontSize: "2rem",
+            color: background?.foreColor || "black",
           }}
         >
-          { displayName }
+          {displayName}
         </Typography>
       </Box>
 
       {/* Tutor */}
 
-      {tutor && (<Box
-        sx={{
-          position: 'absolute',
-          top: '16px',
-          right: '16px',
-          width: `${(componentHeight)*0.4}px`,
-          height: `${(componentHeight)*0.4}px`,
-          overflow: 'hidden',
-        }}
-      >
-        <Image
-          src={tutor.url as string}
-          alt={tutor.name as string}
-          fill
-          style={{ objectFit: "cover" }}
-        />
-      </Box>)}
+      {tutor && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: "16px",
+            right: "16px",
+            width: `${componentHeight * 0.4}px`,
+            height: `${componentHeight * 0.4}px`,
+            overflow: "hidden",
+          }}
+        >
+          <Image
+            src={tutor.url as string}
+            alt={tutor.name as string}
+            fill
+            style={{ objectFit: "cover" }}
+          />
+        </Box>
+      )}
     </Box>
   );
 }

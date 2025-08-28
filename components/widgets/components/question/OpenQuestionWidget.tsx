@@ -9,11 +9,11 @@ import WidgetFeedback from "@/components/widgets/common/WidgetFeedback";
 import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
 
 type Props = {
-  openFeedback?: boolean,
-  category?: GamificationCategory,
-}
+  openFeedback?: boolean;
+  category?: GamificationCategory;
+};
 
-export default function OpenQuestionWidget({openFeedback, category}:Props) {
+export default function OpenQuestionWidget({ openFeedback, category }: Props) {
   const params = useParams();
   const courseId = params.courseId as string;
 
@@ -27,7 +27,7 @@ export default function OpenQuestionWidget({openFeedback, category}:Props) {
 
   return (
     <WidgetWrapper title="Open Questions" linkHref="/profile" linkLabel="Forum">
-      <WidgetFeedback openFeedback={openFeedback} category={category}/>
+      <WidgetFeedback openFeedback={openFeedback} category={category} />
       <Box sx={{ display: "flex", flexDirection: "column" }}>
         {(data.openQuestionByCourseId ?? []).length > 0 ? (
           <ThreadList threads={data.openQuestionByCourseId} />

@@ -7,23 +7,21 @@ import { widgetApiItemInventoryForUserQuery } from "@/components/widgets/api/Wid
 import { Box } from "@mui/material";
 
 export default function TutorAvatar() {
-  const { inventoryForUser } = useLazyLoadQuery<WidgetApiItemInventoryForUserQuery>(
-    widgetApiItemInventoryForUserQuery,
-    { fetchPolicy: "network-only" },
-  );
-  const tutor = getUnlockedItemAndEquiped(inventoryForUser,"tutors");
+  const { inventoryForUser } =
+    useLazyLoadQuery<WidgetApiItemInventoryForUserQuery>(
+      widgetApiItemInventoryForUserQuery,
+      { fetchPolicy: "network-only" }
+    );
+  const tutor = getUnlockedItemAndEquiped(inventoryForUser, "tutors");
   return (
     <div className="avatar-container" draggable={false}>
-      <Box
-        width="80px"
-        height="80px"
-      >
+      <Box width="80px" height="80px">
         <Image
           src={tutor?.url as string}
           alt={tutor?.name as string}
           fill
           className="avatar-img"
-          style={{ objectFit: "contain"}}
+          style={{ objectFit: "contain" }}
         />
       </Box>
       <style jsx>{`

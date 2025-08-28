@@ -1,4 +1,12 @@
-import { Box, IconButton, Menu, MenuItem, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Menu,
+  MenuItem,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import * as React from "react";
 import { useState } from "react";
@@ -9,10 +17,14 @@ import { WidgetApiSettingsMutation } from "@/__generated__/WidgetApiSettingsMuta
 type Props = {
   refreshInterval: number;
   numWidgets: number;
-  onNumWidgetsChange: (value:number) => void;
-}
+  onNumWidgetsChange: (value: number) => void;
+};
 
-export default function WidgetSettings({numWidgets, onNumWidgetsChange, refreshInterval}: Props) {
+export default function WidgetSettings({
+  numWidgets,
+  onNumWidgetsChange,
+  refreshInterval,
+}: Props) {
   const [changeSettings] = useMutation<WidgetApiSettingsMutation>(
     widgetApiSettingsMutation
   );
@@ -21,7 +33,8 @@ export default function WidgetSettings({numWidgets, onNumWidgetsChange, refreshI
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) =>
+    setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
   const handleIntervalChange = (_: unknown, value: number) => {
@@ -40,7 +53,6 @@ export default function WidgetSettings({numWidgets, onNumWidgetsChange, refreshI
     });
   };
 
-
   function updateSettings(newSettings: {
     recommendationRefreshInterval: number;
     numberOfRecommendations: number;
@@ -53,15 +65,15 @@ export default function WidgetSettings({numWidgets, onNumWidgetsChange, refreshI
     });
   }
 
-  return(
+  return (
     <>
-    <IconButton
-      onClick={handleClick}
-      sx={{ position: "absolute", top: 4, right: 0 }}
-      size="small"
-    >
-      <SettingsIcon />
-    </IconButton>
+      <IconButton
+        onClick={handleClick}
+        sx={{ position: "absolute", top: 4, right: 0 }}
+        size="small"
+      >
+        <SettingsIcon />
+      </IconButton>
 
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
         <MenuItem>

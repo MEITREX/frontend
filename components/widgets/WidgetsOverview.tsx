@@ -1,6 +1,4 @@
-import {
-  Box,
-} from "@mui/material";
+import { Box } from "@mui/material";
 import OpenQuestionWidget from "@/components/widgets/components/question/OpenQuestionWidget";
 import ForumActivityWidget from "@/components/widgets/components/forum/ForumActivityWidget";
 import * as React from "react";
@@ -20,7 +18,7 @@ import { WidgetApiCurrentUserInfoQuery } from "@/__generated__/WidgetApiCurrentU
 type Properties = {
   userId: string;
   courseId: string;
-}
+};
 
 type MockedRecommendation = {
   category: GamificationCategory;
@@ -32,16 +30,38 @@ const mockedRecommendations: MockedRecommendation[] = [
   { category: "ALTRUISM" as GamificationCategory, requestFeedback: false },
   { category: "RISK_REWARD" as GamificationCategory, requestFeedback: false },
   { category: "ASSISTANCE" as GamificationCategory, requestFeedback: false },
-]
+];
 
-export default function WidgetsOverview ({userId, courseId}: Properties) {
+export default function WidgetsOverview({ userId, courseId }: Properties) {
   // ADD NEW WIDGETS HERE:
   const widgets = [
-    {category:"INCENTIVE" as GamificationCategory, key: "achievements", component: <AchievementWidgetOverview userId={userId} courseId={courseId} /> },
-    {category:"ALTRUISM" as GamificationCategory, key: "questions", component: <OpenQuestionWidget /> },
-    {category:"ASSISTANCE" as GamificationCategory, key: "forum", component: <ForumActivityWidget /> },
-    {category:"RISK_REWARD" as GamificationCategory, key: "lottery", component: <LotteryWidget />},
-    {category:"CUSTOMIZATION" as GamificationCategory, key: "item", component: <ItemWidget /> },
+    {
+      category: "INCENTIVE" as GamificationCategory,
+      key: "achievements",
+      component: (
+        <AchievementWidgetOverview userId={userId} courseId={courseId} />
+      ),
+    },
+    {
+      category: "ALTRUISM" as GamificationCategory,
+      key: "questions",
+      component: <OpenQuestionWidget />,
+    },
+    {
+      category: "ASSISTANCE" as GamificationCategory,
+      key: "forum",
+      component: <ForumActivityWidget />,
+    },
+    {
+      category: "RISK_REWARD" as GamificationCategory,
+      key: "lottery",
+      component: <LotteryWidget />,
+    },
+    {
+      category: "CUSTOMIZATION" as GamificationCategory,
+      key: "item",
+      component: <ItemWidget />,
+    },
   ];
 
   /*
@@ -51,28 +71,32 @@ export default function WidgetsOverview ({userId, courseId}: Properties) {
     { fetchPolicy: "network-only" }
   );
 */
-  const { currentUserWidgetSettings } = useLazyLoadQuery<WidgetApiSettingsQuery>(
-    widgetApiSettingsQuery,
-    { fetchPolicy: "store-or-network" },
-  );
+  const { currentUserWidgetSettings } =
+    useLazyLoadQuery<WidgetApiSettingsQuery>(widgetApiSettingsQuery, {
+      fetchPolicy: "store-or-network",
+    });
 
   const [numWidgetsToShow, setNumWidgetsToShow] = React.useState(
     currentUserWidgetSettings?.numberOfRecommendations ?? 2
   );
 
-/*
+  /*
   if (!data || !currentUserWidgetSettings) {
     return <p>Loading Wigets...</p>;
   }
  */
 
   const selectedWidgets = widgets
-    .map(w => {
-      const recommendation = mockedRecommendations.find(r => r.category === w.category);
+    .map((w) => {
+      const recommendation = mockedRecommendations.find(
+        (r) => r.category === w.category
+      );
       if (!recommendation) return null;
       return { ...w, requestFeedback: recommendation.requestFeedback };
     })
-    .filter((w): w is typeof widgets[0] & { requestFeedback: boolean } => w !== null)
+    .filter(
+      (w): w is (typeof widgets)[0] & { requestFeedback: boolean } => w !== null
+    )
     .slice(0, numWidgetsToShow);
 
   return (
@@ -81,11 +105,13 @@ export default function WidgetsOverview ({userId, courseId}: Properties) {
         border: "1px solid #e0e0e0",
         borderRadius: 2,
         p: 3,
-        position:"relative",
+        position: "relative",
       }}
     >
       <WidgetSettings
-        refreshInterval={currentUserWidgetSettings.recommendationRefreshInterval}
+        refreshInterval={
+          currentUserWidgetSettings.recommendationRefreshInterval
+        }
         numWidgets={numWidgetsToShow}
         onNumWidgetsChange={(n) => setNumWidgetsToShow(n)}
       />
@@ -98,9 +124,12 @@ export default function WidgetsOverview ({userId, courseId}: Properties) {
           justifyContent: "center",
         }}
       >
-        {selectedWidgets.map(w => (
+        {selectedWidgets.map((w) => (
           <Box key={w.key}>
-            {React.cloneElement(w.component, { openFeedback: w.requestFeedback, category: w.category })}
+            {React.cloneElement(w.component, {
+              openFeedback: w.requestFeedback,
+              category: w.category,
+            })}
           </Box>
         ))}
       </Box>
