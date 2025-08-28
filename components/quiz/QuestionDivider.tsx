@@ -1,5 +1,5 @@
 import { QuestionDividerFragment$key } from "@/__generated__/QuestionDividerFragment.graphql";
-import { studentGenerateHintMutation } from "@/__generated__/studentGenerateHintMutation.graphql";
+import { QuestionDividerGenerateHintMutation } from "@/__generated__/QuestionDividerGenerateHintMutation.graphql";
 import { useAITutorStore } from "@/stores/aiTutorStore";
 import { Button, CircularProgress } from "@mui/material";
 import { useParams } from "next/navigation";
@@ -7,7 +7,7 @@ import { graphql, useFragment, useMutation } from "react-relay";
 import { Descendant, Text as SlateText } from "slate";
 
 export const generateHintMutation = graphql`
-  mutation studentGenerateHintMutation(
+  mutation QuestionDividerGenerateHintMutation(
     $questionText: String!
     $courseId: UUID!
   ) {
@@ -49,7 +49,7 @@ export function QuestionDivider({
   const { courseId } = useParams();
   const showHint = useAITutorStore((state) => state.showHint);
   const [generateHint, isInFlight] =
-    useMutation<studentGenerateHintMutation>(generateHintMutation);
+    useMutation<QuestionDividerGenerateHintMutation>(generateHintMutation);
 
   function handleGeneratingHint() {
     if (!questionText) {
