@@ -1,12 +1,12 @@
 "use client";
 
 import { pagePrivateProfileStudentGeneralQuery } from "@/__generated__/pagePrivateProfileStudentGeneralQuery.graphql";
-import { Box, Tab, Tabs, Typography } from "@mui/material";
+import { Box, Tab, Tabs } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import GeneralPage from "../GeneralPage";
-import Customization from "@/components/profile/customization/Customization";
+import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
 
 const tabs = [
   { label: "General", path: "general" },
@@ -43,7 +43,7 @@ export default function GeneralPageWrapper() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Customization></Customization>
+      <OwnProfileCustomHeader displayName={currentUserInfo.nickname}/>
 
       <Tabs
         value={activeIndex}

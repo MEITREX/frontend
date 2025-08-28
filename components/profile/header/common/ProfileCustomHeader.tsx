@@ -6,12 +6,19 @@ import { getUnlockedItemAndEquiped } from "@/components/items/logic/GetItems";
 import Image from "next/image";
 import React from "react";
 
-export default function Customization() {
+type Props = {
+  displayName: string;
+  readonly inventoryForUser?: {
+    readonly items: readonly {
+      readonly equipped: boolean;
+      readonly id: string;
+      readonly unlocked: boolean;
+      readonly unlockedTime: string | null;
+    }[];
+  };
+};
 
-  const { inventoryForUser } = useLazyLoadQuery<WidgetApiItemInventoryForUserQuery>(
-    widgetApiItemInventoryForUserQuery,
-    { fetchPolicy: "network-only" },
-  );
+export default function ProfileCustomHeader({inventoryForUser, displayName}: Props) {
 
   const profilePic = getUnlockedItemAndEquiped(inventoryForUser,"profilePics");
   const background = getUnlockedItemAndEquiped(inventoryForUser,"patternThemes");
@@ -126,7 +133,7 @@ export default function Customization() {
             color: background?.foreColor || 'black',
           }}
         >
-          Hi, Max Mustermann
+          { displayName }
         </Typography>
       </Box>
 

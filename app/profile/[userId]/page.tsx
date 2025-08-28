@@ -11,6 +11,9 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
+import UserProfileCustomHeader from "@/components/profile/header/UserProfileCustomHeader";
+import { ForumApiUserInfoByIdQuery } from "@/__generated__/ForumApiUserInfoByIdQuery.graphql";
+import { forumApiUserInfoByIdQuery } from "@/components/forum/api/ForumApi";
 
 export default function PublicProfilePage() {
   const publicTabs = ["Achievements", "Forum", "Items"];
@@ -30,6 +33,13 @@ export default function PublicProfilePage() {
       `,
       { id: [userId] }
     );
+
+  const userInfos = useLazyLoadQuery<ForumApiUserInfoByIdQuery>(
+    forumApiUserInfoByIdQuery,
+    {
+      id: userId,
+    }
+  );
 
   const { achievementsByUserId } =
     useLazyLoadQuery<pageUserAchievementsPublicQuery>(
@@ -55,18 +65,7 @@ export default function PublicProfilePage() {
 
   return (
     <Box sx={{ p: 4 }}>
-      {/* Kopfbereich: Bild + Name */}
-      <Box display="flex" alignItems="center" gap={3} mb={3}>
-        <Avatar sx={{ width: 80, height: 80, fontSize: 32 }}>
-          {findPublicUserInfos[0]?.userName}
-        </Avatar>
-        <Box>
-          <Typography variant="h5">
-            @{findPublicUserInfos[0]?.userName}
-          </Typography>
-        </Box>
-      </Box>
-
+      <UserProfileCustomHeader displayName={userInfos.findUserInfos[0]?.nickname as string}/>
       {/* Tabs */}
       <Tabs
         value={tabIndex}
@@ -74,6 +73,7 @@ export default function PublicProfilePage() {
         variant="scrollable"
         scrollButtons="auto"
         sx={{
+          mt: 3,
           mb: 3,
           ".MuiTabs-indicator": { display: "none" },
         }}

@@ -13,6 +13,17 @@ export const widgetApiItemInventoryForUserQuery = graphql`
   }
 `;
 
+export const widgetApiItemsByUserIdQuery = graphql`
+query WidgetApiItemsByUserIdQuery($userId: UUID!) {
+  itemsByUserId(userId: $userId) {
+    equipped
+    id
+    uniqueDescription
+    unlocked
+    unlockedTime
+  }
+}`
+
 export const widgetApiSettingsQuery = graphql`
   query WidgetApiSettingsQuery {
     currentUserWidgetSettings {
