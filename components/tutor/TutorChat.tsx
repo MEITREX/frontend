@@ -18,7 +18,8 @@ dayjs.extend(duration);
 const MIN_WAIT_TIME = 800;
 const BOT_THINKS_TEXT = "Tutor is thinking...";
 const BOT_ERROR_TEXT = "There was a problem communicating with the tutor.";
-const BOT_PLACEHOLDER = "Hello! I am your personal tutor 🦖. Feel free to ask me a question!";
+const BOT_PLACEHOLDER =
+  "Hello! I am your personal tutor 🦖. Feel free to ask me a question!";
 
 const sendMessageMutation = graphql`
   mutation TutorChatSendMessageMutation($userInput: String!, $courseId: UUID) {
