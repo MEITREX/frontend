@@ -321,8 +321,6 @@ export default function StudentCoursePage() {
         )}
       </div>
 
-      <WidgetsOverview userId={userId} courseId={course.id} />
-
       {/* Quest */}
       <Box marginBottom={2} marginTop={2}>
         <QuestList userId={userId} />
@@ -343,6 +341,7 @@ export default function StudentCoursePage() {
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
+          <WidgetsOverview userId={userId} courseId={course.id} />
           <ChapterOverview _chapters={course} />
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
