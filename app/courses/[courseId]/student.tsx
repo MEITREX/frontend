@@ -38,6 +38,7 @@ import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import * as React from "react";
+import QuestList from "./quests/QuestItem";
 import WidgetsOverview from "@/components/widgets/WidgetsOverview";
 
 function CustomTabPanel(props: TabPanelProps) {
@@ -321,6 +322,11 @@ export default function StudentCoursePage() {
       </div>
 
       <WidgetsOverview userId={userId} courseId={course.id} />
+
+      {/* Quest */}
+      <Box marginBottom={2} marginTop={2}>
+        <QuestList userId={userId} />
+      </Box>
 
       {/* Tabs for Learning Progress and Chapters */}
       <Box sx={{ width: "100%" }}>

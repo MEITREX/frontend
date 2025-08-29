@@ -164,19 +164,21 @@ export default function InventoryListItem({
           <Box />
         )}
 
-        {itemStringType !== "tutors" && publicProfile === false && (
-          <UnequipCard equippedItem={equipedItem} />
-        )}
+        {itemStringType !== "tutors" &&
+          publicProfile === false &&
+          equipedItem && <UnequipCard equippedItem={equipedItem} />}
       </Box>
 
       {/* 2) Divider wie im Screenshot */}
-      <Box
-        sx={{
-          height: 0,
-          borderTop: "3px solid #000",
-          mb: 2,
-        }}
-      />
+      {equipedItem && (
+        <Box
+          sx={{
+            height: 0,
+            borderTop: "3px solid #000",
+            mb: 2,
+          }}
+        />
+      )}
 
       <Box
         sx={{

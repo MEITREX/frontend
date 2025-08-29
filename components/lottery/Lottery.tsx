@@ -23,13 +23,12 @@ import coins from "../../assets/lottery/coins.png";
 
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
-import { useLazyLoadQuery, useMutation } from "react-relay";
+import { useCurrency } from "@/app/contexts/CurrencyContext";
+import { useMutation } from "react-relay";
 import {
   lotteryApiLotteryEquipItemMutation,
   lotteryApiLotteryRunMutation,
-  lotteryApiUserInventoryQuery,
 } from "@/components/lottery/api/LotteryApi";
-import { LotteryApiUserInventoryQuery } from "@/__generated__/LotteryApiUserInventoryQuery.graphql";
 import { LotteryApiLotteryRunMutation } from "@/__generated__/LotteryApiLotteryRunMutation.graphql";
 import { LotteryApiLotteryEquipItemMutation } from "@/__generated__/LotteryApiLotteryEquipItemMutation.graphql";
 import { Rarity, rarityMap } from "@/components/items/types/Types";
@@ -48,12 +47,6 @@ export interface LotteryRun {
 }
 
 export default function Lottery() {
-  const inventory = useLazyLoadQuery<LotteryApiUserInventoryQuery>(
-    lotteryApiUserInventoryQuery,
-    {},
-    { fetchPolicy: "network-only" }
-  );
-
   const [runLottery] = useMutation<LotteryApiLotteryRunMutation>(
     lotteryApiLotteryRunMutation
   );
@@ -68,7 +61,7 @@ export default function Lottery() {
   const sparkle = new Audio("/sounds/sparkle.mp3");
 
   // Dino Points
-  const [dinoPoints, setDinoPoints] = useState<number>(1000);
+  const { setPoints, points } = useCurrency();
   // EggCost needs to be the same as in the Backend
   const eggCost = 3000;
 
@@ -101,12 +94,6 @@ export default function Lottery() {
   // Item
   const [item, setItem] = useState<any>(null);
   const [equip, setEquip] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (inventory?.inventoryForUser?.unspentPoints != null) {
-      setDinoPoints(inventory.inventoryForUser.unspentPoints);
-    }
-  }, [inventory]);
 
   // This useEffect is needed for the animation loop
   useEffect(() => {
@@ -162,13 +149,13 @@ export default function Lottery() {
   }, [isOpening]);
 
   const handleOpenEgg = () => {
-    if (dinoPoints < eggCost || isOpening) return;
+    if (points! < eggCost || isOpening) return;
     runLottery({
       variables: {},
       onCompleted(item) {
         // Start animation
         setRarity(item.lotteryRun?.rarity!.toLowerCase() as Rarity);
-        setDinoPoints((prev) => prev - eggCost);
+        setPoints(points! - eggCost);
         setIsEggWobbling(false);
         setIsOpening(true);
 
@@ -201,7 +188,7 @@ export default function Lottery() {
     setCurrentFrame(0);
     setEquip(false);
     item.lotteryRun.sellCompensation
-      ? setDinoPoints(dinoPoints + item.lotteryRun.sellCompensation)
+      ? setPoints(points + item.lotteryRun.sellCompensation)
       : "";
   };
 
@@ -287,7 +274,7 @@ export default function Lottery() {
             component="span"
             sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
           >
-            {dinoPoints}
+            {points}
             <Image src={coins} alt="Coins" width={18} height={18} />
           </Box>
         </Button>
@@ -522,7 +509,7 @@ export default function Lottery() {
         <Button
           variant="contained"
           color="primary"
-          disabled={dinoPoints < eggCost || isOpening}
+          disabled={points! < eggCost || isOpening}
           onClick={handleOpenEgg}
         >
           <Box

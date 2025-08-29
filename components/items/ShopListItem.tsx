@@ -1,11 +1,10 @@
 import { ItemsApiBuyItemTutorMutation } from "@/__generated__/ItemsApiBuyItemTutorMutation.graphql";
 import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
+import { useCurrency } from "@/app/contexts/CurrencyContext";
 import { useSort } from "@/app/contexts/SortContextShop";
-import { Box, Button, Typography } from "@mui/material";
-import Image from "next/image";
+import { Box, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
 import { useLazyLoadQuery, useMutation } from "react-relay";
-import coins from "../../assets/lottery/coins.png";
 import { buyItemMutation, inventoryForUserQuery } from "./api/ItemsApi";
 import DecorationPopup from "./DecorationPopup";
 import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
@@ -24,7 +23,7 @@ type ShopListItemProps = {
 
 export default function ShopListItem({ itemStringType }: ShopListItemProps) {
   // Currency of user
-  const [points, setPoints] = useState<number | null>(null);
+  const { setPoints, points } = useCurrency();
   const { sortBy } = useSort();
   const [selectedItem, setSelectedItem] = useState<DecorationItem | null>(null);
 
@@ -37,7 +36,7 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
   const [buyItem] = useMutation<ItemsApiBuyItemTutorMutation>(buyItemMutation);
 
   // Setting current currency of user, either from inventory or from buy
-  const currentPoints = points ?? inventoryForUser.unspentPoints;
+  const currentPoints = points ?? 0;
 
   // Combine backend and JSON data
   const itemsParsedMerged = getItemsMerged(inventoryForUser, itemStringType);
@@ -71,7 +70,7 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
         setSelectedItem(null);
       },
       onCompleted(data) {
-        setPoints(data.buyItem!.unspentPoints);
+        setPoints(data.buyItem?.unspentPoints ?? 0);
         setSelectedItem(null);
       },
     });
@@ -79,18 +78,6 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
 
   return (
     <>
-      <Box sx={{ mb: 2, width: "100%" }}>
-        {/* Amount of owned currency */}
-        <Button variant="contained" color="secondary">
-          <Box
-            component="span"
-            sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
-          >
-            {currentPoints}
-            <Image src={coins} alt="Coins" width={18} height={18} />
-          </Box>
-        </Button>
-      </Box>
       <Box
         sx={{
           display: "grid",
