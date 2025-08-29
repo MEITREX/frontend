@@ -4,16 +4,15 @@ import ForumActivityWidget from "@/components/widgets/components/forum/ForumActi
 import * as React from "react";
 import AchievementWidgetOverview from "./components/achievement/AchievementWidgetOverview";
 import LotteryWidget from "@/components/widgets/components/lottery/LotteryWidget";
+import TutorWidget from "@/components/widgets/components/tutor/TutorWidget";
 import ItemWidget from "@/components/widgets/components/item/ItemWidget";
 import WidgetSettings from "@/components/widgets/common/WidgetSettings";
 import {
-  widgetApiCurrentUserInfoQuery,
   widgetApiSettingsQuery,
 } from "@/components/widgets/api/WidgetApi";
 import { useLazyLoadQuery } from "react-relay";
 import { WidgetApiSettingsQuery } from "@/__generated__/WidgetApiSettingsQuery.graphql";
 import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
-import { WidgetApiCurrentUserInfoQuery } from "@/__generated__/WidgetApiCurrentUserInfoQuery.graphql";
 
 type Properties = {
   userId: string;
@@ -25,11 +24,12 @@ type MockedRecommendation = {
   requestFeedback: boolean;
 };
 
+// THIS MOCKS THE BACKEND RETURN UNTIL IT IS WORKING
 const mockedRecommendations: MockedRecommendation[] = [
   { category: "CUSTOMIZATION" as GamificationCategory, requestFeedback: false },
   { category: "ALTRUISM" as GamificationCategory, requestFeedback: false },
   { category: "RISK_REWARD" as GamificationCategory, requestFeedback: false },
-  { category: "ASSISTANCE" as GamificationCategory, requestFeedback: false },
+  { category: "IMMERSION" as GamificationCategory, requestFeedback: false },
 ];
 
 export default function WidgetsOverview({ userId, courseId }: Properties) {
@@ -62,6 +62,11 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
       key: "item",
       component: <ItemWidget />,
     },
+    {
+      category: "IMMERSION" as GamificationCategory,
+      key: "tutor",
+      component: <TutorWidget/>,
+    },
   ];
 
   /*
@@ -86,6 +91,7 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
   }
  */
 
+  // Map User preferred categories to Widget-Components
   const selectedWidgets = widgets
     .map((w) => {
       const recommendation = mockedRecommendations.find(

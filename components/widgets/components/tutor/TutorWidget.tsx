@@ -1,16 +1,21 @@
 import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
-import dinoPic from "@/assets/logo.svg"; // dein Bild hier importieren
+import dinoPic from "@/assets/logo.svg";
 import { Box, Typography } from "@mui/material";
 import Image from "next/image";
-import { useParams } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
-import { inventoryForUserQuery } from "./items/api/ItemsApi";
-import { getItemsMerged } from "./items/logic/GetItems";
+import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
+import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
+import WidgetFeedback from "@/components/widgets/common/WidgetFeedback";
+import { getItemsMerged } from "@/components/items/logic/GetItems";
+import { inventoryForUserQuery } from "@/components/items/api/ItemsApi";
 
-export default function ForumActivityWidget({ userId }: { userId: string }) {
-  const params = useParams();
-  const courseId = params.courseId as string;
+type Props = {
+  openFeedback?: boolean;
+  category?: GamificationCategory;
+};
 
+export default function TutorWidget({ openFeedback, category }: Props) {
+// TODO ADJUST LINKS OF THIS WIDGET
   const { inventoryForUser } = useLazyLoadQuery<ItemsApiInventoryForUserQuery>(
     inventoryForUserQuery,
     {},
@@ -24,23 +29,15 @@ export default function ForumActivityWidget({ userId }: { userId: string }) {
   const equipedItem = itemsParsedMerged.find((item) => item.equipped);
 
   return (
-    <Box
-      sx={{
-        border: "1px solid #ccc",
-        borderRadius: 2,
-        p: 2,
-        mb: 4,
-        minHeight: 400,
-        maxWidth: 450,
-        maxHeight: 400,
-        overflowY: "auto",
-      }}
+    <WidgetWrapper
+      title="AI Tutor"
+      linkHref="/items/lottery"
+      linkLabel="AI TUTOR"
+      overflow="auto"
     >
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        AI Tutor
-      </Typography>
+      <WidgetFeedback openFeedback={openFeedback} category={category} />
+
       <Box display="flex" alignItems="flex-start" gap={2}>
-        {/* Dino-Bild */}
         <Image
           src={decodeURIComponent(equipedItem ? equipedItem?.url : dinoPic)}
           alt="Dino"
@@ -48,8 +45,6 @@ export default function ForumActivityWidget({ userId }: { userId: string }) {
           height={100}
           style={{ objectFit: "contain" }}
         />
-
-        {/* Sprechblase */}
         <Box
           sx={{
             backgroundColor: "#f5f5f5",
@@ -64,7 +59,6 @@ export default function ForumActivityWidget({ userId }: { userId: string }) {
             Hallo! Ich bin dein Dino 🦖. Hier könnte dein Dummy-Text stehen.
           </Typography>
 
-          {/* kleiner "Pfeil" der Blase */}
           <Box
             sx={{
               position: "absolute",
@@ -91,6 +85,6 @@ export default function ForumActivityWidget({ userId }: { userId: string }) {
           />
         </Box>
       </Box>
-    </Box>
+    </WidgetWrapper>
   );
 }

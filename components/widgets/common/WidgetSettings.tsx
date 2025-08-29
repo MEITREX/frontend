@@ -86,7 +86,7 @@ export default function WidgetSettings({
               size="small"
               fullWidth
             >
-              {[6, 12, 18, 24].map((h) => (
+              {[6, 12, 24].map((h) => (
                 <ToggleButton key={h} value={h} sx={{ flex: 1 }}>
                   {h}h
                 </ToggleButton>
@@ -105,7 +105,7 @@ export default function WidgetSettings({
               size="small"
               fullWidth
             >
-              {[1, 2, 4].map((n) => (
+              {[0, 2, 4].map((n) => (
                 <ToggleButton key={n} value={n} sx={{ flex: 1 }}>
                   {n}
                 </ToggleButton>
