@@ -39,6 +39,7 @@ import ForumOverview from "@/components/forum/ForumOverview";
 import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
 import AchievementPopUp from "@/components/profile/achievements/AchievementPopUp";
 import ForumActivityWidget from "@/components/widgets/ForumActivityWidget";
+import XPWidget from "@/components/widgets/XPWidget";
 import OpenQuestionWidget from "@/components/widgets/OpenQuestionWidget";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
@@ -388,7 +389,9 @@ export default function StudentCoursePage() {
           <ForumActivityWidget />
         </Grid>
 
-        <Grid item xs={6}></Grid>
+        <Grid item xs={6}>
+          <XPWidget />
+        </Grid>
       </Grid>
 
       {/* Tabs for Learning Progress and Chapters */}
