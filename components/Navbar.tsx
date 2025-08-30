@@ -93,7 +93,7 @@ function NavbarBase({
   children,
   _isTutor,
 }: {
-  children: React.ReactElement;
+  children: React.ReactNode;
   _isTutor: NavbarIsTutor$key;
 }) {
   const [term, setTerm] = useState("");
@@ -287,12 +287,7 @@ function NavbarBase({
             }
           }}
           filterOptions={(x) => x}
-          renderOption={(
-            props: React.HTMLAttributes<HTMLLIElement> & { key: any },
-            option: SearchResultType,
-            _state: AutocompleteRenderOptionState,
-            _owner: AutocompleteOwnerState<SearchResultType, false, false, true>
-          ): React.ReactNode => (
+          renderOption={(props, option, _state, _owner) => (
             <li {...props}>
               <div>
                 <div className="text-[10px] text-slate-500">
@@ -595,7 +590,9 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
           <Chip
             color="secondary"
             label={
-              <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}>
+              <Box
+                sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
+              >
                 {points}
                 <Image src={coins} alt="Coins" width={18} height={18} />
               </Box>
