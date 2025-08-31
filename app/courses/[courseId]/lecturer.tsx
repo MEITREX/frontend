@@ -8,6 +8,8 @@ import { graphql, useLazyLoadQuery } from "react-relay";
 import { AddChapterModal } from "@/components/AddChapterModal";
 import { CodeAssessmentProviderCourseButton } from "@/components/CodeAssessmentProviderCourseButton";
 import { EditCourseModal } from "@/components/EditCourseModal";
+import ForumOverview from "@/components/forum/ForumOverview";
+import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
 import { Heading } from "@/components/Heading";
 import { PageError } from "@/components/PageError";
 import {
@@ -15,16 +17,13 @@ import {
   providerConfig,
 } from "@/components/ProviderConfig";
 import { Add, People, Settings } from "@mui/icons-material";
+import Box from "@mui/material/Box";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
 import { orderBy } from "lodash";
 import { useRouter } from "next/navigation";
 import React, { Suspense, useState } from "react";
 import { LecturerChapter } from "./LecturerChapter";
-import Box from "@mui/material/Box";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import { ChapterOverview } from "@/components/ChapterOverview";
-import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
-import ForumOverview from "@/components/forum/ForumOverview";
 
 graphql`
   fragment lecturerCourseFragment on Course {
@@ -115,11 +114,6 @@ export default function LecturerCoursePage() {
           coursesByIds(ids: [$courseId]) {
             ...lecturerCourseFragment @relay(mask: false)
           }
-
-          getExternalCourse(courseId: $courseId) {
-            url
-            courseTitle
-          }
         }
       `,
       { courseId }
@@ -152,9 +146,7 @@ export default function LecturerCoursePage() {
         title={course.title}
         action={
           <div className="flex gap-4 items-center">
-            <CodeAssessmentProviderCourseButton
-              externalCourse={query.getExternalCourse}
-            />
+            <CodeAssessmentProviderCourseButton courseId={courseId} />
             <Button startIcon={<Add />} onClick={() => setOpenModal(true)}>
               Add chapter
             </Button>
