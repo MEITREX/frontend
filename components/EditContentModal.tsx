@@ -1,7 +1,9 @@
 "use client";
 import { EditContentModalFragment$key } from "@/__generated__/EditContentModalFragment.graphql";
 import { EditContentModalUpdateStageMutation } from "@/__generated__/EditContentModalUpdateStageMutation.graphql";
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
+import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import { AddFlashcardSetModal } from "@/components/AddFlashcardSetModal";
 import { Add, Edit, EditNote } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
@@ -24,7 +26,8 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { graphql, useFragment, useMutation } from "react-relay";
+import { graphql, useFragment, useMutation, useQueryLoader } from "react-relay";
+import { AddCodeAssignmentModal } from "./AddCodeAssignmentModal";
 import { MediaContentModal } from "./MediaContentModal";
 import { QuizModal } from "./QuizModal";
 
@@ -51,8 +54,12 @@ export function EditContentModal({
   const [openMediaModal, setOpenMediaModal] = useState(false);
   const [openFlashcardModal, setOpenFlashcardModal] = useState(false);
   const [openAddQuizModal, setOpenAddQuizModal] = useState(false);
+  const [openCodeAssignmentModal, setOpenCodeAssignmentModal] = useState(false);
 
   const [openModal, setOpenModal] = useState(false);
+
+  const [allSkillsQueryRef, loadAllSkillsQuery] =
+    useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
 
   const chapter = useFragment(
     graphql`
@@ -83,6 +90,12 @@ export function EditContentModal({
           }
           ... on QuizAssessment {
             __typename
+          }
+          ... on AssignmentAssessment {
+            __typename
+            assignment {
+              assignmentType
+            }
           }
         }
         contentsWithNoSection {
@@ -159,6 +172,12 @@ export function EditContentModal({
     });
   };
 
+  const openCodeAssignment = () => {
+    if (!allSkillsQueryRef) {
+      loadAllSkillsQuery({ courseId });
+    }
+    setOpenCodeAssignmentModal(true);
+  };
   return (
     <>
       <Button startIcon={<EditNote />} onClick={() => setOpenModal(true)}>
@@ -254,6 +273,10 @@ export function EditContentModal({
                               ? `/courses/${courseId}/media/${content.id}`
                               : content.__typename === "QuizAssessment"
                               ? `/courses/${courseId}/quiz/${content.id}`
+                              : content.__typename === "AssignmentAssessment" &&
+                                content.assignment?.assignmentType ===
+                                  "CODE_ASSIGNMENT"
+                              ? `/courses/${courseId}/assignment/${content.id}`
                               : ""
                           )
                         }
@@ -317,6 +340,14 @@ export function EditContentModal({
           >
             Add Quiz
           </Button>
+          <Button
+            onClick={openCodeAssignment}
+            variant="text"
+            className="mt-4"
+            startIcon={<Add />}
+          >
+            Add Code Assignment
+          </Button>
         </DialogContent>
         <DialogActions>
           <LoadingButton loading={loading} onClick={submit}>
@@ -341,6 +372,14 @@ export function EditContentModal({
         <AddFlashcardSetModal
           onClose={() => setOpenFlashcardModal(false)}
           _chapter={chapter}
+        />
+      )}
+      {openCodeAssignmentModal && allSkillsQueryRef && (
+        <AddCodeAssignmentModal
+          onClose={() => setOpenCodeAssignmentModal(false)}
+          chapterId={chapterId}
+          courseId={courseId}
+          allSkillsQueryRef={allSkillsQueryRef}
         />
       )}
     </>

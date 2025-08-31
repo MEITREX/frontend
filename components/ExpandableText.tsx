@@ -42,7 +42,7 @@ export default function ExpandableText({
         setExpanded(true);
       }
     }
-  }, [text]);
+  }, [text, collapsedSize]);
 
   function renderButtonIfIsOverflowing() {
     if (isOverflowing) {

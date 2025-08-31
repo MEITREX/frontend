@@ -1,6 +1,6 @@
 "use client";
 import { studentCourseIdQuery } from "@/__generated__/studentCourseIdQuery.graphql";
-import { Button, Divider, IconButton, Typography } from "@mui/material";
+import { Button, Divider, Grid, IconButton, Typography } from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
@@ -29,17 +29,28 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 import { ChapterOverview } from "@/components/ChapterOverview";
 
+/** Leaderboard imports (keep both) */
 import CourseLeaderboards from "@/components/leaderboard/CourseLeaderboard";
 import LeaderboardWidget from "@/components/leaderboard/LeaderboardWidget";
+
+/** Forum & achievements environment (from newer branch) */
+import { studentUserAchievementsWidgetQuery } from "@/__generated__/studentUserAchievementsWidgetQuery.graphql";
+import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
+import ForumOverview from "@/components/forum/ForumOverview";
+import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
+import AchievementPopUp from "@/components/profile/achievements/AchievementPopUp";
+import ForumActivityWidget from "@/components/widgets/ForumActivityWidget";
+import OpenQuestionWidget from "@/components/widgets/OpenQuestionWidget";
 
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import * as React from "react";
+import AchievementWidget from "./achievements/AchievementWidget";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -87,7 +98,7 @@ export default function StudentCoursePage() {
 
   // tabs
   const [value, setValue] = React.useState(0);
-  const handleChange = (event: any, newValue: React.SetStateAction<number>) => {
+  const handleChange = (_event: any, newValue: React.SetStateAction<number>) => {
     setValue(newValue);
   };
 
@@ -186,6 +197,37 @@ export default function StudentCoursePage() {
     }
   `);
 
+  const [studentUserLogin] = useMutation<studentUserLoginMutation>(graphql`
+    mutation studentUserLoginMutation($id: UUID!) {
+      loginUser(courseId: $id)
+    }
+  `);
+
+  const { achievementsByUserId } =
+    useLazyLoadQuery<studentUserAchievementsWidgetQuery>(
+      graphql`
+        query studentUserAchievementsWidgetQuery($id: UUID!) {
+          achievementsByUserId(userId: $id) {
+            id
+            name
+            imageUrl
+            description
+            courseId
+            userId
+            completed
+            requiredCount
+            completedCount
+            trackingStartTime
+            trackingEndTime
+          }
+        }
+      `,
+      { id: userId },
+      {
+        fetchPolicy: "network-only",
+      }
+    );
+
   // Extract scoreboard
   const rows: Data[] = scoreboard
     .slice(0, 3)
@@ -195,13 +237,32 @@ export default function StudentCoursePage() {
 
   const [currentPage, setCurrentPage] = useState(0);
 
+  const [selectedAchievement, setSelectedAchievement] = useState<any | null>(
+    null
+  );
+  const [openAchievementDialog, setOpenDialog] = useState(false);
+
+  // Extract course
+  const course = coursesByIds[0];
+
+  useEffect(() => {
+    if (course.id) {
+      studentUserLogin({
+        variables: { id: course.id },
+        onCompleted: () => {
+          // logged
+        },
+        onError: (e) => {
+          console.error("Login error:", e);
+        },
+      });
+    }
+  }, [course.id, studentUserLogin]);
+
   // Show 404 error page if id was not found
   if (coursesByIds.length == 0) {
     return <PageError message="No course found with given id." />;
   }
-
-  // Extract course
-  const course = coursesByIds[0];
 
   const categoriesPerPage = 3;
   const uniqueSkillCategories = Array.from(
@@ -250,6 +311,16 @@ export default function StudentCoursePage() {
       setCurrentPage(currentPage + 1);
     }
   };
+
+  const handleOpenAchievement = (achievement: any) => {
+    setSelectedAchievement(achievement);
+    setOpenDialog(true);
+  };
+  const handleCloseAchievement = () => {
+    setOpenDialog(false);
+  };
+
+  const mutableAchievements = [...achievementsByUserId];
 
   return (
     <main>
@@ -303,6 +374,31 @@ export default function StudentCoursePage() {
         )}
       </div>
 
+      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+        <Grid item xs={6}>
+          <AchievementWidget
+            achievements={mutableAchievements}
+            openAchievements={handleOpenAchievement}
+            course={course.id}
+          />
+          <AchievementPopUp
+            open={openAchievementDialog}
+            onClose={handleCloseAchievement}
+            selectedAchievement={selectedAchievement}
+          />
+        </Grid>
+
+        <Grid item xs={6}>
+          <OpenQuestionWidget />
+        </Grid>
+
+        <Grid item xs={6}>
+          <ForumActivityWidget />
+        </Grid>
+
+        <Grid item xs={6}></Grid>
+      </Grid>
+
       {/* Tabs for Learning Progress and Chapters */}
       <Box sx={{ width: "100%" }}>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
@@ -314,12 +410,16 @@ export default function StudentCoursePage() {
             <Tab label="Course Overview" {...a11yProps(0)} />
             <Tab label="Learning Progress" {...a11yProps(1)} />
             <Tab label="Chapters" {...a11yProps(2)} />
-            <Tab label="Leaderboard" {...a11yProps(3)} />
+            {/* Both Forum and Leaderboard tabs kept */}
+            <Tab label="Forum" {...a11yProps(3)} />
+            <Tab label="Leaderboard" {...a11yProps(4)} />
           </Tabs>
         </Box>
+
+        {/* Course Overview */}
         <CustomTabPanel value={value} index={0}>
           <ChapterOverview _chapters={course} />
-          {/* Gamification Leaderboard Widget */}
+          {/* Gamification Leaderboard Widget (embedded overview block) */}
           <div className="mt-8 w-full flex justify-center">
             <div className="w-full max-w-5xl">
               <Typography variant="h2" component="h2" gutterBottom>
@@ -334,6 +434,8 @@ export default function StudentCoursePage() {
             </div>
           </div>
         </CustomTabPanel>
+
+        {/* Learning Progress */}
         <CustomTabPanel value={value} index={1}>
           <div className="flex flex-col gap-12">
             <div className="grid grid-cols-2 items-start gap-4">
@@ -354,45 +456,6 @@ export default function StudentCoursePage() {
                   </Button>
                 </div>
               </div>
-              {/* <div className="flex flex-col gap-2">
-                <TableContainer component={Paper}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Student Name</TableCell>
-                        <TableCell align="right">Power</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {rows.map((row) => (
-                        <TableRow
-                          key={row.name}
-                          sx={{
-                            "&:last-child td, &:last-child th": { border: 0 },
-                          }}
-                        >
-                          <TableCell component="th" scope="row">
-                            {row.name}
-                          </TableCell>
-                          <TableCell align="right">{row.power}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                <div className="flex flex-row gap-8">
-                  <Link href={{ pathname: `${id}/scoreboard` }}>
-                    <Button variant="text" endIcon={<NavigateNextIcon />}>
-                      Full Scoreboard
-                    </Button>
-                  </Link>
-                  <Link href={{ pathname: `${id}/skills` }}>
-                    <Button variant="text" endIcon={<NavigateNextIcon />}>
-                      Knowledge Status
-                    </Button>
-                  </Link>
-                </div>
-              </div> */}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -418,6 +481,7 @@ export default function StudentCoursePage() {
                   </IconButton>
                 </LightTooltip>
 
+                {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="flex gap-2 items-center ml-12">
                     <IconButton
@@ -519,11 +583,12 @@ export default function StudentCoursePage() {
             </div>
           </div>
         </CustomTabPanel>
+
+        {/* Chapters */}
         <CustomTabPanel value={value} index={2}>
           <div className="flex flex-col items-end w-full gap-4">
             <div className="flex flex-col gap-8 w-full">
               <div>
-                {" "}
                 {/*Up next*/}
                 <div className="flex justify-between items-center">
                   <Typography variant="h2">Up next</Typography>
@@ -565,13 +630,20 @@ export default function StudentCoursePage() {
             </div>
           </div>
         </CustomTabPanel>
+
+        {/* Forum tab */}
         <CustomTabPanel value={value} index={3}>
-          {/* Leaderboard-Tab */}
+          <Suspense fallback={<SkeletonThreadList />}>
+            <ForumOverview />
+          </Suspense>
+        </CustomTabPanel>
+
+        {/* Leaderboard tab (new) */}
+        <CustomTabPanel value={value} index={4}>
           <CourseLeaderboards
             courseID={id}
             currentUserId={userId}
             currentUserName={"Current User"}
-            //currentUserProfileImage={profileImage} // optional!
           />
         </CustomTabPanel>
       </Box>

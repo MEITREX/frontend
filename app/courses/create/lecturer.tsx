@@ -1,5 +1,7 @@
 "use client";
 
+import { ForumApiAddUserToForumMutation } from "@/__generated__/ForumApiAddUserToForumMutation.graphql";
+import { ForumApiCreateForumMutation } from "@/__generated__/ForumApiCreateForumMutation.graphql";
 import { lecturerCreateChapterMutation } from "@/__generated__/lecturerCreateChapterMutation.graphql";
 import {
   YearDivision,
@@ -7,6 +9,10 @@ import {
 } from "@/__generated__/lecturerCreateCourseMutation.graphql";
 import { yearDivisionToString } from "@/components/CourseCard";
 import { FormErrors } from "@/components/FormErrors";
+import {
+  forumApiAddUserToForumMutation,
+  forumApiCreateForumMutation,
+} from "@/components/forum/api/ForumApi";
 import { MultistepForm, StepInfo } from "@/components/MultistepForm";
 import {
   Backdrop,
@@ -40,6 +46,13 @@ function TableRow({ label, value }: { label: string; value: string }) {
 
 export default function NewCourse() {
   const router = useRouter();
+
+  const [createForum] = useMutation<ForumApiCreateForumMutation>(
+    forumApiCreateForumMutation
+  );
+  const [addUserToForum] = useMutation<ForumApiAddUserToForumMutation>(
+    forumApiAddUserToForumMutation
+  );
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -109,6 +122,7 @@ export default function NewCourse() {
       },
       onError: setError,
       onCompleted(response) {
+        createAndSetupForum(response.createCourse.id);
         function _addChapter(num: number) {
           addChapter({
             variables: {
@@ -131,11 +145,19 @@ export default function NewCourse() {
             },
           });
         }
-
         _addChapter(0);
       },
     });
   }
+
+  const createAndSetupForum = (courseId: string) => {
+    createForum({
+      variables: { courseId },
+      onCompleted() {
+        addUserToForum({ variables: { courseId } });
+      },
+    });
+  };
 
   const steps: StepInfo[] = [
     {
