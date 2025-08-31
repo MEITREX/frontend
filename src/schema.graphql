@@ -616,6 +616,7 @@ type ExternalAssignment {
 
 type ExternalCourse {
   courseTitle: String!
+  organizationName: String!
   url: String!
 }
 

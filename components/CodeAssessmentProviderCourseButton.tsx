@@ -1,133 +1,131 @@
 "use client";
 
-import {
-  Button,
-  Menu,
-  MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Alert,
-} from "@mui/material";
-import { GitHub } from "@mui/icons-material";
-import { useRef, useState } from "react";
-import { useAccessTokenCheck } from "@/components/useAccessTokenCheck";
+import { CodeAssessmentProviderCourseButtonGetExternalCourseQuery } from "@/__generated__/CodeAssessmentProviderCourseButtonGetExternalCourseQuery.graphql";
 import { ProviderAuthorizationDialog } from "@/components/ProviderAuthorizationDialog";
 import {
   codeAssessmentProvider,
   providerConfig,
 } from "@/components/ProviderConfig";
+import { useAccessTokenCheck } from "@/components/useAccessTokenCheck";
+import { GitHub } from "@mui/icons-material";
+import { Button, Menu, MenuItem } from "@mui/material";
+import { useRef, useState } from "react";
+import { fetchQuery, graphql, useRelayEnvironment } from "react-relay";
+import { ExternalCourseMissingDialog } from "./ExternalCourseMissingDialog";
 
-type Props = {
-  externalCourse: {
-    courseTitle: string;
-    url: string;
-  } | null;
-};
+type Props = { courseId: string };
 
-export function CodeAssessmentProviderCourseButton({ externalCourse }: Props) {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [authDialogOpen, setAuthDialogOpen] = useState(false);
-  const [showProviderDialog, setShowProviderDialog] = useState(false);
-  const checkAccessToken = useAccessTokenCheck();
+const GetExternalCourseQuery = graphql`
+  query CodeAssessmentProviderCourseButtonGetExternalCourseQuery(
+    $courseId: UUID!
+  ) {
+    getExternalCourse(courseId: $courseId) {
+      url
+      courseTitle
+    }
+  }
+`;
+
+export function CodeAssessmentProviderCourseButton({ courseId }: Props) {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [showMissingDialog, setShowMissingDialog] = useState(false);
+  const [externalCourseUrl, setExternalCourseUrl] = useState<string | null>(
+    null
+  );
+
   const provider = providerConfig[codeAssessmentProvider];
+  const checkAccessToken = useAccessTokenCheck();
+  const env = useRelayEnvironment();
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
-  const handleClick = async () => {
-    const isAvailable = await checkAccessToken();
-
-    if (!isAvailable) {
-      setShowProviderDialog(true);
+  const handleClick: React.MouseEventHandler<HTMLButtonElement> = async (e) => {
+    e.preventDefault();
+    const isAccessTokenAvailable = await checkAccessToken();
+    if (!isAccessTokenAvailable) {
+      setShowAuthDialog(true);
       return;
     }
 
-    if (!externalCourse?.url) {
-      setAuthDialogOpen(true);
+    const data =
+      await fetchQuery<CodeAssessmentProviderCourseButtonGetExternalCourseQuery>(
+        env,
+        GetExternalCourseQuery,
+        { courseId }
+      ).toPromise();
+
+    const url = data?.getExternalCourse?.url ?? null;
+
+    if (!url) {
+      setShowMissingDialog(true);
       return;
     }
 
+    setExternalCourseUrl(url);
     if (buttonRef.current) {
       setAnchorEl(buttonRef.current);
     }
   };
 
-  const handleMenuClose = () => {
+  const handleCloseMenu = () => {
     setAnchorEl(null);
   };
 
   return (
     <>
-      {showProviderDialog && (
+      {showAuthDialog && (
         <ProviderAuthorizationDialog
-          onClose={() => setShowProviderDialog(false)}
-          onAuthorize={() => {
-            setShowProviderDialog(false);
-          }}
+          onClose={() => setShowAuthDialog(false)}
+          onAuthorize={() => setShowAuthDialog(false)}
           alertMessage={`You must authorize via ${provider.name} to use this button.`}
           _provider={codeAssessmentProvider}
+        />
+      )}
+
+      {showMissingDialog && (
+        <ExternalCourseMissingDialog
+          onClose={() => setShowMissingDialog(false)}
+          providerName={provider.name}
         />
       )}
 
       <Button
         ref={buttonRef}
         id="github-classroom-button"
-        //   sx={{ color: "text.secondary" }}
         startIcon={<GitHub />}
         onClick={handleClick}
+        type="button"
       >
         GitHub Classroom
       </Button>
 
       <Menu
         anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        MenuListProps={{
-          "aria-labelledby": "github-classroom-button",
-        }}
+        open={Boolean(anchorEl) && Boolean(externalCourseUrl)}
+        onClose={handleCloseMenu}
+        MenuListProps={{ "aria-labelledby": "github-classroom-button" }}
       >
         <MenuItem
           onClick={() => {
-            window.open(externalCourse?.url, "_blank");
-            handleMenuClose();
+            window.open(externalCourseUrl!, "_blank", "noopener,noreferrer");
+            handleCloseMenu();
           }}
         >
           Course page
         </MenuItem>
         <MenuItem
           onClick={() => {
-            window.open(`${externalCourse?.url}/new_assignments/new`, "_blank");
-            handleMenuClose();
+            window.open(
+              `${externalCourseUrl!}/new_assignments/new`,
+              "_blank",
+              "noopener,noreferrer"
+            );
+            handleCloseMenu();
           }}
         >
           Create assignment
         </MenuItem>
       </Menu>
-
-      <Dialog open={authDialogOpen} onClose={() => setAuthDialogOpen(false)}>
-        <DialogTitle>{provider.name} Action Required</DialogTitle>
-        <DialogContent>
-          <Alert severity="warning">
-            You must ensure a matching course exists on GitHub Classroom.
-          </Alert>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAuthDialogOpen(false)} color="primary">
-            Cancel
-          </Button>
-          <Button
-            onClick={() => {
-              console.log(externalCourse?.url);
-              setAuthDialogOpen(false);
-              window.open("https://classroom.github.com/classrooms", "_blank");
-            }}
-            color="primary"
-          >
-            Go to {provider.name}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 }
