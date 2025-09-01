@@ -2,6 +2,7 @@ import {
   TutorChatSendMessageMutation,
   TutorChatSendMessageMutation$data,
 } from "@/__generated__/TutorChatSendMessageMutation.graphql";
+import { MessageSource, useAITutorStore } from "@/stores/aiTutorStore";
 import { Link } from "@mui/material";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -15,30 +16,16 @@ dayjs.extend(duration);
 
 // ----------- Globale Konstanten für fixe Strings -----------
 const MIN_WAIT_TIME = 800;
-const BOT_THINKS_TEXT = "Dino Tutor denkt nach...";
-const BOT_ERROR_TEXT =
-  "Es gab ein Problem bei der Kommunikation mit dem Tutor.";
+const BOT_THINKS_TEXT = "Tutor is thinking...";
+const BOT_ERROR_TEXT = "There was a problem communicating with the tutor.";
 const BOT_PLACEHOLDER =
-  "Hallo! Ich bin dein Lern-Dino 🦖. Stell mir eine Frage!";
-
-// ----------- Message-Typ für den Chatverlauf -----------
-type Message = {
-  sender: "user" | "bot";
-  text: string;
-  sources: MessageSource[];
-};
-
-type MessageSource = {
-  displayText: string;
-  link: string;
-};
+  "Hello! I am your personal tutor 🦖. Feel free to ask me a question!";
 
 const sendMessageMutation = graphql`
   mutation TutorChatSendMessageMutation($userInput: String!, $courseId: UUID) {
     sendMessage(userInput: $userInput, courseId: $courseId) {
       answer
       sources {
-        __typename
         ... on DocumentSource {
           page
           mediaRecords {
@@ -72,16 +59,21 @@ export default function TutorChat() {
   const [sendMessage, isInFlight] =
     useMutation<TutorChatSendMessageMutation>(sendMessageMutation);
   const [input, setInput] = useState("");
-  const [chatHistory, setChatHistory] = useState<Message[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const sendTimestamp = useRef<number | null>(null);
   const { courseId } = useParams();
 
+  const currentChat = useAITutorStore((state) => state.currentChat);
+  const addMessage = useAITutorStore((state) => state.addMessage);
+  const changeLatestMessage = useAITutorStore(
+    (state) => state.changeLatestMessage
+  );
+
   // Automatisches Scrollen zum unteren Ende des Chatverlaufs
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatHistory]);
+  }, [currentChat]);
 
   // Textarea-Auto-Resize
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -95,15 +87,7 @@ export default function TutorChat() {
 
   // Hilfsfunktion: Ersetze letzte Bot-Nachricht
   function replaceLoadingMessage(text: string, sources: MessageSource[]) {
-    setChatHistory((prev) => {
-      const updated = [...prev];
-      updated[updated.length - 1] = {
-        sender: "bot",
-        text,
-        sources,
-      };
-      return updated;
-    });
+    changeLatestMessage({ sender: "bot", text, sources });
     sendTimestamp.current = null;
   }
 
@@ -112,8 +96,10 @@ export default function TutorChat() {
   ) {
     const urls: MessageSource[] = [];
     if (!sources) return urls;
+
     sources.forEach((src) => {
       if ("mediaRecords" in src && src.mediaRecords) {
+        console.log("Source: ", src);
         src.mediaRecords.forEach((mr) => {
           if (mr.contents) {
             mr.contents.forEach((content) => {
@@ -151,11 +137,8 @@ export default function TutorChat() {
     if (!prompt) return;
 
     // Chatverlauf ergänzen: Nutzerfrage und "Dino denkt nach..."
-    setChatHistory((prev) => [
-      ...prev,
-      { sender: "user", text: prompt, sources: [] },
-      { sender: "bot", text: BOT_THINKS_TEXT, sources: [] },
-    ]);
+    addMessage({ sender: "user", text: prompt, sources: [] });
+    addMessage({ sender: "bot", text: BOT_THINKS_TEXT, sources: [] });
     setInput("");
     sendTimestamp.current = Date.now();
 
@@ -166,7 +149,6 @@ export default function TutorChat() {
       },
       onCompleted: (data) => {
         let urls: MessageSource[] = [];
-
         if (data?.sendMessage?.sources) {
           urls = generateLinks(data.sendMessage.sources);
         }
@@ -193,8 +175,6 @@ export default function TutorChat() {
     });
   };
 
-  // Mit Enter senden, mit Shift+Enter Zeilenumbruch
-  // ACHTUNG: Typ MUSS HTMLDivElement sein, da MUI TextField multiline intern einen div verwendet!
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -211,21 +191,21 @@ export default function TutorChat() {
       {/* Chatverlauf */}
       <div
         style={{
-          maxHeight: 300,
+          maxHeight: 350,
           overflowY: "auto",
           marginBottom: 10,
           paddingRight: 5,
         }}
       >
-        {chatHistory.length === 0 && (
-          <div style={{ color: "#aaa", textAlign: "right" }}>
+        {currentChat.length === 0 && (
+          <div style={{ color: "#aaa", textAlign: "center" }}>
             {BOT_PLACEHOLDER}
           </div>
         )}
-        {chatHistory.map((msg, idx) => {
+        {currentChat.map((msg, idx) => {
           const isThinking =
             isInFlight &&
-            idx === chatHistory.length - 1 &&
+            idx === currentChat.length - 1 &&
             msg.sender !== "user";
           return (
             <div
@@ -260,7 +240,7 @@ export default function TutorChat() {
                   background: msg.sender === "user" ? "#e3f2fd" : "#f0f4c3",
                   borderRadius: 12,
                   padding: "6px 10px",
-                  maxWidth: 200,
+                  maxWidth: 300,
                   wordBreak: "break-word",
                   textAlign: "left",
                   opacity: isThinking ? 0.7 : 1,
@@ -272,7 +252,9 @@ export default function TutorChat() {
                 {msg.sources.length > 0 && (
                   <>
                     <br />
-                    <br /> Quellen: <br />
+                    <br />
+                    Sources:
+                    <br />
                     {msg.sources.map((src, i) => (
                       <div key={i}>
                         <Link href={src.link}>
@@ -299,7 +281,7 @@ export default function TutorChat() {
           value={input}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          placeholder="Frage eingeben..."
+          placeholder="Ask a question..."
           disabled={isInFlight}
           multiline
           minRows={1}
@@ -320,16 +302,12 @@ export default function TutorChat() {
         <Button
           type="submit"
           variant="contained"
+          color="primary"
           disabled={isInFlight || !input.trim()}
           sx={{
             borderRadius: 4,
             height: 38,
             fontWeight: 600,
-            backgroundColor: "#81d4fa",
-            color: "#222",
-            "&:hover": {
-              backgroundColor: "#4fc3f7",
-            },
           }}
         >
           Senden
