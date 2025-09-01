@@ -1,0 +1,8 @@
+query CourseLeaderboards($courseId: ID!, $period: String!) {
+  courseLeaderboards(courseId: $courseId, period: $period) {
+    id
+    name
+    points
+    rank
+  }
+}
