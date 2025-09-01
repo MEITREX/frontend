@@ -2,8 +2,10 @@
 
 import { pagePublicProfileStudentQuery } from "@/__generated__/pagePublicProfileStudentQuery.graphql";
 import { pageUserAchievementsPublicQuery } from "@/__generated__/pageUserAchievementsPublicQuery.graphql";
+import { SortProvider } from "@/app/contexts/SortContext";
 import AchievementList from "@/components/profile/AchievementList";
 import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
+import ProfileInventorySection from "@/components/profile/items/ProfileInventorySection";
 import { Avatar, Box, Tab, Tabs, Typography } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -11,19 +13,11 @@ import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 
 export default function PublicProfilePage() {
-  const publicTabs = ["Achievements", "Forum", "Badges"];
+  const publicTabs = ["Achievements", "Forum", "Items"];
   const [tabIndex, setTabIndex] = useState(0);
 
   const params = useParams();
   const userId = params?.userId as string;
-  console.log("User ID aus URL:", userId);
-
-  const profileData = {
-    firstName: "Max",
-    lastName: "Mustermann",
-    email: "max.mustermann@example.com",
-    nickname: "nickname",
-  };
 
   const { findPublicUserInfos } =
     useLazyLoadQuery<pagePublicProfileStudentQuery>(
@@ -118,6 +112,11 @@ export default function PublicProfilePage() {
           />
         )}
         {tabIndex === 1 && <OtherUserProfileForumActivity />}
+        {tabIndex === 2 && (
+          <SortProvider>
+            <ProfileInventorySection userId={userId} />
+          </SortProvider>
+        )}
       </Box>
     </Box>
   );
