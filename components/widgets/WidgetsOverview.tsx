@@ -7,9 +7,7 @@ import LotteryWidget from "@/components/widgets/components/lottery/LotteryWidget
 import TutorWidget from "@/components/widgets/components/tutor/TutorWidget";
 import ItemWidget from "@/components/widgets/components/item/ItemWidget";
 import WidgetSettings from "@/components/widgets/common/WidgetSettings";
-import {
-  widgetApiSettingsQuery,
-} from "@/components/widgets/api/WidgetApi";
+import { widgetApiSettingsQuery } from "@/components/widgets/api/WidgetApi";
 import { useLazyLoadQuery } from "react-relay";
 import { WidgetApiSettingsQuery } from "@/__generated__/WidgetApiSettingsQuery.graphql";
 import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
@@ -65,7 +63,7 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
     {
       category: "IMMERSION" as GamificationCategory,
       key: "tutor",
-      component: <TutorWidget/>,
+      component: <TutorWidget />,
     },
   ];
 

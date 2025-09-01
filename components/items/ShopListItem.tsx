@@ -3,6 +3,8 @@ import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventory
 import { useCurrency } from "@/app/contexts/CurrencyContext";
 import { useSort } from "@/app/contexts/SortContextShop";
 import { Box, Typography } from "@mui/material";
+import coins from "assets/lottery/coins.png";
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { buyItemMutation, inventoryForUserQuery } from "./api/ItemsApi";
@@ -136,9 +138,34 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
               {/* Informations about item */}
               <Box sx={{ px: 2, pb: 2, pt: 1 }}>
                 {price != null && (
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    <strong>Price:</strong> {price} DP
-                  </Typography>
+                  <Box
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 0.5,
+                      marginBottom: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      <strong>Price:</strong> {price}
+                    </Typography>
+                    <Image
+                      src={coins}
+                      alt="Coins"
+                      width={18}
+                      height={18}
+                      style={{
+                        display: "inline-block",
+                        verticalAlign: "middle",
+                      }}
+                    />
+                  </Box>
                 )}
                 <Typography variant="body2">
                   <strong>Rarity:</strong> {rarityLabel || "Common"}

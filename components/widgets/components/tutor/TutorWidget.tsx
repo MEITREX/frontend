@@ -15,7 +15,7 @@ type Props = {
 };
 
 export default function TutorWidget({ openFeedback, category }: Props) {
-// TODO ADJUST LINKS OF THIS WIDGET
+  // TODO ADJUST LINKS OF THIS WIDGET
   const { inventoryForUser } = useLazyLoadQuery<ItemsApiInventoryForUserQuery>(
     inventoryForUserQuery,
     {},
