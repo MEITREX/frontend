@@ -1036,6 +1036,7 @@ type Mutation {
   recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
   saveStudentMappings(courseId: UUID!, studentMappingInputs: [StudentMappingInput!]!): [String]!
   selectAnswer(postId: UUID!): QuestionThread!
+  sendMessage(courseId: UUID, userInput: String!): LectureQuestionResponse!
   setLinkedMediaRecordsForContent(contentId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
   setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
   setNickname(nickname: String!): UserInfo!
