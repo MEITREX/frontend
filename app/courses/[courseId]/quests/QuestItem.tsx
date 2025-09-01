@@ -14,30 +14,41 @@ import Image from "next/image";
 import { useState } from "react";
 
 type Quest = {
-  title: string;
-  description: string;
-  reward: number;
   completed: boolean;
-  completedCount: number;
-  requiredCount: number;
+  completedCount: number | null;
+  courseId: string;
+  description: string;
+  id: string;
+  name: string;
+  requiredCount: number | null;
+  rewardPoints: number;
+  trackingEndTime: string | null;
+  trackingStartTime: string | null;
+  userId: string;
 };
 
 type QuestProps = Quest & {
   onOpen: (q: Quest) => void;
 };
 
+const PROGRESS_BLOCK_HEIGHT = 48; // feinjustierbar (44–56 je nach Typo)
+
 function QuestItem({
-  title,
+  name,
   description,
-  reward,
+  rewardPoints,
   completed,
   completedCount,
   requiredCount,
   onOpen,
 }: QuestProps) {
-  const safeRequired = Math.max(1, requiredCount); // Schutz gegen 0
-  const ratio = Math.min(completedCount / safeRequired, 1);
-  const percent = Math.round(ratio * 100);
+  let percent = -1;
+
+  if (requiredCount && completedCount) {
+    const safeRequired = Math.max(1, requiredCount);
+    const ratio = Math.min(completedCount / safeRequired, 1);
+    percent = Math.round(ratio * 100);
+  }
 
   return (
     <Box
@@ -45,29 +56,40 @@ function QuestItem({
       tabIndex={0}
       onClick={() =>
         onOpen({
-          title,
+          name,
           description,
-          reward,
+          rewardPoints,
           completed,
           completedCount,
           requiredCount,
+          courseId: "",
+          id: "",
+          trackingEndTime: null,
+          trackingStartTime: null,
+          userId: "",
         })
       }
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ")
+        if (e.key === "Enter" || e.key === " ") {
           onOpen({
-            title,
+            name,
             description,
-            reward,
+            rewardPoints,
             completed,
             completedCount,
             requiredCount,
+            courseId: "",
+            id: "",
+            trackingEndTime: null,
+            trackingStartTime: null,
+            userId: "",
           });
+        }
       }}
       sx={{
         position: "relative",
         display: "flex",
-        flexDirection: "column", // 👉 jetzt Spalte statt Row
+        flexDirection: "column",
         gap: 2,
         px: 2.5,
         py: 1.75,
@@ -89,9 +111,9 @@ function QuestItem({
               overflow: "hidden",
               textOverflow: "ellipsis",
             }}
-            title={title}
+            title={name}
           >
-            {title}
+            {name}
           </Typography>
 
           <Typography
@@ -117,7 +139,7 @@ function QuestItem({
             <Box
               sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
             >
-              {completed ? "Completed" : reward}
+              {completed ? "Completed" : rewardPoints}
               {!completed && (
                 <Image src={coins} alt="Coins" width={18} height={18} />
               )}
@@ -127,41 +149,48 @@ function QuestItem({
         />
       </Box>
 
-      {/* Bottom Row: Progress-Bar über gesamte Breite */}
-      <Box>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 0.5,
-          }}
-        >
-          <Typography variant="caption" sx={{ color: "text.secondary" }}>
-            Fortschritt
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{ fontWeight: 600, color: "text.secondary" }}
-          >
-            {completedCount}/{requiredCount}
-          </Typography>
-        </Box>
+      {/* Bottom Row: Progress-Bar */}
+      <Box sx={{ minHeight: PROGRESS_BLOCK_HEIGHT }}>
+        {percent >= 0 ? (
+          <Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 0.5,
+              }}
+            >
+              <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                Fortschritt
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{ fontWeight: 600, color: "text.secondary" }}
+              >
+                {completedCount}/{requiredCount}
+              </Typography>
+            </Box>
 
-        <LinearProgress
-          variant="determinate"
-          value={percent}
-          aria-label={`${percent}% abgeschlossen`}
-          sx={{
-            height: 10,
-            borderRadius: 6,
-            backgroundColor: "#e9eef3",
-            "& .MuiLinearProgress-bar": {
-              borderRadius: 6,
-              backgroundColor: completed ? "#1aa80e" : "#009bde",
-            },
-          }}
-        />
+            <LinearProgress
+              variant="determinate"
+              value={percent}
+              aria-label={`${percent}% abgeschlossen`}
+              sx={{
+                height: 10,
+                borderRadius: 6,
+                backgroundColor: "#e9eef3",
+                "& .MuiLinearProgress-bar": {
+                  borderRadius: 6,
+                  backgroundColor: completed ? "#1aa80e" : "#009bde",
+                },
+              }}
+            />
+          </Box>
+        ) : (
+          // Leerplatz, um Höhe zu reservieren
+          <Box sx={{ height: PROGRESS_BLOCK_HEIGHT }} />
+        )}
       </Box>
     </Box>
   );
@@ -178,9 +207,13 @@ function QuestDialog({
 }) {
   if (!quest) return null;
 
-  const safeRequired = Math.max(1, quest.requiredCount);
-  const ratio = Math.min(quest.completedCount / safeRequired, 1);
-  const percent = Math.round(ratio * 100);
+  let percent = -1;
+
+  if (quest.requiredCount && quest.completedCount) {
+    const safeRequired = Math.max(1, quest.requiredCount);
+    const ratio = Math.min(quest.completedCount / safeRequired, 1);
+    percent = Math.round(ratio * 100);
+  }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -200,52 +233,50 @@ function QuestDialog({
           <CloseIcon />
         </IconButton>
 
-        {/* Title */}
         <Typography
           variant="h4"
           sx={{ fontWeight: 800, textAlign: "center", mb: 3 }}
         >
-          {quest.title}
+          {quest.name}
         </Typography>
 
-        {/* Description */}
         <Typography sx={{ color: "text.primary", textAlign: "left", mb: 4 }}>
           {quest.description}
         </Typography>
 
-        {/* Progress label + bar */}
-        <Box sx={{ mb: 5 }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 0.75,
-            }}
-          >
-            <Typography variant="caption" sx={{ color: "text.secondary" }}>
-              Progress
-            </Typography>
-            <Typography variant="caption" sx={{ color: "text.secondary" }}>
-              {quest.completedCount} / {quest.requiredCount}
-            </Typography>
-          </Box>
-          <LinearProgress
-            variant="determinate"
-            value={percent}
-            sx={{
-              height: 8,
-              borderRadius: 6,
-              backgroundColor: "#e9eef3",
-              "& .MuiLinearProgress-bar": {
+        {percent >= 0 && (
+          <Box sx={{ mb: 5 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 0.75,
+              }}
+            >
+              <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                Progress
+              </Typography>
+              <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                {quest.completedCount} / {quest.requiredCount}
+              </Typography>
+            </Box>
+            <LinearProgress
+              variant="determinate"
+              value={percent}
+              sx={{
+                height: 8,
                 borderRadius: 6,
-                backgroundColor: quest.completed ? "#1aa80e" : "#009bde",
-              },
-            }}
-          />
-        </Box>
+                backgroundColor: "#e9eef3",
+                "& .MuiLinearProgress-bar": {
+                  borderRadius: 6,
+                  backgroundColor: quest.completed ? "#1aa80e" : "#009bde",
+                },
+              }}
+            />
+          </Box>
+        )}
 
-        {/* Reward Box */}
         <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
           <Chip
             color={quest.completed ? "primary" : "secondary"}
@@ -253,7 +284,7 @@ function QuestDialog({
               <Box
                 sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
               >
-                {quest.completed ? "Completed" : quest.reward}
+                {quest.completed ? "Completed" : quest.rewardPoints}
                 {!quest.completed && (
                   <Image src={coins} alt="Coins" width={18} height={18} />
                 )}
@@ -267,7 +298,11 @@ function QuestDialog({
   );
 }
 
-export default function QuestList({ userId }: { userId: string }) {
+export default function QuestList({
+  questsProp,
+}: {
+  questsProp: ReadonlyArray<Quest>;
+}) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Quest | null>(null);
 
@@ -278,64 +313,35 @@ export default function QuestList({ userId }: { userId: string }) {
 
   return (
     <Box sx={{ mx: "auto" }}>
-      <Typography
-        variant="h4"
-        sx={{ fontWeight: 800, mb: 0.5, textAlign: "center" }}
-      >
-        Daily Quests
-      </Typography>
-
-      <Typography
-        variant="body2"
+      {/* Header: unten bündig */}
+      <Box
         sx={{
-          color: "text.secondary",
-          mb: 2.5,
-          textAlign: "center",
-          maxWidth: 400,
-          mx: "auto",
+          display: "flex",
+          alignItems: "flex-end",
+          gap: 2,
         }}
       >
-        Finish the quests below to earn additional Dino Points.
-        <br />
-        <strong>Careful:</strong> Quests are only temporarily available!
-      </Typography>
+        <Typography variant="h4" sx={{ fontWeight: 800 }}>
+          Daily Quests
+        </Typography>
 
-      {/* Grid für 3 Spalten */}
+        <Typography
+          variant="body2"
+          sx={{ color: "text.secondary", pb: 0.5 /* Feintuning falls nötig */ }}
+        >
+          Finish the quests below to earn additional Dino Points.{" "}
+          <strong>Careful:</strong> Quests are only temporarily available!
+        </Typography>
+      </Box>
+
+      {/* Grid: aus Daten-Array gerendert */}
       <Box sx={{ p: 2 }}>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={4}>
-            <QuestItem
-              title="Gewinne ein Match"
-              description="Gewinne ein beliebiges Match im DinoBattle."
-              reward={300}
-              completed={false}
-              completedCount={1}
-              requiredCount={3}
-              onOpen={openDialog}
-            />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <QuestItem
-              title="Sammle Beeren"
-              description="Sammle 10 Beeren im Abenteuer-Modus."
-              reward={300}
-              completed={false}
-              completedCount={7}
-              requiredCount={10}
-              onOpen={openDialog}
-            />
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <QuestItem
-              title="Login-Serie"
-              description="Logge dich 3 Tage in Folge ein."
-              reward={300}
-              completed
-              completedCount={3}
-              requiredCount={3}
-              onOpen={openDialog}
-            />
-          </Grid>
+          {questsProp.map((q) => (
+            <Grid key={q.name} item xs={12} sm={4}>
+              <QuestItem {...q} onOpen={openDialog} />
+            </Grid>
+          ))}
         </Grid>
       </Box>
 

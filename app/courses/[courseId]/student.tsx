@@ -1,6 +1,6 @@
 "use client";
 import { studentCourseIdQuery } from "@/__generated__/studentCourseIdQuery.graphql";
-import { Button, Divider, Grid, IconButton, Typography } from "@mui/material";
+import { Button, Divider, IconButton, Typography } from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
@@ -14,32 +14,32 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 
 import { studentCourseLeaveMutation } from "@/__generated__/studentCourseLeaveMutation.graphql";
+import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
 import { stringToColor } from "@/components/ChapterHeader";
+import { ChapterOverview } from "@/components/ChapterOverview";
 import CompetencyProgressbar from "@/components/CompetencyProgressbar";
 import { FormErrors } from "@/components/FormErrors";
+import ForumOverview from "@/components/forum/ForumOverview";
+import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
 import { LightTooltip } from "@/components/LightTooltip";
 import { PageError } from "@/components/PageError";
 import { RewardScores } from "@/components/RewardScores";
 import { RewardScoresHelpButton } from "@/components/RewardScoresHelpButton";
 import { StudentChapter } from "@/components/StudentChapter";
 import { Suggestion } from "@/components/Suggestion";
+import WidgetsOverview from "@/components/widgets/WidgetsOverview";
 import { Info, Repeat } from "@mui/icons-material";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
-import { ChapterOverview } from "@/components/ChapterOverview";
-import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
-import ForumOverview from "@/components/forum/ForumOverview";
-import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
+import Link from "next/link";
 import * as React from "react";
+import { Suspense, useEffect, useState } from "react";
 import QuestList from "./quests/QuestItem";
-import WidgetsOverview from "@/components/widgets/WidgetsOverview";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -121,6 +121,25 @@ export default function StudentCoursePage() {
           id
           title
           description
+          dailyQuests {
+            forDay
+            id
+            name
+            quests {
+              completed
+              completedCount
+              courseId
+              description
+              id
+              name
+              requiredCount
+              rewardPoints
+              trackingEndTime
+              trackingStartTime
+              userId
+            }
+            rewardMultiplier
+          }
           rewardScores {
             ...RewardScoresFragment
           }
@@ -323,7 +342,7 @@ export default function StudentCoursePage() {
 
       {/* Quest */}
       <Box marginBottom={2} marginTop={2}>
-        <QuestList userId={userId} />
+        <QuestList questsProp={course.dailyQuests.quests} />
       </Box>
 
       {/* Tabs for Learning Progress and Chapters */}

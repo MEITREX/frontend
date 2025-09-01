@@ -87,3 +87,9 @@ export const widgetApiCurrentUserInfoQuery = graphql`
     }
   }
 `;
+
+export const widgetApiTutorTextQuery = graphql`
+  query WidgetApiTutorTextQuery($courseId: UUID!) {
+    tutorImmersiveWidgetSpeechContent(courseId: $courseId)
+  }
+`;
