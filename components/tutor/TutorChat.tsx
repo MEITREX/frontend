@@ -99,12 +99,11 @@ export default function TutorChat() {
 
     sources.forEach((src) => {
       if ("mediaRecords" in src && src.mediaRecords) {
-        console.log("Source: ", src);
         src.mediaRecords.forEach((mr) => {
           if (mr.contents) {
             mr.contents.forEach((content) => {
               if (!content || content.metadata.courseId !== courseId) return;
-              if (src.__typename === "DocumentSource") {
+              if (src.page != undefined) {
                 urls.push({
                   link: `/courses/${courseId}/media/${content.id}?page=${
                     src.page + 1
@@ -113,7 +112,7 @@ export default function TutorChat() {
                     src.page + 1
                   }`,
                 });
-              } else if (src.__typename === "VideoSource") {
+              } else if (src.startTime != undefined) {
                 const readableTime = dayjs
                   .duration(src.startTime ?? 0, "seconds")
                   .format("HH:mm:ss");
