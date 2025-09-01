@@ -1,13 +1,13 @@
 import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
+import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
 import dinoPic from "@/assets/logo.svg";
+import { inventoryForUserQuery } from "@/components/items/api/ItemsApi";
+import { getItemsMerged } from "@/components/items/logic/GetItems";
+import WidgetFeedback from "@/components/widgets/common/WidgetFeedback";
+import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
 import { Box, Typography } from "@mui/material";
 import Image from "next/image";
 import { useLazyLoadQuery } from "react-relay";
-import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
-import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
-import WidgetFeedback from "@/components/widgets/common/WidgetFeedback";
-import { getItemsMerged } from "@/components/items/logic/GetItems";
-import { inventoryForUserQuery } from "@/components/items/api/ItemsApi";
 
 type Props = {
   openFeedback?: boolean;
@@ -37,7 +37,13 @@ export default function TutorWidget({ openFeedback, category }: Props) {
     >
       <WidgetFeedback openFeedback={openFeedback} category={category} />
 
-      <Box display="flex" alignItems="flex-start" gap={2}>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        sx={{ minHeight: 300 }}
+        gap={2}
+      >
         <Image
           src={decodeURIComponent(equipedItem ? equipedItem?.url : dinoPic)}
           alt="Dino"
@@ -45,6 +51,7 @@ export default function TutorWidget({ openFeedback, category }: Props) {
           height={100}
           style={{ objectFit: "contain" }}
         />
+
         <Box
           sx={{
             backgroundColor: "#f5f5f5",
@@ -59,11 +66,13 @@ export default function TutorWidget({ openFeedback, category }: Props) {
             Hallo! Ich bin dein Dino 🦖. Hier könnte dein Dummy-Text stehen.
           </Typography>
 
+          {/* äußere Spitze (Umrandung) */}
           <Box
             sx={{
               position: "absolute",
               left: -10,
-              top: 20,
+              top: "50%",
+              transform: "translateY(-50%)",
               width: 0,
               height: 0,
               borderTop: "10px solid transparent",
@@ -71,11 +80,13 @@ export default function TutorWidget({ openFeedback, category }: Props) {
               borderRight: "10px solid #ccc",
             }}
           />
+          {/* innere Spitze (Hintergrundfarbe) */}
           <Box
             sx={{
               position: "absolute",
               left: -8,
-              top: 20,
+              top: "50%",
+              transform: "translateY(-50%)",
               width: 0,
               height: 0,
               borderTop: "8px solid transparent",
