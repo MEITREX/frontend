@@ -14,12 +14,6 @@ import {
   fetchCourseLeaderboards,
 } from "@/app/profile/leaderboard/ProfileLeaderboardPositions";
 
-// Demo IDs & names to keep data consistent across own profile and public profile
-const DEMO_SELF_ID = "1c13eeec-ac59-4f76-a48b-cef2091dd022"; // me
-const DEMO_SELF_NAME = "joniwo";
-const DEMO_OTHER_ID = "877d5a7b-6066-4bd4-8ebc-0efcddb97a15"; // viewed user
-const DEMO_OTHER_NAME = "seconduser";
-
 export default function PublicProfilePage() {
   const publicTabs = ["Achievements", "Forum", "Badges", "Leaderboards"];
   const [tabIndex, setTabIndex] = useState(0);
@@ -53,10 +47,10 @@ export default function PublicProfilePage() {
   );
 
   const findPublicUserInfos = data.findPublicUserInfos;
-  // Fallback to demo self when backend is down
+  // Fallback to empty object when backend is down
   const currentUserInfo = (data as any).currentUserInfo ?? {
-    id: DEMO_SELF_ID,
-    userName: DEMO_SELF_NAME,
+    id: "",
+    userName: "",
   };
 
   const [sharedLeaderboards, setSharedLeaderboards] = useState<
@@ -68,8 +62,8 @@ export default function PublicProfilePage() {
     findPublicUserInfos && findPublicUserInfos.length > 0
       ? findPublicUserInfos[0]
       : null;
-  // Fallback to demo other when backend is down
-  const viewedSafe = viewed ?? { id: DEMO_OTHER_ID, userName: DEMO_OTHER_NAME };
+  // Fallback to empty object when backend is down
+  const viewedSafe = viewed ?? { id: "", userName: "" };
 
   const isViewingOther = !!(
     currentUserInfo &&
@@ -77,27 +71,8 @@ export default function PublicProfilePage() {
     currentUserInfo.id !== viewedSafe.id
   );
 
-  // 👉 Gemeinsame Kurse: komplett Dummy-gesteuert
-  const sharedMemberships = (() => {
-    // Use the same demo course ids as the own-profile dummy so rankings stay consistent
-    const COURSE_WE_ID = "course-101";
-    const COURSE_WE_TITLE = "Web Engineering";
-    const COURSE_SD_ID = "course-202";
-    const COURSE_SD_TITLE = "Software Design";
-
-    const memberships: any[] = [
-      {
-        courseId: COURSE_WE_ID,
-        course: { id: COURSE_WE_ID, title: COURSE_WE_TITLE },
-      },
-      {
-        courseId: COURSE_SD_ID,
-        course: { id: COURSE_SD_ID, title: COURSE_SD_TITLE },
-      },
-    ];
-
-    return memberships;
-  })();
+  // Shared memberships is an empty array until backend integration is complete
+  const sharedMemberships: any[] = [];
 
   // Load dummy leaderboards per shared course, highlighting the VIEWED user
   async function loadShared() {
@@ -164,6 +139,7 @@ export default function PublicProfilePage() {
       <Tabs
         value={tabIndex}
         onChange={(e, newVal) => setTabIndex(newVal)}
+        aria-label="Public profile tabs"
         variant="scrollable"
         scrollButtons="auto"
         sx={{
@@ -178,7 +154,7 @@ export default function PublicProfilePage() {
             label={tab}
             sx={{
               textTransform: "none",
-              fontWeight: 500,
+              fontWeight: 600,
               borderRadius: "16px",
               px: 3,
               py: 1,
@@ -198,15 +174,22 @@ export default function PublicProfilePage() {
 
       {/* Tab-Inhalte */}
       <Box>
-        {tabIndex === 0 &&
-          /* 
-          <AchievementList
-            achievements={achievementsByUserId.filter((a) => a.completed)}
-            profileTypeSortString={"achieved"}
-          />
-          */
-          null}
+        {tabIndex === 0 && (
+          // Achievements (kept disabled until backend is ready)
+          null
+        )}
+
         {tabIndex === 1 && <OtherUserProfileForumActivity />}
+
+        {tabIndex === 2 && (
+          // Badges placeholder
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              No badges to display yet.
+            </Typography>
+          </Box>
+        )}
+
         {tabIndex === 3 && (
           <Box sx={{ mt: 2 }}>
             {loadingLB && (
@@ -214,8 +197,7 @@ export default function PublicProfilePage() {
             )}
             {!loadingLB && sharedMemberships.length === 0 && (
               <Typography variant="body2" color="text.secondary">
-                Ihr habt aktuell keine gemeinsamen Kurse – keine
-                Leaderboard-Überschneidungen.
+                Ihr habt aktuell keine gemeinsamen Kurse – keine Leaderboard-Überschneidungen.
               </Typography>
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -234,9 +216,9 @@ export default function PublicProfilePage() {
                       {...(isViewingOther
                         ? {
                             currentUserId: viewedSafe.id, // highlight the viewed user
-                            limitToUserIds: [viewedSafe.id, DEMO_SELF_ID],
+                            limitToUserIds: [viewedSafe.id],
                             scoreCompareMode: "vsCurrentPlayer",
-                            viewerUserId: DEMO_SELF_ID,
+                            viewerUserId: currentUserInfo.id,
                           }
                         : {
                             currentUserId: viewedSafe.id,

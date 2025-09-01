@@ -11,6 +11,8 @@ import { graphql } from "relay-runtime";
 const tabs = [
   { label: "General", path: "general" },
   { label: "Achievements", path: "achievements" },
+  { label: "Forum", path: "forum" },
+  { label: "Badges", path: "badges" },
   { label: "Leaderboards", path: "leaderboard" },
 ];
 

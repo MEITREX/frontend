@@ -11,6 +11,7 @@ const tabs = [
   { label: "Achievements", path: "achievements" },
   { label: "Forum", path: "forum" },
   { label: "Badges", path: "badges" },
+  { label: "Leaderboards", path: "leaderboard" },
 ];
 
 export default function BadgesPage() {
