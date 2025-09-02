@@ -1,7 +1,8 @@
 "use client";
 
 import { pagePublicProfileStudentQuery } from "@/__generated__/pagePublicProfileStudentQuery.graphql";
-import { pageUserAchievementsPublicQuery } from "@/__generated__/pageUserAchievementsPublicQuery.graphql";
+//import { pageUserAchievementsPublicQuery } from "@/__generated__/pageUserAchievementsPublicQuery.graphql";
+//import { pageUserAchievementsPublicQuery } from "@/__generated__/pageUserAchievementsQuery.graphql";
 import AchievementList from "@/components/profile/AchievementList";
 import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
 import { Avatar, Box, Tab, Tabs, Typography, Grid } from "@mui/material";
@@ -174,10 +175,9 @@ export default function PublicProfilePage() {
 
       {/* Tab-Inhalte */}
       <Box>
-        {tabIndex === 0 && (
+        {tabIndex === 0 &&
           // Achievements (kept disabled until backend is ready)
-          null
-        )}
+          null}
 
         {tabIndex === 1 && <OtherUserProfileForumActivity />}
 
@@ -197,7 +197,8 @@ export default function PublicProfilePage() {
             )}
             {!loadingLB && sharedMemberships.length === 0 && (
               <Typography variant="body2" color="text.secondary">
-                Ihr habt aktuell keine gemeinsamen Kurse – keine Leaderboard-Überschneidungen.
+                Ihr habt aktuell keine gemeinsamen Kurse – keine
+                Leaderboard-Überschneidungen.
               </Typography>
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>

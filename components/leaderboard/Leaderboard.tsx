@@ -4,7 +4,7 @@ import type { StaticImageData } from "next/image";
 import defaultUserImage from "../../assets/logo.svg";
 import { HoverCard } from "../HoverCard";
 import { graphql, useLazyLoadQuery } from "react-relay";
-import { LeaderboardDataQuery } from "../../__generated__/LeaderboardDataQuery.graphql";
+import { LeaderboardDataQuery } from "@/__generated__/LeaderboardDataQuery.graphql";
 
 function getImageSrc(image?: string | StaticImageData): string {
   if (typeof image === "string") {

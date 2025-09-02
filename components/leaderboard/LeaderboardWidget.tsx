@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
 import defaultUserImage from "../../assets/logo.svg";
-import type { LeaderboardWidgetQuery } from "../../__generated__/LeaderboardWidgetQuery.graphql";
+import type { LeaderboardWidgetQuery } from "@/__generated__/LeaderboardWidgetQuery.graphql";
 //"../__generated__/LeaderboardWidgetQuery.graphql";
 
 interface Props {

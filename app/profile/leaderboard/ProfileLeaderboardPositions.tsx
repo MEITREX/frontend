@@ -22,14 +22,10 @@ import {
 import RefreshIcon from "@mui/icons-material/Refresh";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { graphql, useLazyLoadQuery } from "react-relay";
-import type { ProfileLeaderboardPositionsUserQuery } from "./__generated__/ProfileLeaderboardPositionsUserQuery.graphql";
-import type { ProfileLeaderboardPositionsCourseQuery } from "./__generated__/ProfileLeaderboardPositionsCourseQuery.graphql";
+//import type { ProfileLeaderboardPositionsUserQuery } from "./__generated__/ProfileLeaderboardPositionsUserQuery.graphql";
+import type { ProfileLeaderboardPositionsUserQuery } from "@/__generated__/ProfileLeaderboardPositionsUserQuery.graphql";
+import type { ProfileLeaderboardPositionsCourseQuery } from "@/__generated__/ProfileLeaderboardPositionsCourseQuery.graphql";
 
-/**
- * =============================
- * Visual assets (unchanged)
- * =============================
- */
 const designTrophies = [
   // Gold
   <svg key="gold" width="30" height="30" viewBox="0 0 36 36">
