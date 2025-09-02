@@ -1,4 +1,9 @@
 "use client";
+import { GenerateQuizModalMediaQuery } from "@/__generated__/GenerateQuizModalMediaQuery.graphql";
+import {
+  AiGenQuestionContext,
+  GenerateQuizModalMutation,
+} from "@/__generated__/GenerateQuizModalMutation.graphql";
 import { FormDivider } from "@/components/Form";
 import {
   Alert,
@@ -18,12 +23,7 @@ import {
   EducationalObjective,
 } from "./quiz/CapabilitiesTabPanel";
 import { LectureMaterialsTabPanel } from "./quiz/LectureMaterialsTabPanel";
-import { GenerateQuizModalMediaQuery } from "@/__generated__/GenerateQuizModalMediaQuery.graphql";
 import { QuestionsTabPanel } from "./quiz/QuestionsTabPanel";
-import {
-  AiGenQuestionContext,
-  GenerateQuizModalMutation,
-} from "@/__generated__/GenerateQuizModalMutation.graphql";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -138,31 +138,29 @@ export function GenerateQuizModal({
     ) {
       mutateQuiz(assessmentId: $assessmentId) {
         aiGenerateQuestionAsync(context: $context) {
-          assessmentId
+          quiz {
+            assessmentId
+          }
         }
       }
     }
   `);
 
   function handleSubmit() {
-    const sumOfQuesitonAmount = Object.values(questionAmount).reduce(
-      (acc, val) => acc + val,
-      0
-    );
     const context: AiGenQuestionContext = {
       description:
         "Use the following keywords as context to generate the questions:\n" +
         capabilities.keywords.join(", "),
-      allowMultipleCorrectAnswers: false,
       maxAnswersPerQuestion: 5,
       maxExactQuestions: 0,
+      minExactQuestions: 0,
       maxFreeTextQuestions: 0,
+      minFreeTextQuestions: 0,
       maxMultipleChoiceQuestions: questionAmount.multipleChoiceAmount,
+      minMultipleChoiceQuestions: 0,
       maxNumericQuestions: 0,
-      maxQuestions: sumOfQuesitonAmount,
+      minNumericQuestions: 0,
       mediaRecordIds: materialIds,
-      minQuestions: sumOfQuesitonAmount,
-      quizId: quizId,
     };
     generate({
       variables: { context, assessmentId: quizId },
