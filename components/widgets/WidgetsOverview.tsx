@@ -1,16 +1,17 @@
-import { Box } from "@mui/material";
-import OpenQuestionWidget from "@/components/widgets/components/question/OpenQuestionWidget";
-import ForumActivityWidget from "@/components/widgets/components/forum/ForumActivityWidget";
-import * as React from "react";
-import AchievementWidgetOverview from "./components/achievement/AchievementWidgetOverview";
-import LotteryWidget from "@/components/widgets/components/lottery/LotteryWidget";
-import TutorWidget from "@/components/widgets/components/tutor/TutorWidget";
-import ItemWidget from "@/components/widgets/components/item/ItemWidget";
-import WidgetSettings from "@/components/widgets/common/WidgetSettings";
-import { widgetApiSettingsQuery } from "@/components/widgets/api/WidgetApi";
-import { useLazyLoadQuery } from "react-relay";
-import { WidgetApiSettingsQuery } from "@/__generated__/WidgetApiSettingsQuery.graphql";
+import { WidgetApiCurrentUserInfoQuery } from "@/__generated__/WidgetApiCurrentUserInfoQuery.graphql";
 import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
+import { WidgetApiSettingsQuery } from "@/__generated__/WidgetApiSettingsQuery.graphql";
+import { widgetApiCurrentUserInfoQuery, widgetApiSettingsQuery } from "@/components/widgets/api/WidgetApi";
+import WidgetSettings from "@/components/widgets/common/WidgetSettings";
+import ForumActivityWidget from "@/components/widgets/components/forum/ForumActivityWidget";
+import ItemWidget from "@/components/widgets/components/item/ItemWidget";
+import LotteryWidget from "@/components/widgets/components/lottery/LotteryWidget";
+import OpenQuestionWidget from "@/components/widgets/components/question/OpenQuestionWidget";
+import TutorWidget from "@/components/widgets/components/tutor/TutorWidget";
+import { Box } from "@mui/material";
+import * as React from "react";
+import { useLazyLoadQuery } from "react-relay";
+import AchievementWidgetOverview from "./components/achievement/AchievementWidgetOverview";
 
 type Properties = {
   userId: string;
@@ -67,13 +68,20 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
     },
   ];
 
-  /*
+
   const data = useLazyLoadQuery<WidgetApiCurrentUserInfoQuery>(
     widgetApiCurrentUserInfoQuery,
     {},
     { fetchPolicy: "network-only" }
   );
-*/
+
+  const courseMembership =
+    data.currentUserInfo?.courseMemberships?.find(
+      (m) => m.courseId === courseId
+    );
+
+  const recommendations = courseMembership?.course?.widgetRecommendations ?? [];
+
   const { currentUserWidgetSettings } =
     useLazyLoadQuery<WidgetApiSettingsQuery>(widgetApiSettingsQuery, {
       fetchPolicy: "store-or-network",
@@ -83,16 +91,16 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
     currentUserWidgetSettings?.numberOfRecommendations ?? 2
   );
 
-  /*
+
   if (!data || !currentUserWidgetSettings) {
     return <p>Loading Wigets...</p>;
   }
- */
+
 
   // Map User preferred categories to Widget-Components
   const selectedWidgets = widgets
     .map((w) => {
-      const recommendation = mockedRecommendations.find(
+      const recommendation = recommendations.find(
         (r) => r.category === w.category
       );
       if (!recommendation) return null;

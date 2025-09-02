@@ -11,7 +11,11 @@ import Link from "next/link";
 
 dayjs.extend(duration);
 
+import { WidgetApiItemInventoryForUserQuery } from "@/__generated__/WidgetApiItemInventoryForUserQuery.graphql";
 import { useCurrency } from "@/app/contexts/CurrencyContext";
+import { getUnlockedItemAndEquiped } from "@/components/items/logic/GetItems";
+import ProfilePicAndBorder from "@/components/profile/header/common/ProfilePicAndBorder";
+import { widgetApiItemInventoryForUserQuery } from "@/components/widgets/api/WidgetApi";
 import { PageView, usePageView } from "@/src/currentView";
 import {
   CollectionsBookmark,
@@ -23,7 +27,6 @@ import {
 } from "@mui/icons-material";
 import {
   Autocomplete,
-  Avatar,
   Box,
   Button,
   Chip,
@@ -42,7 +45,7 @@ import {
   Paper,
   TextField,
   Tooltip,
-  Typography,
+  Typography
 } from "@mui/material";
 import dayjs from "dayjs";
 import { chain, debounce } from "lodash";
@@ -50,10 +53,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { ReactElement, useCallback, useState, useTransition } from "react";
 import { useAuth } from "react-oidc-context";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
-import ProfilePicAndBorder from "@/components/profile/header/common/ProfilePicAndBorder";
-import { WidgetApiItemInventoryForUserQuery } from "@/__generated__/WidgetApiItemInventoryForUserQuery.graphql";
-import { widgetApiItemInventoryForUserQuery } from "@/components/widgets/api/WidgetApi";
-import { getUnlockedItemAndEquiped } from "@/components/items/logic/GetItems";
 
 function useIsTutor(_frag: NavbarIsTutor$key) {
   const { realmRoles, courseMemberships } = useFragment(

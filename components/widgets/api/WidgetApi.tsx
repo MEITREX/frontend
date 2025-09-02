@@ -75,6 +75,7 @@ export const widgetApiAchievementWidgetOverviewQuery = graphql`
 export const widgetApiCurrentUserInfoQuery = graphql`
   query WidgetApiCurrentUserInfoQuery {
     currentUserInfo {
+      ...NavbarIsTutor
       courseMemberships {
         courseId
         course {
