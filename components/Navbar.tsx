@@ -13,6 +13,7 @@ dayjs.extend(duration);
 
 import { useCurrency } from "@/app/contexts/CurrencyContext";
 import { PageView, usePageView } from "@/src/currentView";
+import { useAITutorStore } from "@/stores/aiTutorStore";
 import {
   CollectionsBookmark,
   Dashboard,
@@ -419,6 +420,7 @@ function SwitchPageViewButton() {
 
 function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
   const auth = useAuth();
+  const clearChat = useAITutorStore((state) => state.clearChat);
   const { points } = useCurrency();
   const tutor = useIsTutor(_isTutor);
 
@@ -433,6 +435,7 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
                 aria-label="logout"
                 onClick={() => {
                   window.localStorage.removeItem("meitrex-welcome-shown");
+                  clearChat();
                   auth.signoutRedirect({
                     post_logout_redirect_uri:
                       process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ??
