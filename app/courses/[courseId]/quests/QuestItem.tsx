@@ -7,6 +7,7 @@ import {
   Grid,
   IconButton,
   LinearProgress,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import coins from "assets/lottery/coins.png";
@@ -29,6 +30,7 @@ type Quest = {
 
 type QuestProps = Quest & {
   onOpen: (q: Quest) => void;
+  streak: number;
 };
 
 const PROGRESS_BLOCK_HEIGHT = 48; // feinjustierbar (44–56 je nach Typo)
@@ -41,6 +43,7 @@ function QuestItem({
   completedCount,
   requiredCount,
   onOpen,
+  streak,
 }: QuestProps) {
   let percent = -1;
 
@@ -147,6 +150,19 @@ function QuestItem({
           }
           sx={{ fontWeight: "bold" }}
         />
+
+        {!completed && (
+          <Tooltip title="Reward multiplier">
+            <Chip
+              label={`x${streak ?? 1}`} // dynamisch oder fallback x3
+              sx={{
+                fontWeight: "bold",
+                backgroundColor: "#009bde",
+                color: "white",
+              }}
+            />
+          </Tooltip>
+        )}
       </Box>
 
       {/* Bottom Row: Progress-Bar */}
@@ -200,10 +216,12 @@ function QuestDialog({
   open,
   onClose,
   quest,
+  streak,
 }: {
   open: boolean;
   onClose: () => void;
   quest: Quest | null;
+  streak: number;
 }) {
   if (!quest) return null;
 
@@ -290,8 +308,21 @@ function QuestDialog({
                 )}
               </Box>
             }
-            sx={{ fontWeight: "bold" }}
+            sx={{ fontWeight: "bold", mr: 1 }}
           />
+
+          {!quest.completed && (
+            <Tooltip title="Reward multiplier">
+              <Chip
+                label={`x${streak ?? 1}`} // dynamisch oder fallback x3
+                sx={{
+                  fontWeight: "bold",
+                  backgroundColor: "#009bde",
+                  color: "white",
+                }}
+              />
+            </Tooltip>
+          )}
         </Box>
       </DialogContent>
     </Dialog>
@@ -300,8 +331,10 @@ function QuestDialog({
 
 export default function QuestList({
   questsProp,
+  streak,
 }: {
   questsProp: ReadonlyArray<Quest>;
+  streak: number;
 }) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Quest | null>(null);
@@ -339,7 +372,7 @@ export default function QuestList({
         <Grid container spacing={2}>
           {questsProp.map((q) => (
             <Grid key={q.name} item xs={12} sm={4}>
-              <QuestItem {...q} onOpen={openDialog} />
+              <QuestItem {...q} onOpen={openDialog} streak={streak} />
             </Grid>
           ))}
         </Grid>
@@ -349,6 +382,7 @@ export default function QuestList({
         open={open}
         onClose={() => setOpen(false)}
         quest={selected}
+        streak={streak}
       />
     </Box>
   );

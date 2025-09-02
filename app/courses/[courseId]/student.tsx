@@ -342,7 +342,10 @@ export default function StudentCoursePage() {
 
       {/* Quest */}
       <Box marginBottom={2} marginTop={2}>
-        <QuestList questsProp={course.dailyQuests.quests} />
+        <QuestList
+          questsProp={course.dailyQuests.quests}
+          streak={course.dailyQuests.rewardMultiplier}
+        />
       </Box>
 
       {/* Tabs for Learning Progress and Chapters */}
