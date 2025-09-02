@@ -1,130 +1,52 @@
-# Exposes a URL that specifies the behaviour of this scalar.
-directive @specifiedBy(
-  # The URL that specifies the behaviour of this scalar.
-  url: String!
-) on SCALAR
-
-#  see also https://github.com/graphql-java/graphql-java-extended-validation/blob/master/README.md
-directive @DecimalMax(value: String!, inclusive: Boolean! = true, message: String = "graphql.validation.DecimalMax.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
-
-directive @DecimalMin(value: String!, inclusive: Boolean! = true, message: String = "graphql.validation.DecimalMin.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
-
-directive @Max(value: Int! = 2147483647, message: String = "graphql.validation.Max.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
-
-directive @Min(value: Int! = 0, message: String = "graphql.validation.Min.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
-
-directive @Negative(message: String = "graphql.validation.Negative.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
-
-directive @NegativeOrZero(message: String = "graphql.validation.NegativeOrZero.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
-
-directive @NotBlank(message: String = "graphql.validation.NotBlank.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
-
-directive @NotEmpty(message: String = "graphql.validation.NotEmpty.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
-
-directive @ContainerNotEmpty(message: String = "graphql.validation.ContainerNotEmpty.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
-
-directive @Pattern(regexp: String! = ".*", message: String = "graphql.validation.Pattern.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
-
-directive @Positive(message: String = "graphql.validation.Positive.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
-
-directive @PositiveOrZero(message: String = "graphql.validation.PositiveOrZero.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
-
-directive @Range(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Range.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
-
-directive @Size(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Size.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
-
-directive @ContainerSize(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.ContainerSize.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
-
-#
-# The @OnDemand directive is used to mark fields that are only internally resolved when requested.
-# Implementation Note: This will cause the code generator to omit the field from the generated DTOs.
-directive @OnDemand on FIELD_DEFINITION
-
-# Indicates an Input Object is a OneOf Input Object.
-directive @oneOf on INPUT_OBJECT
-
-# This directive allows results to be deferred during execution
-directive @defer(
-  # Deferred behaviour is controlled by this argument
-  if: Boolean! = true
-
-  # A unique label that represents the fragment being deferred
-  label: String
-) on FRAGMENT_SPREAD | INLINE_FRAGMENT
-
-# This directive disables error propagation when a non nullable field returns null for the given operation.
-directive @experimental_disableErrorPropagation on QUERY | MUTATION | SUBSCRIPTION
-
-directive @resolveTo(requiredSelectionSet: String, sourceName: String!, sourceTypeName: String!, sourceFieldName: String!, sourceSelectionSet: String, sourceArgs: ResolveToSourceArgs, keyField: String, keysArg: String, pubsubTopic: String, filterBy: String, additionalArgs: ResolveToSourceArgs, result: String, resultType: String) on FIELD_DEFINITION
-
 type AccessToken {
   accessToken: String!
   externalUserId: String
 }
 
+type Achievement implements HasGoal {
+  completed: Boolean!
+  completedCount: Int
+  courseId: UUID!
+  description: String!
+  id: UUID
+  imageUrl: String!
+  name: String!
+  requiredCount: Int
+  trackingEndTime: DateTime
+  trackingStartTime: DateTime
+  userId: UUID
+}
+
 type AiEntityProcessingProgress {
   entityId: UUID!
-  state: AiEntityProcessingState!
   queuePosition: Int
+  state: AiEntityProcessingState!
 }
 
 enum AiEntityProcessingState {
-  UNKNOWN
+  DONE
   ENQUEUED
   PROCESSING
-  DONE
+  UNKNOWN
 }
 
 input AiGenQuestionContext {
-  #
-  # The question is used to fine tune the prompt context
   description: String!
-
-  #
-  # the media records that are used to give knowledge to the AI about the topic of the question.
-  mediaRecordIds: [UUID]!
-
-  #
-  # The id of the quiz to which the question will be added.
-  quizId: UUID!
-
-  #
-  # The maximum number of questions that can be generated.
-  maxQuestions: Int! = 5
-
-  #
-  # The minimum number of questions that must be generated.
-  minQuestions: Int! = 5
-
-  #
-  # The maximum number of answers per question if is a multiple choice question.
   maxAnswersPerQuestion: Int! = 5
-
-  #
-  # The maximum number of multiple choice questions that can be generated.
-  maxMultipleChoiceQuestions: Int! = 5
-
-  #
-  # The maximum number of free text questions that can be generated.
-  maxFreeTextQuestions: Int! = 5
-
-  #
-  # The maximum number of numeric questions that can be generated.
-  maxNumericQuestions: Int! = 5
-
-  #
-  # The maximum number of exact answer questions that can be generated.
   maxExactQuestions: Int! = 5
-
-  #
-  # Whether multiple choice questions with multiple correct answers are allowed.
-  allowMultipleCorrectAnswers: Boolean! = false
+  maxFreeTextQuestions: Int! = 5
+  maxMultipleChoiceQuestions: Int! = 5
+  maxNumericQuestions: Int! = 5
+  mediaRecordIds: [UUID]!
+  minExactQuestions: Int! = 1
+  minFreeTextQuestions: Int! = 1
+  minMultipleChoiceQuestions: Int! = 1
+  minNumericQuestions: Int! = 1
 }
 
 input AnswerInput {
-  text: String!
   playerTypes: [PlayerType!]!
-
+  text: String!
 }
 
 interface Assessment {
@@ -138,6 +60,8 @@ interface Assessment {
 
   #
   # Metadata of the content
+  isAvailableToBeWorkedOn: Boolean!
+  items: [Item!]!
   metadata: ContentMetadata!
 
   #
@@ -156,6 +80,7 @@ interface Assessment {
   # For the current user, returns true if this content could be worked on by the user (i.e. it is not locked), false
   # if content is not available to be worked on (e.g. because previous stage has not been completed)
   isAvailableToBeWorkedOn: Boolean!
+  userProgressData: UserProgressData!
 }
 
 type AssessmentContentReference {
@@ -165,6 +90,7 @@ type AssessmentContentReference {
 type AssessmentMetadata {
   #
   # Number of skill points a student receives for completing this content
+  initialLearningInterval: Int
   skillPoints: Int!
 
   #
@@ -183,6 +109,7 @@ type AssessmentMetadata {
 input AssessmentMetadataInput {
   #
   # Number of skill points a student receives for completing this content
+  initialLearningInterval: Int
   skillPoints: Int!
 
   #
@@ -199,16 +126,9 @@ input AssessmentMetadataInput {
 }
 
 type AssessmentSemanticSearchResult implements SemanticSearchResult {
-  #
-  # The similarity score of the search result.
-  score: Float!
-
-  #
-  # ID of the assessment this search result is referencing.
-  assessmentId: UUID!
-
-  # The assessment this search result is referencing.
   assessment: Assessment!
+  assessmentId: UUID!
+  score: Float!
 }
 
 #
@@ -220,6 +140,9 @@ type Assignment {
 
   #
   # Id of the course this assignment belongs to.
+  assignmentType: AssignmentType!
+  codeAssignmentMetadata: CodeAssignmentMetadata
+  content: Content
   courseId: UUID!
 
   #
@@ -250,6 +173,7 @@ type Assignment {
   #
   # The id of the exercise sheet in an external system like TMS. (optional)
   # This is needed for mapping grading data to assignments.
+  exercises: [Exercise!]
   externalId: String
 
   #
@@ -262,17 +186,25 @@ type Assignment {
 
 #
 # An assignment, assignment related fields are stored in the assignment service.
+  requiredPercentage: Float
+  totalCredits: Float
+}
+
 type AssignmentAssessment implements Assessment & Content {
   #
   # Assessment metadata
+  aiProcessingProgress: AiEntityProcessingProgress!
   assessmentMetadata: AssessmentMetadata!
 
   #
   # ID of the content
+  assignment: Assignment
   id: UUID!
 
   #
   # Metadata of the content
+  isAvailableToBeWorkedOn: Boolean!
+  items: [Item!]!
   metadata: ContentMetadata!
 
   #
@@ -302,6 +234,7 @@ type AssignmentAssessment implements Assessment & Content {
 
   # Tags suggested for this assessment by the AI system.
   suggestedTags: [String!]!
+  userProgressData: UserProgressData!
 }
 
 #
@@ -314,6 +247,7 @@ type AssignmentCompletedFeedback {
   #
   # The percentage of achieved credits compared to total credits.
   correctness: Float!
+  success: Boolean!
 }
 
 type AssignmentMutation {
@@ -343,20 +277,24 @@ type AssignmentMutation {
 
   #
   # Deletes the subexercise with the specified ID. Throws an error if the subexercise does not exist.
+  deleteExercise(itemId: UUID!): UUID!
   deleteSubexercise(itemId: UUID!): UUID!
+  updateExercise(input: UpdateExerciseInput!): Exercise!
+  updateSubexercise(input: UpdateSubexerciseInput!): Subexercise!
 }
 
 #
 # The type of assignment.
 enum AssignmentType {
+  CODE_ASSIGNMENT
   EXERCISE_SHEET
   PHYSICAL_TEST
-  CODE_ASSIGNMENT
 }
 
 input AssociationInput {
   #
   # id of the corresponding item
+  feedback: JSON
   itemId: UUID
 
   #
@@ -381,6 +319,7 @@ type AssociationQuestion implements Question {
 
   #
   # List of correct associations.
+  aiGenerated: Boolean!
   correctAssociations: [SingleAssociation!]!
 
   #
@@ -393,15 +332,20 @@ type AssociationQuestion implements Question {
 
   #
   # Unique identifier of the question and the id of the corresponding item
+  hint: JSON
+  item: Item!
   itemId: UUID!
 
   #
   # Number of the question, i.e., the position of the question in the list of questions.
   # Only relevant if questionPoolingMode is ORDERED.
+  leftSide: [String!]!
   number: Int!
 
   #
   # Type of the question.
+  rightSide: [String!]!
+  text: JSON!
   type: QuestionType!
 
   #
@@ -413,12 +357,12 @@ type AssociationQuestion implements Question {
 #
 # Level of Blooms Taxonomy
 enum BloomLevel {
+  ANALYZE
+  APPLY
+  CREATE
+  EVALUATE
   REMEMBER
   UNDERSTAND
-  APPLY
-  ANALYZE
-  EVALUATE
-  CREATE
 }
 
 #
@@ -434,14 +378,22 @@ type Chapter {
 
   #
   # Description of the chapter, maximum length is 3000 characters.
+  achievableSkillTypes: [SkillType]!
+  contents: [Content!]!
+  contentsWithNoSection: [Content!]!
+  course: Course!
   description: String!
 
   #
   # Number of the chapter, determines the order of the chapters.
+  endDate: DateTime!
+  id: UUID!
   number: Int!
 
   #
   # Start date of the chapter, ISO 8601 format.
+  sections: [Section!]!
+  skills: [Skill]!
   startDate: DateTime!
 
   #
@@ -476,21 +428,22 @@ type Chapter {
   achievableSkillTypes: [SkillType]!
 
   # The progress of the current user in this chapter.
+  suggestedStartDate: DateTime
+  title: String!
   userProgress: CompositeProgressInformation!
-  skills: [Skill]!
 }
 
 input ChapterFilter {
-  title: StringFilter
-  description: StringFilter
-  number: IntFilter
-  startDate: DateTimeFilter
-  endDate: DateTimeFilter
-  suggestedStartDate: DateTimeFilter
-  suggestedEndDate: DateTimeFilter
   and: [ChapterFilter!]
-  or: [ChapterFilter!]
+  description: StringFilter
+  endDate: DateTimeFilter
   not: ChapterFilter
+  number: IntFilter
+  or: [ChapterFilter!]
+  startDate: DateTimeFilter
+  suggestedEndDate: DateTimeFilter
+  suggestedStartDate: DateTimeFilter
+  title: StringFilter
 }
 
 #
@@ -528,11 +481,13 @@ input ClozeElementInput {
   #
   # Feedback for the blank when the user selects a wrong answer, in SlateJS JSON format. Only used for BLANK type.
   feedback: JSON
+  text: JSON
+  type: ClozeElementType!
 }
 
 enum ClozeElementType {
-  TEXT
   BLANK
+  TEXT
 }
 
 type ClozeQuestion implements Question {
@@ -546,6 +501,7 @@ type ClozeQuestion implements Question {
 
   #
   # All selectable answers for the blanks (computed). This contains the correct answers as well as wrong answers.
+  aiGenerated: Boolean!
   allBlanks: [String!]!
 
   #
@@ -554,6 +510,9 @@ type ClozeQuestion implements Question {
 
   #
   # Unique identifier of the question and the id of the corresponding item
+  clozeElements: [ClozeElement!]!
+  hint: JSON
+  item: Item!
   itemId: UUID!
 
   #
@@ -563,6 +522,7 @@ type ClozeQuestion implements Question {
 
   #
   # Type of the question.
+  showBlanksList: Boolean!
   type: QuestionType!
 
   #
@@ -580,6 +540,7 @@ type ClozeTextElement {
 type CodeAssignmentGradingMetadata {
   #
   # The repository link of for the external code assignment.
+  feedbackTableHtml: String
   repoLink: String
 
   #
@@ -616,8 +577,13 @@ type CompositeProgressInformation {
 
   #
   # absolut number of total content
+  progress: Float!
   totalContents: Int!
 }
+
+directive @ContainerNotEmpty(message: String = "graphql.validation.ContainerNotEmpty.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @ContainerSize(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.ContainerSize.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 interface Content {
   #
@@ -626,6 +592,7 @@ interface Content {
 
   #
   # Metadata of the content
+  isAvailableToBeWorkedOn: Boolean!
   metadata: ContentMetadata!
 
   #
@@ -640,6 +607,7 @@ interface Content {
   # For the current user, returns true if this content could be worked on by the user (i.e. it is not locked), false
   # if content is not available to be worked on (e.g. because previous stage has not been completed)
   isAvailableToBeWorkedOn: Boolean!
+  userProgressData: UserProgressData!
 }
 
 type ContentMetadata {
@@ -661,26 +629,27 @@ type ContentMetadata {
 
   #
   # ID of the chapter this content is associated with
+  chapter: Chapter!
   chapterId: UUID!
 
   #
   # ID of the course this content is associated with
+  course: Course!
   courseId: UUID!
 
   #
   # TagNames this content is tagged with
+  name: String!
+  rewardPoints: Int!
+  suggestedDate: DateTime!
   tagNames: [String!]!
-
-  # The course this content belongs to.
-  course: Course!
-
-  # The chapter this content belongs to.
-  chapter: Chapter!
+  type: ContentType!
 }
 
 type ContentMutation {
   #
   # Identifier of Content
+  addTagToContent(tagName: String): Content!
   contentId: UUID!
 
   #
@@ -702,6 +671,8 @@ type ContentMutation {
   #
   # Remove a tag from an existing content
   removeTagFromContent(tagName: String): Content!
+  updateAssessment(input: UpdateAssessmentInput!): Assessment!
+  updateMediaContent(input: UpdateMediaContentInput!): MediaContent!
 }
 
 type ContentPayload {
@@ -717,10 +688,10 @@ type ContentPayload {
 #
 # Type of the content
 enum ContentType {
-  MEDIA
-  FLASHCARDS
-  QUIZ
   ASSIGNMENT
+  FLASHCARDS
+  MEDIA
+  QUIZ
 }
 
 #
@@ -737,6 +708,7 @@ type Course {
 
   #
   # Detailed description of the course. Maximal length is 3000 characters.
+  chapters(filter: ChapterFilter, pagination: Pagination, sortBy: [String!]! = [], sortDirection: [SortDirection!]! = [ASC]): ChapterPayload!
   description: String!
 
   #
@@ -784,46 +756,35 @@ type Course {
   # Course Memberships of this course. Contains information about which users are members of the course and what
   # role they have in it.
   # 🔒 User needs to be at least an admin of the course to access this field.
-  memberships: [CourseMembership!]!
-
-  # The reward scores of this course for the currently logged in user.
-  rewardScores: RewardScores!
-
-  # The scoreboard containing the power scores of the members of this course.
-  scoreboard: [ScoreboardItem!]!
-
-  # The media records which are linked to this course.
+  id: UUID!
   mediaRecords: [MediaRecord!]!
-
-  # Suggests content of the course which the current user should
-  # learn next (both new content and content to repeat).
-  suggestions(
-    # The amount of suggestions to generate in total.
-    amount: Int!
-
-    # Only suggestions for these skill types will be generated.
-    # If no skill types are given, suggestions for all skill types will be generated,
-    # also containing suggestions for media content (which do not have a skill type).
-    skillTypes: [SkillType!]! = []
-  ): [Suggestion!]!
-
-  # The progress of the current user in this course.
-  userProgress: CompositeProgressInformation!
+  memberships: [CourseMembership!]!
+  published: Boolean!
+  rewardScores: RewardScores!
+  scoreboard: [ScoreboardItem!]!
   skills: [Skill!]!
 }
 
 #
 # Input type for filtering courses. All fields are optional.
 # If multiple filters are specified, they are combined with AND (except for the or field).
+  startDate: DateTime!
+  startYear: Int
+  suggestions(amount: Int!, skillTypes: [SkillType!]! = []): [Suggestion!]!
+  title: String!
+  userProgress: CompositeProgressInformation!
+  yearDivision: YearDivision
+}
+
 input CourseFilter {
-  title: StringFilter
-  description: StringFilter
-  startDate: DateTimeFilter
-  endDate: DateTimeFilter
-  published: Boolean
   and: [CourseFilter!]
-  or: [CourseFilter!]
+  description: StringFilter
+  endDate: DateTimeFilter
   not: CourseFilter
+  or: [CourseFilter!]
+  published: Boolean
+  startDate: DateTimeFilter
+  title: StringFilter
 }
 
 #
@@ -836,6 +797,7 @@ type CourseMembership {
 
   #
   # Id of the course the user is a member of.
+  course: Course!
   courseId: UUID!
 
   #
@@ -848,6 +810,7 @@ type CourseMembership {
 
   # The user of this course membership.
   user: PublicUserInfo
+  userId: UUID!
 }
 
 #
@@ -864,6 +827,7 @@ input CourseMembershipInput {
   #
   # The role of the user in the course.
   role: UserRoleInCourse!
+  userId: UUID!
 }
 
 #
@@ -885,6 +849,7 @@ input CreateAssessmentInput {
   #
   # items of the new assessments
   items: [CreateItemInput!]
+  metadata: CreateContentMetadataInput!
 }
 
 input CreateAssignmentInput {
@@ -917,12 +882,16 @@ input CreateAssignmentInput {
   #
   # The id of the exercise sheet in an external system like TMS. (optional)
   # This is needed for mapping grading data to assignments.
+  exercises: [CreateExerciseInput!]
   externalId: String
+  requiredPercentage: Float
+  totalCredits: Float
 }
 
 input CreateAssociationInput {
   #
   # Text of the left side of the association, in SlateJS JSON format.
+  feedback: JSON
   left: String!
 
   #
@@ -937,6 +906,8 @@ input CreateAssociationInput {
 input CreateAssociationQuestionInput {
   #
   # id of the corresponding item
+  correctAssociations: [AssociationInput!]!
+  hint: JSON
   itemId: UUID!
 
   #
@@ -958,10 +929,10 @@ input CreateAssociationQuestionInput {
 }
 
 input CreateAssociationQuestionInputWithoutItem {
-  number: Int
-  text: JSON!
   correctAssociations: [CreateAssociationInput!]!
   hint: JSON
+  number: Int
+  text: JSON!
 }
 
 #
@@ -973,10 +944,12 @@ input CreateChapterInput {
 
   #
   # Description of the chapter, maximum length is 3000 characters.
+  courseId: UUID!
   description: String!
 
   #
   # Number of the chapter, determines the order of the chapters, must be positive.
+  endDate: DateTime!
   number: Int!
 
   #
@@ -1003,6 +976,8 @@ input CreateChapterInput {
   # ID of the course the chapter belongs to.
   # Must be a UUID of an existing course.
   courseId: UUID!
+  suggestedStartDate: DateTime
+  title: String!
 }
 
 input CreateClozeElementInput {
@@ -1021,11 +996,16 @@ input CreateClozeElementInput {
   #
   # Feedback for the blank when the user selects a wrong answer, in SlateJS JSON format. Only used for BLANK type.
   feedback: JSON
+  text: JSON
+  type: ClozeElementType!
 }
 
 input CreateClozeQuestionInput {
   #
   # id of the corresponding item
+  additionalWrongAnswers: [String!]! = []
+  clozeElements: [ClozeElementInput!]!
+  hint: JSON
   itemId: UUID!
 
   #
@@ -1051,16 +1031,17 @@ input CreateClozeQuestionInput {
 }
 
 input CreateClozeQuestionInputWithoutItem {
-  number: Int
-  clozeElements: [CreateClozeElementInput!]!
   additionalWrongAnswers: [String!]! = []
-  showBlanksList: Boolean! = true
+  clozeElements: [CreateClozeElementInput!]!
   hint: JSON
+  number: Int
+  showBlanksList: Boolean! = true
 }
 
 input CreateContentMetadataInput {
   #
   # Name of the content
+  chapterId: UUID!
   name: String!
 
   #
@@ -1081,7 +1062,9 @@ input CreateContentMetadataInput {
 
   #
   # TagNames this content is tagged with
+  suggestedDate: DateTime!
   tagNames: [String!]! = []
+  type: ContentType!
 }
 
 #
@@ -1111,10 +1094,12 @@ input CreateCourseInput {
 
   #
   # The year in which the term starts.
+  startDate: DateTime!
   startYear: Int
 
   #
   # The division of the academic calendar in which the term takes place.
+  title: String!
   yearDivision: YearDivision
 }
 
@@ -1147,15 +1132,18 @@ input CreateExactAnswerQuestionInput {
   #
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+  itemId: UUID
+  number: Int
+  text: JSON!
 }
 
 input CreateExactAnswerQuestionInputWithoutItem {
-  number: Int
-  text: JSON!
   caseSensitive: Boolean! = false
   correctAnswers: [String!]!
   feedback: JSON
   hint: JSON
+  number: Int
+  text: JSON!
 }
 
 input CreateExerciseInput {
@@ -1174,6 +1162,8 @@ input CreateExerciseInput {
   #
   # The number of the exercise on the exercise sheet, may be something such as 2 (optional).
   number: String
+  subexercises: [CreateSubexerciseInput!]!
+  totalExerciseCredits: Float!
 }
 
 input CreateFlashcardInput {
@@ -1186,10 +1176,7 @@ input CreateFlashcardInput {
   sides: [FlashcardSideInput!]!
 }
 
-# Input to create a new flashcard without an item.
-# This is supposed to be consumed by the frontend to create a new flashcard after the associated item has been created.
 input CreateFlashcardInputWithoutItem {
-  # List of sides of this flashcard. Must be at least two sides.
   sides: [FlashcardSideInput!]!
 }
 
@@ -1200,8 +1187,8 @@ input CreateFlashcardSetInput {
 }
 
 input CreateItemInput {
-  associatedSkills: [CreateSkillInput!]!
   associatedBloomLevels: [BloomLevel!]!
+  associatedSkills: [CreateSkillInput!]!
 }
 
 #
@@ -1215,6 +1202,7 @@ input CreateMediaContentInput {
 input CreateMediaRecordInput {
   #
   # Name of the media record. Cannot be blank, maximum length 255 characters.
+  contentIds: [UUID!]!
   name: String!
 
   #
@@ -1229,6 +1217,8 @@ input CreateMediaRecordInput {
 input CreateMultipleChoiceQuestionInput {
   #
   # UUID of the question to update and the id of the corresponding item.
+  answers: [MultipleChoiceAnswerInput!]!
+  hint: JSON
   itemId: UUID!
 
   #
@@ -1250,15 +1240,18 @@ input CreateMultipleChoiceQuestionInput {
 }
 
 input CreateMultipleChoiceQuestionInputWithoutItem {
-  number: Int
-  text: JSON!
   answers: [MultipleChoiceAnswerInput!]!
   hint: JSON
+  number: Int
+  text: JSON!
 }
 
 input CreateNumericQuestionInput {
   #
   # id of the corresponding item
+  correctAnswer: Float!
+  feedback: JSON
+  hint: JSON
   itemId: UUID!
 
   #
@@ -1288,12 +1281,12 @@ input CreateNumericQuestionInput {
 }
 
 input CreateNumericQuestionInputWithoutItem {
+  correctAnswer: Float!
+  feedback: JSON
+  hint: JSON
   number: Int
   text: JSON!
-  hint: JSON
-  correctAnswer: Float!
   tolerance: Float!
-  feedback: JSON
 }
 
 input CreateQuizInput {
@@ -1317,6 +1310,8 @@ input CreateQuizInput {
   #
   #     If this is null or not set, the behavior is the same as if it was equal to the number of questions.
   numberOfRandomlySelectedQuestions: Int
+  questionPoolingMode: QuestionPoolingMode!
+  requiredCorrectAnswers: Int!
 }
 
 input CreateSectionInput {
@@ -1332,6 +1327,7 @@ input CreateSectionInput {
 input CreateSelfAssessmentQuestionInput {
   #
   # id of the corresponding item
+  hint: JSON
   itemId: UUID!
 
   #
@@ -1350,19 +1346,20 @@ input CreateSelfAssessmentQuestionInput {
   #
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+  text: JSON!
 }
 
 input CreateSelfAssessmentQuestionInputWithoutItem {
-  number: Int
-  text: JSON!
-  solutionSuggestion: JSON!
   hint: JSON
+  number: Int
+  solutionSuggestion: JSON!
+  text: JSON!
 }
 
 input CreateSkillInput {
-  skillName: String!
-  skillCategory: String!
   isCustomSkill: Boolean
+  skillCategory: String!
+  skillName: String!
 }
 
 input CreateStageInput {
@@ -1373,6 +1370,7 @@ input CreateStageInput {
   #
   # updated List of UUIDs for content labeled as optional in this Stage
   optionalContents: [UUID!]!
+  requiredContents: [UUID!]!
 }
 
 input CreateSubexerciseInput {
@@ -1382,6 +1380,7 @@ input CreateSubexerciseInput {
 
   #
   # the id of the exercise this subexercise belongs to
+  number: String
   parentExerciseId: UUID!
 
   #
@@ -1393,10 +1392,8 @@ input CreateSubexerciseInput {
   number: String
 }
 
-# An RFC-3339 compliant Full Date Scalar
 scalar Date
 
-# A slightly refined version of RFC-3339 compliant DateTime Scalar
 scalar DateTime
 
 #
@@ -1412,29 +1409,19 @@ input DateTimeFilter {
   before: DateTime
 }
 
+directive @DecimalMax(value: String!, inclusive: Boolean! = true, message: String = "graphql.validation.DecimalMax.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @DecimalMin(value: String!, inclusive: Boolean! = true, message: String = "graphql.validation.DecimalMin.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @defer(if: Boolean! = true, label: String) on FRAGMENT_SPREAD | INLINE_FRAGMENT
+
 type DocumentRecordSegment implements MediaRecordSegment {
-  #
-  # UUID of this segment.
   id: UUID!
-
-  #
-  # UUID of the media record this search result references.
+  mediaRecord: MediaRecord!
   mediaRecordId: UUID!
-
-  #
-  # Page of the document this search result references.
   page: Int!
-
-  #
-  # The text snippet of the document this search result references.
   text: String!
-
-  #
-  # Base64-encoded image thumbnail for this segment.
   thumbnail: String!
-
-  #
-  # Title of this segment.
   title: String
 
   # The media record this segment is part of.
@@ -1445,6 +1432,14 @@ type DocumentRecordSegment implements MediaRecordSegment {
 # A question with a clear, correct answer that can be automatically checked.
 # Differs from self-assessment questions in that the user has to enter one of the correct answers and
 # the answer is checked automatically.
+}
+
+type DocumentSource implements Source {
+  mediaRecordId: UUID!
+  mediaRecords: [MediaRecord!]!
+  page: Int!
+}
+
 type ExactAnswerQuestion implements Question {
   #
   # Text of the question, in SlateJS JSON format.
@@ -1456,14 +1451,18 @@ type ExactAnswerQuestion implements Question {
 
   #
   # If the answer is case sensitive. If true, the answer is checked case sensitive.
+  aiGenerated: Boolean!
   caseSensitive: Boolean!
 
   #
   # Feedback for the question when the user enters a wrong answer, in SlateJS JSON format.
+  correctAnswers: [String!]!
   feedback: JSON
 
   #
   # Unique identifier of the question and the id of the corresponding item
+  hint: JSON
+  item: Item!
   itemId: UUID!
 
   #
@@ -1473,6 +1472,7 @@ type ExactAnswerQuestion implements Question {
 
   #
   # Type of the question.
+  text: JSON!
   type: QuestionType!
 
   #
@@ -1500,6 +1500,8 @@ type Exercise {
 
   #
   # Feedback given by a tutor on the exercise (optional).
+  subexercises: [Subexercise!]!
+  totalExerciseCredits: Float!
   tutorFeedback: String
 }
 
@@ -1515,11 +1517,13 @@ input ExerciseCompletedInput {
   #
   # List of subexercises that were completed in the exercise. Can be empty, if there are no subexercises within the exercise.
   completedSubexercises: [SubexerciseCompletedInput]!
+  itemId: UUID!
 }
 
 type ExerciseGrading {
   #
   # ID of the exercise.
+  achievedCredits: Float!
   itemId: UUID!
 
   #
@@ -1539,6 +1543,8 @@ type ExerciseGrading {
 #
 # An external Assignment such as the ones from TMS. These are needed for mapping
 # Meitrex Assignments to external ones for importing gradings.
+directive @experimental_disableErrorPropagation on QUERY | MUTATION | SUBSCRIPTION
+
 type ExternalAssignment {
   externalId: String!
   sheetNo: Float!
@@ -1551,6 +1557,7 @@ type ExternalCourse {
 
   #
   # The url to the course.
+  organizationName: String!
   url: String!
 }
 
@@ -1559,8 +1566,8 @@ enum ExternalServiceProviderDto {
 }
 
 type ExternalUserIdWithUser {
-  userId: UUID!
   externalUserId: String!
+  userId: UUID!
 }
 
 #
@@ -1570,6 +1577,7 @@ type ExternalUserIdWithUser {
 type Flashcard {
   #
   # Unique identifier of this flashcard, which is the id of the corresponding item
+  item: Item!
   itemId: UUID!
 
   #
@@ -1580,7 +1588,6 @@ type Flashcard {
   # Progress data of the flashcard, specific to given users.
   # If userId is not provided, the progress data of the current user is returned.
   userProgressData: FlashcardProgressData!
-  item: Item!
 }
 
 #
@@ -1597,6 +1604,8 @@ type FlashcardLearnedFeedback {
   #
   # Progress of the whole flashcard set.
   flashcardSetProgress: FlashcardSetProgress!
+  nextLearnDate: DateTime!
+  success: Boolean!
 }
 
 type FlashcardOutput {
@@ -1645,14 +1654,12 @@ type FlashcardSet {
 
   #
   # Id of the course this flashcard set belongs to.
+  content: Content
   courseId: UUID!
 
   #
   # List of flashcards in this set.
   flashcards: [Flashcard!]!
-
-  # The content this FlashcardSet belongs to.
-  content: Content
 }
 
 #
@@ -1660,14 +1667,18 @@ type FlashcardSet {
 type FlashcardSetAssessment implements Assessment & Content {
   #
   # Assessment metadata
+  aiProcessingProgress: AiEntityProcessingProgress!
   assessmentMetadata: AssessmentMetadata!
 
   #
   # ID of the content
+  flashcardSet: FlashcardSet
   id: UUID!
 
   #
   # Metadata of the content
+  isAvailableToBeWorkedOn: Boolean!
+  items: [Item!]!
   metadata: ContentMetadata!
 
   #
@@ -1696,6 +1707,7 @@ type FlashcardSetAssessment implements Assessment & Content {
 
   # Tags suggested for this assessment by the AI system.
   suggestedTags: [String!]!
+  userProgressData: UserProgressData!
 }
 
 type FlashcardSetMutation {
@@ -1705,14 +1717,9 @@ type FlashcardSetMutation {
 
   #
   # Deletes the flashcard with the specified ID. Throws an error if the flashcard does not exist.
+  createFlashcard(assessmentId: UUID!, flashcardInput: CreateFlashcardInputWithoutItem!, item: CreateItemInput!): FlashcardOutput!
   deleteFlashcard(id: UUID!): UUID!
-
-  # Creates a new flashcard and its associated item by internally fetching and mutating the assessment with the new
-  # item provided. The created item's id is then used to create the flashcard.
-  createFlashcard(item: CreateItemInput!, assessmentId: UUID!, flashcardInput: CreateFlashcardInputWithoutItem!): FlashcardOutput!
-
-  # Updates a flashcard by updating the associated item and the flashcard itself.
-  updateFlashcard(item: ItemInput!, assessmentId: UUID!, flashcardInput: UpdateFlashcardInput!): FlashcardOutput!
+  updateFlashcard(assessmentId: UUID!, flashcardInput: UpdateFlashcardInput!, item: ItemInput!): FlashcardOutput!
 }
 
 type FlashcardSetProgress {
@@ -1723,6 +1730,7 @@ type FlashcardSetProgress {
   #
   # Percentage of how many flashcards have been learned correctly of the ones that have been learned.
   correctness: Float!
+  percentageLearned: Float!
 }
 
 type FlashcardSide {
@@ -1742,11 +1750,17 @@ type FlashcardSide {
   # Whether this side is also an answer. Some Flashcards can have their sides be
   # used as both questions or answers for the other sides
   isAnswer: Boolean!
+  isQuestion: Boolean!
+  label: String!
+  text: JSON!
 }
 
 input FlashcardSideInput {
   #
   # Text of this flashcard side.
+  isAnswer: Boolean!
+  isQuestion: Boolean!
+  label: String!
   text: JSON!
 
   #
@@ -1763,15 +1777,29 @@ input FlashcardSideInput {
   isAnswer: Boolean!
 }
 
+type Forum {
+  courseId: UUID!
+  id: UUID!
+  threads: [Thread!]!
+  userIds: [UUID!]!
+}
+
+type ForumActivityEntry {
+  courseId: UUID
+  creationTime: DateTime!
+  post: Post
+  thread: Thread!
+}
+
 enum Gamification {
-  GAMIFICATION_ENABLED
   ADAPTIVE_GAMIFICATION_ENABLED
   ALL_GAMIFICATION_DISABLED
+  GAMIFICATION_ENABLED
 }
 
 input GenerateAccessTokenInput {
-  provider: ExternalServiceProviderDto!
   authorizationCode: String!
+  provider: ExternalServiceProviderDto!
 }
 
 input GenerateMediaRecordLinksInput {
@@ -1779,8 +1807,8 @@ input GenerateMediaRecordLinksInput {
 }
 
 enum GlobalUserRole {
-  SUPER_USER
   COURSE_CREATOR
+  SUPER_USER
 }
 
 #
@@ -1788,10 +1816,15 @@ enum GlobalUserRole {
 type Grading {
   #
   # ID of the assignment.
+  achievedCredits: Float
   assessmentId: UUID!
 
   #
   # ID of the student the grading belongs to.
+  codeAssignmentGradingMetadata: CodeAssignmentGradingMetadata
+  date: DateTime
+  exerciseGradings: [ExerciseGrading!]
+  student: PublicUserInfo
   studentId: UUID!
 
   #
@@ -1815,14 +1848,72 @@ type Grading {
   student: PublicUserInfo
 }
 
+interface HasGoal {
+  courseId: UUID!
+  userId: UUID
+}
+
+type HintResponse {
+  hint: String!
+}
+
+type InfoThread implements Thread {
+  creationTime: DateTime!
+  creatorId: UUID!
+  id: UUID!
+  info: Post!
+  numberOfPosts: Int!
+  posts: [Post!]!
+  threadContentReference: ThreadContentReference
+  title: String!
+}
+
 input IngestMediaRecordInput {
-  # UUID of the media record of this document.
   id: UUID!
 }
 
 #
 # Filter for integer values.
 # If multiple filters are specified, they are combined with AND.
+input InputForum {
+  courseId: UUID!
+  id: UUID!
+}
+
+input InputInfoThread {
+  forumId: UUID!
+  info: InputPost!
+  threadContentReference: InputThreadContentReferenceOnCreate
+  title: String!
+}
+
+input InputPost {
+  content: String!
+  id: UUID
+  threadId: UUID
+}
+
+input InputQuestionThread {
+  answer: InputPost
+  forumId: UUID!
+  question: InputPost!
+  threadContentReference: InputThreadContentReferenceOnCreate
+  title: String!
+}
+
+input InputThreadContentReference {
+  contentId: UUID!
+  pageNumber: Int
+  threadId: UUID!
+  timeStampSeconds: Int
+}
+
+input InputThreadContentReferenceOnCreate {
+  contentId: UUID!
+  pageNumber: Int
+  timeStampSeconds: Int
+}
+
 input IntFilter {
   #
   # An integer value to match exactly.
@@ -1852,7 +1943,16 @@ type Item {
 
   #
   # The Level of Blooms Taxonomy the item belongs to
+type Inventory {
+  items: [UserItem!]!
+  unspentPoints: Int!
+  userId: UUID!
+}
+
+type Item {
   associatedBloomLevels: [BloomLevel!]!
+  associatedSkills: [Skill!]!
+  id: UUID!
 }
 
 input ItemInput {
@@ -1867,6 +1967,8 @@ input ItemInput {
   #
   # The Level of Blooms Taxonomy the item belongs to
   associatedBloomLevels: [BloomLevel!]!
+  associatedSkills: [SkillInput!]!
+  id: UUID
 }
 
 type ItemProgress {
@@ -1880,10 +1982,13 @@ type ItemProgress {
   responseCorrectness: Float!
 }
 
-# A JSON scalar
 scalar JSON
 
-# 24-hour clock time value string in the format `hh:mm:ss` or `hh:mm:ss.sss`.
+type LectureQuestionResponse {
+  answer: String!
+  sources: [Source!]!
+}
+
 scalar LocalTime
 
 input LogAssignmentCompletedInput {
@@ -1897,6 +2002,7 @@ input LogAssignmentCompletedInput {
 
   #
   # List of exercises that were completed in the assignment. Can be empty, if there are no exercises within the assignment.
+  assessmentId: UUID!
   completedExercises: [ExerciseCompletedInput]!
 }
 
@@ -1922,6 +2028,7 @@ input LogFlashcardSetLearnedInput {
   #
   # The percentage of flashcards in the set that the user knew.
   percentageSuccess: Float!
+  userId: UUID!
 }
 
 #
@@ -1936,9 +2043,12 @@ type ManualMappingInstance {
   externalStudentInfo: String!
 }
 
+directive @Max(value: Int! = 2147483647, message: String = "graphql.validation.Max.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
 type MediaContent implements Content {
   #
   # ID of the content
+  aiProcessingProgress: AiEntityProcessingProgress!
   id: UUID!
 
   #
@@ -1957,26 +2067,13 @@ type MediaContent implements Content {
   # For the current user, returns true if this content could be worked on by the user (i.e. it is not locked), false
   # if content is not available to be worked on (e.g. because previous stage has not been completed)
   isAvailableToBeWorkedOn: Boolean!
-
-  # The media records linked to this media content.
   mediaRecords: [MediaRecord!]!
-
-  # Links between segments of the media records that are part of this media content.
-  # A link is created if the segments show the same thing, i.e. a video segment and a
-  # PDF page are linked if the graphics match (i.e. the PDF is shown on-screen in the
-  # video.)
+  metadata: ContentMetadata!
+  progressDataForUser(userId: UUID!): UserProgressData!
   segmentLinks: [MediaRecordSegmentLink!]!
-
-  # The progress of processing the media content. In particular when processing is done,
-  # links between segments of the content's media records will have been created (the ones
-  # which can be retrieved via the MediaContent.segmentLinks field).
-  aiProcessingProgress: AiEntityProcessingProgress!
+  userProgressData: UserProgressData!
 }
 
-#  schema file of the microservice
-#  defines data types, queries and mutations
-#  this can be done in a separate files as long as they are in this folder and
-#  end with .graphqls
 type MediaRecord {
   #
   # ID of the media record
@@ -1984,6 +2081,10 @@ type MediaRecord {
 
   #
   # Ids of the courses this MediaRecord is associated with
+  aiProcessingProgress: AiEntityProcessingProgress!
+  closedCaptions: String
+  contentIds: [UUID!]!
+  contents: [Content]!
   courseIds: [UUID!]!
 
   #
@@ -2029,6 +2130,7 @@ type MediaRecord {
   # Temporary download url for the media record which can only be used from within the system.
   # (This is necessary because the MinIO pre-signed URLs cannot be changed, meaning we cannot use the same URL for both
   # internal and external access because the hostname changes.)
+  id: UUID!
   internalDownloadUrl: String!
 
   #
@@ -2040,22 +2142,15 @@ type MediaRecord {
   contents: [Content]!
 
   # Returns the segments this media record consists of.
+  internalUploadUrl: String!
+  name: String!
   segments: [MediaRecordSegment!]!
-
-  # Returns a closed captions string formatted in WebVTT format for the media record if it is of type video,
-  # returns null otherwise.
-  closedCaptions: String
-
-  # The progress of the AI processing of this media record's content.
-  aiProcessingProgress: AiEntityProcessingProgress!
-
-  # Tags suggested for this media record by the AI system.
+  standardizedDownloadUrl: String
   suggestedTags: [String!]!
-
-  # Gets a short summary/overview of the contents of the media record. Returns a list of strings,
-  # where each string can be treated as a paragraph.
-  # If no summary is available, returns an empty list.
   summary: [String!]!
+  type: MediaType!
+  uploadUrl: String!
+  userProgressData: MediaRecordProgressData!
 }
 
 type MediaRecordProgressData {
@@ -2067,23 +2162,13 @@ type MediaRecordProgressData {
   # Date on which the medium was worked on by the user.
   # This is null if the medium has not been worked on by the user.
   dateWorkedOn: DateTime
+  workedOn: Boolean!
 }
 
 interface MediaRecordSegment {
-  #
-  # UUID of this segment.
   id: UUID!
-
-  #
-  # UUID of the media record this segment is part of.
   mediaRecordId: UUID!
-
-  #
-  # Base64-encoded image thumbnail for this segment.
   thumbnail: String!
-
-  #
-  # Title of this segment.
   title: String
 }
 
@@ -2093,25 +2178,22 @@ type MediaRecordSegmentLink {
 }
 
 type MediaRecordSegmentSemanticSearchResult implements SemanticSearchResult {
-  #
-  # The similarity score of the search result.
-  score: Float!
-
-  #
-  # The media record segment this search result is referencing.
   mediaRecordSegment: MediaRecordSegment!
+  score: Float!
 }
 
 #
 # The type of the media record
 enum MediaType {
-  VIDEO
   AUDIO
+  DOCUMENT
   IMAGE
   PRESENTATION
-  DOCUMENT
   URL
+  VIDEO
 }
+
+directive @Min(value: Int! = 0, message: String = "graphql.validation.Min.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 type MultipleChoiceAnswer {
   #
@@ -2150,6 +2232,7 @@ type MultipleChoiceQuestion implements Question {
 
   #
   # List of answers.
+  aiGenerated: Boolean!
   answers: [MultipleChoiceAnswer!]!
 
   #
@@ -2158,6 +2241,8 @@ type MultipleChoiceQuestion implements Question {
 
   #
   # Unique identifier of the question and the id of the corresponding item
+  hint: JSON
+  item: Item!
   itemId: UUID!
 
   #
@@ -2167,6 +2252,8 @@ type MultipleChoiceQuestion implements Question {
 
   #
   # Type of the question.
+  numberOfCorrectAnswers: Int!
+  text: JSON!
   type: QuestionType!
 
   #
@@ -2188,6 +2275,12 @@ type Mutation {
   # Creates a new chapter with the given input and returns the created chapter.
   # The course id must be a course id of an existing course.
   # 🔒 The user must be an admin in this course to perform this action.
+  addPost(post: InputPost!): Post
+  addThreadToContent(threadContentReference: InputThreadContentReference!): ThreadContentReference
+  addUserToForum(forumId: UUID!): Forum
+  addUserToForumCourse(courseId: UUID!): Forum
+  buyItem(itemId: UUID!): Inventory
+  createAssignmentAssessment(assessmentInput: CreateAssessmentInput!, assignmentInput: CreateAssignmentInput!): AssignmentAssessment!
   createChapter(input: CreateChapterInput!): Chapter!
 
   #
@@ -2223,6 +2316,12 @@ type Mutation {
   #
   # Adds the specified user to the specified course with the specified role.
   # 🔒 The calling user must be an admin in this course to perform this action.
+  createCourse(input: CreateCourseInput!): Course!
+  createFlashcardSetAssessment(assessmentInput: CreateAssessmentInput!, flashcardSetInput: CreateFlashcardSetInput!): FlashcardSetAssessment
+  createForum(courseId: UUID!): Forum
+  createInfoThread(thread: InputInfoThread!): InfoThread
+  createMediaContentAndLinkRecords(contentInput: CreateMediaContentInput!, mediaRecordIds: [UUID!]!): MediaContent!
+  createMediaRecord(input: CreateMediaRecordInput!): MediaRecord!
   createMembership(input: CourseMembershipInput!): CourseMembership!
 
   #
@@ -2241,6 +2340,10 @@ type Mutation {
   # After the access token is generated, the user is redirected to the redirect URI.
   generateAccessToken(input: GenerateAccessTokenInput!): Boolean!
   updateSettings(userId: UUID!, input: SettingsInput!): Settings!
+  createQuestionThread(thread: InputQuestionThread!): QuestionThread
+  createQuizAssessment(assessmentInput: CreateAssessmentInput!, quizInput: CreateQuizInput!): QuizAssessment!
+  createSection(input: CreateSectionInput!): Section!
+  currencyReward(points: Int!): Inventory
   defaultSettings(userId: UUID!): Settings!
 
   #
@@ -2250,32 +2353,23 @@ type Mutation {
 
   #
   # Delete a quiz.
+  deleteChapter(id: UUID!): UUID!
+  deleteCourse(id: UUID!): UUID!
+  deleteFlashcardSet(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the flashcard set and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
+  deleteMediaRecord(id: UUID!): UUID!
+  deleteMembership(input: CourseMembershipInput!): CourseMembership!
+  deletePost(postId: UUID!): Post
   deleteQuiz(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the quiz and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
-
-  #
-  # Log that a multiple choice quiz is completed.
-  # 🔒 The user must be enrolled in the course the quiz is in to perform this action.
-  logQuizCompleted(input: QuizCompletedInput!): QuizCompletionFeedback!
-  aiGenerateQuestions(context: AiGenQuestionContext!): Quiz!
-
-  #
-  #     ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
-  #
-  #     Triggers the recalculation of the reward score of the user.
-  #     This is done automatically at some time in the night.
-  #
-  #     The purpose of this mutation is to allow testing of the reward score and demonstrate the functionality.
-  #     🔒 The user be an admin in the course with the given courseId to perform this action.
-  recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
-
-  #
-  # Modify a flashcard set.
-  # 🔒 The user must be an admin the course the flashcard set is in to perform this action.
-  mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
-
-  #
-  # Logs that a user has learned a flashcard.
-  # 🔒 The user must be enrolled in the course the flashcard set is in to perform this action.
+  deleteThread(threadId: UUID!): Thread
+  downvotePost(postId: UUID!): Post
+  equipItem(itemId: UUID!): Inventory
+  evaluatePlayerHexadScore(input: PlayerAnswerInput!, userId: UUID!): PlayerHexadScore!
+  generateAccessToken(input: GenerateAccessTokenInput!): Boolean!
+  generateHint(courseId: UUID!, questionText: String!): HintResponse!
+  itemReward(itemId: UUID!): Inventory
+  joinCourse(courseId: UUID!): CourseMembership!
+  leaveCourse(courseId: UUID!): CourseMembership!
+  logAssignmentCompleted(input: LogAssignmentCompletedInput!): AssignmentCompletedFeedback!
   logFlashcardLearned(input: LogFlashcardLearnedInput!): FlashcardLearnedFeedback!
 
   #
@@ -2291,11 +2385,18 @@ type Mutation {
   #
   # Modify Content
   # 🔒 The user must have admin access to the course containing the section to perform this action.
+  loginUser(courseId: UUID): UUID
+  logMediaRecordWorkedOn(mediaRecordId: UUID!): MediaRecord!
+  logQuizCompleted(input: QuizCompletedInput!): QuizCompletionFeedback!
+  lotteryRun: UserItemComplete
+  mutateAssignment(assessmentId: UUID!): AssignmentMutation!
   mutateContent(contentId: UUID!): ContentMutation!
 
   #
   # Modify the section with the given id.
   # 🔒 The user must have admin access to the course containing the section to perform this action.
+  mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
+  mutateQuiz(assessmentId: UUID!): QuizMutation!
   mutateSection(sectionId: UUID!): SectionMutation!
 
   #
@@ -2318,6 +2419,11 @@ type Mutation {
   # For a given MediaContent, sets the linked media records of it to the ones with the given UUIDs.
   # This means that for the content, all already linked media records are removed and replaced by the given ones.
   # 🔒 If the mediaRecord is associated with courses the user must be an administrator of at least one of the courses.
+  recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
+  recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
+  saveStudentMappings(courseId: UUID!, studentMappingInputs: [StudentMappingInput!]!): [String]!
+  selectAnswer(postId: UUID!): QuestionThread!
+  sendMessage(courseId: UUID, userInput: String!): LectureQuestionResponse!
   setLinkedMediaRecordsForContent(contentId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
 
   #
@@ -2338,6 +2444,9 @@ type Mutation {
   #
   # Update top-level fields of an assignment.
   # 🔒 The user must be an admin in the course the assignment belongs to.
+  setNickname(nickname: String!): UserInfo!
+  syncAssignmentsForCourse(courseId: UUID!): Boolean!
+  unequipItem(itemId: UUID!): Inventory
   updateAssignment(assessmentId: UUID!, input: UpdateAssignmentInput!): Assignment!
 
   #
@@ -2377,6 +2486,22 @@ type Mutation {
   # Creates a new section in a chapter.
   createSection(input: CreateSectionInput!): Section!
 }
+  updateChapter(input: UpdateChapterInput!): Chapter!
+  updateCourse(input: UpdateCourseInput!): Course!
+  updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
+  updateMembership(input: CourseMembershipInput!): CourseMembership!
+  updatePost(post: InputPost!): Post
+  updateSettings(input: SettingsInput!, userId: UUID!): Settings!
+  upvotePost(postId: UUID!): Post
+}
+
+directive @Negative(message: String = "graphql.validation.Negative.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @NegativeOrZero(message: String = "graphql.validation.NegativeOrZero.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @NotBlank(message: String = "graphql.validation.NotBlank.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @NotEmpty(message: String = "graphql.validation.NotEmpty.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 type Notification {
   gamification: Boolean
@@ -2395,6 +2520,7 @@ type NumericQuestion implements Question {
 
   #
   # The correct answer to the question.
+  aiGenerated: Boolean!
   correctAnswer: Float!
 
   #
@@ -2407,6 +2533,8 @@ type NumericQuestion implements Question {
 
   #
   # Unique identifier of the question and the id of the corresponding item
+  hint: JSON
+  item: Item!
   itemId: UUID!
 
   #
@@ -2416,6 +2544,8 @@ type NumericQuestion implements Question {
 
   #
   # Type of the question.
+  text: JSON!
+  tolerance: Float!
   type: QuestionType!
 
   #
@@ -2426,6 +2556,12 @@ type NumericQuestion implements Question {
 
 #
 # Specifies the page size and page number for paginated results.
+}
+
+directive @OnDemand on FIELD_DEFINITION
+
+directive @oneOf on INPUT_OBJECT
+
 input Pagination {
   #
   # The page number, starting at 0.
@@ -2444,6 +2580,7 @@ input Pagination {
 type PaginationInfo {
   #
   # The current page number.
+  hasNext: Boolean!
   page: Int!
 
   #
@@ -2463,6 +2600,8 @@ type PaginationInfo {
   hasNext: Boolean!
 }
 
+directive @Pattern(regexp: String! = ".*", message: String = "graphql.validation.Pattern.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
 input PlayerAnswerInput {
   questions: [QuestionInput!]!
 }
@@ -2472,12 +2611,12 @@ type PlayerHexadScore {
 }
 
 enum PlayerType {
-  PHILANTHROPIST
-  SOCIALISER
-  FREE_SPIRIT
   ACHIEVER
-  PLAYER
   DISRUPTOR
+  FREE_SPIRIT
+  PHILANTHROPIST
+  PLAYER
+  SOCIALISER
 }
 
 type PlayerTypeScore {
@@ -2501,6 +2640,22 @@ type ProgressLogItem {
 
   #
   # How many hints the user used to complete the content item.
+directive @Positive(message: String = "graphql.validation.Positive.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @PositiveOrZero(message: String = "graphql.validation.PositiveOrZero.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+type Post {
+  authorId: UUID!
+  content: String!
+  creationTime: DateTime!
+  downvotedByUsers: [UUID]!
+  edited: Boolean!
+  id: UUID!
+  upvotedByUsers: [UUID]!
+}
+
+type ProgressLogItem {
+  correctness: Float!
   hintsUsed: Int!
 
   #
@@ -2513,6 +2668,9 @@ type ProgressLogItem {
   # the items the user has completed and the students' performance on these items
   # Can be null as some contents don't contains items for assessments
   progressPerItem: ItemProgress!
+  success: Boolean!
+  timestamp: DateTime!
+  timeToComplete: Int
 }
 
 type PublicUserInfo {
@@ -2544,6 +2702,13 @@ type Query {
   #
   # Returns the courses with the given ids.
   # Courses and their basic data can be queried by any user, even if they are not enrolled in the course.
+  achievementsByCourseId(courseId: UUID!): [Achievement!]!
+  achievementsByUserId(userId: UUID): [Achievement!]!
+  contentsByChapterIds(chapterIds: [UUID!]!): [[Content!]!]!
+  contentsByCourseIds(courseIds: [UUID!]!): [[Content!]!]
+  contentsByIds(ids: [UUID!]!): [Content!]!
+  courseRewardScoresForUser(courseId: UUID!, userId: UUID!): RewardScores!
+  courses(filter: CourseFilter, pagination: Pagination, sortBy: [String!], sortDirection: [SortDirection!]! = [ASC]): CoursePayload!
   coursesByIds(ids: [UUID!]!): [Course!]!
 
   #
@@ -2559,6 +2724,13 @@ type Query {
   # Gets all of the users' information for a list of users with the specified IDs.
   # Only available to privileged users.
   # If a user does not exist, null is returned for that user.
+  dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
+  findAssignmentsByAssessmentIds(assessmentIds: [UUID!]!): [Assignment]!
+  findContentsByIds(ids: [UUID!]!): [Content]!
+  findFlashcardSetsByAssessmentIds(assessmentIds: [UUID!]!): [FlashcardSet]!
+  findMediaRecordsByIds(ids: [UUID!]!): [MediaRecord]!
+  findPublicUserInfos(ids: [UUID!]!): [PublicUserInfo]!
+  findQuizzesByAssessmentIds(assessmentIds: [UUID!]!): [Quiz]!
   findUserInfos(ids: [UUID!]!): [UserInfo]!
 
   #
@@ -2716,6 +2888,10 @@ type Query {
   # Gets all the available external exercises.
   # CourseId is the id of the course the user is currently working in.
   # 🔒 The user must be an admin in the course. Otherwise null is returned.
+  forum(id: UUID!): Forum
+  forumActivity(id: UUID!): [ForumActivityEntry!]!
+  forumActivityByUserId: [ForumActivityEntry!]!
+  forumByCourseId(id: UUID!): Forum
   getExternalAssignments(courseId: UUID!): [ExternalAssignment!]!
 
   #
@@ -2733,6 +2909,7 @@ type Query {
   #
   # Gets all manual student mappings, i.e. all students where the backend could not map to a meitrex user.
   # 🔒 The user must be an admin in the course. Otherwise null is returned.
+  getGradingsForAssignment(assessmentId: UUID!): [Grading!]!
   getManualMappingInstances(courseId: UUID!): [ManualMappingInstance]!
 
   # Performs a semantic search with the specified search term. Returns at most `count` results. If a courseWhitelist is
@@ -2747,9 +2924,33 @@ type Query {
 
 #
 # Generic question interface.
+  getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
+  getSemanticallySimilarEntities(count: Int! = 10, courseWhitelist: [UUID!], excludeEntitiesWithSameParent: Boolean, segmentId: UUID!): [SemanticSearchResult!]!
+  inventoryForUser: Inventory!
+  isAccessTokenAvailable(provider: ExternalServiceProviderDto!): Boolean!
+  itemsByUserId(userId: UUID!): [UserItem!]!
+  mediaRecords: [MediaRecord!]! @deprecated(reason: "In production there should probably be no way to get all media records of the system.")
+  mediaRecordsByContentIds(contentIds: [UUID!]!): [[MediaRecord!]!]!
+  mediaRecordsByIds(ids: [UUID!]!): [MediaRecord!]!
+  mediaRecordsForCourses(courseIds: [UUID!]!): [[MediaRecord!]!]!
+  mediaRecordsForUsers(userIds: [UUID!]!): [[MediaRecord!]!]!
+  openQuestionByCourseId(id: UUID!): [Thread!]!
+  otherUserForumActivityByUserId(otherUserId: UUID!): [ForumActivityEntry!]!
+  PlayerHexadScoreExists(userId: UUID!): Boolean!
+  scoreboard(courseId: UUID!): [ScoreboardItem!]!
+  semanticSearch(count: Int! = 10, courseWhitelist: [UUID!], queryText: String!): [SemanticSearchResult!]!
+  suggestionsByChapterIds(amount: Int!, chapterIds: [UUID!]!, skillTypes: [SkillType!]! = []): [Suggestion!]!
+  thread(id: UUID!): Thread
+  threadsByContentId(id: UUID!): [Thread!]!
+  userCourseRewardScores(courseId: UUID!): RewardScores!
+  userMediaRecords: [MediaRecord!]!
+}
+
 interface Question {
   #
   # Unique identifier of the question and the id of the corresponding item
+  aiGenerated: Boolean!
+  hint: JSON
   itemId: UUID!
 
   #
@@ -2777,18 +2978,20 @@ input QuestionCompletedInput {
 
   #
   # true when a hint was used for the question
+  questionId: UUID!
   usedHint: Boolean!
 }
 
 input QuestionInput {
-  text: String!
-  selectedAnswer: AnswerInput!
   possibleAnswers: [AnswerInput!]!
+  selectedAnswer: AnswerInput!
+  text: String!
 }
 
 enum QuestionPoolingMode {
   #
   # Questions are randomly selected from the list of questions.
+  ORDERED
   RANDOM
 
   #
@@ -2798,11 +3001,25 @@ enum QuestionPoolingMode {
 
 #
 # The type of a question.
+}
+
+type QuestionThread implements Thread {
+  creationTime: DateTime!
+  creatorId: UUID!
+  id: UUID!
+  numberOfPosts: Int!
+  posts: [Post!]!
+  question: Post!
+  selectedAnswer: Post
+  threadContentReference: ThreadContentReference
+  title: String!
+}
+
 enum QuestionType {
-  MULTIPLE_CHOICE
-  CLOZE
   ASSOCIATION
+  CLOZE
   EXACT_ANSWER
+  MULTIPLE_CHOICE
   NUMERIC
   SELF_ASSESSMENT
 }
@@ -2817,6 +3034,9 @@ type Quiz {
 
   #
   # List of questions.
+  content: Content
+  courseId: UUID!
+  numberOfRandomlySelectedQuestions: Int
   questionPool: [Question!]!
 
   #
@@ -2843,6 +3063,7 @@ type Quiz {
   # The selected questions of the question pool.
   # This is identical to the list of questions if questionPoolingMode is ORDERED.
   # This will be different each time it is queried if questionPoolingMode is RANDOM.
+  requiredCorrectAnswers: Int!
   selectedQuestions: [Question!]!
 
   #
@@ -2855,9 +3076,16 @@ type Quiz {
 
 #
 # A quiz, quiz related fields are stored in the quiz service.
+}
+
+type QuizAIGenAsyncResponse {
+  quiz: Quiz
+}
+
 type QuizAssessment implements Assessment & Content {
   #
   # Assessment metadata
+  aiProcessingProgress: AiEntityProcessingProgress!
   assessmentMetadata: AssessmentMetadata!
 
   #
@@ -2866,6 +3094,8 @@ type QuizAssessment implements Assessment & Content {
 
   #
   # Metadata of the content
+  isAvailableToBeWorkedOn: Boolean!
+  items: [Item!]!
   metadata: ContentMetadata!
 
   #
@@ -2888,13 +3118,8 @@ type QuizAssessment implements Assessment & Content {
   # The quiz of the assessment.
   # If this is null the system is in an inconsistent state and the assessment should be deleted.
   quiz: Quiz
-
-  # The progress of processing the assessment. In particular when processing is done,
-  # the assessment's task contents will have been indexed for search.
-  aiProcessingProgress: AiEntityProcessingProgress!
-
-  # Tags suggested for this assessment by the AI system.
   suggestedTags: [String!]!
+  userProgressData: UserProgressData!
 }
 
 input QuizCompletedInput {
@@ -2905,6 +3130,7 @@ input QuizCompletedInput {
   #
   # List of questions that were answered in the quiz.
   completedQuestions: [QuestionCompletedInput!]!
+  quizId: UUID!
 }
 
 #
@@ -2921,11 +3147,19 @@ type QuizCompletionFeedback {
   #
   # The number of hints that were used.
   hintsUsed: Int!
+  success: Boolean!
 }
 
 type QuizMutation {
   #
   # Id of the quiz to modify.
+  addAssociationQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateAssociationQuestionInputWithoutItem!): QuizOutput!
+  addClozeQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateClozeQuestionInputWithoutItem!): QuizOutput!
+  addExactAnswerQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateExactAnswerQuestionInputWithoutItem!): QuizOutput!
+  addMultipleChoiceQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateMultipleChoiceQuestionInputWithoutItem!): QuizOutput!
+  addNumericQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateNumericQuestionInputWithoutItem!): QuizOutput!
+  addSelfAssessmentQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateSelfAssessmentQuestionInputWithoutItem!): QuizOutput!
+  aiGenerateQuestionAsync(context: AiGenQuestionContext): QuizAIGenAsyncResponse
   assessmentId: UUID!
 
   #
@@ -2949,54 +3183,26 @@ type QuizMutation {
   # Set the number of questions that are randomly selected from the list of questions.
   # Will only be considered if questionPoolingMode is RANDOM.
   setNumberOfRandomlySelectedQuestions(numberOfRandomlySelectedQuestions: Int!): Quiz!
-
-  #
-  # Generate a question using AI. It will append to the end of the quiz questions.
-  # If will return the quiz to which the question will be added
-  aiGenerateQuestionAsync(context: AiGenQuestionContext): Quiz!
-
-  # Add a multiple choice question to the quiz questions, at the end of the list.
-  addMultipleChoiceQuestion(questionInput: CreateMultipleChoiceQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
-
-  # Update a multiple choice question in the quiz questions.
-  updateMultipleChoiceQuestion(questionInput: UpdateMultipleChoiceQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
-
-  # Add a cloze question to the quiz questions, at the end of the list.
-  addClozeQuestion(questionInput: CreateClozeQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
-
-  # Update a cloze question in the quiz questions.
-  updateClozeQuestion(questionInput: UpdateClozeQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
-
-  # Add an association question to the quiz questions, at the end of the list.
-  addAssociationQuestion(questionInput: CreateAssociationQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
-
-  # Update an association question in the quiz questions.
-  updateAssociationQuestion(questionInput: UpdateAssociationQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
-
-  # Add an free text question with exact answer to the quiz questions, at the end of the list.
-  addExactAnswerQuestion(questionInput: CreateExactAnswerQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
-
-  # Update an free text question with exact answer in the quiz questions.
-  updateExactAnswerQuestion(questionInput: UpdateExactAnswerQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
-
-  # Add a numeric question to the quiz questions, at the end of the list.
-  addNumericQuestion(questionInput: CreateNumericQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
-
-  # Update a numeric question in the quiz questions.
-  updateNumericQuestion(questionInput: UpdateNumericQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
-
-  # Add a self assessment question to the quiz questions, at the end of the list.
-  addSelfAssessmentQuestion(questionInput: CreateSelfAssessmentQuestionInputWithoutItem!, assessmentId: UUID!, item: CreateItemInput!): QuizOutput!
-
-  # Update a self assessment question in the quiz questions.
-  updateSelfAssessmentQuestion(questionInput: UpdateSelfAssessmentQuestionInput!, assessmentId: UUID!, item: ItemInput!): QuizOutput!
+  setQuestionPoolingMode(questionPoolingMode: QuestionPoolingMode!): Quiz!
+  setRequiredCorrectAnswers(requiredCorrectAnswers: Int!): Quiz!
+  switchQuestions(firstNumber: Int!, secondNumber: Int!): Quiz!
+  updateAssociationQuestion(assessmentId: UUID!, item: ItemInput!, questionInput: UpdateAssociationQuestionInput!): QuizOutput!
+  updateClozeQuestion(assessmentId: UUID!, item: ItemInput!, questionInput: UpdateClozeQuestionInput!): QuizOutput!
+  updateExactAnswerQuestion(assessmentId: UUID!, item: ItemInput!, questionInput: UpdateExactAnswerQuestionInput!): QuizOutput!
+  updateMultipleChoiceQuestion(assessmentId: UUID!, item: ItemInput!, questionInput: UpdateMultipleChoiceQuestionInput!): QuizOutput!
+  updateNumericQuestion(assessmentId: UUID!, item: ItemInput!, questionInput: UpdateNumericQuestionInput!): QuizOutput!
+  updateSelfAssessmentQuestion(assessmentId: UUID!, item: ItemInput!, questionInput: UpdateSelfAssessmentQuestionInput!): QuizOutput!
 }
 
 type QuizOutput {
   assessmentId: UUID!
-  questionPool: [Question!]!
   modifiedQuestion: Question!
+  questionPool: [Question!]!
 }
+
+directive @Range(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Range.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @resolveTo(requiredSelectionSet: String, sourceName: String, sourceTypeName: String, sourceFieldName: String, sourceSelectionSet: String, sourceArgs: ResolveToSourceArgs, keyField: String, keysArg: String, pubsubTopic: String, filterBy: String, additionalArgs: ResolveToSourceArgs, result: String, resultType: String) on FIELD_DEFINITION
 
 scalar ResolveToSourceArgs
 
@@ -3006,6 +3212,7 @@ enum RewardChangeReason {
   #
   # The user has completed a content for the first time.
   # The associated contents are the content that were completed.
+  COMPOSITE_VALUE
   CONTENT_DONE
 
   #
@@ -3031,9 +3238,14 @@ enum RewardChangeReason {
 
 #
 # An item in the reward score log.
+  CONTENT_REVIEWED
+}
+
 type RewardLogItem {
   #
   # The date when the reward score changed.
+  associatedContentIds: [UUID!]!
+  associatedContents: [Content]!
   date: DateTime!
 
   #
@@ -3050,6 +3262,7 @@ type RewardLogItem {
 
   #
   # The reason why the reward score has changed.
+  oldValue: Int!
   reason: RewardChangeReason!
 
   #
@@ -3076,6 +3289,8 @@ type RewardScore {
   #
   # A log of the changes to the reward score, ordered by date descending.
   log: [RewardLogItem!]!
+  percentage: Float!
+  value: Int!
 }
 
 #
@@ -3099,7 +3314,9 @@ type RewardScores {
 
   #
   # A composite score of all the other scores.
+  health: RewardScore!
   power: RewardScore!
+  strength: RewardScore!
 }
 
 #
@@ -3113,6 +3330,7 @@ type ScoreboardItem {
   # The power score of the user.
   powerScore: Int!
   user: PublicUserInfo
+  userId: UUID!
 }
 
 #
@@ -3124,10 +3342,13 @@ type Section {
 
   #
   # Id of the Course the Section is located in.
+  chapter: Chapter!
+  chapterId: UUID!
   courseId: UUID!
 
   #
   # Name of the Section
+  id: UUID!
   name: String!
 
   #
@@ -3137,14 +3358,14 @@ type Section {
   #
   # List of Stages contained in a Section
   stages: [Stage!]!
-
-  # The chapter this section is part of.
-  chapter: Chapter!
 }
 
 type SectionMutation {
   #
   # Identifier of the section
+  createStage(input: CreateStageInput): Stage!
+  deleteSection: UUID!
+  deleteStage(id: UUID!): UUID!
   sectionId: UUID!
 
   #
@@ -3187,6 +3408,8 @@ type SelfAssessmentQuestion implements Question {
 
   #
   # Unique identifier of the question and the id of the corresponding item
+  aiGenerated: Boolean!
+  hint: JSON
   itemId: UUID!
 
   #
@@ -3196,6 +3419,8 @@ type SelfAssessmentQuestion implements Question {
 
   #
   # Type of the question.
+  solutionSuggestion: JSON!
+  text: JSON!
   type: QuestionType!
 
   #
@@ -3204,8 +3429,6 @@ type SelfAssessmentQuestion implements Question {
 }
 
 interface SemanticSearchResult {
-  #
-  # The similarity score of the search result.
   score: Float!
 }
 
@@ -3222,6 +3445,7 @@ input SettingsInput {
 type SingleAssociation {
   #
   # The left side of the association, in SlateJS JSON format.
+  feedback: JSON
   left: JSON!
 
   #
@@ -3236,6 +3460,8 @@ type SingleAssociation {
 #
 # a skill or compentency.
 # Something like loops or data structures.
+directive @Size(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Size.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
 type Skill {
   #
   # the id of a skill
@@ -3252,9 +3478,9 @@ type Skill {
   #
   # whether the skill is a custom-created by the user and no IEEE skill
   isCustomSkill: Boolean!
-
-  # The skill levels of the current user in this chapter.
+  skillCategory: String!
   skillLevels: SkillLevels
+  skillName: String!
 }
 
 input SkillInput {
@@ -3275,6 +3501,8 @@ input SkillInput {
   #
   # whether the skill is a custom-created by the user and no IEEE skill
   isCustomSkill: Boolean!
+  skillCategory: String!
+  skillName: String!
 }
 
 #
@@ -3288,6 +3516,7 @@ type SkillLevel {
   #
   # A log of the changes to the skill level
   log: [SkillLevelLogItem!]!
+  value: Float!
 }
 
 #
@@ -3295,6 +3524,8 @@ type SkillLevel {
 type SkillLevelLogItem {
   #
   # The date when the skill level changed.
+  associatedContents: [Content]!
+  associatedItemId: UUID!
   date: DateTime!
 
   #
@@ -3319,8 +3550,9 @@ type SkillLevelLogItem {
 
   #
   # the probability of a correct response, that M-Elo predicts
+  oldValue: Float!
   predictedCorrectness: Float!
-  associatedContents: [Content]!
+  userResponse: Float!
 }
 
 #
@@ -3348,18 +3580,22 @@ type SkillLevels {
 
   #
   # create represents how well a user can create new things based on the learned content
+  apply: SkillLevel
   create: SkillLevel
+  evaluate: SkillLevel
+  remember: SkillLevel
+  understand: SkillLevel
 }
 
 #
 # Type of the assessment
 enum SkillType {
+  ANALYZE
+  APPLY
   CREATE
   EVALUATE
   REMEMBER
   UNDERSTAND
-  APPLY
-  ANALYZE
 }
 
 #
@@ -3371,6 +3607,12 @@ enum SortDirection {
 
 #
 # Representation of a Stage
+interface Source {
+  mediaRecordId: UUID!
+}
+
+directive @specifiedBy(url: String!) on SCALAR
+
 type Stage {
   #
   # Unique identifier of the Stage Object
@@ -3378,6 +3620,9 @@ type Stage {
 
   #
   # Position of the Stage within the Section
+  isAvailableToBeWorkedOn: Boolean!
+  optionalContents: [Content!]!
+  optionalContentsProgress: Float!
   position: Int!
 
   #
@@ -3405,6 +3650,8 @@ type Stage {
 #
 # Filter for string values.
 # If multiple filters are specified, they are combined with AND.
+}
+
 input StringFilter {
   #
   # A string value to match exactly.
@@ -3416,6 +3663,7 @@ input StringFilter {
 
   #
   # If true, the filter is case-insensitive.
+  equals: String
   ignoreCase: Boolean! = false
 }
 
@@ -3427,6 +3675,7 @@ type StudentMapping {
   #
   # Student Id in external system like TMS
   externalStudentId: String!
+  meitrexStudentId: UUID!
 }
 
 input StudentMappingInput {
@@ -3437,6 +3686,7 @@ input StudentMappingInput {
   #
   # Student Id in external system like TMS
   externalStudentId: String!
+  meitrexStudentId: UUID!
 }
 
 type Subexercise {
@@ -3454,6 +3704,7 @@ type Subexercise {
 
   #
   # Feedback given by a tutor on the exercise (optional).
+  totalSubexerciseCredits: Float!
   tutorFeedback: String
 }
 
@@ -3465,11 +3716,13 @@ input SubexerciseCompletedInput {
   #
   # The absolute number of achieved credits.
   achievedCredits: Float!
+  itemId: UUID!
 }
 
 type SubexerciseGrading {
   #
   # ID of the subexercise.
+  achievedCredits: Float!
   itemId: UUID!
 
   #
@@ -3498,7 +3751,23 @@ enum SuggestionType {
   REPETITION
 }
 
-# An RFC-3339 compliant Full Time Scalar
+interface Thread {
+  creationTime: DateTime
+  creatorId: UUID!
+  id: UUID!
+  numberOfPosts: Int!
+  posts: [Post!]!
+  threadContentReference: ThreadContentReference
+  title: String!
+}
+
+type ThreadContentReference {
+  contentId: UUID!
+  pageNumber: Int
+  threadId: UUID!
+  timeStampSeconds: Int
+}
+
 scalar Time
 
 #
@@ -3516,6 +3785,7 @@ type UnfinishedGrading {
 
   #
   # JSON representation of the grading
+  externalStudentId: String!
   gradingJson: String!
 
   #
@@ -3535,6 +3805,7 @@ input UpdateAssessmentInput {
   #
   # items of the new assessments
   items: [ItemInput!]
+  metadata: UpdateContentMetadataInput!
 }
 
 input UpdateAssignmentInput {
@@ -3557,6 +3828,8 @@ input UpdateAssociationQuestionInput {
   #
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+  itemId: UUID!
+  text: JSON!
 }
 
 #
@@ -3577,6 +3850,8 @@ input UpdateChapterInput {
 
   #
   # Number of the chapter, determines the order of the chapters, must be positive.
+  endDate: DateTime!
+  id: UUID!
   number: Int!
 
   #
@@ -3598,6 +3873,8 @@ input UpdateChapterInput {
   # Suggested End date of the chapter, ISO 8601 format.
   # Must be after the Start Dates and before the End dates.
   suggestedEndDate: DateTime
+  suggestedStartDate: DateTime
+  title: String!
 }
 
 input UpdateClozeQuestionInput {
@@ -3619,12 +3896,16 @@ input UpdateClozeQuestionInput {
 
   #
   # Optional hint for the question, in SlateJS JSON format.
+  clozeElements: [ClozeElementInput!]!
   hint: JSON
+  itemId: UUID!
+  showBlanksList: Boolean! = true
 }
 
 input UpdateContentMetadataInput {
   #
   # Name of the content
+  chapterId: UUID!
   name: String!
 
   #
@@ -3641,6 +3922,7 @@ input UpdateContentMetadataInput {
 
   #
   # TagNames this content is tagged with
+  suggestedDate: DateTime!
   tagNames: [String!]! = []
 }
 
@@ -3671,14 +3953,17 @@ input UpdateCourseInput {
 
   #
   # The new published status of the course.
+  id: UUID!
   published: Boolean!
 
   #
   # The year in which the term starts.
+  startDate: DateTime!
   startYear: Int
 
   #
   # The division of the academic calendar in which the term takes place.
+  title: String!
   yearDivision: YearDivision
 }
 
@@ -3701,11 +3986,14 @@ input UpdateExactAnswerQuestionInput {
 
   #
   # Feedback for the question when the user enters a wrong answer, in SlateJS JSON format.
+  correctAnswers: [String!]!
   feedback: JSON
 
   #
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+  itemId: UUID!
+  text: JSON!
 }
 
 input UpdateExerciseInput {
@@ -3724,6 +4012,8 @@ input UpdateExerciseInput {
   #
   # The number of the exercise on the exercise sheet, may be something such as 2 (optional).
   number: String
+  subexercises: [CreateSubexerciseInput!]!
+  totalExerciseCredits: Float!
 }
 
 input UpdateFlashcardInput {
@@ -3745,6 +4035,7 @@ input UpdateMediaContentInput {
 input UpdateMediaRecordInput {
   #
   # ID of the media record which should be updated
+  contentIds: [UUID!]!
   id: UUID!
 
   #
@@ -3786,9 +4077,11 @@ input UpdateNumericQuestionInput {
   #
   # Text of the question, in SlateJS JSON format.
   text: JSON!
+}
 
   #
   # The correct answer for the question.
+input UpdateNumericQuestionInput {
   correctAnswer: Float!
 
   #
@@ -3802,11 +4095,15 @@ input UpdateNumericQuestionInput {
   #
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+  itemId: UUID!
+  text: JSON!
+  tolerance: Float!
 }
 
 input UpdateSelfAssessmentQuestionInput {
   #
   # UUID of the question to update and the id of the corresponding item.
+  hint: JSON
   itemId: UUID!
 
   #
@@ -3820,6 +4117,7 @@ input UpdateSelfAssessmentQuestionInput {
   #
   # Optional hint for the question, in SlateJS JSON format.
   hint: JSON
+  text: JSON!
 }
 
 input UpdateStageInput {
@@ -3834,6 +4132,7 @@ input UpdateStageInput {
   #
   # updated List of UUIDs for content labeled as optional in this Stage
   optionalContents: [UUID!]!
+  requiredContents: [UUID!]!
 }
 
 input UpdateSubexerciseInput {
@@ -3848,21 +4147,20 @@ input UpdateSubexerciseInput {
   #
   # The number of the exercise on the exercise sheet, may be something such as 2b (optional).
   number: String
+  totalSubexerciseCredits: Float!
 }
 
-# A Url scalar
 scalar Url
 
 type UserInfo {
-  id: UUID!
-  userName: String!
-  firstName: String!
-  lastName: String!
-  realmRoles: [GlobalUserRole!]!
-
-  # The course memberships of the user.
-  courseMemberships: [CourseMembership!]!
   availableCourseMemberships: [CourseMembership!]!
+  courseMemberships: [CourseMembership!]!
+  firstName: String!
+  id: UUID!
+  lastName: String!
+  mediaRecords: [MediaRecord!]!
+  nickname: String!
+  realmRoles: [GlobalUserRole!]!
   unavailableCourseMemberships: [CourseMembership!]!
 
   # Media records of this user.
@@ -3879,6 +4177,39 @@ type UserProgressData {
 
   #
   # The id of the content item.
+  userName: String!
+}
+
+type UserItem {
+  equipped: Boolean!
+  id: UUID!
+  uniqueDescription: String!
+  unlocked: Boolean!
+  unlockedTime: DateTime
+}
+
+type UserItemComplete {
+  backColor: String
+  description: String!
+  equipped: Boolean!
+  filename: String
+  foreColor: String
+  id: UUID!
+  moneyCost: Int!
+  name: String!
+  nickname: String
+  obtainableAsReward: Boolean!
+  obtainableInLottery: Boolean!
+  obtainableInShop: Boolean!
+  rarity: String!
+  sellCompensation: Int!
+  sold: Boolean!
+  unlocked: Boolean!
+  unlockedTime: DateTime
+  url: String
+}
+
+type UserProgressData {
   contentId: UUID!
 
   #
@@ -3889,12 +4220,16 @@ type UserProgressData {
   #
   # The learning interval in days for the content item.
   # If null, the content item is not scheduled for learning.
+  isDueForReview: Boolean!
+  isLearned: Boolean!
+  lastLearnDate: DateTime
   learningInterval: Int
 
   #
   # The next time the content should be learned.
   # Calculated using the date the user completed the content item and the learning interval.
   # This is null if the user has not completed the content item once.
+  log: [ProgressLogItem]!
   nextLearnDate: DateTime
 
   #
@@ -3909,46 +4244,26 @@ type UserProgressData {
   #
   # True if the assessment is due for review.
   isDueForReview: Boolean!
+  userId: UUID!
 }
 
 #
 # Enum containing all valid roles a user can have in a course.
 enum UserRoleInCourse {
+  ADMINISTRATOR
   STUDENT
   TUTOR
-  ADMINISTRATOR
 }
 
-# A universally unique identifier compliant UUID Scalar
 scalar UUID
 
 type VideoRecordSegment implements MediaRecordSegment {
-  #
-  # UUID of this segment.
   id: UUID!
-
-  #
-  # UUID of the media record this search result references.
+  mediaRecord: MediaRecord!
   mediaRecordId: UUID!
-
-  #
-  # Start time in seconds of the snippet of the video this search result references.
-  startTime: Int!
-
-  #
-  # Text on the screen during this video snippet.
   screenText: String!
-
-  #
-  # Textual transcript of the spoken text during the video snippet this search result references.
-  transcript: String!
-
-  #
-  # Base64-encoded image thumbnail for this segment.
+  startTime: Int!
   thumbnail: String!
-
-  #
-  # Title of this segment.
   title: String
 
   # The media record this segment is part of.
@@ -3957,14 +4272,23 @@ type VideoRecordSegment implements MediaRecordSegment {
 
 #
 # The division of the academic year.
+  transcript: String!
+}
+
+type VideoSource implements Source {
+  mediaRecordId: UUID!
+  mediaRecords: [MediaRecord!]!
+  startTime: Float!
+}
+
 enum YearDivision {
-  FIRST_SEMESTER
-  SECOND_SEMESTER
-  FIRST_TRIMESTER
-  SECOND_TRIMESTER
-  THIRD_TRIMESTER
   FIRST_QUARTER
-  SECOND_QUARTER
-  THIRD_QUARTER
+  FIRST_SEMESTER
+  FIRST_TRIMESTER
   FOURTH_QUARTER
+  SECOND_QUARTER
+  SECOND_SEMESTER
+  SECOND_TRIMESTER
+  THIRD_QUARTER
+  THIRD_TRIMESTER
 }

@@ -1,33 +1,41 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import {
+  Alert,
+  Backdrop,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  InputAdornment,
+  List,
+  ListItemButton,
+  ListItemText,
+  TextField,
+} from "@mui/material";
+import { useEffect, useState } from "react";
 import {
   fetchQuery,
   graphql,
   PreloadedQuery,
   useLazyLoadQuery,
   useMutation,
-  useQueryLoader,
   useRelayEnvironment,
 } from "react-relay";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Button,
-  Alert,
-  CircularProgress,
-  Backdrop,
-  TextField,
-  InputAdornment,
-  Typography,
-  List,
-  ListItemButton,
-  ListItemText,
-} from "@mui/material";
 
-import { codeAssessmentProvider, providerConfig } from "./ProviderConfig";
+import { AddCodeAssignmentModalExternalAssignmentsQuery } from "@/__generated__/AddCodeAssignmentModalExternalAssignmentsQuery.graphql";
+import { AddCodeAssignmentModalExternalCourseQuery } from "@/__generated__/AddCodeAssignmentModalExternalCourseQuery.graphql";
+import {
+  AddCodeAssignmentModalMutation,
+  ContentType,
+  SkillType,
+} from "@/__generated__/AddCodeAssignmentModalMutation.graphql";
+import { AddCodeAssignmentModalSyncAssignmentsMutation } from "@/__generated__/AddCodeAssignmentModalSyncAssignmentsMutation.graphql";
+import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
+import { LoadingButton } from "@mui/lab";
+import toast from "react-hot-toast";
 import {
   AssessmentMetadataFormSection,
   AssessmentMetadataPayload,
@@ -36,21 +44,12 @@ import {
   ContentMetadataFormSection,
   ContentMetadataPayload,
 } from "./ContentMetadataFormSection";
+import { ExternalCourseMissingDialog } from "./ExternalCourseMissingDialog";
 import { Form, FormSection } from "./Form";
-import { ProviderAuthorizationDialog } from "./ProviderAuthorizationDialog";
-import {
-  AddCodeAssignmentModalMutation,
-  ContentType,
-  SkillType,
-} from "@/__generated__/AddCodeAssignmentModalMutation.graphql";
-import { LoadingButton } from "@mui/lab";
-import toast from "react-hot-toast";
-import { useAccessTokenCheck } from "./useAccessTokenCheck";
-import { AddCodeAssignmentModalExternalAssignmentsQuery } from "@/__generated__/AddCodeAssignmentModalExternalAssignmentsQuery.graphql";
-import { AddCodeAssignmentModalSyncAssignmentsMutation } from "@/__generated__/AddCodeAssignmentModalSyncAssignmentsMutation.graphql";
 import { CreateItem } from "./form-sections/item/ItemFormSection";
-import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
-import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
+import { ProviderAuthorizationDialog } from "./ProviderAuthorizationDialog";
+import { codeAssessmentProvider, providerConfig } from "./ProviderConfig";
+import { useAccessTokenCheck } from "./useAccessTokenCheck";
 
 const GetExternalAssignmentsQuery = graphql`
   query AddCodeAssignmentModalExternalAssignmentsQuery($courseId: UUID!) {
@@ -118,6 +117,18 @@ export function AddCodeAssignmentModal({
       .then(setIsAccessTokenAvailable)
       .finally(() => setIsLoading(false));
   }, [checkAccessToken]);
+
+  const data = useLazyLoadQuery<AddCodeAssignmentModalExternalCourseQuery>(
+    graphql`
+      query AddCodeAssignmentModalExternalCourseQuery($courseId: UUID!) {
+        getExternalCourse(courseId: $courseId) {
+          url
+          courseTitle
+        }
+      }
+    `,
+    { courseId }
+  );
 
   const [createAssignment, isCreatingAssignment] =
     useMutation<AddCodeAssignmentModalMutation>(graphql`
@@ -235,7 +246,14 @@ export function AddCodeAssignmentModal({
         />
       )}
 
-      {isAccessTokenAvailable && (
+      {!isLoading && isAccessTokenAvailable && !data.getExternalCourse && (
+        <ExternalCourseMissingDialog
+          onClose={onClose}
+          providerName={provider.name}
+        />
+      )}
+
+      {isAccessTokenAvailable && data.getExternalCourse && (
         <Dialog open onClose={onClose} maxWidth="md">
           <DialogTitle>
             {step === "select"

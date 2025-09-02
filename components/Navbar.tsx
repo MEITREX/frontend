@@ -3,12 +3,17 @@ import { NavbarIsTutor$key } from "@/__generated__/NavbarIsTutor.graphql";
 import { NavbarSemanticSearchQuery } from "@/__generated__/NavbarSemanticSearchQuery.graphql";
 import { NavbarStudentQuery } from "@/__generated__/NavbarStudentQuery.graphql";
 import logo from "@/assets/logo.svg";
+import StoreIcon from "@mui/icons-material/Store";
+import coins from "assets/lottery/coins.png";
 import duration from "dayjs/plugin/duration";
+import Image from "next/image";
 import Link from "next/link";
 
 dayjs.extend(duration);
 
+import { useCurrency } from "@/app/contexts/CurrencyContext";
 import { PageView, usePageView } from "@/src/currentView";
+import { useAITutorStore } from "@/stores/aiTutorStore";
 import {
   CollectionsBookmark,
   Dashboard,
@@ -20,7 +25,9 @@ import {
 import {
   Autocomplete,
   Avatar,
+  Box,
   Button,
+  Chip,
   CircularProgress,
   ClickAwayListener,
   Divider,
@@ -336,6 +343,7 @@ function NavbarBase({
           href="/courses"
           exact
         />
+        <NavbarLink title="Items" icon={<StoreIcon />} href="/items" exact />
       </NavbarSection>
       {children}
       <UserInfo _isTutor={_isTutor} />
@@ -412,7 +420,8 @@ function SwitchPageViewButton() {
 
 function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
   const auth = useAuth();
-
+  const clearChat = useAITutorStore((state) => state.clearChat);
+  const { points } = useCurrency();
   const tutor = useIsTutor(_isTutor);
 
   return (
@@ -426,6 +435,7 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
                 aria-label="logout"
                 onClick={() => {
                   window.localStorage.removeItem("meitrex-welcome-shown");
+                  clearChat();
                   auth.signoutRedirect({
                     post_logout_redirect_uri:
                       process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ??
@@ -439,7 +449,9 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
           }
         >
           <ListItemAvatar>
-            <Avatar src={auth.user?.profile?.picture} />
+            <Link href={"/profile"}>
+              <Avatar src={auth.user?.profile?.picture} />
+            </Link>
           </ListItemAvatar>
           <ListItemText primary={auth.user?.profile?.name} />
           <Tooltip title="Settings" placement="left">
@@ -450,6 +462,31 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
             </Link>
           </Tooltip>
         </ListItem>
+        <Divider />
+        <Box
+          sx={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 2,
+            marginBottom: 2,
+          }}
+        >
+          <Chip
+            color="secondary"
+            label={
+              <Box
+                sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
+              >
+                {points}
+                <Image src={coins} alt="Coins" width={18} height={18} />
+              </Box>
+            }
+            sx={{ fontWeight: "bold" }}
+          />
+        </Box>
 
         {tutor && (
           <>
