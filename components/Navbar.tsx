@@ -45,7 +45,7 @@ import {
   Paper,
   TextField,
   Tooltip,
-  Typography
+  Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { chain, debounce } from "lodash";

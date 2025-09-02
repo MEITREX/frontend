@@ -1,7 +1,10 @@
 import { WidgetApiCurrentUserInfoQuery } from "@/__generated__/WidgetApiCurrentUserInfoQuery.graphql";
 import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
 import { WidgetApiSettingsQuery } from "@/__generated__/WidgetApiSettingsQuery.graphql";
-import { widgetApiCurrentUserInfoQuery, widgetApiSettingsQuery } from "@/components/widgets/api/WidgetApi";
+import {
+  widgetApiCurrentUserInfoQuery,
+  widgetApiSettingsQuery,
+} from "@/components/widgets/api/WidgetApi";
 import WidgetSettings from "@/components/widgets/common/WidgetSettings";
 import ForumActivityWidget from "@/components/widgets/components/forum/ForumActivityWidget";
 import ItemWidget from "@/components/widgets/components/item/ItemWidget";
@@ -22,14 +25,6 @@ type MockedRecommendation = {
   category: GamificationCategory;
   requestFeedback: boolean;
 };
-
-// THIS MOCKS THE BACKEND RETURN UNTIL IT IS WORKING
-const mockedRecommendations: MockedRecommendation[] = [
-  { category: "CUSTOMIZATION" as GamificationCategory, requestFeedback: false },
-  { category: "ALTRUISM" as GamificationCategory, requestFeedback: false },
-  { category: "RISK_REWARD" as GamificationCategory, requestFeedback: false },
-  { category: "IMMERSION" as GamificationCategory, requestFeedback: false },
-];
 
 export default function WidgetsOverview({ userId, courseId }: Properties) {
   // ADD NEW WIDGETS HERE:
@@ -68,17 +63,15 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
     },
   ];
 
-
   const data = useLazyLoadQuery<WidgetApiCurrentUserInfoQuery>(
     widgetApiCurrentUserInfoQuery,
     {},
     { fetchPolicy: "network-only" }
   );
 
-  const courseMembership =
-    data.currentUserInfo?.courseMemberships?.find(
-      (m) => m.courseId === courseId
-    );
+  const courseMembership = data.currentUserInfo?.courseMemberships?.find(
+    (m) => m.courseId === courseId
+  );
 
   const recommendations = courseMembership?.course?.widgetRecommendations ?? [];
 
@@ -91,11 +84,9 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
     currentUserWidgetSettings?.numberOfRecommendations ?? 2
   );
 
-
   if (!data || !currentUserWidgetSettings) {
     return <p>Loading Wigets...</p>;
   }
-
 
   // Map User preferred categories to Widget-Components
   const selectedWidgets = widgets
