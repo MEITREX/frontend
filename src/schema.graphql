@@ -639,7 +639,6 @@ type ExternalAssignment {
 
 type ExternalCourse {
   courseTitle: String!
-  organizationName: String!
   url: String!
 }
 
@@ -1153,6 +1152,7 @@ type PublicUserInfo {
 }
 
 type Query {
+  _empty: String
   achievementsByCourseId(courseId: UUID!): [Achievement!]!
   achievementsByUserId(userId: UUID): [Achievement!]!
   contentsByChapterIds(chapterIds: [UUID!]!): [[Content!]!]!
