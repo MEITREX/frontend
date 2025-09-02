@@ -13,14 +13,16 @@ const tabs = [
   { label: "Forum", path: "forum" },
   { label: "Badges", path: "badges" },
   { label: "Leaderboards", path: "leaderboard" },
-
 ];
 
 export default function ForumPage() {
   const router = useRouter();
   const pathname = usePathname();
   const section = (pathname.split("/profile/")[1] || "").split("/")[0];
-  const activeIndex = Math.max(0, tabs.findIndex((tab) => section === tab.path));
+  const activeIndex = Math.max(
+    0,
+    tabs.findIndex((tab) => section === tab.path)
+  );
 
   const handleChange = (_: any, newValue: number) => {
     router.push(`/profile/${tabs[newValue].path}`);
