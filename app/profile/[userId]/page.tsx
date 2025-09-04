@@ -1,8 +1,9 @@
 "use client";
 
 import { pagePublicProfileStudentQuery } from "@/__generated__/pagePublicProfileStudentQuery.graphql";
-//import { pageUserAchievementsPublicQuery } from "@/__generated__/pageUserAchievementsPublicQuery.graphql";
-//import { pageUserAchievementsPublicQuery } from "@/__generated__/pageUserAchievementsQuery.graphql";
+import { SortProvider } from "@/app/contexts/SortContext";
+import { pageUserAchievementsPublicQuery } from "@/__generated__/pageUserAchievementsPublicQuery.graphql";
+import { pageUserAchievementsPublicQuery } from "@/__generated__/pageUserAchievementsQuery.graphql";
 import AchievementList from "@/components/profile/AchievementList";
 import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
 import { Avatar, Box, Tab, Tabs, Typography, Grid } from "@mui/material";
@@ -21,14 +22,6 @@ export default function PublicProfilePage() {
 
   const params = useParams();
   const userId = params?.userId as string;
-  console.log("User ID aus URL:", userId);
-
-  const profileData = {
-    firstName: "Max",
-    lastName: "Mustermann",
-    email: "max.mustermann@example.com",
-    nickname: "nickname",
-  };
 
   // 👉 Query nur mit Feldern, die es sicher gibt (Backend down / PublicUserInfo ohne memberships)
   const data = useLazyLoadQuery<pagePublicProfileStudentQuery>(
@@ -180,7 +173,6 @@ export default function PublicProfilePage() {
           null}
 
         {tabIndex === 1 && <OtherUserProfileForumActivity />}
-
         {tabIndex === 2 && (
           // Badges placeholder
           <Box sx={{ p: 2 }}>
