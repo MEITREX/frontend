@@ -1,4 +1,4 @@
-import React, { ReactNode, useRef, useState, useLayoutEffect } from "react";
+import React, { ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 type HoverCardProps = {
@@ -83,7 +83,7 @@ export function HoverCard({
               background: "#fff",
               borderRadius: 14,
               boxShadow: "0 8px 32px 0 rgba(40,40,50,0.21)",
-              padding: 16,
+              padding: 0,
               minWidth: 220,
               textAlign: "center",
               pointerEvents: "auto",

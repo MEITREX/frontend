@@ -1,10 +1,13 @@
+import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
+import { LeaderboardDataQuery } from "@/__generated__/LeaderboardDataQuery.graphql";
+import type { StaticImageData } from "next/image";
 import { useParams } from "next/navigation";
 import React from "react";
-import type { StaticImageData } from "next/image";
+import { graphql, useLazyLoadQuery } from "react-relay";
 import defaultUserImage from "../../assets/logo.svg";
 import { HoverCard } from "../HoverCard";
-import { graphql, useLazyLoadQuery } from "react-relay";
-import { LeaderboardDataQuery } from "@/__generated__/LeaderboardDataQuery.graphql";
+import { inventoryForUserQuery } from "../items/api/ItemsApi";
+import { getItemsMerged } from "../items/logic/GetItems";
 
 function getImageSrc(image?: string | StaticImageData): string {
   if (typeof image === "string") {
@@ -136,6 +139,18 @@ export default function Leaderboard({
   const courseID = params?.courseId as string | undefined;
   const currentUserRef = React.useRef<HTMLDivElement | null>(null);
   const othersContainerRef = React.useRef<HTMLDivElement | null>(null);
+
+  const { inventoryForUser } = useLazyLoadQuery<ItemsApiInventoryForUserQuery>(
+    inventoryForUserQuery,
+    {},
+    { fetchPolicy: "network-only" }
+  );
+
+  // Combine backend and JSON data
+  const itemsParsedMergedPic = getItemsMerged(inventoryForUser, "profilePics");
+
+  // Find the equiped item for the UnequipCard
+  const equipedItemPic = itemsParsedMergedPic.find((item) => item.equipped);
 
   // New Relay query for all leaderboard periods (always declared)
   const LeaderboardDataQuery = graphql`
@@ -338,7 +353,11 @@ export default function Leaderboard({
               card={
                 <div>
                   <img
-                    src={getImageSrc(user.profileImage)}
+                    src={decodeURIComponent(
+                      equipedItemPic!.url
+                        ? equipedItemPic!.url
+                        : equipedItemPic!.id
+                    )}
                     alt={user.name}
                     style={{
                       width: 48,
@@ -402,7 +421,11 @@ export default function Leaderboard({
                 {/* Profilbild */}
                 <div style={{ marginRight: 12 }}>
                   <img
-                    src={getImageSrc(user.profileImage)}
+                    src={decodeURIComponent(
+                      equipedItemPic!.url
+                        ? equipedItemPic!.url
+                        : equipedItemPic!.id
+                    )}
                     alt={user.name}
                     style={{
                       width: 38,
@@ -479,7 +502,11 @@ export default function Leaderboard({
                 card={
                   <div>
                     <img
-                      src={getImageSrc(user.profileImage)}
+                      src={decodeURIComponent(
+                        equipedItemPic!.url
+                          ? equipedItemPic!.url
+                          : equipedItemPic!.id
+                      )}
                       alt={user.name}
                       style={{
                         width: 48,
@@ -546,7 +573,11 @@ export default function Leaderboard({
                   </div>
                   <div style={{ marginRight: 12 }}>
                     <img
-                      src={getImageSrc(user.profileImage)}
+                      src={decodeURIComponent(
+                        equipedItemPic!.url
+                          ? equipedItemPic!.url
+                          : equipedItemPic!.id
+                      )}
                       alt={user.name}
                       style={{
                         width: 38,
