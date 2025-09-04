@@ -55,6 +55,7 @@ export default function UserPostInformation({
     minWidth: 220, // damit man das Muster sieht
     minHeight: 120,
     backgroundPosition: "center",
+
   };
 
   const { inventoryForUser } = useLazyLoadQuery<ItemsApiInventoryForUserQuery>(
@@ -91,9 +92,7 @@ export default function UserPostInformation({
     (item) => item.equipped
   );
 
-  let background = "#ffffff";
   let foreground = "#000000";
-  let backgroundImage: string | undefined;
 
   // Farben/Pattern setzen
   if (equipedItemColorTheme) {
@@ -102,14 +101,16 @@ export default function UserPostInformation({
     foreground = equipedItemColorTheme.foreColor ?? "#000000";
   } else if (equipedItemPatternTheme?.url) {
     // Data-URI direkt verwenden (kein decode!)
-    cardStyle.backgroundImage = `url(${decodeURIComponent(equipedItemPatternTheme.url)})`;
+    cardStyle.backgroundImage = decodeURIComponent(equipedItemPatternTheme.url);
     cardStyle.backgroundRepeat = "repeat"; // Kacheln (Pattern)
-    cardStyle.backgroundSize = "auto";    // meist für SVG-Pattern besser als "cover"
+    cardStyle.backgroundSize = "100%"; // meist für SVG-Pattern besser als "cover"
     cardStyle.color = equipedItemPatternTheme.foreColor ?? "#000000";
     foreground = equipedItemPatternTheme.foreColor ?? "#000000";
     // optional Fallback-Farbe unter dem Pattern:
     // cardStyle.backgroundColor = "#ffffff";
   }
+
+  console.log(equipedItemPatternTheme?.url);
 
   return (
     <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
@@ -117,33 +118,69 @@ export default function UserPostInformation({
         <HoverCard
           key={userInfo?.id}
           card={
-            <div style={cardStyle}>
-              <img
-                src={decodeURIComponent(
-                  equipedItemPic!.url ? equipedItemPic!.url : equipedItemPic!.id
-                )}
-                alt={userInfo?.userName}
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 10,
-                  objectFit: "cover",
-                  margin: "0 auto 10px",
-                  boxShadow: "0 2px 8px #0001",
-                }}
-              />
-              <div
-                style={{
-                  fontWeight: 700,
-                  fontSize: 18,
-                  marginBottom: 4,
-                  color: `${foreground}`,
-                }}
-              >
-                {userInfo?.userName}
-              </div>
-              <div style={{ fontSize: 15, color: "#a1a6b2", marginTop: 8 }}>
-                Profilinfos folgen…
+            <div
+              style={{
+                position: "relative",
+                isolation: "isolate", // erzeugt eigenen Stacking-Context
+                overflow: "hidden",
+                borderRadius: 8,
+                minWidth: 220,
+                minHeight: 120,
+                background: equipedItemColorTheme?.backColor ?? "#ffffff",
+              }}
+            >
+              {equipedItemPatternTheme?.url && (
+                <img
+                  src={equipedItemPatternTheme.url}
+                  alt=""
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    zIndex: -1, // ganz nach unten
+                    pointerEvents: "none", // Hover/Klicks oben bleiben
+                  }}
+                />
+              )}
+
+              {/* optionaler Weiß-Schleier für Lesbarkeit */}
+              {/* <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.35)", zIndex: 0 }} /> */}
+
+              {/* Inhalt oben drüber */}
+              <div style={{ position: "relative", zIndex: 1, padding: 8 }}>
+                <img
+                  src={decodeURIComponent(
+                    equipedItemPic!.url
+                      ? equipedItemPic!.url
+                      : equipedItemPic!.id
+                  )}
+                  alt={userInfo?.userName}
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 10,
+                    objectFit: "cover",
+                    margin: "0 auto 10px",
+                    boxShadow: "0 2px 8px #0001",
+                    display: "block",
+                  }}
+                />
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 18,
+                    marginBottom: 4,
+                    color: foreground,
+                  }}
+                >
+                  {userInfo?.userName}
+                </div>
+                <div style={{ fontSize: 15, color: "#a1a6b2", marginTop: 8 }}>
+                  Profilinfos folgen…
+                </div>
               </div>
             </div>
           }
