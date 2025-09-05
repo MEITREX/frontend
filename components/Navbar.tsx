@@ -439,7 +439,13 @@ function SwitchPageViewButton(): JSX.Element | null {
   }
 }
 
-function UserInfo({ _isTutor, userId }: { _isTutor: NavbarIsTutor$key; userId: string }) {
+function UserInfo({
+  _isTutor,
+  userId,
+}: {
+  _isTutor: NavbarIsTutor$key;
+  userId: string;
+}) {
   const auth = useAuth();
   const { points } = useCurrency();
   const tutor = useIsTutor(_isTutor);
@@ -459,7 +465,11 @@ function UserInfo({ _isTutor, userId }: { _isTutor: NavbarIsTutor$key; userId: s
       try {
         // --- HexadXP System: try multiple query shapes until one works ---
         // Some environments expose different field names. We try them in order.
-        const candidateQueries: { key: string; q: string; variables: Record<string, any> }[] = [
+        const candidateQueries: {
+          key: string;
+          q: string;
+          variables: Record<string, any>;
+        }[] = [
           {
             key: "getUserById",
             q: `
@@ -532,13 +542,19 @@ function UserInfo({ _isTutor, userId }: { _isTutor: NavbarIsTutor$key; userId: s
           },
         ];
 
-        let resolved:
-          | { id: string; requiredXP: number; exceedingXP: number; level: number }
-          | null = null;
+        let resolved: {
+          id: string;
+          requiredXP: number;
+          exceedingXP: number;
+          level: number;
+        } | null = null;
 
         for (const { q, variables, key } of candidateQueries) {
           try {
-            const res = await postGraphQL<Record<string, any>>(q as string, variables);
+            const res = await postGraphQL<Record<string, any>>(
+              q as string,
+              variables
+            );
             const node = res?.data?.[key];
             if (node && typeof node === "object") {
               resolved = {

@@ -184,7 +184,10 @@ export default function XPWidget() {
   const level = levelInfo?.level ?? 0;
   const currentXP = levelInfo?.exceedingXP ?? 0;
   const requiredXP = levelInfo?.requiredXP ?? 1;
-  const progress = Math.max(0, Math.min(100, (currentXP / Math.max(1, requiredXP)) * 100));
+  const progress = Math.max(
+    0,
+    Math.min(100, (currentXP / Math.max(1, requiredXP)) * 100)
+  );
 
   return (
     <Box
