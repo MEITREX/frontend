@@ -55,7 +55,6 @@ export default function UserPostInformation({
     minWidth: 220, // damit man das Muster sieht
     minHeight: 120,
     backgroundPosition: "center",
-
   };
 
   const { inventoryForUser } = useLazyLoadQuery<ItemsApiInventoryForUserQuery>(
@@ -89,6 +88,17 @@ export default function UserPostInformation({
 
   // Find the equiped item for the UnequipCard
   const equipedItemPatternTheme = itemsParsedMergedPatternTheme.find(
+    (item) => item.equipped
+  );
+
+  // Combine backend and JSON data
+  const itemsParsedMergedPicFrame = getItemsMerged(
+    inventoryForUser,
+    "profilePicFrames"
+  );
+
+  // Find the equiped item for the UnequipCard
+  const equipedItemPicFrame = itemsParsedMergedPicFrame.find(
     (item) => item.equipped
   );
 
@@ -150,24 +160,61 @@ export default function UserPostInformation({
               {/* <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.35)", zIndex: 0 }} /> */}
 
               {/* Inhalt oben drüber */}
+
               <div style={{ position: "relative", zIndex: 1, padding: 8 }}>
-                <img
-                  src={decodeURIComponent(
-                    equipedItemPic!.url
-                      ? equipedItemPic!.url
-                      : equipedItemPic!.id
-                  )}
-                  alt={userInfo?.userName}
+                <div
                   style={{
+                    position: "relative",
                     width: 48,
                     height: 48,
-                    borderRadius: 10,
-                    objectFit: "cover",
                     margin: "0 auto 10px",
-                    boxShadow: "0 2px 8px #0001",
-                    display: "block",
                   }}
-                />
+                >
+                  {/* Rahmen-Bild */}
+                  {equipedItemPicFrame && (
+                    <img
+                      src={decodeURIComponent(
+                        equipedItemPicFrame!.url
+                          ? equipedItemPicFrame!.url
+                          : equipedItemPicFrame!.id
+                      )}
+                      alt={userInfo?.userName}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: 10,
+                        objectFit: "cover",
+                        boxShadow: "0 2px 8px #0001",
+                        zIndex: 1,
+                      }}
+                    />
+                  )}
+
+                  {/* Profilbild */}
+                  <img
+                    src={decodeURIComponent(
+                      equipedItemPic!.url
+                        ? equipedItemPic!.url
+                        : equipedItemPic!.id
+                    )}
+                    alt={userInfo?.userName}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 10,
+                      objectFit: "cover",
+                      boxShadow: "0 2px 8px #0001",
+                      zIndex: 0,
+                    }}
+                  />
+                </div>
+
                 <div
                   style={{
                     fontWeight: 700,
