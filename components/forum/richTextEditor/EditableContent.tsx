@@ -8,6 +8,7 @@ import ModeEditOutlineRoundedIcon from "@mui/icons-material/ModeEditOutlineRound
 import TextEditor from "./TextEditor";
 import {
   forumApiDeletePostMutation,
+  forumApiDeleteThreadMutation,
   forumApiUpdatePostMutation,
   forumApiUserInfoQuery,
 } from "@/components/forum/api/ForumApi";
@@ -21,12 +22,16 @@ import MenuItem from "@mui/material/MenuItem";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import { ForumApiDeleteThreadMutation } from "@/__generated__/ForumApiDeleteThreadMutation.graphql";
 
 type Props = {
   initialContent: string;
   postId: string;
   authorId: string;
   contentIsEdited?: boolean;
+  isThread?: boolean;
+  threadId?: string;
+  redirect?: () => void;
 };
 
 export default function EditableContent({
@@ -34,6 +39,9 @@ export default function EditableContent({
   postId,
   authorId,
   contentIsEdited,
+  isThread = false,
+  threadId,
+  redirect,
 }: Props) {
   const user = useLazyLoadQuery<ForumApiUserInfoQuery>(
     forumApiUserInfoQuery,
@@ -73,6 +81,10 @@ export default function EditableContent({
     forumApiDeletePostMutation
   );
 
+  const [deleteThread] = useMutation<ForumApiDeleteThreadMutation>(
+    forumApiDeleteThreadMutation
+  );
+
   const handleSave = () => {
     updatePost({
       variables: {
@@ -98,17 +110,31 @@ export default function EditableContent({
   };
 
   const handleDelete = () => {
-    deletePost({
-      variables: {
-        postId: postId,
-      },
-      onCompleted(data) {
-        deletePostContext(postId);
-        console.log("Post was deleted!");
-      },
-      onError(error) {
-        console.error("Post delete failed!", error);
-      },
+    const onCompleted = () => {
+      deletePostContext(postId);
+      console.log(`${isThread ? "Thread" : "Post"} was deleted!`);
+      if (isThread && redirect) {
+        redirect();
+      }
+    };
+
+    const onError = (error: any) => {
+      console.error(`${isThread ? "Thread" : "Post"} delete failed!`, error);
+    };
+
+    if (!isThread) {
+      deletePost({
+        variables: { postId },
+        onCompleted,
+        onError,
+      });
+      return;
+    }
+
+    deleteThread({
+      variables: { id: threadId! },
+      onCompleted,
+      onError,
     });
   };
 
