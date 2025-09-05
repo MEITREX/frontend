@@ -178,7 +178,7 @@ export default function UserPostInformation({
                           ? equipedItemPicFrame!.url
                           : equipedItemPicFrame!.id
                       )}
-                      alt={userInfo?.userName}
+                      alt={userInfo?.nickname}
                       style={{
                         position: "absolute",
                         top: 0,
@@ -200,7 +200,7 @@ export default function UserPostInformation({
                         ? equipedItemPic!.url
                         : equipedItemPic!.id
                     )}
-                    alt={userInfo?.userName}
+                    alt={userInfo?.nickname}
                     style={{
                       position: "absolute",
                       top: 0,
@@ -223,7 +223,7 @@ export default function UserPostInformation({
                     color: foreground,
                   }}
                 >
-                  {userInfo?.userName}
+                  {userInfo?.nickname}
                 </div>
                 <div style={{ fontSize: 15, color: "#a1a6b2", marginTop: 8 }}>
                   Profilinfos folgen…
@@ -259,7 +259,7 @@ export default function UserPostInformation({
             router.push(profileUrl);
           }}
         >
-          {userInfo.userName ?? "unknown"}
+          {userInfo.nickname ?? "unknown"}
         </Typography>
       )}
 
