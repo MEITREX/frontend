@@ -12,6 +12,28 @@ import dayjs from "dayjs";
 
 dayjs.extend(duration);
 
+const GRAPHQL_URL =
+  process.env.NEXT_PUBLIC_GRAPHQL_URL ||
+  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
+  "/graphql";
+
+async function postGraphQL<TData>(
+  query: string,
+  variables: Record<string, any>
+): Promise<{ data?: TData; errors?: any[] }> {
+  const res = await fetch(GRAPHQL_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, variables }),
+    credentials: "include",
+  });
+  try {
+    return (await res.json()) as any;
+  } catch {
+    return { errors: [{ message: "Failed to parse GraphQL response" }] } as any;
+  }
+}
+
 import { useCurrency } from "@/app/contexts/CurrencyContext";
 import { PageView, usePageView } from "@/src/currentView";
 import {
@@ -92,9 +114,11 @@ type SearchResultType = {
 function NavbarBase({
   children,
   _isTutor,
+  userId,
 }: {
   children: React.ReactNode;
   _isTutor: NavbarIsTutor$key;
+  userId: string;
 }) {
   const [term, setTerm] = useState("");
   const router = useRouter();
@@ -333,7 +357,7 @@ function NavbarBase({
         <NavbarLink title="Items" icon={<StoreIcon />} href="/items" exact />
       </NavbarSection>
       {children}
-      <UserInfo _isTutor={_isTutor} />
+      <UserInfo _isTutor={_isTutor} userId={userId} />
     </div>
   );
 }
@@ -415,7 +439,7 @@ function SwitchPageViewButton(): JSX.Element | null {
   }
 }
 
-function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
+function UserInfo({ _isTutor, userId }: { _isTutor: NavbarIsTutor$key; userId: string }) {
   const auth = useAuth();
   const { points } = useCurrency();
   const tutor = useIsTutor(_isTutor);
@@ -426,48 +450,129 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
     xpInLevel: number;
     xpRequiredForLevelUp: number;
     userName?: string;
-  }>({ level: 3, xpInLevel: 240, xpRequiredForLevelUp: 500 });
+  } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      if (!userId) return;
       try {
-        const endpoint =
-          process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ?? "/api/graphql";
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            query: `query NavbarLevelQuery {
-              currentUserLevelInfo { level xpInLevel xpRequiredForLevelUp }
-              currentUserInfo { userName }
-            }`,
-          }),
-          credentials: "include",
-        });
-        const json = await res.json();
-        const li = json?.data?.currentUserLevelInfo;
-        const un = json?.data?.currentUserInfo?.userName;
-        if (!cancelled && li) {
+        // --- HexadXP System: try multiple query shapes until one works ---
+        // Some environments expose different field names. We try them in order.
+        const candidateQueries: { key: string; q: string; variables: Record<string, any> }[] = [
+          {
+            key: "getUserById",
+            q: `
+              query GetUserLevel_getUserById($userId: UUID!) {
+                getUserById(userId: $userId) {
+                  id
+                  requiredXP
+                  exceedingXP
+                  level
+                }
+              }
+            `,
+            variables: { userId },
+          },
+          {
+            key: "userById",
+            q: `
+              query GetUserLevel_userById($userId: UUID!) {
+                userById(id: $userId) {
+                  id
+                  requiredXP
+                  exceedingXP
+                  level
+                }
+              }
+            `,
+            variables: { userId },
+          },
+          {
+            key: "getUser",
+            q: `
+              query GetUserLevel_getUser($userId: UUID!) {
+                getUser(id: $userId) {
+                  id
+                  requiredXP
+                  exceedingXP
+                  level
+                }
+              }
+            `,
+            variables: { userId },
+          },
+          {
+            key: "user",
+            q: `
+              query GetUserLevel_user($userId: UUID!) {
+                user(id: $userId) {
+                  id
+                  requiredXP
+                  exceedingXP
+                  level
+                }
+              }
+            `,
+            variables: { userId },
+          },
+          {
+            key: "currentUser",
+            q: `
+              query GetUserLevel_currentUser {
+                currentUser {
+                  id
+                  requiredXP
+                  exceedingXP
+                  level
+                }
+              }
+            `,
+            variables: {},
+          },
+        ];
+
+        let resolved:
+          | { id: string; requiredXP: number; exceedingXP: number; level: number }
+          | null = null;
+
+        for (const { q, variables, key } of candidateQueries) {
+          try {
+            const res = await postGraphQL<Record<string, any>>(q as string, variables);
+            const node = res?.data?.[key];
+            if (node && typeof node === "object") {
+              resolved = {
+                id: node.id,
+                requiredXP: Number(node.requiredXP ?? 0),
+                exceedingXP: Number(node.exceedingXP ?? 0),
+                level: Number(node.level ?? 0),
+              };
+              break;
+            }
+          } catch {
+            // continue to next candidate
+          }
+        }
+
+        if (!cancelled && resolved) {
           setLevelInfo({
-            level: li.level ?? 3,
-            xpInLevel: li.xpInLevel ?? 240,
-            xpRequiredForLevelUp: li.xpRequiredForLevelUp ?? 500,
-            userName: un,
+            level: resolved.level ?? 0,
+            xpInLevel: resolved.exceedingXP ?? 0,
+            xpRequiredForLevelUp: resolved.requiredXP ?? 1,
           });
         }
-      } catch (_) {
-        // keep fallback
+      } catch {
+        // keep fallback values
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [userId]);
 
-  const level = levelInfo.level;
-  const xpInLevel = levelInfo.xpInLevel;
-  const xpRequired = levelInfo.xpRequiredForLevelUp;
+  const level = levelInfo?.level ?? 0;
+  const xpInLevel = levelInfo?.xpInLevel ?? 0;
+  const xpRequired = levelInfo?.xpRequiredForLevelUp ?? 1;
   const percent = Math.max(
     0,
     Math.min(100, Math.round((xpInLevel / Math.max(1, xpRequired)) * 100))
@@ -582,7 +687,13 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
               sx={{ height: 8, borderRadius: 999 }}
             />
             <Typography variant="caption" sx={{ mt: 0.25, display: "block" }}>
-              {xpInLevel} / {xpRequired} XP
+              {levelInfo ? (
+                <>
+                  {xpInLevel} / {xpRequired} XP
+                </>
+              ) : (
+                "Loading XP…"
+              )}
             </Typography>
           </Box>
 
@@ -651,7 +762,7 @@ export function Navbar() {
         pageView === PageView.Lecturer
     );
   return (
-    <NavbarBase _isTutor={currentUserInfo}>
+    <NavbarBase _isTutor={currentUserInfo} userId={currentUserInfo.id}>
       {filtered.length > 0 ? (
         <NavbarSection
           title={
