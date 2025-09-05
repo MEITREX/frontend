@@ -8,7 +8,7 @@ type AchievementItem = {
 
 export default function AchievementParser(name: string) {
   const match = (achievementsData as AchievementItem[]).find(
-    (item) => item.name.toLowerCase() === name.toLowerCase()
+    (item) => name.toLowerCase().startsWith(item.name.toLowerCase())
   );
 
   if (!match?.url) return null;
