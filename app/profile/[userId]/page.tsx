@@ -1,36 +1,99 @@
 "use client";
 
 import { pagePublicProfileStudentQuery } from "@/__generated__/pagePublicProfileStudentQuery.graphql";
-import { pageUserAchievementsPublicQuery } from "@/__generated__/pageUserAchievementsPublicQuery.graphql";
 import { SortProvider } from "@/app/contexts/SortContext";
+import { pageUserAchievementsPublicQuery } from "@/__generated__/pageUserAchievementsPublicQuery.graphql";
+import { pageUserAchievementsPublicQuery } from "@/__generated__/pageUserAchievementsQuery.graphql";
 import AchievementList from "@/components/profile/AchievementList";
 import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
-import ProfileInventorySection from "@/components/profile/items/ProfileInventorySection";
-import { Avatar, Box, Tab, Tabs, Typography } from "@mui/material";
+import { Avatar, Box, Tab, Tabs, Typography, Grid } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
+import {
+  CombinedLeaderboardCard,
+  fetchCourseLeaderboards,
+} from "@/app/profile/leaderboard/ProfileLeaderboardPositions";
 
 export default function PublicProfilePage() {
-  const publicTabs = ["Achievements", "Forum", "Items"];
+  const publicTabs = ["Achievements", "Forum", "Badges", "Leaderboards"];
   const [tabIndex, setTabIndex] = useState(0);
 
   const params = useParams();
   const userId = params?.userId as string;
 
-  const { findPublicUserInfos } =
-    useLazyLoadQuery<pagePublicProfileStudentQuery>(
-      graphql`
-        query pagePublicProfileStudentQuery($id: [UUID!]!) {
-          findPublicUserInfos(ids: $id) {
-            userName
-          }
+  // 👉 Query nur mit Feldern, die es sicher gibt (Backend down / PublicUserInfo ohne memberships)
+  const data = useLazyLoadQuery<pagePublicProfileStudentQuery>(
+    graphql`
+      query pagePublicProfileStudentQuery($id: [UUID!]!) {
+        findPublicUserInfos(ids: $id) {
+          id
+          userName
         }
-      `,
-      { id: [userId] }
-    );
+        currentUserInfo {
+          id
+          userName
+        }
+      }
+    `,
+    { id: [userId] }
+  );
 
+  const findPublicUserInfos = data.findPublicUserInfos;
+  // Fallback to empty object when backend is down
+  const currentUserInfo = (data as any).currentUserInfo ?? {
+    id: "",
+    userName: "",
+  };
+
+  const [sharedLeaderboards, setSharedLeaderboards] = useState<
+    Record<string, any>
+  >({});
+  const [loadingLB, setLoadingLB] = useState(false);
+
+  const viewed =
+    findPublicUserInfos && findPublicUserInfos.length > 0
+      ? findPublicUserInfos[0]
+      : null;
+  // Fallback to empty object when backend is down
+  const viewedSafe = viewed ?? { id: "", userName: "" };
+
+  const isViewingOther = !!(
+    currentUserInfo &&
+    viewedSafe &&
+    currentUserInfo.id !== viewedSafe.id
+  );
+
+  // Shared memberships is an empty array until backend integration is complete
+  const sharedMemberships: any[] = [];
+
+  // Load dummy leaderboards per shared course, highlighting the VIEWED user
+  async function loadShared() {
+    try {
+      setLoadingLB(true);
+      const today = new Date().toISOString().slice(0, 10);
+      const result: Record<string, any> = {};
+      for (const m of sharedMemberships) {
+        result[m.courseId] = await fetchCourseLeaderboards(m.courseId, today, {
+          id: (viewedSafe as any).id,
+          name: (viewedSafe as any).userName,
+        });
+      }
+      setSharedLeaderboards(result);
+    } finally {
+      setLoadingLB(false);
+    }
+  }
+
+  // Load once when memberships are available
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useState(() => {
+    loadShared();
+    return undefined;
+  });
+
+  /*
   const { achievementsByUserId } =
     useLazyLoadQuery<pageUserAchievementsPublicQuery>(
       graphql`
@@ -52,18 +115,17 @@ export default function PublicProfilePage() {
       `,
       { id: userId }
     );
+  */
 
   return (
     <Box sx={{ p: 4 }}>
       {/* Kopfbereich: Bild + Name */}
       <Box display="flex" alignItems="center" gap={3} mb={3}>
         <Avatar sx={{ width: 80, height: 80, fontSize: 32 }}>
-          {findPublicUserInfos[0]?.userName}
+          {viewedSafe.userName}
         </Avatar>
         <Box>
-          <Typography variant="h5">
-            @{findPublicUserInfos[0]?.userName}
-          </Typography>
+          <Typography variant="h5">@{viewedSafe.userName}</Typography>
         </Box>
       </Box>
 
@@ -71,6 +133,7 @@ export default function PublicProfilePage() {
       <Tabs
         value={tabIndex}
         onChange={(e, newVal) => setTabIndex(newVal)}
+        aria-label="Public profile tabs"
         variant="scrollable"
         scrollButtons="auto"
         sx={{
@@ -85,7 +148,7 @@ export default function PublicProfilePage() {
             label={tab}
             sx={{
               textTransform: "none",
-              fontWeight: 500,
+              fontWeight: 600,
               borderRadius: "16px",
               px: 3,
               py: 1,
@@ -105,17 +168,60 @@ export default function PublicProfilePage() {
 
       {/* Tab-Inhalte */}
       <Box>
-        {tabIndex === 0 && (
-          <AchievementList
-            achievements={achievementsByUserId.filter((a) => a.completed)}
-            profileTypeSortString={"achieved"}
-          />
-        )}
+        {tabIndex === 0 &&
+          // Achievements (kept disabled until backend is ready)
+          null}
+
         {tabIndex === 1 && <OtherUserProfileForumActivity />}
         {tabIndex === 2 && (
-          <SortProvider>
-            <ProfileInventorySection userId={userId} />
-          </SortProvider>
+          // Badges placeholder
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              No badges to display yet.
+            </Typography>
+          </Box>
+        )}
+
+        {tabIndex === 3 && (
+          <Box sx={{ mt: 2 }}>
+            {loadingLB && (
+              <Typography variant="body2">Loading leaderboards…</Typography>
+            )}
+            {!loadingLB && sharedMemberships.length === 0 && (
+              <Typography variant="body2" color="text.secondary">
+                Ihr habt aktuell keine gemeinsamen Kurse – keine
+                Leaderboard-Überschneidungen.
+              </Typography>
+            )}
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              {sharedMemberships.map((m: any) => {
+                const lb = sharedLeaderboards[m.courseId];
+                const weekly = lb?.weekly?.[0]?.userScores ?? [];
+                const monthly = lb?.monthly?.[0]?.userScores ?? [];
+                const allTime = lb?.allTime?.[0]?.userScores ?? [];
+                return (
+                  <Grid item xs={12} md={6} key={m.courseId}>
+                    <CombinedLeaderboardCard
+                      title={m.course.title}
+                      weekly={weekly}
+                      monthly={monthly}
+                      allTime={allTime}
+                      {...(isViewingOther
+                        ? {
+                            currentUserId: viewedSafe.id, // highlight the viewed user
+                            limitToUserIds: [viewedSafe.id],
+                            scoreCompareMode: "vsCurrentPlayer",
+                            viewerUserId: currentUserInfo.id,
+                          }
+                        : {
+                            currentUserId: viewedSafe.id,
+                          })}
+                    />
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </Box>
         )}
       </Box>
     </Box>

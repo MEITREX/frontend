@@ -40,6 +40,8 @@ import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
 import AchievementPopUp from "@/components/profile/achievements/AchievementPopUp";
 import ForumActivityWidget from "@/components/widgets/ForumActivityWidget";
 import OpenQuestionWidget from "@/components/widgets/OpenQuestionWidget";
+import CourseLeaderboards from "@/components/leaderboard/CourseLeaderboard";
+import LeaderboardWidget from "@/components/leaderboard/LeaderboardWidget";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
@@ -87,6 +89,8 @@ function createData(name: string, power: number) {
 export default function StudentCoursePage() {
   // Get course id from url
   const { courseId: id } = useParams();
+  // derive ISO date string for leaderboard queries
+  const date = new Date().toISOString().slice(0, 10);
 
   // tabs
   const [value, setValue] = React.useState(0);
@@ -107,6 +111,7 @@ export default function StudentCoursePage() {
       query studentCourseIdQuery($id: UUID!) {
         scoreboard(courseId: $id) {
           user {
+            id
             userName
           }
           powerScore
@@ -403,10 +408,25 @@ export default function StudentCoursePage() {
             <Tab label="Learning Progress" {...a11yProps(1)} />
             <Tab label="Chapters" {...a11yProps(2)} />
             <Tab label="Forum" {...a11yProps(3)} />
+            <Tab label="Leaderboard" {...a11yProps(4)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
           <ChapterOverview _chapters={course} />
+          {/* Gamification Leaderboard Widget */}
+          <div className="mt-8 w-full flex justify-center">
+            <div className="w-full max-w-5xl">
+              <Typography variant="h2" component="h2" gutterBottom>
+                Leaderboard
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              <LeaderboardWidget
+                courseID={id}
+                date={date}
+                currentUserID={userId}
+              />
+            </div>
+          </div>
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
           <div className="flex flex-col gap-12">
@@ -428,7 +448,7 @@ export default function StudentCoursePage() {
                   </Button>
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
+              {/* <div className="flex flex-col gap-2">
                 <TableContainer component={Paper}>
                   <Table size="small">
                     <TableHead>
@@ -466,7 +486,7 @@ export default function StudentCoursePage() {
                     </Button>
                   </Link>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -643,6 +663,16 @@ export default function StudentCoursePage() {
           <Suspense fallback={<SkeletonThreadList />}>
             <ForumOverview />
           </Suspense>
+        </CustomTabPanel>
+
+        <CustomTabPanel value={value} index={4}>
+          {/* Leaderboard-Tab */}
+          <CourseLeaderboards
+            courseID={id}
+            currentUserId={userId}
+            currentUserName={"Current User"}
+            //currentUserProfileImage={profileImage}
+          />
         </CustomTabPanel>
       </Box>
     </main>
