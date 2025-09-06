@@ -568,11 +568,11 @@ function UserInfo({
           console.warn("[Navbar XP] GraphQL errors:", errors);
         }
 
-        // Normalize response shape
-        const payload: any =
-          Array.isArray(levelData?.getUser) && levelData?.getUser.length > 0
-            ? levelData?.getUser[0]
-            : levelData?.getUser;
+        // Normalize response shape (handles array or object or null)
+        const rawUser = (levelData as any)?.getUser;
+        const payload: any = Array.isArray(rawUser)
+          ? (rawUser[0] ?? null)
+          : (rawUser ?? null);
 
         if (!payload) {
           if (!cancelled) {
