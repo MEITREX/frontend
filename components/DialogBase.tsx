@@ -168,15 +168,15 @@ function Field<T extends object>({
           defaultCalendarMonth={field.defaultMonthDate}
           onChange={(value) => formik.setFieldValue(field.key as string, value)}
           renderInput={(params) => (
-    <TextField
-      {...params}
-      id={field.key as string}
-      required={field.required}
-      error={hasError}
-      helperText={errorText}
-      onBlur={formik.handleBlur}
-    />
-  )}
+            <TextField
+              {...params}
+              id={field.key as string}
+              required={field.required}
+              error={hasError}
+              helperText={errorText}
+              onBlur={formik.handleBlur}
+            />
+          )}
         />
       );
   }

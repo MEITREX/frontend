@@ -74,15 +74,15 @@ export function ContentMetadataFormSection({
         value={suggestedDate}
         onChange={(newValue: Dayjs | null) => setSuggestedDate(newValue)}
         renderInput={(params) => (
-    <TextField
-      {...params}
-      required
-      error={
-        (metadata != null && suggestedDate == null) ||
-        (suggestedDate != null && !suggestedDate.isValid())
-      }
-    />
-  )}
+          <TextField
+            {...params}
+            required
+            error={
+              (metadata != null && suggestedDate == null) ||
+              (suggestedDate != null && !suggestedDate.isValid())
+            }
+          />
+        )}
       />
 
       <Typography variant="caption" sx={{ marginTop: 1 }}>

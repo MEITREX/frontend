@@ -5,7 +5,6 @@ import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
-
 import { studentCourseLeaveMutation } from "@/__generated__/studentCourseLeaveMutation.graphql";
 import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
 import { stringToColor } from "@/components/ChapterHeader";
@@ -26,10 +25,6 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-
-
-
-
 
 import CourseLeaderboards from "@/components/leaderboard/CourseLeaderboard";
 import LeaderboardWidget from "@/components/leaderboard/LeaderboardWidget";
