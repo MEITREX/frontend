@@ -225,8 +225,16 @@ const UserQuery = graphql`
 
 // 2) Leaderboards für einen Kurs (alle Zeiträume)
 const CourseQuery = graphql`
-  query ProfileLeaderboardPositionsCourseQuery($courseID: ID!, $date: String!) {
-    weekly: getWeeklyCourseLeaderboards(courseID: $courseID, date: $date) {
+  query ProfileLeaderboardPositionsCourseQuery(
+    $courseID: ID!
+    $weeklyDate: String!
+    $monthlyDate: String!
+    $allTimeDate: String!
+  ) {
+    weekly: getWeeklyCourseLeaderboards(
+      courseID: $courseID
+      date: $weeklyDate
+    ) {
       id
       title
       userScores {
@@ -238,7 +246,10 @@ const CourseQuery = graphql`
         }
       }
     }
-    monthly: getMonthlyCourseLeaderboards(courseID: $courseID, date: $date) {
+    monthly: getMonthlyCourseLeaderboards(
+      courseID: $courseID
+      date: $monthlyDate
+    ) {
       id
       title
       userScores {
@@ -250,7 +261,10 @@ const CourseQuery = graphql`
         }
       }
     }
-    allTime: getAllTimeCourseLeaderboards(courseID: $courseID, date: $date) {
+    allTime: getAllTimeCourseLeaderboards(
+      courseID: $courseID
+      date: $allTimeDate
+    ) {
       id
       title
       userScores {
@@ -270,6 +284,23 @@ const CourseQuery = graphql`
  * Helpers & UI
  * =============================
  */
+
+function startOfWeekMonday(d: Date): Date {
+  const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  // getDay(): 0=Sun,1=Mon,...; we want Monday as start
+  const day = date.getDay();
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(date.getFullYear(), date.getMonth(), diff);
+}
+function startOfMonth(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+function toLocalISODate(d: Date): string {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 function formatNumber(n: number) {
   try {
@@ -1034,12 +1065,24 @@ function CourseLeaderboardsForCourse({
   courseTitle: string;
   currentUserId: string;
 }) {
-  const date = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  // Compute dates: weekly -> Monday of current week, monthly/allTime -> first day of current month
+  const today = useMemo(() => new Date(), []);
+  const weeklyDateISO = useMemo(
+    () => toLocalISODate(startOfWeekMonday(today)),
+    [today]
+  );
+  const monthStartISO = useMemo(
+    () => toLocalISODate(startOfMonth(today)),
+    [today]
+  );
+
   const data = useLazyLoadQuery<ProfileLeaderboardPositionsCourseQuery>(
     CourseQuery,
     {
       courseID: courseId,
-      date,
+      weeklyDate: weeklyDateISO,
+      monthlyDate: monthStartISO,
+      allTimeDate: monthStartISO,
     }
   );
 

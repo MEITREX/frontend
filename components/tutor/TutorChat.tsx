@@ -2,6 +2,7 @@ import {
   TutorChatSendMessageMutation,
   TutorChatSendMessageMutation$data,
 } from "@/__generated__/TutorChatSendMessageMutation.graphql";
+//from "@/__generated__/TutorChatSendMessageMutation.graphql";
 import { MessageSource, useAITutorStore } from "@/stores/aiTutorStore";
 import { Link } from "@mui/material";
 import Button from "@mui/material/Button";
@@ -28,27 +29,11 @@ const sendMessageMutation = graphql`
       sources {
         ... on DocumentSource {
           page
-          mediaRecords {
-            contents {
-              id
-              metadata {
-                name
-                courseId
-              }
-            }
-          }
+          mediaRecordId
         }
         ... on VideoSource {
           startTime
-          mediaRecords {
-            contents {
-              id
-              metadata {
-                name
-                courseId
-              }
-            }
-          }
+          mediaRecordId
         }
       }
     }
@@ -97,35 +82,32 @@ export default function TutorChat() {
     const urls: MessageSource[] = [];
     if (!sources) return urls;
 
-    sources.forEach((src) => {
-      if ("mediaRecords" in src && src.mediaRecords) {
-        src.mediaRecords.forEach((mr) => {
-          if (mr.contents) {
-            mr.contents.forEach((content) => {
-              if (!content || content.metadata.courseId !== courseId) return;
-              if (src.page != undefined) {
-                urls.push({
-                  link: `/courses/${courseId}/media/${content.id}?page=${
-                    src.page + 1
-                  }`,
-                  displayText: `${content.metadata.name} Seite: ${
-                    src.page + 1
-                  }`,
-                });
-              } else if (src.startTime != undefined) {
-                const readableTime = dayjs
-                  .duration(src.startTime ?? 0, "seconds")
-                  .format("HH:mm:ss");
-                urls.push({
-                  link: `/courses/${courseId}/media/${content.id}?videoPosition=${src.startTime}`,
-                  displayText: `${content.metadata.name} Zeitstempel: ${readableTime}`,
-                });
-              }
-            });
-          }
+    sources.forEach((src: any) => {
+      // Document source with a page number
+      if ("page" in src && src.page != null && "mediaRecordId" in src) {
+        urls.push({
+          link: `/courses/${courseId}/media/${src.mediaRecordId}?page=${
+            (src.page as number) + 1
+          }`,
+          displayText: `Source • page ${(src.page as number) + 1}`,
+        });
+      }
+      // Video source with a start time
+      else if (
+        "startTime" in src &&
+        src.startTime != null &&
+        "mediaRecordId" in src
+      ) {
+        const readableTime = dayjs
+          .duration((src.startTime as number) ?? 0, "seconds")
+          .format("HH:mm:ss");
+        urls.push({
+          link: `/courses/${courseId}/media/${src.mediaRecordId}?videoPosition=${src.startTime}`,
+          displayText: `Source • ${readableTime}`,
         });
       }
     });
+
     return urls;
   }
 
