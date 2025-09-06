@@ -89,31 +89,82 @@ const XPWidgetQuery = graphql`
   }
 `;
 
-// Same runtime GraphQL fetcher approach as in the profile page
-const GRAPHQL_URL =
-  process.env.NEXT_PUBLIC_GRAPHQL_URL ||
-  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-  "/graphql";
+// --- Robust GraphQL URL + Auth handling (same as profile) ---
+function resolveGraphqlUrl(): string {
+  // Prefer explicit envs; fall back to localhost:8080
+  const fromEnv =
+    process.env.NEXT_PUBLIC_GRAPHQL_URL ||
+    process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
+    "";
+  if (fromEnv && /^https?:\/\//.test(fromEnv)) {
+    return fromEnv;
+  }
+  if (fromEnv && fromEnv.startsWith("/")) {
+    // absolute path, keep as-is
+    return fromEnv;
+  }
+  // default dev backend
+  return "http://localhost:8080/graphql";
+}
+
+const GRAPHQL_URL = resolveGraphqlUrl();
+
+function getAuthHeader(): Record<string, string> {
+  try {
+    if (typeof window === "undefined") return {};
+
+    // 1) explicit global (e.g., set in app):
+    const tokenFromGlobal = (window as any).__AUTH_TOKEN__;
+    if (tokenFromGlobal) {
+      return { Authorization: `Bearer ${tokenFromGlobal}` };
+    }
+
+    // 2) try Keycloak OIDC token in localStorage (key starts with 'oidc.user:')
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i) || "";
+      if (k.startsWith("oidc.user:")) {
+        const raw = localStorage.getItem(k);
+        if (!raw) continue;
+        try {
+          const parsed = JSON.parse(raw);
+          const access = parsed?.access_token || parsed?.accessToken || parsed?.token;
+          if (access) return { Authorization: `Bearer ${access}` };
+        } catch {}
+      }
+    }
+  } catch {}
+  return {};
+}
 
 async function postGraphQL<TData>(
   query: string,
   variables: Record<string, any>
 ): Promise<{ data?: TData; errors?: any[] }> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(typeof window !== "undefined" && (window as any).__AUTH_TOKEN__
-        ? { Authorization: `Bearer ${(window as any).__AUTH_TOKEN__}` }
-        : {}),
-    },
-    body: JSON.stringify({ query, variables }),
-    credentials: "include",
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+
+  let response: Response;
+  try {
+    response = await fetch(GRAPHQL_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeader(),
+      },
+      body: JSON.stringify({ query, variables }),
+      credentials: "include",
+      signal: controller.signal,
+    });
+  } catch (e) {
+    return { errors: [{ message: `Network/Fetch error: ${String(e)}` }] } as any;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   try {
-    return (await res.json()) as any;
-  } catch {
+    const json = (await response.json()) as any;
+    return json;
+  } catch (e) {
     return { errors: [{ message: "Failed to parse GraphQL response" }] } as any;
   }
 }
@@ -138,11 +189,12 @@ export default function XPWidget() {
       setLoadingLevel(true);
 
       const userLevelQuery = `
-        query GetUserLevel($userId: UUID!) {
-          getUserById(userId: $userId) {
+        query GetUserLevel($userID: ID!) {
+          getUser(userID: $userID) {
             id
             name
             email
+            xpValue
             requiredXP
             exceedingXP
             level
@@ -150,23 +202,29 @@ export default function XPWidget() {
         }
       `;
 
-      const { data: userData } = await postGraphQL<{
-        getUserById?: {
+      const { data: userData, errors } = await postGraphQL<{
+        getUser?: Array<{
           id: string;
-          name: string;
-          email: string;
+          name: string | null;
+          email: string | null;
+          xpValue: number;
           requiredXP: number;
           exceedingXP: number;
           level: number;
-        };
-      }>(userLevelQuery, { userId });
+        }>;
+      }>(userLevelQuery, { userID: userId });
 
       if (!cancelled) {
-        if (userData?.getUserById) {
+        if (errors && errors.length) {
+          // eslint-disable-next-line no-console
+          console.warn("[XPWidget] getUser errors:", errors);
+        }
+        const u = userData?.getUser?.[0];
+        if (u) {
           setLevelInfo({
-            level: userData.getUserById.level ?? 0,
-            requiredXP: userData.getUserById.requiredXP ?? 1,
-            exceedingXP: userData.getUserById.exceedingXP ?? 0,
+            level: Number.isFinite(u.level) ? u.level : 0,
+            requiredXP: Number.isFinite(u.requiredXP) ? u.requiredXP : 1,
+            exceedingXP: Number.isFinite(u.exceedingXP) ? u.exceedingXP : 0,
           });
         } else {
           setLevelInfo({ level: 0, requiredXP: 1, exceedingXP: 0 });
@@ -184,6 +242,8 @@ export default function XPWidget() {
   const level = levelInfo?.level ?? 0;
   const currentXP = levelInfo?.exceedingXP ?? 0;
   const requiredXP = levelInfo?.requiredXP ?? 1;
+  const currentXPRounded = Math.round(currentXP);
+  const requiredXPRounded = Math.round(requiredXP);
   const progress = Math.max(
     0,
     Math.min(100, (currentXP / Math.max(1, requiredXP)) * 100)
@@ -240,7 +300,7 @@ export default function XPWidget() {
             variant="caption"
             sx={{ minWidth: 50, fontSize: "0.85rem", lineHeight: 1.1 }}
           >
-            {loadingLevel ? "…" : `${currentXP} / ${requiredXP}`}
+            {loadingLevel ? "…" : `${currentXPRounded} / ${requiredXPRounded}`}
           </Typography>
         </Box>
       </Box>

@@ -15,22 +15,70 @@ dayjs.extend(duration);
 const GRAPHQL_URL =
   process.env.NEXT_PUBLIC_GRAPHQL_URL ||
   process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-  "/graphql";
+  (typeof window !== "undefined" && (window as any).__GRAPHQL_URL) ||
+  "http://localhost:8080/graphql";
 
 async function postGraphQL<TData>(
   query: string,
   variables: Record<string, any>
 ): Promise<{ data?: TData; errors?: any[] }> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query, variables }),
-    credentials: "include",
-  });
   try {
-    return (await res.json()) as any;
-  } catch {
-    return { errors: [{ message: "Failed to parse GraphQL response" }] } as any;
+    const token =
+      typeof window !== "undefined" && (window as any).__AUTH_TOKEN__
+        ? (window as any).__AUTH_TOKEN__
+        : undefined;
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const res = await fetch(GRAPHQL_URL, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ query, variables }),
+      credentials: "include",
+    });
+
+    // If HTTP is not OK, log text (may be HTML error page / redirect)
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      console.error(
+        `[GraphQL] HTTP ${res.status} when calling ${GRAPHQL_URL}:`,
+        text?.slice(0, 500)
+      );
+      return {
+        errors: [
+          {
+            message: `HTTP ${res.status} - ${res.statusText}`,
+            detail: text?.slice(0, 500),
+          },
+        ],
+      } as any;
+    }
+
+    const contentType = res.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      const text = await res.text().catch(() => "");
+      console.error("[GraphQL] Non-JSON response:", text?.slice(0, 500));
+      return {
+        errors: [
+          { message: "Non-JSON response from GraphQL endpoint", detail: text?.slice(0, 500) },
+        ],
+      } as any;
+    }
+
+    // Normal JSON parse
+    const json = (await res.json()) as any;
+    // Relay-like errors field passthrough
+    if (json?.errors) {
+      console.warn("[GraphQL] Returned errors:", json.errors);
+    }
+    return json;
+  } catch (e) {
+    console.error("[GraphQL] Network/parse error:", e);
+    return { errors: [{ message: "Failed to parse GraphQL response", detail: String(e) }] } as any;
   }
 }
 
@@ -461,130 +509,98 @@ function UserInfo({
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // wait until we at least know the auth state to avoid unauthenticated request
       if (!userId) return;
+      if (auth?.isLoading) return;
+
+      // Propagate OIDC access token to window.__AUTH_TOKEN__ if available
+      if (typeof window !== "undefined" && auth?.user?.access_token) {
+        (window as any).__AUTH_TOKEN__ = auth.user.access_token;
+      }
+
       try {
-        // --- HexadXP System: try multiple query shapes until one works ---
-        // Some environments expose different field names. We try them in order.
-        const candidateQueries: {
-          key: string;
-          q: string;
-          variables: Record<string, any>;
-        }[] = [
-          {
-            key: "getUserById",
-            q: `
-              query GetUserLevel_getUserById($userId: UUID!) {
-                getUserById(userId: $userId) {
-                  id
-                  requiredXP
-                  exceedingXP
-                  level
-                }
-              }
-            `,
-            variables: { userId },
-          },
-          {
-            key: "userById",
-            q: `
-              query GetUserLevel_userById($userId: UUID!) {
-                userById(id: $userId) {
-                  id
-                  requiredXP
-                  exceedingXP
-                  level
-                }
-              }
-            `,
-            variables: { userId },
-          },
-          {
-            key: "getUser",
-            q: `
-              query GetUserLevel_getUser($userId: UUID!) {
-                getUser(id: $userId) {
-                  id
-                  requiredXP
-                  exceedingXP
-                  level
-                }
-              }
-            `,
-            variables: { userId },
-          },
-          {
-            key: "user",
-            q: `
-              query GetUserLevel_user($userId: UUID!) {
-                user(id: $userId) {
-                  id
-                  requiredXP
-                  exceedingXP
-                  level
-                }
-              }
-            `,
-            variables: { userId },
-          },
-          {
-            key: "currentUser",
-            q: `
-              query GetUserLevel_currentUser {
-                currentUser {
-                  id
-                  requiredXP
-                  exceedingXP
-                  level
-                }
-              }
-            `,
-            variables: {},
-          },
-        ];
-
-        let resolved: {
-          id: string;
-          requiredXP: number;
-          exceedingXP: number;
-          level: number;
-        } | null = null;
-
-        for (const { q, variables, key } of candidateQueries) {
-          try {
-            const res = await postGraphQL<Record<string, any>>(
-              q as string,
-              variables
-            );
-            const node = res?.data?.[key];
-            if (node && typeof node === "object") {
-              resolved = {
-                id: node.id,
-                requiredXP: Number(node.requiredXP ?? 0),
-                exceedingXP: Number(node.exceedingXP ?? 0),
-                level: Number(node.level ?? 0),
-              };
-              break;
+        // Fetch XP/Level via getUser(userID: ID!)
+        const getUserQuery = `
+          query GetUserXP($userID: ID!) {
+            getUser(userID: $userID) {
+              id
+              name
+              email
+              xpValue
+              requiredXP
+              exceedingXP
+              level
             }
-          } catch {
-            // continue to next candidate
           }
+        `;
+
+        const { data: levelData, errors } = await postGraphQL<{
+          // backend may return either a single object OR an array with a single element depending on schema wiring
+          getUser?:
+            | {
+                id: string;
+                name?: string | null;
+                email?: string | null;
+                xpValue: number | string;
+                requiredXP: number | string;
+                exceedingXP: number | string;
+                level: number | string;
+              }
+            | Array<{
+                id: string;
+                name?: string | null;
+                email?: string | null;
+                xpValue: number | string;
+                requiredXP: number | string;
+                exceedingXP: number | string;
+                level: number | string;
+              }>;
+        }>(getUserQuery, { userID: userId });
+
+        if (errors && errors.length) {
+          console.warn("[Navbar XP] GraphQL errors:", errors);
         }
 
-        if (!cancelled && resolved) {
+        // Normalize response shape
+        const payload: any =
+          Array.isArray(levelData?.getUser) && levelData?.getUser.length > 0
+            ? levelData?.getUser[0]
+            : levelData?.getUser;
+
+        if (!payload) {
+          if (!cancelled) {
+            console.warn("[Navbar XP] No user XP returned for:", userId, levelData);
+            setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
+          }
+          return;
+        }
+
+        const requiredXP = Number(payload.requiredXP ?? 0);
+        const exceedingXP = Number(payload.exceedingXP ?? 0);
+        const level = Number(payload.level ?? 0);
+
+        if (!cancelled) {
           setLevelInfo({
-            level: resolved.level ?? 0,
-            xpInLevel: resolved.exceedingXP ?? 0,
-            xpRequiredForLevelUp: resolved.requiredXP ?? 1,
+            level: Number.isFinite(level) ? level : 0,
+            xpInLevel: Number.isFinite(exceedingXP) ? exceedingXP : 0,
+            // guard against 0 from backend to keep progress well-defined
+            xpRequiredForLevelUp:
+              Number.isFinite(requiredXP) && requiredXP > 0 ? requiredXP : 1,
           });
         }
-      } catch {
-        // keep fallback values
+      } catch (e) {
+        console.error("[Navbar XP] fetch failed", e);
+        if (!cancelled) {
+          setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
+        }
       }
     })();
+
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+    // re-run when auth token becomes available or user changes
+  }, [userId, auth?.user?.access_token, auth?.isLoading]);
 
   const level = levelInfo?.level ?? 0;
   const xpInLevel = levelInfo?.xpInLevel ?? 0;
@@ -593,6 +609,20 @@ function UserInfo({
     0,
     Math.min(100, Math.round((xpInLevel / Math.max(1, xpRequired)) * 100))
   );
+  const fmtInt = (n: number) =>
+    Math.round(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+
+  // Helper for stable level icon mapping (mirrors profile behavior)
+  const levelIconFor = (lvl: number) => {
+    const n = Math.max(0, Math.min(99, Math.round(lvl || 0)));
+    return `/levels/level_${n}.svg`;
+  };
+
+  // Track icon src and update when level changes
+  const [levelIconSrc, setLevelIconSrc] = useState<string>(levelIconFor(level));
+  useEffect(() => {
+    setLevelIconSrc(levelIconFor(level));
+  }, [level]);
 
   return (
     <div className="sticky bottom-0 py-3 -mt-3 bg-gradient-to-t from-slate-200 from-75% to-transparent">
@@ -676,13 +706,25 @@ function UserInfo({
         >
           {/* Level Icon */}
           <img
-            src={`/levels/level_${level}.svg`}
+            src={levelIconSrc}
             alt={`Level ${level} icon`}
             width={50}
             height={50}
             style={{ display: "block" }}
             onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = "none";
+              const el = e.currentTarget as HTMLImageElement;
+              // First fallback: try level_0.svg
+              if (!levelIconSrc.endsWith("level_0.svg")) {
+                setLevelIconSrc("/levels/level_0.svg");
+                return;
+              }
+              // Second fallback: try level_1.svg
+              if (!levelIconSrc.endsWith("level_1.svg")) {
+                setLevelIconSrc("/levels/level_1.svg");
+                return;
+              }
+              // If still failing, hide the icon gracefully
+              el.style.display = "none";
             }}
           />
 
@@ -705,7 +747,7 @@ function UserInfo({
             <Typography variant="caption" sx={{ mt: 0.25, display: "block" }}>
               {levelInfo ? (
                 <>
-                  {xpInLevel} / {xpRequired} XP
+                  {fmtInt(xpInLevel)} / {fmtInt(xpRequired)} XP
                 </>
               ) : (
                 "Loading XP…"

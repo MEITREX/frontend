@@ -21,28 +21,32 @@ type UserLevelInfo = {
   exceedingXP: number; // XP gathered within current level
 };
 
-type HexadScore = {
-  type:
-    | "PHILANTHROPIST"
-    | "SOCIALISER"
-    | "FREE_SPIRIT"
-    | "ACHIEVER"
-    | "PLAYER"
-    | "DISRUPTOR";
-  value: number;
-};
+/**
+ * Resolve GraphQL endpoint robustly.
+ * Priority:
+ * 1) NEXT_PUBLIC_GRAPHQL_URL (full URL)
+ * 2) NEXT_PUBLIC_GRAPHQL_ENDPOINT (full URL or port number)
+ * 3) Default: http://localhost:8080/graphql
+ */
+function resolveGraphqlUrl(): string {
+  const envUrl =
+    process.env.NEXT_PUBLIC_GRAPHQL_URL ||
+    process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
+    "";
 
-const tabs = [
-  { label: "General", path: "general" },
-  { label: "Achievements", path: "achievements" },
-  { label: "Forum", path: "forum" },
-  { label: "Badges", path: "badges" },
-];
-const NEXT_PUBLIC_GRAPHQL_ENDPOINT = "8080";
-const GRAPHQL_URL =
-  process.env.NEXT_PUBLIC_GRAPHQL_URL ||
-  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-  "/graphql";
+  if (envUrl) {
+    // Full URL provided
+    if (/^https?:\/\//i.test(envUrl)) return envUrl;
+    // Only a port number like "8080" or ":8080"
+    const portMatch = envUrl.match(/:?([0-9]{2,5})$/);
+    if (portMatch) return `http://localhost:${portMatch[1]}/graphql`;
+    // A bare path like "/graphql"
+    if (envUrl.startsWith("/")) return `http://localhost:8080${envUrl}`;
+  }
+  return "http://localhost:8080/graphql";
+}
+
+const GRAPHQL_URL = resolveGraphqlUrl();
 
 /**
  * Runtime GraphQL fetcher. We do this outside of Relay because the schema
@@ -50,30 +54,69 @@ const GRAPHQL_URL =
  * As soon as the backend exposes a field like `getUserById(userId: UUID!): User!`
  * in the Relay schema, replace this with a proper `useLazyLoadQuery`.
  */
+function getAuthHeader(): Record<string, string> {
+  // 1) Explicit global token if you set it somewhere: (window as any).__AUTH_TOKEN__
+  if (typeof window !== "undefined" && (window as any).__AUTH_TOKEN__) {
+    return { Authorization: `Bearer ${(window as any).__AUTH_TOKEN__}` };
+  }
+  // 2) Try to read from oidc.user:* entry in localStorage (Keycloak/oidc)
+  try {
+    if (typeof window !== "undefined" && window.localStorage) {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i) || "";
+        if (key.startsWith("oidc.user:")) {
+          const raw = localStorage.getItem(key);
+          if (!raw) continue;
+          const parsed = JSON.parse(raw);
+          const token = parsed?.access_token || parsed?.accessToken;
+          if (token) return { Authorization: `Bearer ${token}` };
+        }
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+  return {};
+}
+
 async function postGraphQL<TData>(
   query: string,
   variables: Record<string, any>
 ): Promise<{ data?: TData; errors?: any[] }> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      // The GraphQL GUI uses "Authorization: Bearer &lt;token&gt;".
-      // Here we try to reuse it if you store it globally; otherwise remove this header.
-      ...(typeof window !== "undefined" && (window as any).__AUTH_TOKEN__
-        ? { Authorization: `Bearer ${(window as any).__AUTH_TOKEN__}` }
-        : {}),
-    },
-    body: JSON.stringify({ query, variables }),
-    credentials: "include",
-  });
-
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
   try {
-    return (await res.json()) as any;
-  } catch {
-    return { errors: [{ message: "Failed to parse GraphQL response" }] } as any;
+    const res = await fetch(GRAPHQL_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...getAuthHeader() },
+      body: JSON.stringify({ query, variables }),
+      credentials: "include",
+      signal: controller.signal,
+    });
+
+    const text = await res.text();
+    if (!res.ok) {
+      return { errors: [{ message: `HTTP ${res.status}: ${text}` }] } as any;
+    }
+    try {
+      return JSON.parse(text) as any;
+    } catch (e) {
+      return { errors: [{ message: "Failed to parse GraphQL response", raw: text }] } as any;
+    }
+  } catch (e: any) {
+    const msg = e?.name === "AbortError" ? "Request timed out" : (e?.message || String(e));
+    return { errors: [{ message: msg }] } as any;
+  } finally {
+    clearTimeout(timeout);
   }
 }
+
+const tabs = [
+  { label: "General", path: "general" },
+  { label: "Achievements", path: "achievements" },
+  { label: "Forum", path: "forum" },
+  { label: "Badges", path: "badges" },
+];
 
 export default function GeneralPageWrapper() {
   const router = useRouter();
@@ -102,9 +145,8 @@ export default function GeneralPageWrapper() {
       {}
     );
 
-  // 2) Runtime-Queries: (a) User XP/Level, (b) optional Hexad (für spätere Features)
+  // 2) Runtime-Queries: (a) User XP/Level
   const [levelInfo, setLevelInfo] = useState<UserLevelInfo | null>(null);
-  const [hexad, setHexad] = useState<HexadScore[] | null>(null);
   const [loadingLevel, setLoadingLevel] = useState<boolean>(false);
 
   useEffect(() => {
@@ -113,16 +155,13 @@ export default function GeneralPageWrapper() {
       if (!currentUserInfo?.id) return;
       setLoadingLevel(true);
 
-      // Query A: try to fetch XP/Level from a User-returning field
-      // We try two common candidates in order. The server may expose one of them.
-      // NOTE: Replace these with the actual, available field once merged.
       const userLevelQuery = `
-        query GetUserLevel($userId: UUID!) {
-          # Candidate 1 (preferred):
-          getUserById(userId: $userId) {
+        query GetUser($userID: ID!) {
+          getUser(userID: $userID) {
             id
             name
             email
+            xpValue
             requiredXP
             exceedingXP
             level
@@ -130,59 +169,30 @@ export default function GeneralPageWrapper() {
         }
       `;
 
-      const { data: userData, errors: userErrors } = await postGraphQL<{
-        getUserById?: {
-          id: string;
-          name: string;
-          email: string;
-          requiredXP: number;
-          exceedingXP: number;
-          level: number;
-        };
-      }>(userLevelQuery, { userId: currentUserInfo.id });
+      try {
+        const { data: userData, errors: userErrors } = await postGraphQL<{
+          getUser?: any;
+        }>(userLevelQuery, { userID: currentUserInfo.id });
 
-      if (!cancelled) {
-        if (userData?.getUserById) {
-          setLevelInfo({
-            level: userData.getUserById.level ?? 0,
-            requiredXP: userData.getUserById.requiredXP ?? 1,
-            exceedingXP: userData.getUserById.exceedingXP ?? 0,
-          });
-        } else {
-          // Fallback: keep previous or show zeros; surface minimal console hint for dev
-          if (userErrors) {
-            // eslint-disable-next-line no-console
-            console.warn(
-              "[XP] Backend field for user level not available yet.",
-              userErrors
-            );
-          }
-          setLevelInfo({
-            level: 0,
-            requiredXP: 1,
-            exceedingXP: 0,
-          });
-        }
-      }
-
-      // Query B: optional Hexad (exists in your schema)
-      const hexadQuery = `
-        query GetHexad($userId: UUID!) {
-          getPlayerHexadScoreById(userId: $userId) {
-            scores {
-              type
-              value
+        if (!cancelled) {
+          const payload: any = userData?.getUser;
+          const u = Array.isArray(payload) ? payload[0] : payload; // supports both array and object
+          if (u) {
+            setLevelInfo({
+              level: u.level ?? 0,
+              requiredXP: Math.max(1, Math.round(u.requiredXP ?? 1)),
+              exceedingXP: Math.max(0, Math.round(u.exceedingXP ?? 0)),
+            });
+          } else {
+            if (userErrors) {
+              // eslint-disable-next-line no-console
+              console.warn("[XP] getUser errors:", userErrors);
             }
+            setLevelInfo({ level: 0, requiredXP: 1, exceedingXP: 0 });
           }
         }
-      `;
-      const { data: hexadData } = await postGraphQL<{
-        getPlayerHexadScoreById?: { scores: HexadScore[] };
-      }>(hexadQuery, { userId: currentUserInfo.id });
-
-      if (!cancelled) {
-        setHexad(hexadData?.getPlayerHexadScoreById?.scores ?? null);
-        setLoadingLevel(false);
+      } finally {
+        if (!cancelled) setLoadingLevel(false);
       }
     };
 
@@ -227,9 +237,7 @@ export default function GeneralPageWrapper() {
           <Typography variant="body2" color="text.secondary">
             {loadingLevel
               ? "Loading XP…"
-              : `${levelInfo?.exceedingXP ?? 0} / ${
-                  levelInfo?.requiredXP ?? 1
-                } XP`}
+              : `Level ${levelInfo?.level ?? 0} · ${Math.round(levelInfo?.exceedingXP ?? 0)} / ${Math.max(1, Math.round(levelInfo?.requiredXP ?? 1))} XP`}
           </Typography>
         </Stack>
         <LinearProgress
