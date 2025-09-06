@@ -571,8 +571,8 @@ function UserInfo({
         // Normalize response shape (handles array or object or null)
         const rawUser = (levelData as any)?.getUser;
         const payload: any = Array.isArray(rawUser)
-          ? (rawUser[0] ?? null)
-          : (rawUser ?? null);
+          ? rawUser[0] ?? null
+          : rawUser ?? null;
 
         if (!payload) {
           if (!cancelled) {
