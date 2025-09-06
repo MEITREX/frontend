@@ -6,7 +6,7 @@ import {
   Typography,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useState } from "react";
 import { FormSection } from "./Form";
 
@@ -72,15 +72,17 @@ export function ContentMetadataFormSection({
       <DatePicker
         label="Suggested start date"
         value={suggestedDate}
-        onChange={setSuggestedDate}
-        slotProps={{
-          textField: {
-            required: true,
-            error:
+        onChange={(newValue: Dayjs | null) => setSuggestedDate(newValue)}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            required
+            error={
               (metadata != null && suggestedDate == null) ||
-              (suggestedDate != null && !suggestedDate.isValid()),
-          },
-        }}
+              (suggestedDate != null && !suggestedDate.isValid())
+            }
+          />
+        )}
       />
 
       <Typography variant="caption" sx={{ marginTop: 1 }}>

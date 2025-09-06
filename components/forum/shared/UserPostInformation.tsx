@@ -264,16 +264,35 @@ export default function UserPostInformation({
       )}
 
       {displayDate && (
-        <Stack direction="row" spacing={0.5} alignItems="center">
+        <Stack
+          direction="row"
+          spacing={0.5}
+          alignItems="center"
+          flexWrap="nowrap"
+          overflow="hidden"
+        >
           <CalendarTodayIcon fontSize="small" />
-          <Typography variant="caption">
+          <Typography
+            variant="caption"
+            sx={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
             {format(new Date(creationTime as string), "MMMM d, yyyy, hh:mm a")}
           </Typography>
         </Stack>
       )}
 
       {numberOfPosts !== undefined && (
-        <Stack direction="row" spacing={0.5} alignItems="center">
+        <Stack
+          overflow="hidden"
+          direction="row"
+          spacing={0.5}
+          alignItems="center"
+          flexWrap="nowrap"
+        >
           <ChatBubbleOutlineIcon fontSize="small" />
           <Typography variant="body2">{numberOfPosts}</Typography>
         </Stack>

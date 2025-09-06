@@ -170,26 +170,28 @@ export function EditCourseModal({
                 label="Start date"
                 value={startDate}
                 maxDate={endDate ?? undefined}
-                onChange={setStartDate}
-                slotProps={{
-                  textField: {
-                    required: true,
-                    error: startDate == null || !startDate.isValid(),
-                  },
-                }}
+                onChange={(newValue: Dayjs | null) => setStartDate(newValue)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    required
+                    error={startDate == null || !startDate.isValid()}
+                  />
+                )}
               />
               <DatePicker
                 label="End date"
                 value={endDate}
                 minDate={startDate ?? undefined}
                 defaultCalendarMonth={startDate ?? undefined}
-                onChange={setEndDate}
-                slotProps={{
-                  textField: {
-                    required: true,
-                    error: endDate == null || !endDate.isValid(),
-                  },
-                }}
+                onChange={(newValue: Dayjs | null) => setEndDate(newValue)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    required
+                    error={endDate == null || !endDate.isValid()}
+                  />
+                )}
               />
             </FormSection>
 

@@ -10,6 +10,7 @@ export default function LotteryPage() {
         borderRadius: 3,
         backgroundColor: "background.paper",
         boxShadow: 1,
+        padding: 4,
       }}
     >
       <Lottery />

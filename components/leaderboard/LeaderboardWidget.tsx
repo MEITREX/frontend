@@ -1,7 +1,7 @@
+import type { LeaderboardWidgetQuery } from "@/__generated__/LeaderboardWidgetQuery.graphql";
 import React, { useEffect, useRef } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
 import defaultUserImage from "../../assets/logo.svg";
-import type { LeaderboardWidgetQuery } from "@/__generated__/LeaderboardWidgetQuery.graphql";
 //"../__generated__/LeaderboardWidgetQuery.graphql";
 
 interface Props {
@@ -104,7 +104,7 @@ const LeaderboardWidget: React.FC<Props> = ({
             </span>
             <img
               src={defaultUserImage.src}
-              alt={us.user?.name}
+              alt={us.user?.name ?? "User avatar"}
               style={{
                 width: 24,
                 height: 24,
@@ -150,7 +150,7 @@ const LeaderboardWidget: React.FC<Props> = ({
               <span style={{ width: 20, textAlign: "right" }}>{rank}.</span>
               <img
                 src={defaultUserImage.src}
-                alt={us.user?.name}
+                alt={us.user?.name ?? "User avatar"}
                 style={{
                   width: 20,
                   height: 20,

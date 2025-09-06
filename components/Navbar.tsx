@@ -11,7 +11,11 @@ import Link from "next/link";
 
 dayjs.extend(duration);
 
+import { WidgetApiItemInventoryForUserQuery } from "@/__generated__/WidgetApiItemInventoryForUserQuery.graphql";
 import { useCurrency } from "@/app/contexts/CurrencyContext";
+import { getUnlockedItemAndEquiped } from "@/components/items/logic/GetItems";
+import ProfilePicAndBorder from "@/components/profile/header/common/ProfilePicAndBorder";
+import { widgetApiItemInventoryForUserQuery } from "@/components/widgets/api/WidgetApi";
 import { PageView, usePageView } from "@/src/currentView";
 import { useAITutorStore } from "@/stores/aiTutorStore";
 import {
@@ -24,7 +28,6 @@ import {
 } from "@mui/icons-material";
 import {
   Autocomplete,
-  Avatar,
   Box,
   Button,
   Chip,
@@ -424,6 +427,17 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
   const { points } = useCurrency();
   const tutor = useIsTutor(_isTutor);
 
+  const { inventoryForUser } =
+    useLazyLoadQuery<WidgetApiItemInventoryForUserQuery>(
+      widgetApiItemInventoryForUserQuery,
+      { fetchPolicy: "network-only" }
+    );
+  const profilePic = getUnlockedItemAndEquiped(inventoryForUser, "profilePics");
+  const profilePicFrame = getUnlockedItemAndEquiped(
+    inventoryForUser,
+    "profilePicFrames"
+  );
+
   return (
     <div className="sticky bottom-0 py-6 -mt-6 bg-gradient-to-t from-slate-200 from-75% to-transparent">
       <NavbarSection>
@@ -450,7 +464,11 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
         >
           <ListItemAvatar>
             <Link href={"/profile"}>
-              <Avatar src={auth.user?.profile?.picture} />
+              <ProfilePicAndBorder
+                height={50}
+                profilePicFrame={profilePicFrame}
+                profilePic={profilePic}
+              />
             </Link>
           </ListItemAvatar>
           <ListItemText primary={auth.user?.profile?.name} />
@@ -538,6 +556,7 @@ export function Navbar() {
           dayjs(x.course.startDate) <= dayjs()) ||
         pageView === PageView.Lecturer
     );
+
   return (
     <NavbarBase _isTutor={currentUserInfo}>
       {filtered.length > 0 ? (
