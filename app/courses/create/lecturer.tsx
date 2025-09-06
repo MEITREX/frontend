@@ -30,6 +30,8 @@ import {
   Typography,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Dayjs } from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -196,12 +198,13 @@ export default function NewCourse() {
     {
       label: "Start and end",
       content: (
-        <>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker<Dayjs>
             label="Start date"
             value={startDate}
             maxDate={endDate ?? undefined}
             onChange={(val) => setStartDate(val)}
+            slots={{ textField: TextField }}
             slotProps={{ textField: { required: true } }}
           />
           <DatePicker<Dayjs>
@@ -210,6 +213,7 @@ export default function NewCourse() {
             minDate={startDate ?? undefined}
             defaultCalendarMonth={startDate ?? undefined}
             onChange={(val) => setEndDate(val)}
+            slots={{ textField: TextField }}
             slotProps={{ textField: { required: true } }}
           />
           <Box sx={{ minWidth: 120, maxWidth: 200 }}>
@@ -240,7 +244,7 @@ export default function NewCourse() {
               </Select>
             </FormControl>
           </Box>
-        </>
+        </LocalizationProvider>
       ),
       canContinue: startDate != null && endDate != null,
     },

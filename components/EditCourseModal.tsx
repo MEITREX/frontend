@@ -170,7 +170,7 @@ export function EditCourseModal({
                 label="Start date"
                 value={startDate}
                 maxDate={endDate ?? undefined}
-                onChange={setStartDate}
+                onChange={(val) => setStartDate(val)}
                 slotProps={{
                   textField: {
                     required: true,
@@ -183,7 +183,7 @@ export function EditCourseModal({
                 value={endDate}
                 minDate={startDate ?? undefined}
                 defaultCalendarMonth={startDate ?? undefined}
-                onChange={setEndDate}
+                onChange={(val) => setEndDate(val)}
                 slotProps={{
                   textField: {
                     required: true,
