@@ -197,19 +197,19 @@ export default function NewCourse() {
       label: "Start and end",
       content: (
         <>
-          <DatePicker
+          <DatePicker<Dayjs>
             label="Start date"
             value={startDate}
             maxDate={endDate ?? undefined}
-            onChange={setStartDate}
+            onChange={(val) => setStartDate(val)}
             slotProps={{ textField: { required: true } }}
           />
-          <DatePicker
+          <DatePicker<Dayjs>
             label="End date"
             value={endDate}
             minDate={startDate ?? undefined}
             defaultCalendarMonth={startDate ?? undefined}
-            onChange={setEndDate}
+            onChange={(val) => setEndDate(val)}
             slotProps={{ textField: { required: true } }}
           />
           <Box sx={{ minWidth: 120, maxWidth: 200 }}>
