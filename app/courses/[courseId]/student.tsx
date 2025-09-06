@@ -5,13 +5,6 @@ import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
-import Paper from "@mui/material/Paper";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
 
 import { studentCourseLeaveMutation } from "@/__generated__/studentCourseLeaveMutation.graphql";
 import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
@@ -33,24 +26,17 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
 
-import { ChapterOverview } from "@/components/ChapterOverview";
 
-import { studentUserAchievementsWidgetQuery } from "@/__generated__/studentUserAchievementsWidgetQuery.graphql";
-import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
-import ForumOverview from "@/components/forum/ForumOverview";
-import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
-import AchievementPopUp from "@/components/profile/achievements/AchievementPopUp";
-import ForumActivityWidget from "@/components/widgets/ForumActivityWidget";
-import OpenQuestionWidget from "@/components/widgets/OpenQuestionWidget";
+
+
+
 import CourseLeaderboards from "@/components/leaderboard/CourseLeaderboard";
 import LeaderboardWidget from "@/components/leaderboard/LeaderboardWidget";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
-import Link from "next/link";
+
 import * as React from "react";
 import { Suspense, useEffect, useState } from "react";
 import QuestList from "./quests/QuestItem";

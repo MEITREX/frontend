@@ -31,20 +31,6 @@ enum AiEntityProcessingState {
   UNKNOWN
 }
 
-input AiGenQuestionContext {
-  description: String!
-  maxAnswersPerQuestion: Int! = 5
-  maxExactQuestions: Int! = 5
-  maxFreeTextQuestions: Int! = 5
-  maxMultipleChoiceQuestions: Int! = 5
-  maxNumericQuestions: Int! = 5
-  mediaRecordIds: [UUID]!
-  minExactQuestions: Int! = 1
-  minFreeTextQuestions: Int! = 1
-  minMultipleChoiceQuestions: Int! = 1
-  minNumericQuestions: Int! = 1
-}
-
 input AnswerInput {
   playerTypes: [PlayerType!]!
   text: String!
@@ -143,7 +129,6 @@ input AssociationInput {
 }
 
 type AssociationQuestion implements Question {
-  aiGenerated: Boolean!
   correctAssociations: [SingleAssociation!]!
   hint: JSON
   item: Item!
@@ -221,7 +206,6 @@ enum ClozeElementType {
 
 type ClozeQuestion implements Question {
   additionalWrongAnswers: [String!]!
-  aiGenerated: Boolean!
   allBlanks: [String!]!
   clozeElements: [ClozeElement!]!
   hint: JSON
@@ -255,6 +239,7 @@ type CompositeProgressInformation {
 }
 
 directive @ContainerNotEmpty(message: String = "graphql.validation.ContainerNotEmpty.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
 directive @ContainerSize(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.ContainerSize.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 interface Content {
@@ -575,6 +560,7 @@ input CreateSubexerciseInput {
 }
 
 scalar Date
+
 scalar DateTime
 
 input DateTimeFilter {
@@ -583,7 +569,9 @@ input DateTimeFilter {
 }
 
 directive @DecimalMax(value: String!, inclusive: Boolean! = true, message: String = "graphql.validation.DecimalMax.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
 directive @DecimalMin(value: String!, inclusive: Boolean! = true, message: String = "graphql.validation.DecimalMin.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
 directive @defer(if: Boolean! = true, label: String) on FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 type DocumentRecordSegment implements MediaRecordSegment {
@@ -603,7 +591,6 @@ type DocumentSource implements Source {
 }
 
 type ExactAnswerQuestion implements Question {
-  aiGenerated: Boolean!
   caseSensitive: Boolean!
   correctAnswers: [String!]!
   feedback: JSON
@@ -1014,7 +1001,6 @@ input MultipleChoiceAnswerInput {
 }
 
 type MultipleChoiceQuestion implements Question {
-  aiGenerated: Boolean!
   answers: [MultipleChoiceAnswer!]!
   hint: JSON
   item: Item!
@@ -1095,8 +1081,11 @@ type Mutation {
 }
 
 directive @Negative(message: String = "graphql.validation.Negative.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
 directive @NegativeOrZero(message: String = "graphql.validation.NegativeOrZero.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
 directive @NotBlank(message: String = "graphql.validation.NotBlank.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
 directive @NotEmpty(message: String = "graphql.validation.NotEmpty.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 type Notification {
@@ -1110,7 +1099,6 @@ input NotificationInput {
 }
 
 type NumericQuestion implements Question {
-  aiGenerated: Boolean!
   correctAnswer: Float!
   feedback: JSON
   hint: JSON
@@ -1123,6 +1111,7 @@ type NumericQuestion implements Question {
 }
 
 directive @OnDemand on FIELD_DEFINITION
+
 directive @oneOf on INPUT_OBJECT
 
 input Pagination {
@@ -1169,6 +1158,7 @@ type PlayerTypeScore {
 }
 
 directive @Positive(message: String = "graphql.validation.Positive.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
 directive @PositiveOrZero(message: String = "graphql.validation.PositiveOrZero.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 type Post {
@@ -1231,6 +1221,7 @@ type Query {
   getMonthlyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
   getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
   getSemanticallySimilarEntities(count: Int! = 10, courseWhitelist: [UUID!], excludeEntitiesWithSameParent: Boolean, segmentId: UUID!): [SemanticSearchResult!]!
+  getUser(userID: ID!): [User!]
   getWeeklyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
   inventoryForUser: Inventory!
   isAccessTokenAvailable(provider: ExternalServiceProviderDto!): Boolean!
@@ -1262,15 +1253,12 @@ type Quest implements HasGoal {
   name: String!
   requiredCount: Int
   rewardPoints: Int!
-  name: String!
-  requiredCount: Int
   trackingEndTime: DateTime
   trackingStartTime: DateTime
   userId: UUID!
 }
 
 interface Question {
-  aiGenerated: Boolean!
   hint: JSON
   itemId: UUID!
   number: Int!
@@ -1334,10 +1322,6 @@ type Quiz {
   selectedQuestions: [Question!]!
 }
 
-type QuizAIGenAsyncResponse {
-  quiz: Quiz
-}
-
 type QuizAssessment implements Assessment & Content {
   _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   aiProcessingProgress: AiEntityProcessingProgress!
@@ -1371,7 +1355,6 @@ type QuizMutation {
   addMultipleChoiceQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateMultipleChoiceQuestionInputWithoutItem!): QuizOutput!
   addNumericQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateNumericQuestionInputWithoutItem!): QuizOutput!
   addSelfAssessmentQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateSelfAssessmentQuestionInputWithoutItem!): QuizOutput!
-  aiGenerateQuestionAsync(context: AiGenQuestionContext): QuizAIGenAsyncResponse
   assessmentId: UUID!
   removeQuestion(number: Int!): Quiz!
   setNumberOfRandomlySelectedQuestions(numberOfRandomlySelectedQuestions: Int!): Quiz!
@@ -1462,7 +1445,6 @@ type SectionMutation {
 }
 
 type SelfAssessmentQuestion implements Question {
-  aiGenerated: Boolean!
   hint: JSON
   itemId: UUID!
   number: Int!
@@ -1704,7 +1686,7 @@ input UpdateExerciseInput {
   itemId: UUID!
   number: String
   subexercises: [CreateSubexerciseInput!]!
-  totalSubexerciseCredits: Float!
+  totalExerciseCredits: Float!
 }
 
 input UpdateFlashcardInput {
@@ -1761,12 +1743,13 @@ input UpdateSubexerciseInput {
 scalar Url
 
 type User {
-  email: String!
+  email: String
   exceedingXP: Float!
   id: UUID!
   level: Int!
-  name: String!
+  name: String
   requiredXP: Float!
+  xpValue: Int!
 }
 
 type UserInfo {
