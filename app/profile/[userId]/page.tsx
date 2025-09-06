@@ -1,23 +1,20 @@
 "use client";
 
 import { pagePublicProfileStudentQuery } from "@/__generated__/pagePublicProfileStudentQuery.graphql";
-import { SortProvider } from "@/app/contexts/SortContext";
-import { pageUserAchievementsPublicQuery } from "@/__generated__/pageUserAchievementsPublicQuery.graphql";
-import { pageUserAchievementsPublicQuery } from "@/__generated__/pageUserAchievementsQuery.graphql";
-import AchievementList from "@/components/profile/AchievementList";
-import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
-import { Avatar, Box, Tab, Tabs, Typography, Grid } from "@mui/material";
-import { useParams } from "next/navigation";
-import { useState } from "react";
-import { useLazyLoadQuery } from "react-relay";
-import { graphql } from "relay-runtime";
-import UserProfileCustomHeader from "@/components/profile/header/UserProfileCustomHeader";
+
 import { ForumApiUserInfoByIdQuery } from "@/__generated__/ForumApiUserInfoByIdQuery.graphql";
-import { forumApiUserInfoByIdQuery } from "@/components/forum/api/ForumApi";
 import {
   CombinedLeaderboardCard,
   fetchCourseLeaderboards,
 } from "@/app/profile/leaderboard/ProfileLeaderboardPositions";
+import { forumApiUserInfoByIdQuery } from "@/components/forum/api/ForumApi";
+import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
+import UserProfileCustomHeader from "@/components/profile/header/UserProfileCustomHeader";
+import { Avatar, Box, Grid, Tab, Tabs, Typography } from "@mui/material";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import { useLazyLoadQuery } from "react-relay";
+import { graphql } from "relay-runtime";
 
 export default function PublicProfilePage() {
   const publicTabs = ["Achievements", "Forum", "Badges", "Leaderboards"];
