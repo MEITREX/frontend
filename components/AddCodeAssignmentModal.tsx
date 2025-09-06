@@ -44,6 +44,7 @@ import {
   ContentMetadataFormSection,
   ContentMetadataPayload,
 } from "./ContentMetadataFormSection";
+import { ExternalCourseMissingDialog } from "./ExternalCourseMissingDialog";
 import { Form, FormSection } from "./Form";
 import { CreateItem } from "./form-sections/item/ItemFormSection";
 import { ProviderAuthorizationDialog } from "./ProviderAuthorizationDialog";
@@ -245,27 +246,12 @@ export function AddCodeAssignmentModal({
         />
       )}
 
-      <Dialog
-        open={!isLoading && isAccessTokenAvailable && !data.getExternalCourse}
-      >
-        <DialogTitle>{provider.name} Action Required</DialogTitle>
-        <DialogContent>
-          <Alert severity="warning">
-            You must ensure a matching course exists on GitHub Classroom.
-          </Alert>
-        </DialogContent>
-        <DialogActions>
-          <Button color="primary">Cancel</Button>
-          <Button
-            onClick={() => {
-              window.open("https://classroom.github.com/classrooms", "_blank");
-            }}
-            color="primary"
-          >
-            Go to {provider.name}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {!isLoading && isAccessTokenAvailable && !data.getExternalCourse && (
+        <ExternalCourseMissingDialog
+          onClose={onClose}
+          providerName={provider.name}
+        />
+      )}
 
       {isAccessTokenAvailable && data.getExternalCourse && (
         <Dialog open onClose={onClose} maxWidth="md">

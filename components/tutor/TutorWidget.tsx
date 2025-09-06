@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useAITutorStore } from "@/stores/aiTutorStore";
+import React, { useEffect, useRef, useState } from "react";
 import TutorAvatar from "./TutorAvatar";
 import TutorChat from "./TutorChat";
 
-const AVATAR_WIDTH = 80;
-const CHAT_WIDTH = 500;
+const AVATAR_WIDTH = 60;
+const CHAT_WIDTH = 650;
 
 const positions = [
   { name: "top", style: { top: 32, right: 32 } },
@@ -44,11 +45,14 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const widgetRef = useRef<HTMLDivElement>(null);
   const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
-  const [open, setOpen] = useState(false);
   const [mouseDownPosition, setMouseDownPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
+
+  const showChat = useAITutorStore((state) => state.showChat);
+  const openChat = useAITutorStore((state) => state.openChat);
+  const closeChat = useAITutorStore((state) => state.closeChat);
 
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [showWelcome, setShowWelcome] = useState(true);
@@ -120,7 +124,7 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
         Math.abs(mouseDownPosition.x - e.clientX) < 5 &&
         Math.abs(mouseDownPosition.y - e.clientY) < 5
       ) {
-        setOpen((v) => !v);
+        showChat ? closeChat() : openChat();
       }
       setMouseDownPosition(null);
     };
@@ -130,7 +134,14 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isDragging, dragOffset, mouseDownPosition]);
+  }, [
+    isDragging,
+    dragOffset,
+    mouseDownPosition,
+    showChat,
+    closeChat,
+    openChat,
+  ]);
 
   let style: React.CSSProperties = {
     position: "fixed",
@@ -141,14 +152,14 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
     display: "flex",
     flexDirection: "row-reverse",
     alignItems: dockPosition.name === "bottom" ? "flex-end" : "flex-start",
-    width: open ? CHAT_WIDTH + AVATAR_WIDTH : AVATAR_WIDTH,
+    width: showChat ? CHAT_WIDTH + AVATAR_WIDTH : AVATAR_WIDTH,
     pointerEvents: "auto",
   };
 
   const recommendationBubbleStyle: React.CSSProperties = {
     position: "absolute",
     right: AVATAR_WIDTH + 4,
-    bottom: open ? 60 : 48,
+    bottom: showChat ? 60 : 48,
     maxWidth: 260,
     background: "#fff",
     color: "#222",
@@ -306,7 +317,7 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
           position: "relative",
           zIndex: 2,
           marginRight: 0,
-          marginLeft: open ? 8 : 0,
+          marginLeft: showChat ? 8 : 0,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -322,7 +333,7 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
             border: "none",
             padding: 0,
             cursor: "pointer",
-            boxShadow: open
+            boxShadow: showChat
               ? "0 2px 8px rgba(80,80,80,0.15)"
               : "0 1px 4px rgba(80,80,80,0.13)",
             borderRadius: "50%",
@@ -333,13 +344,13 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
             alignItems: "center",
             justifyContent: "center",
           }}
-          aria-label={open ? "Tutor einklappen" : "Tutor öffnen"}
+          aria-label={showChat ? "Tutor einklappen" : "Tutor öffnen"}
         >
           <TutorAvatar />
         </button>
       </div>
       {/* Chat-Blase, nach links aufklappend */}
-      {open && (
+      {showChat && (
         <div
           style={{
             background: "#fff",

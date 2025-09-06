@@ -17,6 +17,7 @@ import { getUnlockedItemAndEquiped } from "@/components/items/logic/GetItems";
 import ProfilePicAndBorder from "@/components/profile/header/common/ProfilePicAndBorder";
 import { widgetApiItemInventoryForUserQuery } from "@/components/widgets/api/WidgetApi";
 import { PageView, usePageView } from "@/src/currentView";
+import { useAITutorStore } from "@/stores/aiTutorStore";
 import {
   CollectionsBookmark,
   Dashboard,
@@ -422,6 +423,7 @@ function SwitchPageViewButton() {
 
 function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
   const auth = useAuth();
+  const clearChat = useAITutorStore((state) => state.clearChat);
   const { points } = useCurrency();
   const tutor = useIsTutor(_isTutor);
 
@@ -447,6 +449,7 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
                 aria-label="logout"
                 onClick={() => {
                   window.localStorage.removeItem("meitrex-welcome-shown");
+                  clearChat();
                   auth.signoutRedirect({
                     post_logout_redirect_uri:
                       process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ??
@@ -481,7 +484,7 @@ function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
         <Box
           sx={{
             width: "100%",
-            height: "100%", // oder z. B. "200px" oder "calc(100vh - 64px)"
+            height: "100%",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",

@@ -26,7 +26,7 @@
     "@mui/icons-material": "^5.15.15",
     "@mui/lab": "5.0.0-alpha.141",
     "@mui/material": "^5.15.15",
-    "@mui/x-date-pickers": "^6.19.9",
+    "@mui/x-date-pickers": "^5.0.20",
     "@react-hook/resize-observer": "^1.2.6",
     "@tiptap/extension-underline": "^2.23.1",
     "@tiptap/react": "^2.23.1",
@@ -78,7 +78,8 @@
     "use-bus": "^2.5.2",
     "usehooks-ts": "^3.1.0",
     "victory": "^36.9.2",
-    "yup": "^1.4.0"
+    "yup": "^1.4.0",
+    "zustand": "^5.0.7"
   },
   "devDependencies": {
     "@types/react-relay": "14.1.3",

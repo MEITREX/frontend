@@ -1,13 +1,12 @@
 import { MultipleChoiceQuestionFragment$key } from "@/__generated__/MultipleChoiceQuestionFragment.graphql";
-import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
+import { Checkbox } from "@mui/material";
+import clsx from "clsx";
 import { shuffle } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 import { graphql, useFragment } from "react-relay";
-import { RenderRichText } from "../RichTextEditor";
-import { QuestionDivider } from "./QuestionDivider";
 import colors from "tailwindcss/colors";
-import { CorrectnessIndicator } from "./CorrectnessIndicator";
-import clsx from "clsx";
+import { RenderRichText } from "../RichTextEditor";
+import { getPlainTextOfSlateJS, QuestionDivider } from "./QuestionDivider";
 
 export function MultipleChoiceQuestion({
   _question,
@@ -50,6 +49,8 @@ export function MultipleChoiceQuestion({
     );
   }
 
+  const questionPlainText = getPlainTextOfSlateJS(question.text);
+
   useEffect(() => {
     // Notify parent about correctness of answer
     onChange(
@@ -71,7 +72,11 @@ export function MultipleChoiceQuestion({
         {<RenderRichText value={question.text} />}
       </div>
 
-      <QuestionDivider _question={question} onHint={onHint} />
+      <QuestionDivider
+        _question={question}
+        onHint={onHint}
+        questionText={questionPlainText}
+      />
 
       {/* Answer options */}
       <div className="flex justify-center">

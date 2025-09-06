@@ -41,7 +41,7 @@ export default function PublicProfileListItem({
       },
       {
         fetchPolicy: "network-only",
-        fetchKey: userId, // <<— wichtig
+        fetchKey: userId,
       }
     );
 
@@ -116,7 +116,7 @@ export default function PublicProfileListItem({
         )}
       </Box>
 
-      {/* 2) Divider wie im Screenshot */}
+      {/* 2) Divider */}
       <Box
         sx={{
           height: 0,

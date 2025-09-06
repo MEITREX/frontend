@@ -1,4 +1,3 @@
-// CurrencyContext.tsx
 import { createContext, useContext, useState } from "react";
 
 type Ctx = { points: number | null; setPoints: (p: number) => void };
