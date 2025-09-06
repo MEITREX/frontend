@@ -127,7 +127,8 @@ function getAuthHeader(): Record<string, string> {
         if (!raw) continue;
         try {
           const parsed = JSON.parse(raw);
-          const access = parsed?.access_token || parsed?.accessToken || parsed?.token;
+          const access =
+            parsed?.access_token || parsed?.accessToken || parsed?.token;
           if (access) return { Authorization: `Bearer ${access}` };
         } catch {}
       }
@@ -156,7 +157,9 @@ async function postGraphQL<TData>(
       signal: controller.signal,
     });
   } catch (e) {
-    return { errors: [{ message: `Network/Fetch error: ${String(e)}` }] } as any;
+    return {
+      errors: [{ message: `Network/Fetch error: ${String(e)}` }],
+    } as any;
   } finally {
     clearTimeout(timeout);
   }

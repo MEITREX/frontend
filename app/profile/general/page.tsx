@@ -101,10 +101,13 @@ async function postGraphQL<TData>(
     try {
       return JSON.parse(text) as any;
     } catch (e) {
-      return { errors: [{ message: "Failed to parse GraphQL response", raw: text }] } as any;
+      return {
+        errors: [{ message: "Failed to parse GraphQL response", raw: text }],
+      } as any;
     }
   } catch (e: any) {
-    const msg = e?.name === "AbortError" ? "Request timed out" : (e?.message || String(e));
+    const msg =
+      e?.name === "AbortError" ? "Request timed out" : e?.message || String(e);
     return { errors: [{ message: msg }] } as any;
   } finally {
     clearTimeout(timeout);
@@ -237,7 +240,9 @@ export default function GeneralPageWrapper() {
           <Typography variant="body2" color="text.secondary">
             {loadingLevel
               ? "Loading XP…"
-              : `Level ${levelInfo?.level ?? 0} · ${Math.round(levelInfo?.exceedingXP ?? 0)} / ${Math.max(1, Math.round(levelInfo?.requiredXP ?? 1))} XP`}
+              : `Level ${levelInfo?.level ?? 0} · ${Math.round(
+                  levelInfo?.exceedingXP ?? 0
+                )} / ${Math.max(1, Math.round(levelInfo?.requiredXP ?? 1))} XP`}
           </Typography>
         </Stack>
         <LinearProgress

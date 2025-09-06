@@ -64,7 +64,10 @@ async function postGraphQL<TData>(
       console.error("[GraphQL] Non-JSON response:", text?.slice(0, 500));
       return {
         errors: [
-          { message: "Non-JSON response from GraphQL endpoint", detail: text?.slice(0, 500) },
+          {
+            message: "Non-JSON response from GraphQL endpoint",
+            detail: text?.slice(0, 500),
+          },
         ],
       } as any;
     }
@@ -78,7 +81,11 @@ async function postGraphQL<TData>(
     return json;
   } catch (e) {
     console.error("[GraphQL] Network/parse error:", e);
-    return { errors: [{ message: "Failed to parse GraphQL response", detail: String(e) }] } as any;
+    return {
+      errors: [
+        { message: "Failed to parse GraphQL response", detail: String(e) },
+      ],
+    } as any;
   }
 }
 
@@ -569,7 +576,11 @@ function UserInfo({
 
         if (!payload) {
           if (!cancelled) {
-            console.warn("[Navbar XP] No user XP returned for:", userId, levelData);
+            console.warn(
+              "[Navbar XP] No user XP returned for:",
+              userId,
+              levelData
+            );
             setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
           }
           return;
