@@ -17,7 +17,12 @@ import FeaturedItemCard from "./FeaturedItemCard";
 import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
 import ItemInventoryPictureOnly from "./ItemInventoryPictureOnly";
 import { getItemsMerged } from "./logic/GetItems";
-import { DecorationItem, ItemStringType, rarityMap } from "./types/Types";
+import {
+  DecorationItem,
+  ItemStringType,
+  Rarity,
+  rarityMap,
+} from "./types/Types";
 import UnequipCard from "./UnequipCard";
 
 type InventoryListItemProps = {
@@ -142,7 +147,7 @@ export default function InventoryListItem({
         </Typography>
       </Box>
 
-      {/* 1) FEATURE-ROW: equipped (grün) + Unequip (orange) */}
+      {/* 1) FEATURE-ROW: equipped (green) + Unequip (orange) */}
       <Box
         sx={{
           display: "grid",
@@ -155,23 +160,24 @@ export default function InventoryListItem({
         {equipedItem ? (
           <FeaturedItemCard item={equipedItem} onClick={handleClick} />
         ) : (
-          // Platzhalter, damit Unequip rechts bleibt, falls nichts equipped
           <Box />
         )}
 
-        {itemStringType !== "tutors" && publicProfile === false && (
-          <UnequipCard equippedItem={equipedItem} />
-        )}
+        {itemStringType !== "tutors" &&
+          publicProfile === false &&
+          equipedItem && <UnequipCard equippedItem={equipedItem} />}
       </Box>
 
-      {/* 2) Divider wie im Screenshot */}
-      <Box
-        sx={{
-          height: 0,
-          borderTop: "3px solid #000",
-          mb: 2,
-        }}
-      />
+      {/* 2) Divider */}
+      {equipedItem && (
+        <Box
+          sx={{
+            height: 0,
+            borderTop: "3px solid #000",
+            mb: 2,
+          }}
+        />
+      )}
 
       <Box
         sx={{
@@ -191,7 +197,7 @@ export default function InventoryListItem({
             // Define colors for rarity
 
             // Map rarity to color
-            const colors = rarityMap[rarityKey] ?? rarityMap.common;
+            const colors = rarityMap[rarityKey as Rarity] ?? rarityMap.common;
 
             // Define label to dsiplay
             const rarityLabel =

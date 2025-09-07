@@ -23,45 +23,15 @@ import coins from "../../assets/lottery/coins.png";
 
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
-import { useLazyLoadQuery, useMutation } from "react-relay";
+import { useCurrency } from "@/app/contexts/CurrencyContext";
+import { useMutation } from "react-relay";
 import {
   lotteryApiLotteryEquipItemMutation,
   lotteryApiLotteryRunMutation,
-  lotteryApiUserInventoryQuery,
 } from "@/components/lottery/api/LotteryApi";
-import { LotteryApiUserInventoryQuery } from "@/__generated__/LotteryApiUserInventoryQuery.graphql";
 import { LotteryApiLotteryRunMutation } from "@/__generated__/LotteryApiLotteryRunMutation.graphql";
 import { LotteryApiLotteryEquipItemMutation } from "@/__generated__/LotteryApiLotteryEquipItemMutation.graphql";
-
-type Rarity = "DEFAULT" | "COMMON" | "UNCOMMON" | "RARE" | "ULTRA_RARE";
-
-interface RarityStyle {
-  border: string;
-  background: string;
-}
-
-const rarityStyles: Record<Rarity, RarityStyle> = {
-  DEFAULT: {
-    border: "2px solid #B0B0B0",
-    background: "linear-gradient(to bottom right, #f5f5f5, #e0e0e0)",
-  },
-  COMMON: {
-    border: "2px solid #26a0f5",
-    background: "#e3f2fd",
-  },
-  UNCOMMON: {
-    border: "2px solid #d4af37",
-    background: "#fff8e1",
-  },
-  RARE: {
-    border: "2px solid #8e44ad",
-    background: "#f3e5f5",
-  },
-  ULTRA_RARE: {
-    border: "2px solid #e53935",
-    background: "#ffebee",
-  },
-};
+import { Rarity, rarityMap } from "@/components/items/types/Types";
 
 export interface LotteryRun {
   id: string;
@@ -77,12 +47,6 @@ export interface LotteryRun {
 }
 
 export default function Lottery() {
-  const inventory = useLazyLoadQuery<LotteryApiUserInventoryQuery>(
-    lotteryApiUserInventoryQuery,
-    {},
-    { fetchPolicy: "network-only" }
-  );
-
   const [runLottery] = useMutation<LotteryApiLotteryRunMutation>(
     lotteryApiLotteryRunMutation
   );
@@ -97,7 +61,7 @@ export default function Lottery() {
   const sparkle = new Audio("/sounds/sparkle.mp3");
 
   // Dino Points
-  const [dinoPoints, setDinoPoints] = useState<number>(1000);
+  const { setPoints, points } = useCurrency();
   // EggCost needs to be the same as in the Backend
   const eggCost = 3000;
 
@@ -125,17 +89,11 @@ export default function Lottery() {
   const [isEggWobbling, setIsEggWobbling] = useState(true);
   const [showItem, setShowItem] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
-  const [rarity, setRarity] = useState<Rarity>("ULTRA_RARE");
+  const [rarity, setRarity] = useState<Rarity>("ultra_rare" as Rarity);
 
   // Item
   const [item, setItem] = useState<any>(null);
   const [equip, setEquip] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (inventory?.inventoryForUser?.unspentPoints != null) {
-      setDinoPoints(inventory.inventoryForUser.unspentPoints);
-    }
-  }, [inventory]);
 
   // This useEffect is needed for the animation loop
   useEffect(() => {
@@ -175,7 +133,10 @@ export default function Lottery() {
       } else {
         // Opening is done
         setShowItem(true);
-        if (rarity === "RARE" || rarity === "ULTRA_RARE") {
+        if (
+          rarity === ("rare" as Rarity) ||
+          rarity === ("ultra_rare" as Rarity)
+        ) {
           mute ? "" : sparkle.play();
           setCelebrate(true);
         }
@@ -188,13 +149,13 @@ export default function Lottery() {
   }, [isOpening]);
 
   const handleOpenEgg = () => {
-    if (dinoPoints < eggCost || isOpening) return;
+    if (points! < eggCost || isOpening) return;
     runLottery({
       variables: {},
       onCompleted(item) {
         // Start animation
-        setRarity(item.lotteryRun?.rarity! as Rarity);
-        setDinoPoints((prev) => prev - eggCost);
+        setRarity(item.lotteryRun?.rarity!.toLowerCase() as Rarity);
+        setPoints(points! - eggCost);
         setIsEggWobbling(false);
         setIsOpening(true);
 
@@ -227,13 +188,12 @@ export default function Lottery() {
     setCurrentFrame(0);
     setEquip(false);
     item.lotteryRun.sellCompensation
-      ? setDinoPoints(dinoPoints + item.lotteryRun.sellCompensation)
+      ? setPoints(points + item.lotteryRun.sellCompensation)
       : "";
   };
 
   return (
     <Box
-      p={4}
       textAlign="center"
       sx={{
         position: "relative",
@@ -298,15 +258,40 @@ export default function Lottery() {
         },
       }}
     >
-      <Button sx={{ mb: "78px" }} variant="contained" color="secondary">
-        <Box
-          component="span"
-          sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
+      <Box
+        sx={{
+          ml: "60px",
+          mb: "60px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 2,
+          position: "relative",
+        }}
+      >
+        <Button variant="contained" color="secondary">
+          <Box
+            component="span"
+            sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
+          >
+            {points}
+            <Image src={coins} alt="Coins" width={18} height={18} />
+          </Box>
+        </Button>
+
+        {/* Mute Button */}
+        <IconButton
+          color={mute ? "secondary" : "primary"}
+          onClick={() => setMute(!mute)}
+          sx={{ width: 60, height: 60 }}
         >
-          {dinoPoints}
-          <Image src={coins} alt="Coins" width={18} height={18} />
-        </Box>
-      </Button>
+          {mute ? (
+            <VolumeOffIcon fontSize="large" />
+          ) : (
+            <VolumeUpIcon fontSize="large" />
+          )}
+        </IconButton>
+      </Box>
 
       {/* Confetti for rare items */}
       {celebrate && (
@@ -324,9 +309,9 @@ export default function Lottery() {
         >
           <Confetti
             colors={[
-              rarity === "RARE"
+              rarity === ("rare" as Rarity)
                 ? "#8e44ad"
-                : rarity === "ULTRA_RARE"
+                : rarity === ("ultra_rare" as Rarity)
                 ? "#e53935"
                 : "",
             ]}
@@ -383,8 +368,8 @@ export default function Lottery() {
             transform: "translate(-50%, -50%) scale(0)",
             animation: "popItem 1.3s ease-out forwards",
             zIndex: 3,
-            width: 200,
-            height: 180,
+            width: 250,
+            height: 250,
             borderRadius: 2,
             display: "flex",
             flexDirection: "column",
@@ -395,22 +380,45 @@ export default function Lottery() {
             gap: 1,
             padding: "4px",
             overflow: "hidden",
-            ...rarityStyles[rarity],
+            borderWidth: 2,
+            borderStyle: "solid",
+            borderColor: rarityMap[rarity as Rarity].border,
+            background: rarityMap[rarity as Rarity].bg,
           }}
         >
-          <Typography
-            variant="body2"
-            noWrap
-            title={item.lotteryRun.name}
-            sx={{ overflow: "hidden", textOverflow: "ellipsis" }}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <Typography
+              variant="body1"
+              noWrap
+              title={item.lotteryRun.name}
+              sx={{ fontWeight: "bold" }}
+            >
+              {item.lotteryRun.name}
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{
+              px: 1,
+              py: 0.3,
+              borderRadius: 1,
+              bgcolor:
+                rarity === ("common" as Rarity)
+                  ? "#e0e0e0"
+                  : rarity === ("uncommon" as Rarity)
+                  ? "#d4af37"
+                  : rarity === ("rare" as Rarity)
+                  ? "#8e44ad"
+                  : rarity === ("ultra_rare" as Rarity)
+                  ? "#e53935"
+                  : "#e0e0e0",
+              color: "white",
+              fontSize: "0.75rem",
+              fontWeight: "bold",
+            }}
           >
-            <strong>{item.lotteryRun.name}</strong>{" "}
-            {item.lotteryRun.sold && (
-              <span style={{ color: "green", fontWeight: "bold" }}>
-                (Owned)
-              </span>
-            )}
-          </Typography>
+            {item.lotteryRun.rarity.replace("_", " ").toUpperCase()}
+          </Box>
 
           <Box
             sx={{
@@ -454,15 +462,28 @@ export default function Lottery() {
             )}
           </Box>
 
-          <Typography variant="body2">{item.lotteryRun.rarity}</Typography>
+          <Typography
+            variant="body2"
+            sx={{ textAlign: "center", minHeight: 30, fontStyle: "italic" }}
+          >
+            {item.lotteryRun.description || "No description"}
+          </Typography>
 
           {item.lotteryRun.sold && item.lotteryRun.sellCompensation ? (
             <Box
               component="span"
-              sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 0.5,
+                whiteSpace: "nowrap",
+              }}
             >
-              <Typography>Sold for</Typography>
-              <Typography style={{ color: "green" }}>
+              <span style={{ color: "green", fontWeight: "bold" }}>
+                (Owned)
+              </span>
+              <Typography component="span">Sold for</Typography>
+              <Typography component="span" style={{ color: "green" }}>
                 {item.lotteryRun.sellCompensation}
               </Typography>
               <Image src={coins} alt="Coins" width={18} height={18} />
@@ -488,7 +509,7 @@ export default function Lottery() {
         <Button
           variant="contained"
           color="primary"
-          disabled={dinoPoints < eggCost || isOpening}
+          disabled={points! < eggCost || isOpening}
           onClick={handleOpenEgg}
         >
           <Box
@@ -500,37 +521,6 @@ export default function Lottery() {
           </Box>
         </Button>
       </Box>
-
-      {/* Mute Button */}
-      {!mute ? (
-        <IconButton
-          color="primary"
-          onClick={() => setMute(true)}
-          sx={{
-            position: "absolute",
-            right: "20px",
-            top: "20px",
-            width: "60",
-            height: "60",
-          }}
-        >
-          <VolumeUpIcon fontSize="large" />
-        </IconButton>
-      ) : (
-        <IconButton
-          onClick={() => setMute(false)}
-          color="secondary"
-          sx={{
-            position: "absolute",
-            right: "20px",
-            top: "20px",
-            width: "60",
-            height: "60",
-          }}
-        >
-          <VolumeOffIcon fontSize="large" />
-        </IconButton>
-      )}
     </Box>
   );
 }

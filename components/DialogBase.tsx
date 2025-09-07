@@ -10,7 +10,6 @@ import {
 import { DatePicker } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
 import { FormikProps, useFormik } from "formik";
-import { useEffect, useState } from "react";
 import { ObjectSchema } from "yup";
 import { Form, FormSection } from "./Form";
 import { FormErrors } from "./FormErrors";
@@ -168,15 +167,16 @@ function Field<T extends object>({
           // @ts-ignore
           defaultCalendarMonth={field.defaultMonthDate}
           onChange={(value) => formik.setFieldValue(field.key as string, value)}
-          slotProps={{
-            textField: {
-              id: field.key as string,
-              required: field.required,
-              error: hasError,
-              helperText: errorText,
-              onBlur: formik.handleBlur,
-            },
-          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              id={field.key as string}
+              required={field.required}
+              error={hasError}
+              helperText={errorText}
+              onBlur={formik.handleBlur}
+            />
+          )}
         />
       );
   }

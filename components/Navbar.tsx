@@ -1,17 +1,73 @@
 "use client";
+
 import { NavbarIsTutor$key } from "@/__generated__/NavbarIsTutor.graphql";
 import { NavbarSemanticSearchQuery } from "@/__generated__/NavbarSemanticSearchQuery.graphql";
 import { NavbarStudentQuery } from "@/__generated__/NavbarStudentQuery.graphql";
+import { WidgetApiItemInventoryForUserQuery } from "@/__generated__/WidgetApiItemInventoryForUserQuery.graphql";
+
 import logo from "@/assets/logo.svg";
 import StoreIcon from "@mui/icons-material/Store";
 import coins from "assets/lottery/coins.png";
-import duration from "dayjs/plugin/duration";
-import Image from "next/image";
-import Link from "next/link";
-import dayjs from "dayjs";
 
+import duration from "dayjs/plugin/duration";
+import dayjs from "dayjs";
 dayjs.extend(duration);
 
+import Image from "next/image";
+import Link from "next/link";
+
+import { useCurrency } from "@/app/contexts/CurrencyContext";
+import { getUnlockedItemAndEquiped } from "@/components/items/logic/GetItems";
+import ProfilePicAndBorder from "@/components/profile/header/common/ProfilePicAndBorder";
+import { widgetApiItemInventoryForUserQuery } from "@/components/widgets/api/WidgetApi";
+import { PageView, usePageView } from "@/src/currentView";
+import { useAITutorStore } from "@/stores/aiTutorStore";
+
+import {
+  CollectionsBookmark,
+  Dashboard,
+  Logout,
+  Search,
+  Settings,
+} from "@mui/icons-material";
+import {
+  Autocomplete,
+  Box,
+  Chip,
+  CircularProgress,
+  Divider,
+  IconButton,
+  InputAdornment,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  TextField,
+  Tooltip,
+  Typography,
+  LinearProgress,
+} from "@mui/material";
+import type {
+  AutocompleteRenderOptionState,
+  AutocompleteOwnerState,
+} from "@mui/material/Autocomplete";
+
+import { chain, debounce } from "lodash";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
+import { useAuth } from "react-oidc-context";
+import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
+
+/** ---------------- GraphQL runtime fetch helper (XP endpoint) ---------------- */
 const GRAPHQL_URL =
   process.env.NEXT_PUBLIC_GRAPHQL_URL ||
   process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
@@ -41,7 +97,6 @@ async function postGraphQL<TData>(
       credentials: "include",
     });
 
-    // If HTTP is not OK, log text (may be HTML error page / redirect)
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       console.error(
@@ -72,9 +127,7 @@ async function postGraphQL<TData>(
       } as any;
     }
 
-    // Normal JSON parse
     const json = (await res.json()) as any;
-    // Relay-like errors field passthrough
     if (json?.errors) {
       console.warn("[GraphQL] Returned errors:", json.errors);
     }
@@ -89,55 +142,7 @@ async function postGraphQL<TData>(
   }
 }
 
-import { useCurrency } from "@/app/contexts/CurrencyContext";
-import { PageView, usePageView } from "@/src/currentView";
-import {
-  CollectionsBookmark,
-  Dashboard,
-  Logout,
-  ManageSearch,
-  Search,
-  Settings,
-} from "@mui/icons-material";
-import {
-  Autocomplete,
-  Avatar,
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  Divider,
-  IconButton,
-  InputAdornment,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  ListSubheader,
-  TextField,
-  Tooltip,
-  Typography,
-  LinearProgress,
-} from "@mui/material";
-import type {
-  AutocompleteRenderOptionState,
-  AutocompleteOwnerState,
-} from "@mui/material/Autocomplete";
-import ListItemSecondaryAction from "@mui/material/ListItemSecondaryAction";
-import { chain, debounce } from "lodash";
-import { usePathname, useRouter } from "next/navigation";
-import {
-  ReactElement,
-  useCallback,
-  useEffect,
-  useState,
-  useTransition,
-} from "react";
-import { useAuth } from "react-oidc-context";
-import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
-
+/** ---------------- Utilities ---------------- */
 function useIsTutor(_frag: NavbarIsTutor$key) {
   const { realmRoles, courseMemberships } = useFragment(
     graphql`
@@ -166,6 +171,7 @@ type SearchResultType = {
   url: string;
 };
 
+/** ---------------- Navbar Shell ---------------- */
 function NavbarBase({
   children,
   _isTutor,
@@ -195,7 +201,6 @@ function NavbarBase({
                     title
                   }
                 }
-
                 __typename
               }
               ... on QuizAssessment {
@@ -218,7 +223,6 @@ function NavbarBase({
                 mediaRecord {
                   id
                   name
-
                   contents {
                     id
                     metadata {
@@ -366,7 +370,12 @@ function NavbarBase({
             }
           }}
           filterOptions={(x) => x}
-          renderOption={(props, option, _state, _owner) => (
+          renderOption={(
+            props,
+            option,
+            _state: AutocompleteRenderOptionState,
+            _owner: AutocompleteOwnerState<any, any, any, any>
+          ) => (
             <li {...props}>
               <div>
                 <div className="text-[10px] text-slate-500">
@@ -411,12 +420,14 @@ function NavbarBase({
         />
         <NavbarLink title="Items" icon={<StoreIcon />} href="/items" exact />
       </NavbarSection>
+
       {children}
       <UserInfo _isTutor={_isTutor} userId={userId} />
     </div>
   );
 }
 
+/** ---------------- Reusable Section ---------------- */
 function NavbarSection({
   children,
   title,
@@ -494,6 +505,7 @@ function SwitchPageViewButton(): JSX.Element | null {
   }
 }
 
+/** ---------------- User Panel with XP + Avatar ---------------- */
 function UserInfo({
   _isTutor,
   userId,
@@ -502,31 +514,42 @@ function UserInfo({
   userId: string;
 }) {
   const auth = useAuth();
+  const clearChat = useAITutorStore((state) => state.clearChat);
   const { points } = useCurrency();
   const tutor = useIsTutor(_isTutor);
 
-  // Load level info without Relay (to avoid build-time artifact requirement)
+  // Inventory/profile picture (from origin/main)
+  const { inventoryForUser } =
+    useLazyLoadQuery<WidgetApiItemInventoryForUserQuery>(
+      widgetApiItemInventoryForUserQuery,
+      { fetchPolicy: "network-only" }
+    );
+  const profilePic = getUnlockedItemAndEquiped(inventoryForUser, "profilePics");
+  const profilePicFrame = getUnlockedItemAndEquiped(
+    inventoryForUser,
+    "profilePicFrames"
+  );
+
+  // XP/Level (keeps your HEAD logic)
   const [levelInfo, setLevelInfo] = useState<{
     level: number;
     xpInLevel: number;
     xpRequiredForLevelUp: number;
-    userName?: string;
   } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+
     (async () => {
-      // wait until we at least know the auth state to avoid unauthenticated request
       if (!userId) return;
       if (auth?.isLoading) return;
 
-      // Propagate OIDC access token to window.__AUTH_TOKEN__ if available
+      // make token available to runtime fetcher
       if (typeof window !== "undefined" && auth?.user?.access_token) {
         (window as any).__AUTH_TOKEN__ = auth.user.access_token;
       }
 
       try {
-        // Fetch XP/Level via getUser(userID: ID!)
         const getUserQuery = `
           query GetUserXP($userID: ID!) {
             getUser(userID: $userID) {
@@ -542,7 +565,6 @@ function UserInfo({
         `;
 
         const { data: levelData, errors } = await postGraphQL<{
-          // backend may return either a single object OR an array with a single element depending on schema wiring
           getUser?:
             | {
                 id: string;
@@ -568,21 +590,14 @@ function UserInfo({
           console.warn("[Navbar XP] GraphQL errors:", errors);
         }
 
-        // Normalize response shape (handles array or object or null)
         const rawUser = (levelData as any)?.getUser;
         const payload: any = Array.isArray(rawUser)
           ? rawUser[0] ?? null
           : rawUser ?? null;
 
         if (!payload) {
-          if (!cancelled) {
-            console.warn(
-              "[Navbar XP] No user XP returned for:",
-              userId,
-              levelData
-            );
+          if (!cancelled)
             setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
-          }
           return;
         }
 
@@ -594,42 +609,43 @@ function UserInfo({
           setLevelInfo({
             level: Number.isFinite(level) ? level : 0,
             xpInLevel: Number.isFinite(exceedingXP) ? exceedingXP : 0,
-            // guard against 0 from backend to keep progress well-defined
             xpRequiredForLevelUp:
               Number.isFinite(requiredXP) && requiredXP > 0 ? requiredXP : 1,
           });
         }
       } catch (e) {
         console.error("[Navbar XP] fetch failed", e);
-        if (!cancelled) {
+        if (!cancelled)
           setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
-        }
       }
     })();
 
     return () => {
       cancelled = true;
     };
-    // re-run when auth token becomes available or user changes
   }, [userId, auth?.user?.access_token, auth?.isLoading]);
 
   const level = levelInfo?.level ?? 0;
   const xpInLevel = levelInfo?.xpInLevel ?? 0;
   const xpRequired = levelInfo?.xpRequiredForLevelUp ?? 1;
+
   const percent = Math.max(
     0,
     Math.min(100, Math.round((xpInLevel / Math.max(1, xpRequired)) * 100))
   );
   const fmtInt = (n: number) =>
     Math.round(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+  // Compact formatter for points (currency)
+  const compactPoints = new Intl.NumberFormat(undefined, {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(points ?? 0);
 
-  // Helper for stable level icon mapping (mirrors profile behavior)
   const levelIconFor = (lvl: number) => {
     const n = Math.max(0, Math.min(99, Math.round(lvl || 0)));
     return `/levels/level_${n}.svg`;
+    // This matches your profile logic so Level 0 shows correctly.
   };
-
-  // Track icon src and update when level changes
   const [levelIconSrc, setLevelIconSrc] = useState<string>(levelIconFor(level));
   useEffect(() => {
     setLevelIconSrc(levelIconFor(level));
@@ -638,77 +654,56 @@ function UserInfo({
   return (
     <div className="sticky bottom-0 py-3 -mt-3 bg-gradient-to-t from-slate-200 from-75% to-transparent">
       <NavbarSection>
+        {/* Top row: avatar + name + settings + logout */}
         <ListItem
-          dense
-          disableGutters
-          sx={{
-            alignItems: "center",
-            py: 1,
-            "& .MuiListItemText-root": { my: 0 },
-          }}
-        >
-          <ListItemAvatar sx={{ minWidth: 44 }}>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              <Link href={"/profile"}>
-                <Avatar src={auth.user?.profile?.picture} />
-              </Link>
-            </Box>
-          </ListItemAvatar>
-          <ListItemText
-            primary={
-              <Typography variant="body1" fontWeight={600}>
-                {auth.user?.profile?.name}
-              </Typography>
-            }
-            // XP/Level section removed from secondary, will be below
-          />
-          <Tooltip title="Settings" placement="left">
-            <span>
-              <Link href="/settings/gamification">
-                <IconButton component="span">
-                  <Settings />
-                </IconButton>
-              </Link>
-            </span>
-          </Tooltip>
-          <Box sx={{ ml: 1 }}>
+          secondaryAction={
             <Tooltip title="Logout" placement="left">
-              <span>
-                <IconButton
-                  aria-label="logout"
-                  size="small"
-                  sx={{ mr: 1 }}
-                  onClick={() => {
-                    window.localStorage.removeItem("meitrex-welcome-shown");
-                    auth.signoutRedirect({
-                      post_logout_redirect_uri:
-                        process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ??
-                        "http://localhost:3005",
-                    });
-                  }}
-                >
-                  <Logout />
-                </IconButton>
-              </span>
+              <IconButton
+                edge="end"
+                aria-label="logout"
+                onClick={() => {
+                  window.localStorage.removeItem("meitrex-welcome-shown");
+                  clearChat();
+                  auth.signoutRedirect({
+                    post_logout_redirect_uri:
+                      process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ??
+                      "http://localhost:3005",
+                  });
+                }}
+              >
+                <Logout />
+              </IconButton>
             </Tooltip>
-          </Box>
+          }
+        >
+          <ListItemAvatar>
+            <Link href={"/profile"}>
+              <ProfilePicAndBorder
+                height={50}
+                profilePicFrame={profilePicFrame}
+                profilePic={profilePic}
+              />
+            </Link>
+          </ListItemAvatar>
+          <ListItemText primary={auth.user?.profile?.name} />
+          <Tooltip title="Settings" placement="left">
+            <Link href="/settings/gamification">
+              <IconButton>
+                <Settings />
+              </IconButton>
+            </Link>
+          </Tooltip>
         </ListItem>
-        {/* Divider between user info and XP/Level & currency section */}
+
         <Divider />
 
-        {/* XP/Level + Currency section (single row) */}
+        {/* XP/Level + Currency row */}
         <Box
           sx={{
+            width: "100%",
+            height: "100%",
             display: "flex",
-            flexDirection: "row",
             alignItems: "center",
-            justifyContent: "space-between",
             gap: 1.25,
             pt: 0.75,
             pb: 0.75,
@@ -724,22 +719,20 @@ function UserInfo({
             style={{ display: "block" }}
             onError={(e) => {
               const el = e.currentTarget as HTMLImageElement;
-              // First fallback: try level_0.svg
+              // fallback chain to ensure an icon displays
               if (!levelIconSrc.endsWith("level_0.svg")) {
                 setLevelIconSrc("/levels/level_0.svg");
                 return;
               }
-              // Second fallback: try level_1.svg
               if (!levelIconSrc.endsWith("level_1.svg")) {
                 setLevelIconSrc("/levels/level_1.svg");
                 return;
               }
-              // If still failing, hide the icon gracefully
               el.style.display = "none";
             }}
           />
 
-          {/* Progress bar + XP */}
+          {/* Progress + text + coin chip (vertical stack) */}
           <Box
             sx={{
               flexGrow: 1,
@@ -748,38 +741,41 @@ function UserInfo({
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
+              alignItems: "center",
             }}
           >
             <LinearProgress
               variant="determinate"
               value={percent}
-              sx={{ height: 8, borderRadius: 999 }}
+              sx={{ height: 8, borderRadius: 999, width: "100%" }}
             />
             <Typography variant="caption" sx={{ mt: 0.25, display: "block" }}>
-              {levelInfo ? (
-                <>
-                  {fmtInt(xpInLevel)} / {fmtInt(xpRequired)} XP
-                </>
-              ) : (
-                "Loading XP…"
-              )}
+              {levelInfo
+                ? `${fmtInt(xpInLevel)} / ${fmtInt(xpRequired)} XP`
+                : "Loading XP…"}
             </Typography>
+            <Box sx={{ mt: 1, display: "flex", justifyContent: "center" }}>
+              <Chip
+                size="small"
+                color="secondary"
+                label={
+                  <Box
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 0.5,
+                    }}
+                  >
+                    {compactPoints}
+                    <Image src={coins} alt="Coins" width={18} height={18} />
+                  </Box>
+                }
+                sx={{ fontWeight: "bold" }}
+              />
+            </Box>
           </Box>
-
-          {/* Currency Chip on the right */}
-          <Chip
-            color="secondary"
-            label={
-              <Box
-                sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
-              >
-                {points}
-                <Image src={coins} alt="Coins" width={18} height={18} />
-              </Box>
-            }
-            sx={{ fontWeight: "bold" }}
-          />
         </Box>
+
         {tutor && (
           <>
             <Divider />
@@ -791,6 +787,7 @@ function UserInfo({
   );
 }
 
+/** ---------------- Public Navbar Component ---------------- */
 export function Navbar() {
   const [pageView] = usePageView();
 
@@ -830,6 +827,7 @@ export function Navbar() {
           dayjs(x.course.startDate) <= dayjs()) ||
         pageView === PageView.Lecturer
     );
+
   return (
     <NavbarBase _isTutor={currentUserInfo} userId={currentUserInfo.id}>
       {filtered.length > 0 ? (

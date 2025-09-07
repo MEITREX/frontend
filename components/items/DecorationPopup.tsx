@@ -9,6 +9,8 @@ import {
   IconButton,
   Typography,
 } from "@mui/material";
+import coins from "assets/lottery/coins.png";
+import Image from "next/image";
 import React from "react";
 import { Rarity, rarityMap } from "./types/Types";
 
@@ -206,9 +208,34 @@ const DecorationPopup: React.FC<Props> = ({
           <Box sx={{ mt: 2 }}>
             {/* Show the price if we are in the shop */}
             {isBuyMode && (
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                <strong>Price:</strong> {equipped} DP
-              </Typography>
+              <Box
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  marginBottom: 1,
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <strong>Price:</strong> {equipped}
+                </Typography>
+                <Image
+                  src={coins}
+                  alt="Coins"
+                  width={18}
+                  height={18}
+                  style={{
+                    display: "inline-block",
+                    verticalAlign: "middle",
+                  }}
+                />
+              </Box>
             )}
             {/* Show rarity of the item */}
             <Typography variant="body2">
@@ -230,15 +257,37 @@ const DecorationPopup: React.FC<Props> = ({
               (!isBuyMode && category === "tutors" && equipped)
             }
           >
-            {isBuyMode
-              ? unspentPoints < equipped
-                ? "Not enough DP"
-                : `Buy for ${equipped} DP`
-              : category === "tutors" && equipped
-              ? "Tutor can not be unequipped. Equip other tutor to unequip this one"
-              : equipped
-              ? "Unequip"
-              : "Equip"}
+            {isBuyMode ? (
+              unspentPoints < equipped ? (
+                <>
+                  Not enough&nbsp;
+                  <Image
+                    src={coins}
+                    alt="Coins"
+                    width={16}
+                    height={16}
+                    style={{ verticalAlign: "middle" }}
+                  />
+                </>
+              ) : (
+                <>
+                  Buy for {equipped}&nbsp;
+                  <Image
+                    src={coins}
+                    alt="Coins"
+                    width={16}
+                    height={16}
+                    style={{ verticalAlign: "middle" }}
+                  />
+                </>
+              )
+            ) : category === "tutors" && equipped ? (
+              "Tutor can not be unequipped. Equip other tutor to unequip this one"
+            ) : equipped ? (
+              "Unequip"
+            ) : (
+              "Equip"
+            )}
           </Button>
         </DialogActions>
       )}

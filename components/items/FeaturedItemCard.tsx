@@ -1,11 +1,9 @@
-// … imports bleiben gleich
-
 import { Box, Typography } from "@mui/material";
 import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
 import ItemInventoryPictureOnly from "./ItemInventoryPictureOnly";
-import { DecorationItem, rarityMap } from "./types/Types";
+import { DecorationItem, Rarity, rarityMap } from "./types/Types";
 
-// Kleine Featured-Karte (grüner Rand) für das equipte Item
+// Displays the equiped card
 export default function FeaturedItemCard({
   item,
   onClick,
@@ -13,17 +11,17 @@ export default function FeaturedItemCard({
   item: DecorationItem;
   onClick: (e: React.MouseEvent, item: DecorationItem) => void;
 }) {
-  // Farben wie unten im Hauptgrid
+  // Colors like background
   const rarityKey = (item.rarity || "common").toLowerCase().replace(/\s+/g, "");
 
-  const colors = rarityMap[rarityKey] ?? rarityMap.common;
+  const colors = rarityMap[rarityKey as Rarity] ?? rarityMap.common;
 
   return (
     <Box
       onClick={(e) => onClick(e, item)}
       sx={{
         position: "relative",
-        border: "3px solid #16c172", // saftiges Grün
+        border: "3px solid #16c172",
         borderRadius: 3,
         overflow: "hidden",
         boxShadow: "0 0 0 3px #16c17233",

@@ -287,6 +287,7 @@ enum ContentType {
 
 type Course {
   chapters(filter: ChapterFilter, pagination: Pagination, sortBy: [String!]! = [], sortDirection: [SortDirection!]! = [ASC]): ChapterPayload!
+  dailyQuests: QuestSet!
   description: String!
   endDate: DateTime!
   id: UUID!
@@ -301,6 +302,7 @@ type Course {
   suggestions(amount: Int!, skillTypes: [SkillType!]! = []): [Suggestion!]!
   title: String!
   userProgress: CompositeProgressInformation!
+  widgetRecommendations: [GamificationCategoryRecommendation!]!
   yearDivision: YearDivision
 }
 
@@ -584,6 +586,7 @@ type DocumentRecordSegment implements MediaRecordSegment {
 
 type DocumentSource implements Source {
   mediaRecordId: UUID!
+  mediaRecords: [MediaRecord!]!
   page: Int!
 }
 
@@ -1533,6 +1536,9 @@ interface Source {
 directive @specifiedBy(url: String!) on SCALAR
 
 type Stage {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
+  _internal_noauth_optionalContentsProgressForUser(userId: UUID!): Float!
+  _internal_noauth_requiredContentsProgressForUser(userId: UUID!): Float!
   id: UUID!
   isAvailableToBeWorkedOn: Boolean!
   optionalContents: [Content!]!
@@ -1826,6 +1832,7 @@ type VideoRecordSegment implements MediaRecordSegment {
 
 type VideoSource implements Source {
   mediaRecordId: UUID!
+  mediaRecords: [MediaRecord!]!
   startTime: Float!
 }
 

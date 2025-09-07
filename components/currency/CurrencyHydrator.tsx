@@ -16,7 +16,7 @@ export default function CurrencyHydrator() {
 
   useEffect(() => {
     const v = inventoryForUser.unspentPoints;
-    // ⬇️ Nur beim ersten Mal hydratisieren – NIE wieder überschreiben
+    // Only overwrite once
     if (points == null && typeof v === "number") setPoints(v);
   }, [inventoryForUser.unspentPoints, points, setPoints]);
 

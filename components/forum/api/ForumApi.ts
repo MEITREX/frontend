@@ -131,6 +131,7 @@ export const forumApiUserInfoByIdQuery = graphql`
     findUserInfos(ids: [$id]) {
       id
       userName
+      nickname
     }
   }
 `;

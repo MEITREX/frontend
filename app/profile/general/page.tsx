@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import GeneralPage from "../GeneralPage";
+import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
 
 type UserLevelInfo = {
   level: number;
@@ -119,6 +120,7 @@ const tabs = [
   { label: "Achievements", path: "achievements" },
   { label: "Forum", path: "forum" },
   { label: "Badges", path: "badges" },
+  { label: "Leaderboards", path: "leaderboard" }, // Added new tab
 ];
 
 export default function GeneralPageWrapper() {
@@ -218,9 +220,7 @@ export default function GeneralPageWrapper() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h4" gutterBottom>
-        Hi, {currentUserInfo.userName}
-      </Typography>
+      <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
 
       {/* Level + XP overview */}
       <Box sx={{ mb: 2 }}>
@@ -252,16 +252,12 @@ export default function GeneralPageWrapper() {
         />
       </Box>
 
-      <Typography variant="body1" color="text.secondary" mb={3}>
-        Welcome to your profile. Use the tabs to navigate.
-      </Typography>
-
       <Tabs
         value={activeIndex}
         onChange={handleChange}
         textColor="primary"
         indicatorColor="primary"
-        sx={{ mb: 3, ".MuiTabs-indicator": { display: "none" } }}
+        sx={{ mt: 3, mb: 3, ".MuiTabs-indicator": { display: "none" } }}
       >
         {tabs.map((tab, index) => (
           <Tab

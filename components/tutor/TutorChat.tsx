@@ -1,33 +1,79 @@
-import React, { useState, useRef, useEffect } from "react";
+import {
+  TutorChatSendMessageMutation,
+  TutorChatSendMessageMutation$data,
+} from "@/__generated__/TutorChatSendMessageMutation.graphql";
+import { MessageSource, useAITutorStore } from "@/stores/aiTutorStore";
+import { Link } from "@mui/material";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
+import { useParams } from "next/navigation";
+import React, { useEffect, useRef, useState } from "react";
+import { graphql, useMutation } from "react-relay";
+
+dayjs.extend(duration);
 
 // ----------- Globale Konstanten für fixe Strings -----------
 const MIN_WAIT_TIME = 800;
-const BOT_THINKS_TEXT = "Dino Tutor denkt nach...";
-const BOT_ERROR_TEXT =
-  "Es gab ein Problem bei der Kommunikation mit dem Tutor.";
+const BOT_THINKS_TEXT = "Tutor is thinking...";
+const BOT_ERROR_TEXT = "There was a problem communicating with the tutor.";
 const BOT_PLACEHOLDER =
-  "Hallo! Ich bin dein Lern-Dino 🦖. Stell mir eine Frage!";
+  "Hello! I am your personal tutor 🦖. Feel free to ask me a question!";
 
-// ----------- Message-Typ für den Chatverlauf -----------
-type Message = {
-  sender: "user" | "bot";
-  text: string;
-};
+const sendMessageMutation = graphql`
+  mutation TutorChatSendMessageMutation($userInput: String!, $courseId: UUID) {
+    sendMessage(userInput: $userInput, courseId: $courseId) {
+      answer
+      sources {
+        ... on DocumentSource {
+          page
+          mediaRecords {
+            contents {
+              id
+              metadata {
+                name
+                courseId
+              }
+            }
+          }
+        }
+        ... on VideoSource {
+          startTime
+          mediaRecords {
+            contents {
+              id
+              metadata {
+                name
+                courseId
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 
 export default function TutorChat() {
+  const [sendMessage, isInFlight] =
+    useMutation<TutorChatSendMessageMutation>(sendMessageMutation);
   const [input, setInput] = useState("");
-  const [chatHistory, setChatHistory] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const sendTimestamp = useRef<number | null>(null);
+  const { courseId } = useParams();
+
+  const currentChat = useAITutorStore((state) => state.currentChat);
+  const addMessage = useAITutorStore((state) => state.addMessage);
+  const changeLatestMessage = useAITutorStore(
+    (state) => state.changeLatestMessage
+  );
 
   // Automatisches Scrollen zum unteren Ende des Chatverlaufs
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatHistory]);
+  }, [currentChat]);
 
   // Textarea-Auto-Resize
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -40,17 +86,47 @@ export default function TutorChat() {
   };
 
   // Hilfsfunktion: Ersetze letzte Bot-Nachricht
-  function replaceLoadingMessage(text: string) {
-    setChatHistory((prev) => {
-      const updated = [...prev];
-      updated[updated.length - 1] = {
-        sender: "bot",
-        text,
-      };
-      return updated;
+  function replaceLoadingMessage(text: string, sources: MessageSource[]) {
+    changeLatestMessage({ sender: "bot", text, sources });
+    sendTimestamp.current = null;
+  }
+
+  function generateLinks(
+    sources: TutorChatSendMessageMutation$data["sendMessage"]["sources"]
+  ) {
+    const urls: MessageSource[] = [];
+    if (!sources) return urls;
+
+    sources.forEach((src) => {
+      if ("mediaRecords" in src && src.mediaRecords) {
+        src.mediaRecords.forEach((mr) => {
+          if (mr.contents) {
+            mr.contents.forEach((content) => {
+              if (!content || content.metadata.courseId !== courseId) return;
+              if (src.page != undefined) {
+                urls.push({
+                  link: `/courses/${courseId}/media/${content.id}?page=${
+                    src.page + 1
+                  }`,
+                  displayText: `${content.metadata.name} Seite: ${
+                    src.page + 1
+                  }`,
+                });
+              } else if (src.startTime != undefined) {
+                const readableTime = dayjs
+                  .duration(src.startTime ?? 0, "seconds")
+                  .format("HH:mm:ss");
+                urls.push({
+                  link: `/courses/${courseId}/media/${content.id}?videoPosition=${src.startTime}`,
+                  displayText: `${content.metadata.name} Zeitstempel: ${readableTime}`,
+                });
+              }
+            });
+          }
+        });
+      }
     });
-    setLoading(false);
-    sendTimestamp.current = null; // <- wichtig!
+    return urls;
   }
 
   // Nachricht senden
@@ -60,63 +136,48 @@ export default function TutorChat() {
     if (!prompt) return;
 
     // Chatverlauf ergänzen: Nutzerfrage und "Dino denkt nach..."
-    setChatHistory((prev) => [
-      ...prev,
-      { sender: "user", text: prompt },
-      { sender: "bot", text: BOT_THINKS_TEXT },
-    ]);
+    addMessage({ sender: "user", text: prompt, sources: [] });
+    addMessage({ sender: "bot", text: BOT_THINKS_TEXT, sources: [] });
     setInput("");
-    setLoading(true);
     sendTimestamp.current = Date.now();
 
-    try {
-      // GraphQL Mutation via fetch
-      const response = await fetch("/api/graphql", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: `
-            mutation LlmRequest($prompt: String!) {
-              llmRequest(prompt: $prompt) {
-                answer
-                otherField
-              }
-            }
-          `,
-          variables: { prompt },
-        }),
-      });
-
-      const { data, errors } = await response.json();
-
-      const elapsed = Date.now() - (sendTimestamp.current ?? 0);
-      const waitMore = Math.max(MIN_WAIT_TIME - elapsed, 0);
-
-      setTimeout(() => {
-        if (errors) {
-          replaceLoadingMessage(BOT_ERROR_TEXT);
-        } else {
-          replaceLoadingMessage(
-            data?.llmRequest?.answer ?? "Fehler oder keine Antwort erhalten."
-          );
+    sendMessage({
+      variables: {
+        userInput: prompt,
+        courseId: courseId,
+      },
+      onCompleted: (data) => {
+        let urls: MessageSource[] = [];
+        if (data?.sendMessage?.sources) {
+          urls = generateLinks(data.sendMessage.sources);
         }
-      }, waitMore);
-    } catch (error) {
-      const elapsed = Date.now() - (sendTimestamp.current ?? 0);
-      const waitMore = Math.max(MIN_WAIT_TIME - elapsed, 0);
 
-      setTimeout(() => {
-        replaceLoadingMessage(BOT_ERROR_TEXT);
-      }, waitMore);
-    }
+        const elapsed = Date.now() - (sendTimestamp.current ?? 0);
+        const waitMore = Math.max(MIN_WAIT_TIME - elapsed, 0);
+
+        setTimeout(() => {
+          if (data?.sendMessage?.answer) {
+            replaceLoadingMessage(data.sendMessage.answer, urls);
+          } else {
+            replaceLoadingMessage(BOT_ERROR_TEXT, urls);
+          }
+        }, waitMore);
+      },
+      onError: () => {
+        const elapsed = Date.now() - (sendTimestamp.current ?? 0);
+        const waitMore = Math.max(MIN_WAIT_TIME - elapsed, 0);
+
+        setTimeout(() => {
+          replaceLoadingMessage(BOT_ERROR_TEXT, []);
+        }, waitMore);
+      },
+    });
   };
 
-  // Mit Enter senden, mit Shift+Enter Zeilenumbruch
-  // ACHTUNG: Typ MUSS HTMLDivElement sein, da MUI TextField multiline intern einen div verwendet!
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (!loading && input.trim()) {
+      if (!isInFlight && input.trim()) {
         (document.activeElement as HTMLElement).blur();
         const form = (e.target as HTMLElement).closest("form");
         if (form) (form as HTMLFormElement).requestSubmit();
@@ -129,20 +190,22 @@ export default function TutorChat() {
       {/* Chatverlauf */}
       <div
         style={{
-          maxHeight: 300,
+          maxHeight: 350,
           overflowY: "auto",
           marginBottom: 10,
           paddingRight: 5,
         }}
       >
-        {chatHistory.length === 0 && (
-          <div style={{ color: "#aaa", textAlign: "right" }}>
+        {currentChat.length === 0 && (
+          <div style={{ color: "#aaa", textAlign: "center" }}>
             {BOT_PLACEHOLDER}
           </div>
         )}
-        {chatHistory.map((msg, idx) => {
+        {currentChat.map((msg, idx) => {
           const isThinking =
-            loading && idx === chatHistory.length - 1 && msg.sender !== "user";
+            isInFlight &&
+            idx === currentChat.length - 1 &&
+            msg.sender !== "user";
           return (
             <div
               key={idx}
@@ -176,15 +239,30 @@ export default function TutorChat() {
                   background: msg.sender === "user" ? "#e3f2fd" : "#f0f4c3",
                   borderRadius: 12,
                   padding: "6px 10px",
-                  maxWidth: 200,
+                  maxWidth: 300,
                   wordBreak: "break-word",
-                  textAlign: msg.sender === "user" ? "left" : "right",
+                  textAlign: "left",
                   opacity: isThinking ? 0.7 : 1,
                   fontStyle: isThinking ? "italic" : "normal",
                   whiteSpace: "pre-wrap",
                 }}
               >
                 {msg.text}
+                {msg.sources.length > 0 && (
+                  <>
+                    <br />
+                    <br />
+                    Sources:
+                    <br />
+                    {msg.sources.map((src, i) => (
+                      <div key={i}>
+                        <Link href={src.link}>
+                          [{i + 1}] {src.displayText}
+                        </Link>
+                      </div>
+                    ))}
+                  </>
+                )}
               </span>
             </div>
           );
@@ -202,8 +280,8 @@ export default function TutorChat() {
           value={input}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          placeholder="Frage eingeben..."
-          disabled={loading}
+          placeholder="Ask a question..."
+          disabled={isInFlight}
           multiline
           minRows={1}
           maxRows={4}
@@ -223,16 +301,12 @@ export default function TutorChat() {
         <Button
           type="submit"
           variant="contained"
-          disabled={loading || !input.trim()}
+          color="primary"
+          disabled={isInFlight || !input.trim()}
           sx={{
             borderRadius: 4,
             height: 38,
             fontWeight: 600,
-            backgroundColor: "#81d4fa",
-            color: "#222",
-            "&:hover": {
-              backgroundColor: "#4fc3f7",
-            },
           }}
         >
           Senden
