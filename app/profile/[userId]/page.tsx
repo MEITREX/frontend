@@ -99,6 +99,51 @@ const COURSE_LB_QUERY = `
   }
 `;
 
+const FIND_PUBLIC_USER_INFOS = `
+  query PublicUserInfos($ids: [UUID!]!) {
+    findPublicUserInfos(ids: $ids) {
+      id
+      userName
+    }
+  }
+`;
+
+/** Build id -> display name map (prefer explicit user.name if present; otherwise userName from public info). */
+function buildNameMap(
+  fromScores: Array<any>[],
+  publicInfos: Array<{ id: string; userName: string }> = []
+): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const arr of fromScores) {
+    for (const s of arr ?? []) {
+      const id = s?.user?.id;
+      const nm = s?.user?.name;
+      if (id && nm) map[id] = nm;
+    }
+  }
+  for (const pi of publicInfos ?? []) {
+    if (pi?.id && pi?.userName && !map[pi.id]) {
+      map[pi.id] = pi.userName;
+    }
+  }
+  return map;
+}
+
+function enrichScoresWithNames(
+  scores: any[],
+  nameById: Record<string, string>
+) {
+  return (scores ?? []).map((s) => {
+    const id = s?.user?.id;
+    const existing = s?.user?.name;
+    const name = existing ?? (id ? nameById[id] : undefined) ?? "Unknown";
+    return {
+      ...s,
+      user: { ...(s?.user ?? {}), name },
+    };
+  });
+}
+
 export default function PublicProfilePage() {
   const publicTabs = ["Achievements", "Forum", "Badges", "Leaderboards"];
   const [tabIndex, setTabIndex] = useState(0);
@@ -188,10 +233,55 @@ export default function PublicProfilePage() {
           console.warn("[PublicProfile LB] GraphQL errors", errors);
         }
 
+        const weeklyRaw = data?.weekly ?? [];
+        const monthlyRaw = data?.monthly ?? [];
+        const allTimeRaw = data?.allTime ?? [];
+
+        // Collect all unique user ids from the three boards
+        const idSet = new Set<string>();
+        for (const board of [...weeklyRaw, ...monthlyRaw, ...allTimeRaw]) {
+          for (const s of board?.userScores ?? []) {
+            if (s?.user?.id) idSet.add(s.user.id);
+          }
+        }
+
+        // Fetch public user infos for any ids we saw
+        let publicInfos: Array<{ id: string; userName: string }> = [];
+        if (idSet.size > 0) {
+          const { data: piData } = await postGraphQL<{
+            findPublicUserInfos: Array<{ id: string; userName: string }>;
+          }>(FIND_PUBLIC_USER_INFOS, { ids: Array.from(idSet) });
+          publicInfos = piData?.findPublicUserInfos ?? [];
+        }
+
+        // Build name map (prefer names coming directly from scores)
+        const nameById = buildNameMap(
+          [
+            weeklyRaw.flatMap((b: any) => b?.userScores ?? []),
+            monthlyRaw.flatMap((b: any) => b?.userScores ?? []),
+            allTimeRaw.flatMap((b: any) => b?.userScores ?? []),
+          ],
+          publicInfos
+        );
+
+        // Enrich each leaderboard's userScores with resolved names
+        const weeklyEnriched = weeklyRaw.map((b: any) => ({
+          ...b,
+          userScores: enrichScoresWithNames(b?.userScores ?? [], nameById),
+        }));
+        const monthlyEnriched = monthlyRaw.map((b: any) => ({
+          ...b,
+          userScores: enrichScoresWithNames(b?.userScores ?? [], nameById),
+        }));
+        const allTimeEnriched = allTimeRaw.map((b: any) => ({
+          ...b,
+          userScores: enrichScoresWithNames(b?.userScores ?? [], nameById),
+        }));
+
         result[m.courseId] = {
-          weekly: data?.weekly ?? [],
-          monthly: data?.monthly ?? [],
-          allTime: data?.allTime ?? [],
+          weekly: weeklyEnriched,
+          monthly: monthlyEnriched,
+          allTime: allTimeEnriched,
         };
       }
 
