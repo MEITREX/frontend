@@ -156,16 +156,14 @@ function Field<T extends object>({
           label={field.label}
           value={(formik.values[field.key] as Dayjs | null) ?? null}
           minDate={
-            (
-              (field.afterOther ? (formik.values[field.afterOther] as Dayjs | null) : null) ??
-              field.minDate
-            ) as Dayjs | undefined
+            ((field.afterOther
+              ? (formik.values[field.afterOther] as Dayjs | null)
+              : null) ?? field.minDate) as Dayjs | undefined
           }
           maxDate={
-            (
-              (field.beforeOther ? (formik.values[field.beforeOther] as Dayjs | null) : null) ??
-              field.maxDate
-            ) as Dayjs | undefined
+            ((field.beforeOther
+              ? (formik.values[field.beforeOther] as Dayjs | null)
+              : null) ?? field.maxDate) as Dayjs | undefined
           }
           defaultCalendarMonth={field.defaultMonthDate as Dayjs | undefined}
           onChange={(val) => {
