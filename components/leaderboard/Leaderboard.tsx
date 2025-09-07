@@ -1,7 +1,8 @@
+`use client`;
 import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
 import { LeaderboardDataQuery } from "@/__generated__/LeaderboardDataQuery.graphql";
 import type { StaticImageData } from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import React from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
 import defaultUserImage from "../../assets/logo.svg";
@@ -17,6 +18,46 @@ function getImageSrc(image?: string | StaticImageData): string {
     return image.src;
   }
   return defaultUserImage.src;
+}
+
+// Format today's date as YYYY-MM-DD in the user's local timezone (not UTC)
+function formatLocalISODate(d: Date = new Date()): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+// Return Monday (start of week) for a given date in local time
+function startOfWeekMonday(date: Date): Date {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const day = d.getDay(); // 0=Sun,1=Mon,...
+  const diff = day === 0 ? -6 : 1 - day; // if Sunday -> back 6 days, else back to Monday
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+// Return the first day of the month for a given date in local time
+function startOfMonth(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+// Return Monday (start of LAST week) for a given date in local time
+function startOfLastWeekMonday(date: Date): Date {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  // go to this week's Monday first
+  const thisWeekMonday = startOfWeekMonday(d);
+  // then go back 7 days to land in last week's Monday
+  thisWeekMonday.setDate(thisWeekMonday.getDate() - 7);
+  return thisWeekMonday;
+}
+
+// dd.MM.yyyy formatting used for labels
+function formatDE(d: Date): string {
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}.${mm}.${yyyy}`;
 }
 
 // 1. Pokal-SVGs definieren (angepasste Größe: 30x30 statt 36x36)
@@ -135,8 +176,11 @@ export default function Leaderboard({
 }: LeaderboardProps) {
   // Always call all hooks at the top in the same order
   const params = useParams();
-  // courseID may be undefined, but we need to always call Relay hooks unconditionally (see below).
-  const courseID = params?.courseId as string | undefined;
+  // Accept both `[courseId]` and `[courseID]` route params for robustness
+  const courseID =
+    (params?.courseID as string | undefined) ??
+    (params?.courseId as string | undefined);
+  const searchParams = useSearchParams();
   const currentUserRef = React.useRef<HTMLDivElement | null>(null);
   const othersContainerRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -152,12 +196,22 @@ export default function Leaderboard({
   // Find the equiped item for the UnequipCard
   const equipedItemPic = itemsParsedMergedPic.find((item) => item.equipped);
 
+  const equipedPicSrc = decodeURIComponent(
+    equipedItemPic
+      ? equipedItemPic.url
+        ? equipedItemPic.url
+        : equipedItemPic.id
+      : defaultUserImage.src
+  );
+
   // New Relay query for all leaderboard periods (always declared)
   const LeaderboardDataQuery = graphql`
     query LeaderboardDataQuery($courseID: ID!, $date: String!) {
       weekly: getWeeklyCourseLeaderboards(courseID: $courseID, date: $date) {
         id
         title
+        startDate
+        period
         userScores {
           id
           score
@@ -170,6 +224,8 @@ export default function Leaderboard({
       monthly: getMonthlyCourseLeaderboards(courseID: $courseID, date: $date) {
         id
         title
+        startDate
+        period
         userScores {
           id
           score
@@ -182,6 +238,8 @@ export default function Leaderboard({
       allTime: getAllTimeCourseLeaderboards(courseID: $courseID, date: $date) {
         id
         title
+        startDate
+        period
         userScores {
           id
           score
@@ -197,17 +255,59 @@ export default function Leaderboard({
     }
   `;
 
-  // derive date as ISO yyyy-mm-dd
-  const date = new Date().toISOString().slice(0, 10);
+  // Allow optional ?date=YYYY-MM-DD override via URL, otherwise use local date
+  const overrideDate = searchParams?.get("date");
+  const base = overrideDate ? new Date(overrideDate) : new Date();
+  const normalized =
+    period === "weekly"
+      ? startOfWeekMonday(base)
+      : period === "monthly"
+      ? startOfMonth(base)
+      : startOfLastWeekMonday(base);
+  const date = formatLocalISODate(normalized);
 
   // Always call useLazyLoadQuery unconditionally, even if courseID is missing.
   // To satisfy React hook rules (hooks must always be called in the same order, not conditionally),
   // we provide a fallback value for courseID (empty string) if not present.
   // We handle the UI rendering for missing courseID separately below.
-  const data = useLazyLoadQuery<LeaderboardDataQuery>(LeaderboardDataQuery, {
-    courseID: courseID ?? "",
-    date,
-  });
+  const variables = { courseID: courseID ?? "", date } as const;
+  // Debug to verify the actual variables we send (see browser devtools)
+  if (typeof window !== "undefined") {
+    // eslint-disable-next-line no-console
+    console.debug("[Leaderboard] querying with", variables);
+  }
+
+  const data = useLazyLoadQuery<LeaderboardDataQuery>(
+    LeaderboardDataQuery,
+    variables,
+    { fetchPolicy: "network-only" }
+  );
+
+  // Derive a period label from server data (startDate/period) for accurate ranges
+  const firstLeaderboard =
+    period === "weekly"
+      ? data?.weekly?.[0]
+      : period === "monthly"
+      ? data?.monthly?.[0]
+      : data?.allTime?.[0];
+
+  const computedPeriodLabel = firstLeaderboard?.startDate
+    ? (() => {
+        const start = new Date(firstLeaderboard.startDate as unknown as string);
+        if (firstLeaderboard.period === "WEEKLY") {
+          const end = new Date(start);
+          end.setDate(end.getDate() + 6);
+          return `${formatDE(start)} — ${formatDE(end)}`;
+        }
+        if (firstLeaderboard.period === "MONTHLY") {
+          return start.toLocaleString(undefined, {
+            month: "long",
+            year: "numeric",
+          });
+        }
+        return "All time";
+      })()
+    : periodLabel;
 
   // Scores depend on data, but keep logic unchanged
   const raw =
@@ -327,7 +427,7 @@ export default function Leaderboard({
               width: "100%",
             }}
           >
-            {periodLabel}
+            {computedPeriodLabel}
           </div>
         </div>
         <div style={{ flex: "none", width: 60 }} />
@@ -353,11 +453,7 @@ export default function Leaderboard({
               card={
                 <div>
                   <img
-                    src={decodeURIComponent(
-                      equipedItemPic!.url
-                        ? equipedItemPic!.url
-                        : equipedItemPic!.id
-                    )}
+                    src={equipedPicSrc}
                     alt={user.name}
                     style={{
                       width: 48,
@@ -421,11 +517,7 @@ export default function Leaderboard({
                 {/* Profilbild */}
                 <div style={{ marginRight: 12 }}>
                   <img
-                    src={decodeURIComponent(
-                      equipedItemPic!.url
-                        ? equipedItemPic!.url
-                        : equipedItemPic!.id
-                    )}
+                    src={equipedPicSrc}
                     alt={user.name}
                     style={{
                       width: 38,
@@ -502,11 +594,7 @@ export default function Leaderboard({
                 card={
                   <div>
                     <img
-                      src={decodeURIComponent(
-                        equipedItemPic!.url
-                          ? equipedItemPic!.url
-                          : equipedItemPic!.id
-                      )}
+                      src={equipedPicSrc}
                       alt={user.name}
                       style={{
                         width: 48,
@@ -573,11 +661,7 @@ export default function Leaderboard({
                   </div>
                   <div style={{ marginRight: 12 }}>
                     <img
-                      src={decodeURIComponent(
-                        equipedItemPic!.url
-                          ? equipedItemPic!.url
-                          : equipedItemPic!.id
-                      )}
+                      src={equipedPicSrc}
                       alt={user.name}
                       style={{
                         width: 38,
