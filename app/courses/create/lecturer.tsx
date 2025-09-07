@@ -1,5 +1,4 @@
 "use client";
-
 import { ForumApiAddUserToForumMutation } from "@/__generated__/ForumApiAddUserToForumMutation.graphql";
 import { ForumApiCreateForumMutation } from "@/__generated__/ForumApiCreateForumMutation.graphql";
 import { lecturerCreateChapterMutation } from "@/__generated__/lecturerCreateChapterMutation.graphql";
