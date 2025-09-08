@@ -39,7 +39,7 @@ export default function UserProfileCustomHeader({ displayName }: Props) {
   return (
     <ProfileCustomHeader
       inventoryForUser={inventoryForUser?.inventoryForUser}
-      displayName="Max Mustermann"
+      displayName={displayName}
     />
   );
 }

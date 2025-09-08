@@ -304,15 +304,6 @@ export default function PublicProfilePage() {
       <UserProfileCustomHeader
         displayName={userInfos.findUserInfos[0]?.nickname as string}
       />
-      {/* Kopfbereich: Bild + Name */}
-      <Box display="flex" alignItems="center" gap={3} mb={3}>
-        <Avatar sx={{ width: 80, height: 80, fontSize: 32 }}>
-          {viewedSafe.userName}
-        </Avatar>
-        <Box>
-          <Typography variant="h5">@{viewedSafe.userName}</Typography>
-        </Box>
-      </Box>
 
       {/* Tabs */}
       <Tabs
