@@ -241,7 +241,7 @@ export default function StudentCoursePage() {
   const router = useRouter();
   const [error, setError] = useState<any>(null);
 
-  // Fetch course data
+  // Fetch course dataa
   const {
     coursesByIds,
     scoreboard,
