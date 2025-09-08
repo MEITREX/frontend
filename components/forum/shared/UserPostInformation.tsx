@@ -123,7 +123,12 @@ export default function UserPostInformation({
   console.log(equipedItemPatternTheme?.url);
 
   return (
-    <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+    <Stack
+      direction="row"
+      spacing={1}
+      alignItems="center"
+      flexWrap="nowrap"
+      overflow="hidden">
       {displayPB && (
         <HoverCard
           key={userInfo?.id}
@@ -238,7 +243,10 @@ export default function UserPostInformation({
       )}
       {userInfo && (
         <Typography
+          noWrap
           sx={{
+            textOverflow: "ellipsis",
+            overflow: "hidden",
             "&:hover": {
               cursor: "pointer",
             },
@@ -264,23 +272,14 @@ export default function UserPostInformation({
       )}
 
       {displayDate && (
-        <Stack
-          direction="row"
-          spacing={0.5}
-          alignItems="center"
-          flexWrap="nowrap"
-          overflow="hidden"
-        >
+        <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="nowrap" minWidth={0}>
           <CalendarTodayIcon fontSize="small" />
           <Typography
             variant="caption"
-            sx={{
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
+            noWrap
+            sx={{ textOverflow: "ellipsis", overflow: "hidden" }}
           >
-            {format(new Date(creationTime as string), "MMMM d, yyyy, hh:mm a")}
+            {format(new Date(creationTime as string), "MM.dd.yyyy, hh:mm a")}
           </Typography>
         </Stack>
       )}
