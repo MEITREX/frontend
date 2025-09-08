@@ -225,8 +225,16 @@ const UserQuery = graphql`
 
 // 2) Leaderboards für einen Kurs (alle Zeiträume)
 const CourseQuery = graphql`
-  query ProfileLeaderboardPositionsCourseQuery($courseID: ID!, $date: String!) {
-    weekly: getWeeklyCourseLeaderboards(courseID: $courseID, date: $date) {
+  query ProfileLeaderboardPositionsCourseQuery(
+    $courseID: ID!
+    $weeklyDate: String!
+    $monthlyDate: String!
+    $allTimeDate: String!
+  ) {
+    weekly: getWeeklyCourseLeaderboards(
+      courseID: $courseID
+      date: $weeklyDate
+    ) {
       id
       title
       userScores {
@@ -238,7 +246,10 @@ const CourseQuery = graphql`
         }
       }
     }
-    monthly: getMonthlyCourseLeaderboards(courseID: $courseID, date: $date) {
+    monthly: getMonthlyCourseLeaderboards(
+      courseID: $courseID
+      date: $monthlyDate
+    ) {
       id
       title
       userScores {
@@ -250,7 +261,10 @@ const CourseQuery = graphql`
         }
       }
     }
-    allTime: getAllTimeCourseLeaderboards(courseID: $courseID, date: $date) {
+    allTime: getAllTimeCourseLeaderboards(
+      courseID: $courseID
+      date: $allTimeDate
+    ) {
       id
       title
       userScores {
@@ -265,11 +279,38 @@ const CourseQuery = graphql`
   }
 `;
 
+// 3) Public user infos for resolving user names
+const PublicUserInfosQuery = graphql`
+  query ProfileLeaderboardPositionsPublicUsersQuery($ids: [UUID!]!) {
+    findPublicUserInfos(ids: $ids) {
+      id
+      userName
+    }
+  }
+`;
+
 /**
  * =============================
  * Helpers & UI
  * =============================
  */
+
+function startOfWeekMonday(d: Date): Date {
+  const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  // getDay(): 0=Sun,1=Mon,...; we want Monday as start
+  const day = date.getDay();
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(date.getFullYear(), date.getMonth(), diff);
+}
+function startOfMonth(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+function toLocalISODate(d: Date): string {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 function formatNumber(n: number) {
   try {
@@ -1034,12 +1075,24 @@ function CourseLeaderboardsForCourse({
   courseTitle: string;
   currentUserId: string;
 }) {
-  const date = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  // Compute dates: weekly -> Monday of current week, monthly/allTime -> first day of current month
+  const today = useMemo(() => new Date(), []);
+  const weeklyDateISO = useMemo(
+    () => toLocalISODate(startOfWeekMonday(today)),
+    [today]
+  );
+  const monthStartISO = useMemo(
+    () => toLocalISODate(startOfMonth(today)),
+    [today]
+  );
+
   const data = useLazyLoadQuery<ProfileLeaderboardPositionsCourseQuery>(
     CourseQuery,
     {
       courseID: courseId,
-      date,
+      weeklyDate: weeklyDateISO,
+      monthlyDate: monthStartISO,
+      allTimeDate: monthStartISO,
     }
   );
 
@@ -1049,12 +1102,52 @@ function CourseLeaderboardsForCourse({
   const allTime = (data.allTime?.[0]?.userScores ??
     []) as unknown as UserScore[];
 
+  // Compute set of user IDs missing names
+  const allScores = [...weekly, ...monthly, ...allTime];
+  const idsNeedingName = Array.from(
+    new Set(
+      allScores.map((s) => s.user?.id).filter((id): id is string => Boolean(id))
+    )
+  );
+
+  // Unconditionally call PublicUserInfosQuery
+  const publicUsers = useLazyLoadQuery<any>(PublicUserInfosQuery, {
+    ids: idsNeedingName,
+  });
+
+  // Build a map from id -> name (prefer user.name if present)
+  const nameById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const s of allScores) {
+      if (s.user?.id && s.user?.name) m.set(s.user.id, s.user.name);
+    }
+    for (const u of publicUsers.findPublicUserInfos ?? []) {
+      // Map userName to name
+      if (u?.id && u?.userName && !m.has(u.id)) m.set(u.id, u.userName);
+    }
+    return m;
+  }, [allScores, publicUsers.findPublicUserInfos]);
+
+  // Helper to enrich scores with resolved names
+  const enrich = (arr: UserScore[]): UserScore[] =>
+    arr.map((s) => ({
+      ...s,
+      user: {
+        id: s.user.id,
+        name: s.user.name || nameById.get(s.user.id) || "Unknown",
+      },
+    }));
+
+  const weeklyEnriched = useMemo(() => enrich(weekly), [weekly, nameById]);
+  const monthlyEnriched = useMemo(() => enrich(monthly), [monthly, nameById]);
+  const allTimeEnriched = useMemo(() => enrich(allTime), [allTime, nameById]);
+
   return (
     <CombinedLeaderboardCard
       title={courseTitle}
-      weekly={weekly}
-      monthly={monthly}
-      allTime={allTime}
+      weekly={weeklyEnriched}
+      monthly={monthlyEnriched}
+      allTime={allTimeEnriched}
       currentUserId={currentUserId}
     />
   );

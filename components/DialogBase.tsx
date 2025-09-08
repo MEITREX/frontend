@@ -7,9 +7,10 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { Dayjs } from "dayjs";
 import { FormikProps, useFormik } from "formik";
+import { useEffect, useState } from "react";
 import { ObjectSchema } from "yup";
 import { Form, FormSection } from "./Form";
 import { FormErrors } from "./FormErrors";
@@ -151,30 +152,33 @@ function Field<T extends object>({
       );
     case "date":
       return (
-        <DatePicker
+        <DatePicker<Dayjs>
           label={field.label}
-          value={formik.values[field.key]}
-          // @ts-ignore
+          value={(formik.values[field.key] as Dayjs | null) ?? null}
           minDate={
-            (field.afterOther ? formik.values[field.afterOther] : null) ??
-            field.minDate
+            ((field.afterOther
+              ? (formik.values[field.afterOther] as Dayjs | null)
+              : null) ?? field.minDate) as Dayjs | undefined
           }
-          // @ts-ignore
           maxDate={
-            (field.beforeOther ? formik.values[field.beforeOther] : null) ??
-            field.maxDate
+            ((field.beforeOther
+              ? (formik.values[field.beforeOther] as Dayjs | null)
+              : null) ?? field.maxDate) as Dayjs | undefined
           }
-          // @ts-ignore
-          defaultCalendarMonth={field.defaultMonthDate}
-          onChange={(value) => formik.setFieldValue(field.key as string, value)}
+          defaultCalendarMonth={field.defaultMonthDate as Dayjs | undefined}
+          onChange={(val) => {
+            // Formik expects the raw value here
+            formik.setFieldValue(field.key as string, val);
+          }}
           renderInput={(params) => (
             <TextField
               {...params}
               id={field.key as string}
               required={field.required}
-              error={hasError}
-              helperText={errorText}
-              onBlur={formik.handleBlur}
+              error={Boolean(params.error) || !!hasError}
+              helperText={errorText ?? params.helperText}
+              onBlur={formik.handleBlur as any}
+              fullWidth
             />
           )}
         />

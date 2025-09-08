@@ -1,20 +1,148 @@
 "use client";
 
 import { pagePublicProfileStudentQuery } from "@/__generated__/pagePublicProfileStudentQuery.graphql";
-
 import { ForumApiUserInfoByIdQuery } from "@/__generated__/ForumApiUserInfoByIdQuery.graphql";
-import {
-  CombinedLeaderboardCard,
-  fetchCourseLeaderboards,
-} from "@/app/profile/leaderboard/ProfileLeaderboardPositions";
+import { CombinedLeaderboardCard } from "@/app/profile/leaderboard/ProfileLeaderboardPositions";
 import { forumApiUserInfoByIdQuery } from "@/components/forum/api/ForumApi";
 import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
 import UserProfileCustomHeader from "@/components/profile/header/UserProfileCustomHeader";
 import { Avatar, Box, Grid, Tab, Tabs, Typography } from "@mui/material";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
+
+// ---- Leaderboard helpers & runtime GraphQL fetch (date handling matches main LB) ----
+const GRAPHQL_URL =
+  process.env.NEXT_PUBLIC_GRAPHQL_URL ||
+  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
+  "/graphql"; // fallback
+
+function toLocalISODate(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function startOfWeekMonday(d: Date): Date {
+  const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const day = date.getDay(); // 0=Sun,1=Mon,...
+  const diff = (day + 6) % 7; // days since Monday
+  date.setDate(date.getDate() - diff);
+  return date;
+}
+
+function startOfMonth(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+
+async function postGraphQL<TData>(
+  query: string,
+  variables: Record<string, any>
+): Promise<{ data?: TData; errors?: any[] }> {
+  const res = await fetch(GRAPHQL_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      // Wenn der Token global abgelegt ist (z.B. via window.__AUTH_TOKEN__), nutzen:
+      ...(typeof window !== "undefined" && (window as any).__AUTH_TOKEN__
+        ? { Authorization: `Bearer ${(window as any).__AUTH_TOKEN__}` }
+        : {}),
+    },
+    body: JSON.stringify({ query, variables }),
+    credentials: "include",
+  });
+
+  try {
+    return (await res.json()) as any;
+  } catch (e) {
+    return { errors: [{ message: "Failed to parse GraphQL response" }] } as any;
+  }
+}
+
+const COURSE_LB_QUERY = `
+  query PublicProfileCourseLB($courseID: ID!, $weeklyDate: String!, $monthlyDate: String!, $allTimeDate: String!) {
+    weekly: getWeeklyCourseLeaderboards(courseID: $courseID, date: $weeklyDate) {
+      id
+      title
+      startDate
+      period
+      userScores {
+        id
+        score
+        user { id name }
+      }
+    }
+    monthly: getMonthlyCourseLeaderboards(courseID: $courseID, date: $monthlyDate) {
+      id
+      title
+      startDate
+      period
+      userScores {
+        id
+        score
+        user { id name }
+      }
+    }
+    allTime: getAllTimeCourseLeaderboards(courseID: $courseID, date: $allTimeDate) {
+      id
+      title
+      startDate
+      period
+      userScores {
+        id
+        score
+        user { id name }
+      }
+    }
+  }
+`;
+
+const FIND_PUBLIC_USER_INFOS = `
+  query PublicUserInfos($ids: [UUID!]!) {
+    findPublicUserInfos(ids: $ids) {
+      id
+      userName
+    }
+  }
+`;
+
+/** Build id -> display name map (prefer explicit user.name if present; otherwise userName from public info). */
+function buildNameMap(
+  fromScores: Array<any>[],
+  publicInfos: Array<{ id: string; userName: string }> = []
+): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const arr of fromScores) {
+    for (const s of arr ?? []) {
+      const id = s?.user?.id;
+      const nm = s?.user?.name;
+      if (id && nm) map[id] = nm;
+    }
+  }
+  for (const pi of publicInfos ?? []) {
+    if (pi?.id && pi?.userName && !map[pi.id]) {
+      map[pi.id] = pi.userName;
+    }
+  }
+  return map;
+}
+
+function enrichScoresWithNames(
+  scores: any[],
+  nameById: Record<string, string>
+) {
+  return (scores ?? []).map((s) => {
+    const id = s?.user?.id;
+    const existing = s?.user?.name;
+    const name = existing ?? (id ? nameById[id] : undefined) ?? "Unknown";
+    return {
+      ...s,
+      user: { ...(s?.user ?? {}), name },
+    };
+  });
+}
 
 export default function PublicProfilePage() {
   const publicTabs = ["Achievements", "Forum", "Badges", "Leaderboards"];
@@ -23,7 +151,7 @@ export default function PublicProfilePage() {
   const params = useParams();
   const userId = params?.userId as string;
 
-  // 👉 Query nur mit Feldern, die es sicher gibt (Backend down / PublicUserInfo ohne memberships)
+  // 👉 Query nur mit Feldern, die es sicher gibt (PublicUserInfo + aktueller User)
   const data = useLazyLoadQuery<pagePublicProfileStudentQuery>(
     graphql`
       query pagePublicProfileStudentQuery($id: [UUID!]!) {
@@ -72,57 +200,102 @@ export default function PublicProfilePage() {
     currentUserInfo.id !== viewedSafe.id
   );
 
-  // Shared memberships is an empty array until backend integration is complete
+  // TODO: Sobald Backend die gemeinsamen Kurse liefert, hier ersetzen.
+  // Aktuell bleibt dies leer, der LB-Loader ist aber funktionsfähig.
   const sharedMemberships: any[] = [];
 
-  // Load dummy leaderboards per shared course, highlighting the VIEWED user
+  // Load leaderboards per shared course, highlighting the VIEWED user
   async function loadShared() {
     try {
       setLoadingLB(true);
-      const today = new Date().toISOString().slice(0, 10);
+
+      const now = new Date();
+      const weeklyDateISO = toLocalISODate(startOfWeekMonday(now));
+      const monthlyDateISO = toLocalISODate(startOfMonth(now));
+      const allTimeDateISO = monthlyDateISO; // AllTime initial an Monatsersten binden
+
       const result: Record<string, any> = {};
+
       for (const m of sharedMemberships) {
-        result[m.courseId] = await fetchCourseLeaderboards(m.courseId, today, {
-          id: (viewedSafe as any).id,
-          name: (viewedSafe as any).userName,
+        const { data, errors } = await postGraphQL<{
+          weekly?: any[];
+          monthly?: any[];
+          allTime?: any[];
+        }>(COURSE_LB_QUERY, {
+          courseID: m.courseId,
+          weeklyDate: weeklyDateISO,
+          monthlyDate: monthlyDateISO,
+          allTimeDate: allTimeDateISO,
         });
+
+        if (errors) {
+          // eslint-disable-next-line no-console
+          console.warn("[PublicProfile LB] GraphQL errors", errors);
+        }
+
+        const weeklyRaw = data?.weekly ?? [];
+        const monthlyRaw = data?.monthly ?? [];
+        const allTimeRaw = data?.allTime ?? [];
+
+        // Collect all unique user ids from the three boards
+        const idSet = new Set<string>();
+        for (const board of [...weeklyRaw, ...monthlyRaw, ...allTimeRaw]) {
+          for (const s of board?.userScores ?? []) {
+            if (s?.user?.id) idSet.add(s.user.id);
+          }
+        }
+
+        // Fetch public user infos for any ids we saw
+        let publicInfos: Array<{ id: string; userName: string }> = [];
+        if (idSet.size > 0) {
+          const { data: piData } = await postGraphQL<{
+            findPublicUserInfos: Array<{ id: string; userName: string }>;
+          }>(FIND_PUBLIC_USER_INFOS, { ids: Array.from(idSet) });
+          publicInfos = piData?.findPublicUserInfos ?? [];
+        }
+
+        // Build name map (prefer names coming directly from scores)
+        const nameById = buildNameMap(
+          [
+            weeklyRaw.flatMap((b: any) => b?.userScores ?? []),
+            monthlyRaw.flatMap((b: any) => b?.userScores ?? []),
+            allTimeRaw.flatMap((b: any) => b?.userScores ?? []),
+          ],
+          publicInfos
+        );
+
+        // Enrich each leaderboard's userScores with resolved names
+        const weeklyEnriched = weeklyRaw.map((b: any) => ({
+          ...b,
+          userScores: enrichScoresWithNames(b?.userScores ?? [], nameById),
+        }));
+        const monthlyEnriched = monthlyRaw.map((b: any) => ({
+          ...b,
+          userScores: enrichScoresWithNames(b?.userScores ?? [], nameById),
+        }));
+        const allTimeEnriched = allTimeRaw.map((b: any) => ({
+          ...b,
+          userScores: enrichScoresWithNames(b?.userScores ?? [], nameById),
+        }));
+
+        result[m.courseId] = {
+          weekly: weeklyEnriched,
+          monthly: monthlyEnriched,
+          allTime: allTimeEnriched,
+        };
       }
+
       setSharedLeaderboards(result);
     } finally {
       setLoadingLB(false);
     }
   }
 
-  // Load once when memberships are available
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useState(() => {
+  // Load once (and whenever sharedMemberships changes)
+  useEffect(() => {
     loadShared();
-    return undefined;
-  });
-
-  /*
-  const { achievementsByUserId } =
-    useLazyLoadQuery<pageUserAchievementsPublicQuery>(
-      graphql`
-        query pageUserAchievementsPublicQuery($id: UUID!) {
-          achievementsByUserId(userId: $id) {
-            id
-            name
-            imageUrl
-            description
-            courseId
-            userId
-            completed
-            requiredCount
-            completedCount
-            trackingStartTime
-            trackingEndTime
-          }
-        }
-      `,
-      { id: userId }
-    );
-  */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(sharedMemberships), viewedSafe.id, currentUserInfo.id]);
 
   return (
     <Box sx={{ p: 4 }}>
