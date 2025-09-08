@@ -241,7 +241,7 @@ export default function StudentCoursePage() {
   const router = useRouter();
   const [error, setError] = useState<any>(null);
 
-  // Fetch course dataa
+  // Fetch course data
   const {
     coursesByIds,
     scoreboard,
@@ -270,6 +270,25 @@ export default function StudentCoursePage() {
           id
           title
           description
+          dailyQuests {
+            forDay
+            id
+            name
+            quests {
+              completed
+              completedCount
+              courseId
+              description
+              id
+              name
+              requiredCount
+              rewardPoints
+              trackingEndTime
+              trackingStartTime
+              userId
+            }
+            rewardMultiplier
+          }
           rewardScores {
             ...RewardScoresFragment
           }
@@ -721,11 +740,13 @@ export default function StudentCoursePage() {
           </Suspense>
         </CustomTabPanel>
 
-        <CustomTabPanel  value={value} index={4}>
+        <CustomTabPanel value={value} index={4}>
           <Suspense fallback={<SkeletonThreadList />}>
-            <CourseLeaderboards   courseID={id}
-            currentUserId={userId}
-            currentUserName={"Current User"} />
+            <CourseLeaderboards
+              courseID={id}
+              currentUserId={userId}
+              currentUserName={"Current User"}
+            />
           </Suspense>
         </CustomTabPanel>
       </Box>

@@ -1,14 +1,15 @@
 `use client`;
 import { LeaderboardDataQuery } from "@/__generated__/LeaderboardDataQuery.graphql";
 
-import { LeaderboardPublicProfileStudentQuery } from "@/__generated__/LeaderboardPublicProfileStudentQuery.graphql";
-import { LeaderboardPublicProfileStudentTwoQuery } from "@/__generated__/LeaderboardPublicProfileStudentTwoQuery.graphql";
+import { LeaderboardRowInventoryByUserQuery } from "@/__generated__/LeaderboardRowInventoryByUserQuery.graphql";
+import { LeaderboardRowPublicInfoQuery } from "@/__generated__/LeaderboardRowPublicInfoQuery.graphql";
 import type { StaticImageData } from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
 import React from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
 import defaultUserImage from "../../assets/logo.svg";
 import { HoverCard } from "../HoverCard";
+import { getPublicProfileItemsMerged } from "../items/logic/GetItems";
 
 function getImageSrc(image?: string | StaticImageData): string {
   if (typeof image === "string") {
@@ -273,6 +274,26 @@ export default function Leaderboard({
     }
   `;
 
+  const PublicInfoQuery = graphql`
+    query LeaderboardRowPublicInfoQuery($id: [UUID!]!) {
+      findUserInfos(ids: $id) {
+        nickname
+      }
+    }
+  `;
+
+  const InventoryByUserQuery = graphql`
+    query LeaderboardRowInventoryByUserQuery($userId: UUID!) {
+      itemsByUserId(userId: $userId) {
+        equipped
+        id
+        uniqueDescription
+        unlocked
+        unlockedTime
+      }
+    }
+  `;
+
   // Allow optional ?date=YYYY-MM-DD override via URL, otherwise use local date
   const overrideDate = searchParams?.get("date");
   const base = overrideDate ? new Date(overrideDate) : new Date();
@@ -396,6 +417,40 @@ export default function Leaderboard({
   const topThree = displayUsers.filter((u) => u.rank <= 3);
   const others = displayUsers.filter((u) => u.rank > 3);
 
+  let userProfilePics = new Array;
+
+  topThree.forEach((user) => {
+    const { itemsByUserId } =
+      useLazyLoadQuery<LeaderboardRowInventoryByUserQuery>(
+        InventoryByUserQuery,
+        { userId: user.id },
+        { fetchPolicy: "network-only" }
+      );
+
+    console.log(itemsByUserId, user.id, "1");
+
+    // Combine backend and JSON data
+    const itemsParsedMergedPic = getPublicProfileItemsMerged(
+      itemsByUserId,
+      "profilePics"
+    );
+
+    console.log(itemsByUserId, user.id, "2");
+
+    // Find the equiped item for the UnequipCard
+    const equipedItemPic = itemsParsedMergedPic.find((item) => item.equipped);
+
+    console.log(itemsByUserId, user.id, "3");
+
+    userProfilePics.push({id: user.id, pic: equipedItemPic})
+  });
+
+  let userProfileBackground = new Array;
+
+
+
+  console.log(userProfilePics)
+
   React.useEffect(() => {
     if (currentUserRef.current && othersContainerRef.current) {
       const parent = othersContainerRef.current;
@@ -506,15 +561,10 @@ export default function Leaderboard({
           const isCurrent = user.isCurrentUser;
 
           const { findUserInfos } =
-            useLazyLoadQuery<LeaderboardPublicProfileStudentQuery>(
-              graphql`
-                query LeaderboardPublicProfileStudentQuery($id: [UUID!]!) {
-                  findUserInfos(ids: $id) {
-                    nickname
-                  }
-                }
-              `,
-              { id: [user.id] }
+            useLazyLoadQuery<LeaderboardRowPublicInfoQuery>(
+              PublicInfoQuery,
+              { id: [user.id] },
+              { fetchPolicy: "store-or-network" }
             );
 
           return (
@@ -523,9 +573,7 @@ export default function Leaderboard({
               card={
                 <div>
                   <img
-                    src={
-                      "https://upload.wikimedia.org/wikipedia/commons/e/e3/Logo_BILD.svg"
-                    }
+                    src={userProfilePics.find(userArr => userArr.id === user.id).pic.url}
                     alt={user.name}
                     style={{
                       width: 48,
@@ -589,9 +637,7 @@ export default function Leaderboard({
                 {/* Profilbild */}
                 <div style={{ marginRight: 12 }}>
                   <img
-                    src={
-                      "https://upload.wikimedia.org/wikipedia/commons/e/e3/Logo_BILD.svg"
-                    }
+                    src={userProfilePics.find(userArr => userArr.id === user.id).pic.url}
                     alt={user.name}
                     style={{
                       width: 38,
@@ -663,17 +709,6 @@ export default function Leaderboard({
           {others.map((user) => {
             const isCurrent = user.isCurrentUser;
 
-            const { findUserInfos } =
-              useLazyLoadQuery<LeaderboardPublicProfileStudentTwoQuery>(
-                graphql`
-                  query LeaderboardPublicProfileStudentTwoQuery($id: [UUID!]!) {
-                    findUserInfos(ids: $id) {
-                      nickname
-                    }
-                  }
-                `,
-                { id: [user.id] }
-              );
 
             return (
               <HoverCard
