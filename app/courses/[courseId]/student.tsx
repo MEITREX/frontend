@@ -492,34 +492,6 @@ export default function StudentCoursePage() {
         />
       </Box>
 
-      {/* Quick widgets row */}
-      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-        <Grid item xs={12} md={6}>
-          {/* Integrated XP widget */}
-          <XPWidget userId={userId} />
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          {/* Keep space for future widgets (Forum/Questions etc.) */}
-          <Box
-            sx={{
-              p: 2,
-              border: "4px solid",
-              borderColor: "divider",
-              borderRadius: "24px",
-              height: "100%",
-            }}
-          >
-            <Typography variant="h2" component="h2" gutterBottom>
-              Forum &amp; Questions
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Check the Forum tab for new posts and open questions.
-            </Typography>
-          </Box>
-        </Grid>
-      </Grid>
-
       {/* Tabs for Learning Progress and Chapters */}
       <Box sx={{ width: "100%", mt: 2 }}>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
