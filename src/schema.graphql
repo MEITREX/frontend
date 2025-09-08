@@ -586,6 +586,7 @@ type DocumentRecordSegment implements MediaRecordSegment {
 
 type DocumentSource implements Source {
   mediaRecordId: UUID!
+  mediaRecords: [MediaRecord!]!
   page: Int!
 }
 
@@ -1831,6 +1832,7 @@ type VideoRecordSegment implements MediaRecordSegment {
 
 type VideoSource implements Source {
   mediaRecordId: UUID!
+  mediaRecords: [MediaRecord!]!
   startTime: Float!
 }
 
