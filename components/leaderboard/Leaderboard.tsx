@@ -6,7 +6,12 @@ import { LeaderboardRowPublicInfoQuery } from "@/__generated__/LeaderboardRowPub
 import type { StaticImageData } from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
 import React from "react";
-import { graphql, useLazyLoadQuery } from "react-relay";
+import {
+  fetchQuery,
+  graphql,
+  useLazyLoadQuery,
+  useRelayEnvironment,
+} from "react-relay";
 import defaultUserImage from "../../assets/logo.svg";
 import { HoverCard } from "../HoverCard";
 import { getPublicProfileItemsMerged } from "../items/logic/GetItems";
@@ -294,6 +299,21 @@ export default function Leaderboard({
     }
   `;
 
+  function getAvatarSrc(
+    pics: Record<string, Asset | null>,
+    userId: string,
+    fallback: string
+  ) {
+    const pic = pics[userId];
+    const raw = typeof pic === "string" ? pic : pic?.url ?? pic?.id;
+    if (!raw) return fallback;
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return raw;
+    }
+  }
+
   // Allow optional ?date=YYYY-MM-DD override via URL, otherwise use local date
   const overrideDate = searchParams?.get("date");
   const base = overrideDate ? new Date(overrideDate) : new Date();
@@ -417,39 +437,141 @@ export default function Leaderboard({
   const topThree = displayUsers.filter((u) => u.rank <= 3);
   const others = displayUsers.filter((u) => u.rank > 3);
 
-  let userProfilePics = new Array;
+  type Asset = { id: string; url?: string | null; equipped?: boolean };
+  type ColorTheme = {
+    id: string;
+    backColor?: string | null;
+    foreColor?: string | null;
+    equipped?: boolean;
+  };
+  type PatternTheme = {
+    id: string;
+    url?: string | null;
+    foreColor?: string | null;
+    equipped?: boolean;
+  };
 
-  topThree.forEach((user) => {
-    const { itemsByUserId } =
-      useLazyLoadQuery<LeaderboardRowInventoryByUserQuery>(
-        InventoryByUserQuery,
-        { userId: user.id },
-        { fetchPolicy: "network-only" }
-      );
+  const [userProfilePics, setUserProfilePics] = React.useState<
+    Record<string, Asset | null>
+  >({});
+  const [userProfileFrames, setUserProfileFrames] = React.useState<
+    Record<string, Asset | null>
+  >({});
+  const [userColorThemes, setUserColorThemes] = React.useState<
+    Record<string, ColorTheme | null>
+  >({});
+  const [userPatternThemes, setUserPatternThemes] = React.useState<
+    Record<string, PatternTheme | null>
+  >({});
 
-    console.log(itemsByUserId, user.id, "1");
+  function assetSrc(
+    a?: { url?: string | null; id?: string } | null,
+    fallback?: string
+  ) {
+    const raw = a?.url ?? a?.id;
+    if (!raw) return fallback;
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return raw;
+    }
+  }
 
-    // Combine backend and JSON data
-    const itemsParsedMergedPic = getPublicProfileItemsMerged(
-      itemsByUserId,
-      "profilePics"
+  const env = useRelayEnvironment();
+
+  React.useEffect(() => {
+    const ids = Array.from(
+      new Set(displayUsers.map((u) => u.id).filter(Boolean))
     );
+    if (ids.length === 0) {
+      setUserProfilePics({});
+      setUserProfileFrames({});
+      setUserColorThemes({});
+      setUserPatternThemes({});
+      return;
+    }
 
-    console.log(itemsByUserId, user.id, "2");
+    let cancelled = false;
+    (async () => {
+      try {
+        const results = await Promise.all(
+          ids.map(async (userId) => {
+            const data = await fetchQuery<LeaderboardRowInventoryByUserQuery>(
+              env,
+              InventoryByUserQuery,
+              { userId }
+            ).toPromise();
 
-    // Find the equiped item for the UnequipCard
-    const equipedItemPic = itemsParsedMergedPic.find((item) => item.equipped);
+            const items = data?.itemsByUserId ?? [];
 
-    console.log(itemsByUserId, user.id, "3");
+            const pics = getPublicProfileItemsMerged(items, "profilePics");
+            const frames = getPublicProfileItemsMerged(
+              items,
+              "profilePicFrames"
+            );
+            const colors = getPublicProfileItemsMerged(items, "colorThemes"); // ← neu
+            const patterns = getPublicProfileItemsMerged(
+              items,
+              "patternThemes"
+            ); // ← neu
 
-    userProfilePics.push({id: user.id, pic: equipedItemPic})
-  });
+            const pic = pics.find((it: any) => it.equipped) ?? null;
+            const frame = frames.find((it: any) => it.equipped) ?? null;
+            const color = colors.find((it: any) => it.equipped) ?? null;
+            const pattern = patterns.find((it: any) => it.equipped) ?? null;
 
-  let userProfileBackground = new Array;
+            return [userId, pic, frame, color, pattern] as const;
+          })
+        );
 
+        if (!cancelled) {
+          const picsMap: Record<string, Asset | null> = {};
+          const framesMap: Record<string, Asset | null> = {};
+          const colorsMap: Record<string, ColorTheme | null> = {};
+          const patternsMap: Record<string, PatternTheme | null> = {};
 
+          for (const [id, pic, frame, color, pattern] of results) {
+            picsMap[id] = pic;
+            framesMap[id] = frame;
+            colorsMap[id] = color;
+            patternsMap[id] = pattern;
+          }
 
-  console.log(userProfilePics)
+          setUserProfilePics(picsMap);
+          setUserProfileFrames(framesMap);
+          setUserColorThemes(colorsMap);
+          setUserPatternThemes(patternsMap);
+        }
+      } catch (e) {
+        console.warn("[Leaderboard] per-user inventory fetch failed:", e);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [env, JSON.stringify(displayUsers.map((u) => u.id))]);
+
+  function userCardStyle(userId: string, base: React.CSSProperties = {}): React.CSSProperties {
+  const col = userColorThemes[userId];
+  const pat = userPatternThemes[userId];
+
+  const style: React.CSSProperties = { ...base };
+
+  if (col?.backColor) style.backgroundColor = col.backColor;
+
+  const patUrl = assetSrc(pat);
+  if (patUrl) {
+    style.backgroundImage = `url(${patUrl})`;
+    style.backgroundRepeat = "repeat";
+    style.backgroundSize = "100%";
+  }
+
+  const fg = col?.foreColor ?? pat?.foreColor; // ← wichtig: Pattern-Foreground berücksichtigen
+  if (fg) style.color = fg;
+
+  return style;
+}
 
   React.useEffect(() => {
     if (currentUserRef.current && othersContainerRef.current) {
@@ -535,7 +657,7 @@ export default function Leaderboard({
               fontWeight: 600,
               fontSize: 17,
               letterSpacing: ".7px",
-              color: "#79869a",
+              color: "inherit",
               width: "100%",
             }}
           >
@@ -567,40 +689,99 @@ export default function Leaderboard({
               { fetchPolicy: "store-or-network" }
             );
 
+          const avatarSrc = getAvatarSrc(
+            userProfilePics,
+            user.id,
+            defaultUserImage.src
+          );
+
           return (
             <HoverCard
-              key={user.id}
-              card={
-                <div>
+          key={user.id}
+          card={
+            <div
+              style={userCardStyle(user.id, {
+                position: "relative",
+                isolation: "isolate", // erzeugt eigenen Stacking-Context
+                overflow: "hidden",
+                borderRadius: 8,
+                minWidth: 220,
+                minHeight: 120,
+              })}
+            >
+
+
+              {/* optionaler Weiß-Schleier für Lesbarkeit */}
+              {/* <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.35)", zIndex: 0 }} /> */}
+
+              {/* Inhalt oben drüber */}
+
+              <div style={{ position: "relative", zIndex: 1, padding: 8 }}>
+                <div
+                  style={{
+                    position: "relative",
+                    width: 48,
+                    height: 48,
+                    margin: "0 auto 10px",
+                  }}
+                >
+                  {/* Rahmen-Bild */}
+                  {assetSrc(userProfileFrames[user.id]) && (
+                    <img
+                      src={assetSrc(userProfileFrames[user.id])}
+                      alt={findUserInfos[0]?.nickname}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: 10,
+                        objectFit: "cover",
+                        boxShadow: "0 2px 8px #0001",
+                        zIndex: 1,
+                      }}
+                    />
+                  )}
+
+                  {/* Profilbild */}
                   <img
-                    src={userProfilePics.find(userArr => userArr.id === user.id).pic.url}
-                    alt={user.name}
+                    src={assetSrc(userProfilePics[user.id], defaultUserImage.src)!}
+                    alt={findUserInfos[0]?.nickname}
                     style={{
-                      width: 48,
-                      height: 48,
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
                       borderRadius: 10,
                       objectFit: "cover",
-                      margin: "0 auto 10px",
                       boxShadow: "0 2px 8px #0001",
+                      zIndex: 0,
                     }}
                   />
-                  <div
-                    style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}
-                  >
-                    {findUserInfos[0]?.nickname}
-                  </div>
-                  <div style={{ fontSize: 16, color: "#79869a" }}>
-                    Points: {user.points}
-                  </div>
-                  <div style={{ fontSize: 15, color: "#a1a6b2", marginTop: 8 }}>
-                    Profilinfos folgen…
-                  </div>
                 </div>
-              }
-              position="bottom"
-            >
+
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 18,
+                    marginBottom: 4,
+
+                  }}
+                >
+                  {findUserInfos[0]?.nickname}
+                </div>
+                <div style={{ fontSize: 15, color: "#a1a6b2", marginTop: 8 }}>
+                  Profilinfos folgen…
+                </div>
+              </div>
+            </div>
+          }
+          position="bottom"
+        >
               <div
-                style={{
+                style={userCardStyle(user.id, {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
@@ -620,7 +801,7 @@ export default function Leaderboard({
                     ? "0 2px 12px rgba(40,40,40,0.13)"
                     : undefined,
                   marginBottom: 0,
-                }}
+                })}
                 tabIndex={0}
               >
                 {/* Rank number */}
@@ -635,17 +816,51 @@ export default function Leaderboard({
                   {user.rank}.
                 </div>
                 {/* Profilbild */}
-                <div style={{ marginRight: 12 }}>
+                <div
+                  style={{
+                    position: "relative",
+                    width: 48,
+                    height: 48,
+                    margin: "0 auto 10px",
+                    border: isCurrent ? "3px solid #222" : "2px solid #ddd",
+                    objectFit: "cover",
+                    boxShadow: "0 1px 5px #0001",
+                  }}
+                >
+                  {assetSrc(userProfileFrames[user.id]) && (
+                    <img
+                      src={assetSrc(userProfileFrames[user.id])}
+                      alt={user.id}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: 10,
+                        objectFit: "cover",
+                        boxShadow: "0 2px 8px #0001",
+                        zIndex: 1,
+                      }}
+                    />
+                  )}
+
+                  {/* Profilbild */}
                   <img
-                    src={userProfilePics.find(userArr => userArr.id === user.id).pic.url}
-                    alt={user.name}
+                    src={
+                      assetSrc(userProfilePics[user.id], defaultUserImage.src)!
+                    }
+                    alt={user.id}
                     style={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: 8,
-                      border: isCurrent ? "3px solid #222" : "2px solid #ddd",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 10,
                       objectFit: "cover",
-                      boxShadow: "0 1px 5px #0001",
+                      boxShadow: "0 2px 8px #0001",
+                      zIndex: 0,
                     }}
                   />
                 </div>
@@ -658,7 +873,7 @@ export default function Leaderboard({
                     justifyContent: "center",
                     gap: 6,
                     fontWeight: isCurrent ? 900 : 700,
-                    color: isCurrent ? "#0b0b0b" : "#2f3541",
+                    color: "inherit",
                     fontSize: 18,
                     letterSpacing: ".5px",
                   }}
@@ -671,7 +886,7 @@ export default function Leaderboard({
                   style={{
                     minWidth: 80,
                     textAlign: "right",
-                    color: isCurrent ? "#222" : "#79869a",
+                    color: "inherit",
                     fontWeight: isCurrent ? 900 : 700,
                     fontSize: 18,
                   }}
@@ -708,7 +923,6 @@ export default function Leaderboard({
         >
           {others.map((user) => {
             const isCurrent = user.isCurrentUser;
-
 
             return (
               <HoverCard
