@@ -51,9 +51,18 @@ export default function ForumActivity({
     >
       {!post ? (
         <Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <Typography variant="caption" color="text.secondary">
-              {format(new Date(creationTime), "MMMM d, yyyy, hh:mm a")}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "nowrap" }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              noWrap
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                minWidth: 0,
+              }}
+            >
+              {format(new Date(creationTime as string), "MM.dd.yyyy, hh:mm a")}
             </Typography>
             <Typography
               variant="caption"
@@ -91,8 +100,17 @@ export default function ForumActivity({
               flexWrap: "wrap",
             }}
           >
-            <Typography variant="caption" color="text.secondary">
-              {format(new Date(creationTime), "MMMM d, yyyy, hh:mm a")}
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              noWrap
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                minWidth: 0,
+              }}
+            >
+              {format(new Date(creationTime as string), "MM.dd.yyyy, hh:mm a")}
             </Typography>
             <Typography
               variant="caption"
