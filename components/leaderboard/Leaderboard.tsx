@@ -937,65 +937,111 @@ export default function Leaderboard({
 
             return (
               <HoverCard
-                key={user.id}
-                card={
-                  <div>
-                    <img
-                      src={
-                        "https://upload.wikimedia.org/wikipedia/commons/e/e3/Logo_BILD.svg"
-                      }
-                      alt={user.name}
+              key={user.id}
+              card={
+                <div
+                  style={userCardStyle(user.id, {
+                    position: "relative",
+                    isolation: "isolate", // erzeugt eigenen Stacking-Context
+                    overflow: "hidden",
+                    borderRadius: 8,
+                    minWidth: 220,
+                    minHeight: 120,
+                  })}
+                >
+                  {/* optionaler Weiß-Schleier für Lesbarkeit */}
+                  {/* <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.35)", zIndex: 0 }} /> */}
+
+                  {/* Inhalt oben drüber */}
+
+                  <div style={{ position: "relative", zIndex: 1, padding: 8 }}>
+                    <div
                       style={{
+                        position: "relative",
                         width: 48,
                         height: 48,
-                        borderRadius: 10,
-                        objectFit: "cover",
                         margin: "0 auto 10px",
-                        boxShadow: "0 2px 8px #0001",
                       }}
-                    />
-                    <div
-                      style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}
                     >
-                      {user.name}
+                      {/* Rahmen-Bild */}
+                      {assetSrc(userProfileFrames[user.id]) && (
+                        <img
+                          src={assetSrc(userProfileFrames[user.id])}
+                          alt={userNickname[user.id] ?? "Unkown"}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            borderRadius: 10,
+                            objectFit: "cover",
+                            boxShadow: "0 2px 8px #0001",
+                            zIndex: 1,
+                          }}
+                        />
+                      )}
+
+                      {/* Profilbild */}
+                      <img
+                        src={
+                          assetSrc(
+                            userProfilePics[user.id],
+                            defaultUserImage.src
+                          )!
+                        }
+                        alt={userNickname[user.id] ?? "Unkown"}
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: 10,
+                          objectFit: "cover",
+                          boxShadow: "0 2px 8px #0001",
+                          zIndex: 0,
+                        }}
+                      />
                     </div>
-                    <div style={{ fontSize: 16, color: "#79869a" }}>
-                      Points: {user.points}
+
+                    <div
+                      style={{
+                        fontWeight: 700,
+                        fontSize: 18,
+                        marginBottom: 4,
+                      }}
+                    >
+                      {userNickname[user.id] ?? "Unkown"}
                     </div>
                     <div
-                      style={{ fontSize: 14, color: "#a1a6b2", marginTop: 6 }}
+                      style={{ fontSize: 15, color: "#a1a6b2", marginTop: 8 }}
                     >
                       Profilinfos folgen…
                     </div>
                   </div>
-                }
-                position="bottom"
-              >
+                </div>
+              }
+              position="bottom"
+            >
                 <div
                   ref={isCurrent ? currentUserRef : undefined}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    borderRadius: 12,
-                    padding: "8px 16px",
-                    minHeight: 60,
-                    fontSize: 18,
-                    background: "#fff",
-                    border: isCurrent ? "3px solid #000" : "2px solid #e1e6ea",
-                    fontWeight: isCurrent ? 800 : 600,
-                    boxShadow: isCurrent
-                      ? "0 2px 8px rgba(60,60,60,0.11)"
-                      : undefined,
-                    cursor: "pointer",
-                    backgroundImage: user.backgroundImage
-                      ? `url(${user.backgroundImage})`
-                      : undefined,
-                    backgroundSize: user.backgroundImage ? "cover" : undefined,
-                    backgroundRepeat: user.backgroundImage
-                      ? "repeat"
-                      : undefined,
-                  }}
+                  style={userCardStyle(user.id, {
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  borderRadius: 14,
+                  padding: "8px 18px",
+                  minHeight: 60,
+                  fontSize: 18,
+                  
+                  border: isCurrent ? "3px solid #222" : "2px solid #e1e6ea",
+                  fontWeight: isCurrent ? 900 : 700,
+                  boxShadow: isCurrent
+                    ? "0 2px 12px rgba(40,40,40,0.13)"
+                    : undefined,
+                  marginBottom: 0,
+                })}
                   tabIndex={0}
                 >
                   <div
@@ -1006,38 +1052,85 @@ export default function Leaderboard({
                       gap: 4,
                     }}
                   >
-                    <span style={{ fontSize: 18 }}>{user.rank}.</span>
-                  </div>
-                  <div style={{ marginRight: 12 }}>
+                    <div
+                  style={{
+                    minWidth: 24,
+                    textAlign: "center",
+                    fontSize: 18,
+                    fontWeight: isCurrent ? 900 : 700,
+                  }}
+                >
+                  {user.rank}.
+                </div>
+                {/* Profilbild */}
+                <div
+                  style={{
+                    position: "relative",
+                    width: 48,
+                    height: 48,
+                    margin: "0 auto 10px",
+                    border: isCurrent ? "3px solid #222" : "2px solid #ddd",
+                    objectFit: "cover",
+                    boxShadow: "0 1px 5px #0001",
+                  }}
+                >
+                  {assetSrc(userProfileFrames[user.id]) && (
                     <img
-                      src={
-                        "https://upload.wikimedia.org/wikipedia/commons/e/e3/Logo_BILD.svg"
-                      }
-                      alt={user.name}
+                      src={assetSrc(userProfileFrames[user.id])}
+                      alt={user.id}
                       style={{
-                        width: 38,
-                        height: 38,
-                        borderRadius: 8,
-                        border: isCurrent
-                          ? "2.5px solid #222"
-                          : "2.5px solid #ddd",
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: 10,
                         objectFit: "cover",
-                        boxShadow: "0 1px 4px #0001",
+                        boxShadow: "0 2px 8px #0001",
+                        zIndex: 1,
                       }}
                     />
-                  </div>
-                  <div
+                  )}
+
+                  {/* Profilbild */}
+                  <img
+                    src={
+                      assetSrc(userProfilePics[user.id], defaultUserImage.src)!
+                    }
+                    alt={user.id}
                     style={{
-                      flex: 1,
-                      textAlign: "center",
-                      fontWeight: isCurrent ? 800 : 600,
-                      color: isCurrent ? "#000" : "#21262b",
-                      fontSize: 18,
-                      letterSpacing: ".5px",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 10,
+                      objectFit: "cover",
+                      boxShadow: "0 2px 8px #0001",
+                      zIndex: 0,
                     }}
-                  >
-                    {user.name}
+                  />
+                </div>
                   </div>
+                  
+                  {/* Trophy + Username */}
+                <div
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    fontWeight: isCurrent ? 900 : 700,
+                    color: "inherit",
+                    fontSize: 18,
+                    letterSpacing: ".5px",
+                  }}
+                >
+
+                  {userNickname[user.id] ?? "Unkown"}
+                </div>
+                    
                   <div
                     style={{
                       minWidth: 80,
