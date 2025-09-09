@@ -270,25 +270,6 @@ export default function StudentCoursePage() {
           id
           title
           description
-          dailyQuests {
-            forDay
-            id
-            name
-            quests {
-              completed
-              completedCount
-              courseId
-              description
-              id
-              name
-              requiredCount
-              rewardPoints
-              trackingEndTime
-              trackingStartTime
-              userId
-            }
-            rewardMultiplier
-          }
           rewardScores {
             ...RewardScoresFragment
           }
@@ -484,13 +465,33 @@ export default function StudentCoursePage() {
         )}
       </div>
 
-      {/* Quest */}
-      <Box marginBottom={2} marginTop={2}>
-        <QuestList
-          questsProp={course.dailyQuests.quests}
-          streak={course.dailyQuests.rewardMultiplier}
-        />
-      </Box>
+      {/* Quick widgets row */}
+      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+        <Grid item xs={12} md={6}>
+          {/* Integrated XP widget */}
+          <XPWidget userId={userId} />
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          {/* Keep space for future widgets (Forum/Questions etc.) */}
+          <Box
+            sx={{
+              p: 2,
+              border: "4px solid",
+              borderColor: "divider",
+              borderRadius: "24px",
+              height: "100%",
+            }}
+          >
+            <Typography variant="h2" component="h2" gutterBottom>
+              Forum &amp; Questions
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Check the Forum tab for new posts and open questions.
+            </Typography>
+          </Box>
+        </Grid>
+      </Grid>
 
       {/* Tabs for Learning Progress and Chapters */}
       <Box sx={{ width: "100%", mt: 2 }}>
@@ -504,7 +505,6 @@ export default function StudentCoursePage() {
             <Tab label="Learning Progress" {...a11yProps(1)} />
             <Tab label="Chapters" {...a11yProps(2)} />
             <Tab label="Forum" {...a11yProps(3)} />
-            <Tab label="Leaderboard" {...a11yProps(4)} />
           </Tabs>
         </Box>
 
@@ -712,6 +712,7 @@ export default function StudentCoursePage() {
           </Suspense>
         </CustomTabPanel>
 
+
         <CustomTabPanel value={value} index={4}>
           <Suspense fallback={<SkeletonThreadList />}>
             <CourseLeaderboards
@@ -721,6 +722,7 @@ export default function StudentCoursePage() {
             />
           </Suspense>
         </CustomTabPanel>
+
       </Box>
     </main>
   );
