@@ -15,8 +15,8 @@ import { Box } from "@mui/material";
 import * as React from "react";
 import { useLazyLoadQuery } from "react-relay";
 import AchievementWidgetOverview from "./components/achievement/AchievementWidgetOverview";
-import XPWidget from "@/components/widgets/XPWidget";
-import LeaderboardWidget from "@/components/leaderboard/LeaderboardWidget";
+import XPWidget from "@/components/widgets/components/xpsystem/XPWidget";
+import LeaderboardWidget from "@/components/widgets/components/leaderboard/LeaderboardWidget";
 
 type Properties = {
   userId: string;

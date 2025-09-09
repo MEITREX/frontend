@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { useLazyLoadQuery, graphql } from "react-relay/hooks";
 import type { XPWidgetQuery as XPWidgetQueryType } from "@/__generated__/XPWidgetQuery.graphql";
+import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
 
 // --- Types to mirror the profile implementation ---
 type UserLevelInfo = {
@@ -91,19 +92,12 @@ const XPWidgetQuery = graphql`
 
 // --- Robust GraphQL URL + Auth handling (same as profile) ---
 function resolveGraphqlUrl(): string {
-  // Prefer explicit envs; fall back to localhost:8080
   const fromEnv =
     process.env.NEXT_PUBLIC_GRAPHQL_URL ||
     process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
     "";
-  if (fromEnv && /^https?:\/\//.test(fromEnv)) {
-    return fromEnv;
-  }
-  if (fromEnv && fromEnv.startsWith("/")) {
-    // absolute path, keep as-is
-    return fromEnv;
-  }
-  // default dev backend
+  if (fromEnv && /^https?:\/\//.test(fromEnv)) return fromEnv;
+  if (fromEnv && fromEnv.startsWith("/")) return fromEnv;
   return "http://localhost:8080/graphql";
 }
 
@@ -112,14 +106,10 @@ const GRAPHQL_URL = resolveGraphqlUrl();
 function getAuthHeader(): Record<string, string> {
   try {
     if (typeof window === "undefined") return {};
-
-    // 1) explicit global (e.g., set in app):
     const tokenFromGlobal = (window as any).__AUTH_TOKEN__;
     if (tokenFromGlobal) {
       return { Authorization: `Bearer ${tokenFromGlobal}` };
     }
-
-    // 2) try Keycloak OIDC token in localStorage (key starts with 'oidc.user:')
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i) || "";
       if (k.startsWith("oidc.user:")) {
@@ -167,7 +157,7 @@ async function postGraphQL<TData>(
   try {
     const json = (await response.json()) as any;
     return json;
-  } catch (e) {
+  } catch {
     return { errors: [{ message: "Failed to parse GraphQL response" }] } as any;
   }
 }
@@ -253,61 +243,42 @@ export default function XPWidget() {
   );
 
   return (
-    <Box
-      key={userId}
-      sx={{
-        border: "1px solid #ccc",
-        borderRadius: 2,
-        p: 0.75,
-        mb: 4,
-        maxWidth: 450,
-        backgroundColor: "background.paper",
-        maxHeight: "none",
-        minHeight: "auto",
-        overflow: "hidden",
-      }}
+    <WidgetWrapper
+      title={`XP Allocation${userName ? ` · ${userName}` : ""}`}
+      linkHref="/profile/general"
+      linkLabel="Profile"
+      overflow="auto"
     >
+      {/* Kopfzeile: Level + Progress */}
       <Box
         display="flex"
         alignItems="center"
         justifyContent="space-between"
-        mb={0.25}
+        mb={0.5}
+        px={1}
       >
         <Typography
-          variant="subtitle1"
-          sx={{
-            fontWeight: 800,
-            lineHeight: 1.1,
-            textTransform: "none",
-            fontSize: "0.9rem",
-          }}
+          variant="caption"
+          sx={{ fontWeight: 700, fontSize: "0.9rem", mr: 0.75 }}
         >
-          {`XP Allocation${userName ? ` · ${userName}` : ""}`}
+          Level {level}
         </Typography>
-
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Typography
-            variant="caption"
-            sx={{ fontWeight: 700, fontSize: "0.85rem", mr: 0.75 }}
-          >
-            Level {level}
-          </Typography>
-          <Box sx={{ flexGrow: 1, mr: 0.75, minWidth: 130 }}>
-            <LinearProgress
-              variant="determinate"
-              value={progress}
-              sx={{ height: 6 }}
-            />
-          </Box>
-          <Typography
-            variant="caption"
-            sx={{ minWidth: 50, fontSize: "0.85rem", lineHeight: 1.1 }}
-          >
-            {loadingLevel ? "…" : `${currentXPRounded} / ${requiredXPRounded}`}
-          </Typography>
+        <Box sx={{ flexGrow: 1, mr: 0.75, minWidth: 130 }}>
+          <LinearProgress
+            variant="determinate"
+            value={progress}
+            sx={{ height: 6 }}
+          />
         </Box>
+        <Typography
+          variant="caption"
+          sx={{ minWidth: 50, fontSize: "0.85rem", lineHeight: 1.1 }}
+        >
+          {loadingLevel ? "…" : `${currentXPRounded} / ${requiredXPRounded}`}
+        </Typography>
       </Box>
 
+      {/* Tabelle der XP-Quellen */}
       <Table
         size="small"
         sx={{
@@ -319,7 +290,7 @@ export default function XPWidget() {
         <TableHead>
           <TableRow>
             <TableCell
-              sx={{ fontWeight: 700, pl: 0, fontSize: "0.9rem", width: "70%" }}
+              sx={{ fontWeight: 700, pl: 1, fontSize: "0.9rem", width: "70%" }}
             >
               <Typography
                 sx={{ lineHeight: 1.1, fontSize: "0.9rem", fontWeight: 700 }}
@@ -329,7 +300,7 @@ export default function XPWidget() {
             </TableCell>
             <TableCell
               align="right"
-              sx={{ fontWeight: 700, pr: 0, fontSize: "0.9rem", width: "30%" }}
+              sx={{ fontWeight: 700, pr: 1, fontSize: "0.9rem", width: "30%" }}
             >
               <Typography
                 sx={{ lineHeight: 1.1, fontSize: "0.9rem", fontWeight: 700 }}
@@ -344,7 +315,7 @@ export default function XPWidget() {
             <TableRow key={id}>
               <TableCell
                 sx={{
-                  pl: 0,
+                  pl: 1,
                   pr: 1.5,
                   fontSize: "0.9rem",
                   verticalAlign: "top",
@@ -384,7 +355,7 @@ export default function XPWidget() {
               <TableCell
                 align="right"
                 sx={{
-                  pr: 0,
+                  pr: 1,
                   fontSize: "0.9rem",
                   verticalAlign: "top",
                   width: "30%",
@@ -407,6 +378,6 @@ export default function XPWidget() {
           ))}
         </TableBody>
       </Table>
-    </Box>
+    </WidgetWrapper>
   );
 }

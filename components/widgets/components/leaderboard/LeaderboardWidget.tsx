@@ -2,6 +2,7 @@ import type { LeaderboardWidgetQuery } from "@/__generated__/LeaderboardWidgetQu
 import React, { useEffect, useMemo, useRef } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
 import defaultUserImage from "../../assets/logo.svg";
+import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
 
 interface Props {
   courseID: string;
@@ -98,14 +99,11 @@ const LeaderboardWidget: React.FC<Props> = ({
   }
 
   return (
-    <div
-      style={{
-        width: "100%",
-        maxWidth: 800,
-        margin: "0 auto",
-        fontFamily: "Roboto, Arial, sans-serif",
-        fontSize: 14,
-      }}
+    <WidgetWrapper
+      title="Leaderboard"
+      linkHref="/profile/leaderboards"
+      linkLabel="Leaderboards"
+      overflow="auto"
     >
       {noCourse ? (
         <div style={{ padding: 8, color: "#666" }}>No course selected.</div>
@@ -203,7 +201,7 @@ const LeaderboardWidget: React.FC<Props> = ({
           </div>
         </>
       )}
-    </div>
+    </WidgetWrapper>
   );
 };
 
