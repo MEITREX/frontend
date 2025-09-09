@@ -463,6 +463,9 @@ export default function Leaderboard({
   const [userPatternThemes, setUserPatternThemes] = React.useState<
     Record<string, PatternTheme | null>
   >({});
+  const [userNickname, setUserNickname] = React.useState<
+    Record<string, string | null>
+  >({});
 
   function assetSrc(
     a?: { url?: string | null; id?: string } | null,
@@ -488,6 +491,7 @@ export default function Leaderboard({
       setUserProfileFrames({});
       setUserColorThemes({});
       setUserPatternThemes({});
+      setUserNickname({});
       return;
     }
 
@@ -502,6 +506,16 @@ export default function Leaderboard({
               { userId }
             ).toPromise();
 
+            // Public Info Query
+            const dataNick = await fetchQuery<LeaderboardRowPublicInfoQuery>(
+              env,
+              PublicInfoQuery,
+              { id: [userId] }
+            ).toPromise();
+
+            // je nach Schema das erste Element nehmen:
+            const nick = dataNick?.findUserInfos?.[0]?.nickname ?? null;
+
             const items = data?.itemsByUserId ?? [];
 
             const pics = getPublicProfileItemsMerged(items, "profilePics");
@@ -509,18 +523,18 @@ export default function Leaderboard({
               items,
               "profilePicFrames"
             );
-            const colors = getPublicProfileItemsMerged(items, "colorThemes"); // ← neu
+            const colors = getPublicProfileItemsMerged(items, "colorThemes");
             const patterns = getPublicProfileItemsMerged(
               items,
               "patternThemes"
-            ); // ← neu
+            );
 
             const pic = pics.find((it: any) => it.equipped) ?? null;
             const frame = frames.find((it: any) => it.equipped) ?? null;
             const color = colors.find((it: any) => it.equipped) ?? null;
             const pattern = patterns.find((it: any) => it.equipped) ?? null;
 
-            return [userId, pic, frame, color, pattern] as const;
+            return [userId, pic, frame, color, pattern, nick] as const;
           })
         );
 
@@ -529,18 +543,21 @@ export default function Leaderboard({
           const framesMap: Record<string, Asset | null> = {};
           const colorsMap: Record<string, ColorTheme | null> = {};
           const patternsMap: Record<string, PatternTheme | null> = {};
+          const nicksMap: Record<string, string | null> = {};
 
-          for (const [id, pic, frame, color, pattern] of results) {
+          for (const [id, pic, frame, color, pattern, nick] of results) {
             picsMap[id] = pic;
             framesMap[id] = frame;
             colorsMap[id] = color;
             patternsMap[id] = pattern;
+            nicksMap[id] = nick;
           }
 
           setUserProfilePics(picsMap);
           setUserProfileFrames(framesMap);
           setUserColorThemes(colorsMap);
           setUserPatternThemes(patternsMap);
+          setUserNickname(nicksMap);
         }
       } catch (e) {
         console.warn("[Leaderboard] per-user inventory fetch failed:", e);
@@ -552,26 +569,29 @@ export default function Leaderboard({
     };
   }, [env, JSON.stringify(displayUsers.map((u) => u.id))]);
 
-  function userCardStyle(userId: string, base: React.CSSProperties = {}): React.CSSProperties {
-  const col = userColorThemes[userId];
-  const pat = userPatternThemes[userId];
+  function userCardStyle(
+    userId: string,
+    base: React.CSSProperties = {}
+  ): React.CSSProperties {
+    const col = userColorThemes[userId];
+    const pat = userPatternThemes[userId];
 
-  const style: React.CSSProperties = { ...base };
+    const style: React.CSSProperties = { ...base };
 
-  if (col?.backColor) style.backgroundColor = col.backColor;
+    if (col?.backColor) style.backgroundColor = col.backColor;
 
-  const patUrl = assetSrc(pat);
-  if (patUrl) {
-    style.backgroundImage = `url(${patUrl})`;
-    style.backgroundRepeat = "repeat";
-    style.backgroundSize = "100%";
+    const patUrl = assetSrc(pat);
+    if (patUrl) {
+      style.backgroundImage = `url(${patUrl})`;
+      style.backgroundRepeat = "repeat";
+      style.backgroundSize = "100%";
+    }
+
+    const fg = col?.foreColor ?? pat?.foreColor; // ← wichtig: Pattern-Foreground berücksichtigen
+    if (fg) style.color = fg;
+
+    return style;
   }
-
-  const fg = col?.foreColor ?? pat?.foreColor; // ← wichtig: Pattern-Foreground berücksichtigen
-  if (fg) style.color = fg;
-
-  return style;
-}
 
   React.useEffect(() => {
     if (currentUserRef.current && othersContainerRef.current) {
@@ -682,104 +702,95 @@ export default function Leaderboard({
         {topThree.map((user, idx) => {
           const isCurrent = user.isCurrentUser;
 
-          const { findUserInfos } =
-            useLazyLoadQuery<LeaderboardRowPublicInfoQuery>(
-              PublicInfoQuery,
-              { id: [user.id] },
-              { fetchPolicy: "store-or-network" }
-            );
-
-          const avatarSrc = getAvatarSrc(
-            userProfilePics,
-            user.id,
-            defaultUserImage.src
-          );
-
           return (
             <HoverCard
-          key={user.id}
-          card={
-            <div
-              style={userCardStyle(user.id, {
-                position: "relative",
-                isolation: "isolate", // erzeugt eigenen Stacking-Context
-                overflow: "hidden",
-                borderRadius: 8,
-                minWidth: 220,
-                minHeight: 120,
-              })}
-            >
-
-
-              {/* optionaler Weiß-Schleier für Lesbarkeit */}
-              {/* <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.35)", zIndex: 0 }} /> */}
-
-              {/* Inhalt oben drüber */}
-
-              <div style={{ position: "relative", zIndex: 1, padding: 8 }}>
+              key={user.id}
+              card={
                 <div
-                  style={{
+                  style={userCardStyle(user.id, {
                     position: "relative",
-                    width: 48,
-                    height: 48,
-                    margin: "0 auto 10px",
-                  }}
+                    isolation: "isolate", // erzeugt eigenen Stacking-Context
+                    overflow: "hidden",
+                    borderRadius: 8,
+                    minWidth: 220,
+                    minHeight: 120,
+                  })}
                 >
-                  {/* Rahmen-Bild */}
-                  {assetSrc(userProfileFrames[user.id]) && (
-                    <img
-                      src={assetSrc(userProfileFrames[user.id])}
-                      alt={findUserInfos[0]?.nickname}
+                  {/* optionaler Weiß-Schleier für Lesbarkeit */}
+                  {/* <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.35)", zIndex: 0 }} /> */}
+
+                  {/* Inhalt oben drüber */}
+
+                  <div style={{ position: "relative", zIndex: 1, padding: 8 }}>
+                    <div
                       style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        borderRadius: 10,
-                        objectFit: "cover",
-                        boxShadow: "0 2px 8px #0001",
-                        zIndex: 1,
+                        position: "relative",
+                        width: 48,
+                        height: 48,
+                        margin: "0 auto 10px",
                       }}
-                    />
-                  )}
+                    >
+                      {/* Rahmen-Bild */}
+                      {assetSrc(userProfileFrames[user.id]) && (
+                        <img
+                          src={assetSrc(userProfileFrames[user.id])}
+                          alt={userNickname[user.id] ?? "Unkown"}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            borderRadius: 10,
+                            objectFit: "cover",
+                            boxShadow: "0 2px 8px #0001",
+                            zIndex: 1,
+                          }}
+                        />
+                      )}
 
-                  {/* Profilbild */}
-                  <img
-                    src={assetSrc(userProfilePics[user.id], defaultUserImage.src)!}
-                    alt={findUserInfos[0]?.nickname}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      borderRadius: 10,
-                      objectFit: "cover",
-                      boxShadow: "0 2px 8px #0001",
-                      zIndex: 0,
-                    }}
-                  />
-                </div>
+                      {/* Profilbild */}
+                      <img
+                        src={
+                          assetSrc(
+                            userProfilePics[user.id],
+                            defaultUserImage.src
+                          )!
+                        }
+                        alt={userNickname[user.id] ?? "Unkown"}
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: 10,
+                          objectFit: "cover",
+                          boxShadow: "0 2px 8px #0001",
+                          zIndex: 0,
+                        }}
+                      />
+                    </div>
 
-                <div
-                  style={{
-                    fontWeight: 700,
-                    fontSize: 18,
-                    marginBottom: 4,
-
-                  }}
-                >
-                  {findUserInfos[0]?.nickname}
+                    <div
+                      style={{
+                        fontWeight: 700,
+                        fontSize: 18,
+                        marginBottom: 4,
+                      }}
+                    >
+                      {userNickname[user.id] ?? "Unkown"}
+                    </div>
+                    <div
+                      style={{ fontSize: 15, color: "#a1a6b2", marginTop: 8 }}
+                    >
+                      Profilinfos folgen…
+                    </div>
+                  </div>
                 </div>
-                <div style={{ fontSize: 15, color: "#a1a6b2", marginTop: 8 }}>
-                  Profilinfos folgen…
-                </div>
-              </div>
-            </div>
-          }
-          position="bottom"
-        >
+              }
+              position="bottom"
+            >
               <div
                 style={userCardStyle(user.id, {
                   display: "flex",
@@ -879,7 +890,7 @@ export default function Leaderboard({
                   }}
                 >
                   {trophies[idx]}
-                  {findUserInfos[0]?.nickname}
+                  {userNickname[user.id] ?? "Unkown"}
                 </div>
                 {/* Punkte */}
                 <div
