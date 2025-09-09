@@ -128,7 +128,8 @@ export default function UserPostInformation({
       spacing={1}
       alignItems="center"
       flexWrap="nowrap"
-      overflow="hidden">
+      overflow="hidden"
+    >
       {displayPB && (
         <HoverCard
           key={userInfo?.id}
@@ -272,7 +273,13 @@ export default function UserPostInformation({
       )}
 
       {displayDate && (
-        <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="nowrap" minWidth={0}>
+        <Stack
+          direction="row"
+          spacing={0.5}
+          alignItems="center"
+          flexWrap="nowrap"
+          minWidth={0}
+        >
           <CalendarTodayIcon fontSize="small" />
           <Typography
             variant="caption"

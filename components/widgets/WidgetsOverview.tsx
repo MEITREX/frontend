@@ -46,7 +46,6 @@ const mockedRecommendations: MockedRecommendation[] = [
   },
 ];
 
-
 export default function WidgetsOverview({ userId, courseId }: Properties) {
   // ADD NEW WIDGETS HERE:
   const widgets = [

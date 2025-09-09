@@ -147,7 +147,13 @@ function enrichScoresWithNames(
 }
 
 export default function PublicProfilePage() {
-  const publicTabs = ["Achievements", "Forum", "Badges", "Leaderboards", "Items"];
+  const publicTabs = [
+    "Achievements",
+    "Forum",
+    "Badges",
+    "Leaderboards",
+    "Items",
+  ];
   const [tabIndex, setTabIndex] = useState(0);
 
   const params = useParams();
@@ -401,7 +407,7 @@ export default function PublicProfilePage() {
           </Box>
         )}
 
-                {tabIndex === 4 && (
+        {tabIndex === 4 && (
           <SortProvider>
             <ProfileInventorySection userId={userId} />
           </SortProvider>

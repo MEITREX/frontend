@@ -51,7 +51,14 @@ export default function ForumActivity({
     >
       {!post ? (
         <Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "nowrap" }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5,
+              flexWrap: "nowrap",
+            }}
+          >
             <Typography
               variant="caption"
               color="text.secondary"
