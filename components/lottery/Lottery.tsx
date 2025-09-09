@@ -312,8 +312,8 @@ export default function Lottery() {
               rarity === ("rare" as Rarity)
                 ? "#8e44ad"
                 : rarity === ("ultra_rare" as Rarity)
-                  ? "#e53935"
-                  : "",
+                ? "#e53935"
+                : "",
             ]}
             width={600}
             height={600}
@@ -340,8 +340,8 @@ export default function Lottery() {
             isOpening && currentFrame < frames.length - crackingFrame
               ? "eggWobbleBounce 0.6s ease-in-out infinite"
               : isEggWobbling
-                ? "eggWobble 0.6s ease-in-out infinite"
-                : "none",
+              ? "eggWobble 0.6s ease-in-out infinite"
+              : "none",
           zIndex: 2,
         }}
       >
@@ -406,12 +406,12 @@ export default function Lottery() {
                 rarity === ("common" as Rarity)
                   ? "#e0e0e0"
                   : rarity === ("uncommon" as Rarity)
-                    ? "#d4af37"
-                    : rarity === ("rare" as Rarity)
-                      ? "#8e44ad"
-                      : rarity === ("ultra_rare" as Rarity)
-                        ? "#e53935"
-                        : "#e0e0e0",
+                  ? "#d4af37"
+                  : rarity === ("rare" as Rarity)
+                  ? "#8e44ad"
+                  : rarity === ("ultra_rare" as Rarity)
+                  ? "#e53935"
+                  : "#e0e0e0",
               color: "white",
               fontSize: "0.75rem",
               fontWeight: "bold",
