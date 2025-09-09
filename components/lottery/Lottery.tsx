@@ -1,15 +1,12 @@
 "use client";
 
-import CloseIcon from "@mui/icons-material/Close";
-import { Box, Button, IconButton, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { Box, Typography, Button, IconButton } from "@mui/material";
 import Confetti from "react-confetti";
+import CloseIcon from "@mui/icons-material/Close";
 
 import frame_1 from "../../assets/lottery/animation/frame_1.png";
-import frame_10 from "../../assets/lottery/animation/frame_10.png";
-import frame_11 from "../../assets/lottery/animation/frame_11.png";
-import frame_12 from "../../assets/lottery/animation/frame_12.png";
 import frame_2 from "../../assets/lottery/animation/frame_2.png";
 import frame_3 from "../../assets/lottery/animation/frame_3.png";
 import frame_4 from "../../assets/lottery/animation/frame_4.png";
@@ -18,20 +15,23 @@ import frame_6 from "../../assets/lottery/animation/frame_6.png";
 import frame_7 from "../../assets/lottery/animation/frame_7.png";
 import frame_8 from "../../assets/lottery/animation/frame_8.png";
 import frame_9 from "../../assets/lottery/animation/frame_9.png";
+import frame_10 from "../../assets/lottery/animation/frame_10.png";
+import frame_11 from "../../assets/lottery/animation/frame_11.png";
+import frame_12 from "../../assets/lottery/animation/frame_12.png";
 
 import coins from "../../assets/lottery/coins.png";
 
-import { LotteryApiLotteryEquipItemMutation } from "@/__generated__/LotteryApiLotteryEquipItemMutation.graphql";
-import { LotteryApiLotteryRunMutation } from "@/__generated__/LotteryApiLotteryRunMutation.graphql";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import { useCurrency } from "@/app/contexts/CurrencyContext";
-import { Rarity, rarityMap } from "@/components/items/types/Types";
+import { useMutation } from "react-relay";
 import {
   lotteryApiLotteryEquipItemMutation,
   lotteryApiLotteryRunMutation,
 } from "@/components/lottery/api/LotteryApi";
-import VolumeOffIcon from "@mui/icons-material/VolumeOff";
-import VolumeUpIcon from "@mui/icons-material/VolumeUp";
-import { useMutation } from "react-relay";
+import { LotteryApiLotteryRunMutation } from "@/__generated__/LotteryApiLotteryRunMutation.graphql";
+import { LotteryApiLotteryEquipItemMutation } from "@/__generated__/LotteryApiLotteryEquipItemMutation.graphql";
+import { Rarity, rarityMap } from "@/components/items/types/Types";
 
 export interface LotteryRun {
   id: string;
@@ -146,7 +146,7 @@ export default function Lottery() {
     playFrames();
 
     return () => {};
-  }, [isOpening, crackSound, frames.length, mute, rarity, sparkle]);
+  }, [isOpening]);
 
   const handleOpenEgg = () => {
     if (points! < eggCost || isOpening) return;
@@ -312,8 +312,8 @@ export default function Lottery() {
               rarity === ("rare" as Rarity)
                 ? "#8e44ad"
                 : rarity === ("ultra_rare" as Rarity)
-                ? "#e53935"
-                : "",
+                  ? "#e53935"
+                  : "",
             ]}
             width={600}
             height={600}
@@ -340,8 +340,8 @@ export default function Lottery() {
             isOpening && currentFrame < frames.length - crackingFrame
               ? "eggWobbleBounce 0.6s ease-in-out infinite"
               : isEggWobbling
-              ? "eggWobble 0.6s ease-in-out infinite"
-              : "none",
+                ? "eggWobble 0.6s ease-in-out infinite"
+                : "none",
           zIndex: 2,
         }}
       >
@@ -406,12 +406,12 @@ export default function Lottery() {
                 rarity === ("common" as Rarity)
                   ? "#e0e0e0"
                   : rarity === ("uncommon" as Rarity)
-                  ? "#d4af37"
-                  : rarity === ("rare" as Rarity)
-                  ? "#8e44ad"
-                  : rarity === ("ultra_rare" as Rarity)
-                  ? "#e53935"
-                  : "#e0e0e0",
+                    ? "#d4af37"
+                    : rarity === ("rare" as Rarity)
+                      ? "#8e44ad"
+                      : rarity === ("ultra_rare" as Rarity)
+                        ? "#e53935"
+                        : "#e0e0e0",
               color: "white",
               fontSize: "0.75rem",
               fontWeight: "bold",
