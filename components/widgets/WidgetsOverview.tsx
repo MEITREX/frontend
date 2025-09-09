@@ -21,10 +21,31 @@ type Properties = {
   courseId: string;
 };
 
+// Use this to mock widgets
 type MockedRecommendation = {
   category: GamificationCategory;
   requestFeedback: boolean;
 };
+
+const mockedRecommendations: MockedRecommendation[] = [
+  {
+    category: "ALTRUISM",
+    requestFeedback: false,
+  },
+  {
+    category: "CUSTOMIZATION",
+    requestFeedback: false,
+  },
+  {
+    category: "RISK_REWARD",
+    requestFeedback: false,
+  },
+  {
+    category: "ASSISTANCE",
+    requestFeedback: false,
+  },
+];
+
 
 export default function WidgetsOverview({ userId, courseId }: Properties) {
   // ADD NEW WIDGETS HERE:
@@ -89,6 +110,7 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
   }
 
   // Map User preferred categories to Widget-Components
+  // Testing: Use mockedRecommendations
   const selectedWidgets = widgets
     .map((w) => {
       const recommendation = recommendations.find(
