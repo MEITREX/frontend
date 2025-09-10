@@ -366,8 +366,6 @@ export default function QuestList({
     setOpen(true);
   };
 
-
-
   return (
     <Box sx={{ mx: "auto" }}>
       {/* Header: unten bündig */}
