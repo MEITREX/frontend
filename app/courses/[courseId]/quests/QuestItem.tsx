@@ -42,6 +42,11 @@ function QuestItem({
   completed,
   completedCount,
   requiredCount,
+  courseId,
+  id,
+  trackingStartTime,
+  trackingEndTime,
+  userId,
   onOpen,
   streak,
 }: QuestProps) {
@@ -65,11 +70,11 @@ function QuestItem({
           completed,
           completedCount,
           requiredCount,
-          courseId: "",
-          id: "",
-          trackingEndTime: null,
-          trackingStartTime: null,
-          userId: "",
+          courseId,
+          id,
+          trackingEndTime,
+          trackingStartTime,
+          userId,
         })
       }
       onKeyDown={(e) => {
@@ -81,11 +86,11 @@ function QuestItem({
             completed,
             completedCount,
             requiredCount,
-            courseId: "",
-            id: "",
-            trackingEndTime: null,
-            trackingStartTime: null,
-            userId: "",
+            courseId,
+            id,
+            trackingEndTime,
+            trackingStartTime,
+            userId,
           });
         }
       }}
@@ -100,6 +105,12 @@ function QuestItem({
         border: `3px solid ${completed ? "#1aa80e" : "#009bde"}`,
         background:
           "linear-gradient(180deg, rgba(255,255,255,0.96), rgba(245,245,245,0.96))",
+           transition: "max-height 0.3s ease", // sanftes Aufklappen
+    maxHeight: 160, // Platz für 2 Zeilen + Rest
+    overflow: "hidden",
+    "&:hover": {
+      maxHeight: 400, // genug Platz für volle Beschreibung
+    },
       }}
     >
       {/* Top Row: Titel/Description + Chip */}
@@ -129,6 +140,14 @@ function QuestItem({
               display: "-webkit-box",
               WebkitLineClamp: 2,
               WebkitBoxOrient: "vertical",
+                minHeight: "2.4em",
+    lineHeight: 1.2,
+              transition: "all 0.3s ease",
+      "&:hover": {
+        WebkitLineClamp: "unset",
+        display: "block",
+        whiteSpace: "normal"
+      }
             }}
             title={description}
           >
@@ -329,6 +348,8 @@ function QuestDialog({
   );
 }
 
+
+
 export default function QuestList({
   questsProp,
   streak,
@@ -343,6 +364,48 @@ export default function QuestList({
     setSelected(q);
     setOpen(true);
   };
+
+   const quests: Quest[] = [
+    {
+      name: "Gewinne ein Match",
+      description: "Gewinne ein beliebiges Match im DinoBattle.",
+      rewardPoints: 300,
+      completed: false,
+      completedCount: 1,
+      requiredCount: 3,
+      courseId: "",
+      id: "3",
+      trackingEndTime: null,
+      trackingStartTime: null,
+      userId: ""
+    },
+    {
+      name: "Sammle Beeren",
+      description: "Sammle 10 Beeren im Abenteuer-Modus. dfh h fdh fdgh fgdh fdhfgdhdfg  fgdhfd gh f",
+      rewardPoints: 300,
+      completed: false,
+      completedCount: 7,
+      requiredCount: 10,
+      courseId: "",
+      id: "1",
+      trackingEndTime: null,
+      trackingStartTime: null,
+      userId: ""
+    },
+    {
+      name: "Login-Serie",
+      description: "Logge dich 3 Tage in Folge ein.",
+      rewardPoints: 300,
+      completed: true,
+      courseId: "",
+      id: "2",
+      trackingEndTime: null,
+      trackingStartTime: null,
+      userId: "",
+      completedCount: null,
+      requiredCount: null
+    },
+  ];
 
   return (
     <Box sx={{ mx: "auto" }}>
@@ -367,10 +430,12 @@ export default function QuestList({
         </Typography>
       </Box>
 
+
+
       {/* Grid: aus Daten-Array gerendert */}
       <Box sx={{ p: 2 }}>
         <Grid container spacing={2}>
-          {questsProp.map((q) => (
+          {quests.map((q) => (
             <Grid key={q.name} item xs={12} sm={4}>
               <QuestItem {...q} onOpen={openDialog} streak={streak} />
             </Grid>
