@@ -1,4 +1,5 @@
 import CloseIcon from "@mui/icons-material/Close";
+import HelpIcon from '@mui/icons-material/Help';
 import {
   Box,
   Chip,
@@ -30,7 +31,6 @@ type Quest = {
 
 type QuestProps = Quest & {
   onOpen: (q: Quest) => void;
-  streak: number;
 };
 
 const PROGRESS_BLOCK_HEIGHT = 48; // feinjustierbar (44–56 je nach Typo)
@@ -48,7 +48,6 @@ function QuestItem({
   trackingEndTime,
   userId,
   onOpen,
-  streak,
 }: QuestProps) {
   let percent = -1;
 
@@ -172,19 +171,6 @@ function QuestItem({
           }
           sx={{ fontWeight: "bold" }}
         />
-
-        {!completed && (
-          <Tooltip title="Reward multiplier">
-            <Chip
-              label={`x${streak ?? 1}`} // dynamisch oder fallback x3
-              sx={{
-                fontWeight: "bold",
-                backgroundColor: "#009bde",
-                color: "white",
-              }}
-            />
-          </Tooltip>
-        )}
       </Box>
 
       {/* Bottom Row: Progress-Bar */}
@@ -366,35 +352,108 @@ export default function QuestList({
     setOpen(true);
   };
 
+  const quests: Quest[] = [
+    {
+      name: "Gewinne ein Match",
+      description: "Gewinne ein beliebiges Match im DinoBattle.",
+      rewardPoints: 300,
+      completed: false,
+      completedCount: 1,
+      requiredCount: 3,
+      courseId: "",
+      id: "3",
+      trackingEndTime: null,
+      trackingStartTime: null,
+      userId: "",
+    },
+    {
+      name: "Sammle Beeren",
+      description:
+        "Sammle 10 Beeren im Abenteuer-Modus. dfh h fdh fdgh fgdh fdhfgdhdfg fgdhfd gh f",
+      rewardPoints: 300,
+      completed: false,
+      completedCount: 7,
+      requiredCount: 10,
+      courseId: "",
+      id: "1",
+      trackingEndTime: null,
+      trackingStartTime: null,
+      userId: "",
+    },
+    {
+      name: "Login-Serie",
+      description: "Logge dich 3 Tage in Folge ein.",
+      rewardPoints: 300,
+      completed: true,
+      courseId: "",
+      id: "2",
+      trackingEndTime: null,
+      trackingStartTime: null,
+      userId: "",
+      completedCount: null,
+      requiredCount: null,
+    },
+  ];
+
   return (
     <Box sx={{ mx: "auto" }}>
       {/* Header: unten bündig */}
       <Box
         sx={{
+          position: "relative",
           display: "flex",
           alignItems: "flex-end",
           gap: 2,
         }}
       >
-        <Typography variant="h4" sx={{ fontWeight: 800 }}>
+        <Typography variant="h2" sx={{ fontWeight: 400 }}>
           Daily Quests
         </Typography>
 
         <Typography
           variant="body2"
-          sx={{ color: "text.secondary", pb: 0.5 /* Feintuning falls nötig */ }}
+          sx={{
+            color: "text.secondary",
+            pb: 0.15 /* Feintuning falls nötig */,
+          }}
         >
           Finish the quests below to earn additional Dino Points.{" "}
           <strong>Careful:</strong> Quests are only temporarily available!
         </Typography>
+
+        {/* Rechtsbündiger Reward-Multiplier im Header */}
+        <Box
+          sx={{
+            position: "absolute",
+            right: 0,
+            bottom: 0, // ← bündig zur Überschrift
+          }}
+        >
+          <Tooltip title="Reward multiplier">
+            <Chip
+              label={`x${streak ?? 1}`}
+              sx={{
+                fontWeight: "bold",
+                backgroundColor: "#009bde",
+                color: "white",
+              }}
+            />
+          </Tooltip>
+
+          <Tooltip title="Your reward multiplier increases if you complete all your quests for a day. If you break your streak, the reward multiplier resets to 1x. A higher reward multiplier increases the amount of DinoPoints you receive for completing a quest">
+            <IconButton size="small" sx={{ color: "text.secondary" }}>
+              <HelpIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
 
       {/* Grid: aus Daten-Array gerendert */}
       <Box sx={{ p: 2 }}>
         <Grid container spacing={2}>
-          {questsProp.map((q) => (
+          {quests.map((q) => (
             <Grid key={q.name} item xs={12} sm={4}>
-              <QuestItem {...q} onOpen={openDialog} streak={streak} />
+              <QuestItem {...q} onOpen={openDialog} />
             </Grid>
           ))}
         </Grid>
