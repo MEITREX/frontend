@@ -105,19 +105,19 @@ function QuestItem({
         border: `3px solid ${completed ? "#1aa80e" : "#009bde"}`,
         background:
           "linear-gradient(180deg, rgba(255,255,255,0.96), rgba(245,245,245,0.96))",
-           transition: "max-height 0.3s ease", // sanftes Aufklappen
-    maxHeight: 160, // Platz für 2 Zeilen + Rest
-    overflow: "hidden",
-    // Aufklappen bei Hover ODER Tastaturfokus
-    "&:hover, &:focus-within": {
-      maxHeight: 400,
-    },
-    // Beim Aufklappen: Clamp der Beschreibung entfernen
-    "&:hover .quest-desc, &:focus-within .quest-desc": {
-      WebkitLineClamp: "unset",
-      display: "block",
-      whiteSpace: "normal",
-    },
+        transition: "max-height 0.3s ease", // sanftes Aufklappen
+        maxHeight: 160, // Platz für 2 Zeilen + Rest
+        overflow: "hidden",
+        // Aufklappen bei Hover ODER Tastaturfokus
+        "&:hover, &:focus-within": {
+          maxHeight: 400,
+        },
+        // Beim Aufklappen: Clamp der Beschreibung entfernen
+        "&:hover .quest-desc, &:focus-within .quest-desc": {
+          WebkitLineClamp: "unset",
+          display: "block",
+          whiteSpace: "normal",
+        },
       }}
     >
       {/* Top Row: Titel/Description + Chip */}
@@ -138,7 +138,7 @@ function QuestItem({
           </Typography>
 
           <Typography
-          className="quest-desc"
+            className="quest-desc"
             variant="body2"
             sx={{
               color: "text.secondary",
@@ -148,10 +148,9 @@ function QuestItem({
               display: "-webkit-box",
               WebkitLineClamp: 1,
               WebkitBoxOrient: "vertical",
-                minHeight: "1.2em",
-    lineHeight: 1.2,
+              minHeight: "1.2em",
+              lineHeight: 1.2,
               transition: "all 0.3s ease",
-
             }}
             title={description}
           >
@@ -352,8 +351,6 @@ function QuestDialog({
   );
 }
 
-
-
 export default function QuestList({
   questsProp,
   streak,
@@ -369,47 +366,7 @@ export default function QuestList({
     setOpen(true);
   };
 
-   const quests: Quest[] = [
-    {
-      name: "Gewinne ein Match",
-      description: "Gewinne ein beliebiges Match im DinoBattle.",
-      rewardPoints: 300,
-      completed: false,
-      completedCount: 1,
-      requiredCount: 3,
-      courseId: "",
-      id: "3",
-      trackingEndTime: null,
-      trackingStartTime: null,
-      userId: ""
-    },
-    {
-      name: "Sammle Beeren",
-      description: "Sammle 10 Beeren im Abenteuer-Modus. dfh h fdh fdgh fgdh fdhfgdhdfg  fgdhfd gh f",
-      rewardPoints: 300,
-      completed: false,
-      completedCount: 7,
-      requiredCount: 10,
-      courseId: "",
-      id: "1",
-      trackingEndTime: null,
-      trackingStartTime: null,
-      userId: ""
-    },
-    {
-      name: "Login-Serie",
-      description: "Logge dich 3 Tage in Folge ein.",
-      rewardPoints: 300,
-      completed: true,
-      courseId: "",
-      id: "2",
-      trackingEndTime: null,
-      trackingStartTime: null,
-      userId: "",
-      completedCount: null,
-      requiredCount: null
-    },
-  ];
+
 
   return (
     <Box sx={{ mx: "auto" }}>
@@ -434,12 +391,10 @@ export default function QuestList({
         </Typography>
       </Box>
 
-
-
       {/* Grid: aus Daten-Array gerendert */}
       <Box sx={{ p: 2 }}>
         <Grid container spacing={2}>
-          {quests.map((q) => (
+          {questsProp.map((q) => (
             <Grid key={q.name} item xs={12} sm={4}>
               <QuestItem {...q} onOpen={openDialog} streak={streak} />
             </Grid>
