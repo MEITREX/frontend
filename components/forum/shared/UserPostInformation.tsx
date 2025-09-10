@@ -1,14 +1,14 @@
 import { ForumApiUserInfoByIdQuery } from "@/__generated__/ForumApiUserInfoByIdQuery.graphql";
 import { ForumApiUserInfoQuery } from "@/__generated__/ForumApiUserInfoQuery.graphql";
-import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
+import { ItemsApiItemInventoryForUserByIdQuery } from "@/__generated__/ItemsApiItemInventoryForUserByIdQuery.graphql";
 import {
   forumApiUserInfoByIdQuery,
   forumApiUserInfoQuery,
 } from "@/components/forum/api/ForumApi";
 import { ThreadType } from "@/components/forum/types";
 import { HoverCard } from "@/components/HoverCard";
-import { inventoryForUserQuery } from "@/components/items/api/ItemsApi";
-import { getItemsMerged } from "@/components/items/logic/GetItems";
+import { getItemsByUserQuery } from "@/components/items/api/ItemsApi";
+import { getPublicProfileItemsMerged } from "@/components/items/logic/GetItems";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import { Avatar, Stack, Typography } from "@mui/material";
@@ -57,21 +57,27 @@ export default function UserPostInformation({
     backgroundPosition: "center",
   };
 
-  const { inventoryForUser } = useLazyLoadQuery<ItemsApiInventoryForUserQuery>(
-    inventoryForUserQuery,
-    {},
-    { fetchPolicy: "network-only" }
-  );
+  const { itemsByUserId } =
+    useLazyLoadQuery<ItemsApiItemInventoryForUserByIdQuery>(
+      getItemsByUserQuery,
+      {
+        userId: creatorId,
+      },
+      { fetchPolicy: "network-only" }
+    );
 
   // Combine backend and JSON data
-  const itemsParsedMergedPic = getItemsMerged(inventoryForUser, "profilePics");
+  const itemsParsedMergedPic = getPublicProfileItemsMerged(
+    itemsByUserId,
+    "profilePics"
+  );
 
   // Find the equiped item for the UnequipCard
   const equipedItemPic = itemsParsedMergedPic.find((item) => item.equipped);
 
   // Combine backend and JSON data
-  const itemsParsedMergedColorTheme = getItemsMerged(
-    inventoryForUser,
+  const itemsParsedMergedColorTheme = getPublicProfileItemsMerged(
+    itemsByUserId,
     "colorThemes"
   );
 
@@ -81,8 +87,8 @@ export default function UserPostInformation({
   );
 
   // Combine backend and JSON data
-  const itemsParsedMergedPatternTheme = getItemsMerged(
-    inventoryForUser,
+  const itemsParsedMergedPatternTheme = getPublicProfileItemsMerged(
+    itemsByUserId,
     "patternThemes"
   );
 
@@ -92,8 +98,8 @@ export default function UserPostInformation({
   );
 
   // Combine backend and JSON data
-  const itemsParsedMergedPicFrame = getItemsMerged(
-    inventoryForUser,
+  const itemsParsedMergedPicFrame = getPublicProfileItemsMerged(
+    itemsByUserId,
     "profilePicFrames"
   );
 
@@ -120,7 +126,7 @@ export default function UserPostInformation({
     // cardStyle.backgroundColor = "#ffffff";
   }
 
-  console.log(equipedItemPatternTheme?.url);
+  console.log(equipedItemPatternTheme, equipedItemColorTheme);
 
   return (
     <Stack
@@ -133,111 +139,21 @@ export default function UserPostInformation({
       {displayPB && (
         <HoverCard
           key={userInfo?.id}
-          card={
-            <div
-              style={{
-                position: "relative",
-                isolation: "isolate", // erzeugt eigenen Stacking-Context
-                overflow: "hidden",
-                borderRadius: 8,
-                minWidth: 220,
-                minHeight: 120,
-                background: equipedItemColorTheme?.backColor ?? "#ffffff",
-              }}
-            >
-              {equipedItemPatternTheme?.url && (
-                <img
-                  src={equipedItemPatternTheme.url}
-                  alt=""
-                  aria-hidden="true"
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    zIndex: -1, // ganz nach unten
-                    pointerEvents: "none", // Hover/Klicks oben bleiben
-                  }}
-                />
-              )}
-
-              {/* optionaler Weiß-Schleier für Lesbarkeit */}
-              {/* <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.35)", zIndex: 0 }} /> */}
-
-              {/* Inhalt oben drüber */}
-
-              <div style={{ position: "relative", zIndex: 1, padding: 8 }}>
-                <div
-                  style={{
-                    position: "relative",
-                    width: 48,
-                    height: 48,
-                    margin: "0 auto 10px",
-                  }}
-                >
-                  {/* Rahmen-Bild */}
-                  {equipedItemPicFrame && (
-                    <img
-                      src={decodeURIComponent(
-                        equipedItemPicFrame!.url
-                          ? equipedItemPicFrame!.url
-                          : equipedItemPicFrame!.id
-                      )}
-                      alt={userInfo?.nickname}
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        borderRadius: 10,
-                        objectFit: "cover",
-                        boxShadow: "0 2px 8px #0001",
-                        zIndex: 1,
-                      }}
-                    />
-                  )}
-
-                  {/* Profilbild */}
-                  <img
-                    src={decodeURIComponent(
-                      equipedItemPic!.url
-                        ? equipedItemPic!.url
-                        : equipedItemPic!.id
-                    )}
-                    alt={userInfo?.nickname}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      borderRadius: 10,
-                      objectFit: "cover",
-                      boxShadow: "0 2px 8px #0001",
-                      zIndex: 0,
-                    }}
-                  />
-                </div>
-
-                <div
-                  style={{
-                    fontWeight: 700,
-                    fontSize: 18,
-                    marginBottom: 4,
-                    color: foreground,
-                  }}
-                >
-                  {userInfo?.nickname}
-                </div>
-                <div style={{ fontSize: 15, color: "#a1a6b2", marginTop: 8 }}>
-                  Profilinfos folgen…
-                </div>
-              </div>
-            </div>
+          background={
+            (equipedItemColorTheme?.backColor
+              ? equipedItemColorTheme.backColor
+              : equipedItemPatternTheme?.url) ?? "#ffffff"
           }
-          position="bottom"
+          foreground={
+            (equipedItemColorTheme
+              ? equipedItemColorTheme.foreColor
+              : equipedItemPatternTheme?.foreColor) ?? "#000000"
+          }
+          nickname={userInfo?.nickname ?? "Unknown"}
+          patternThemeBool={equipedItemColorTheme != null}
+          frameBool={equipedItemPicFrame != null}
+          frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
+          profilePic={equipedItemPic?.url ?? "Unkown"}
         >
           <Avatar sx={{ width: 24, height: 24 }}>A</Avatar>
         </HoverCard>

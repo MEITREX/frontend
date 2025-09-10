@@ -1,24 +1,24 @@
-import React, { useState } from "react";
-import { Box, Typography, Divider, Stack, Button } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import PostList from "../post/PostList";
-import { useLazyLoadQuery, useMutation } from "react-relay";
-import {
-  forumApiAddPostMutation,
-  forumApiThreadDetailQuery,
-} from "@/components/forum/api/ForumApi";
 import {
   ForumApiAddPostMutation,
   InputPost,
 } from "@/__generated__/ForumApiAddPostMutation.graphql";
-import UpvoteDownvote from "@/components/forum/shared/UpvoteDownvote";
-import UserPostInformation from "@/components/forum/shared/UserPostInformation";
+import { ForumApiThreadDetailQuery } from "@/__generated__/ForumApiThreadDetailQuery.graphql";
+import {
+  forumApiAddPostMutation,
+  forumApiThreadDetailQuery,
+} from "@/components/forum/api/ForumApi";
 import EditableContent from "@/components/forum/richTextEditor/EditableContent";
 import TextEditor from "@/components/forum/richTextEditor/TextEditor";
+import UpvoteDownvote from "@/components/forum/shared/UpvoteDownvote";
+import UserPostInformation from "@/components/forum/shared/UserPostInformation";
 import { Post, ThreadDetailType } from "@/components/forum/types";
-import PostsContext from "../context/PostsContext";
-import { ForumApiThreadDetailQuery } from "@/__generated__/ForumApiThreadDetailQuery.graphql";
 import { PageError } from "@/components/PageError";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { Box, Button, Divider, Stack, Typography } from "@mui/material";
+import { useState } from "react";
+import { useLazyLoadQuery, useMutation } from "react-relay";
+import PostsContext from "../context/PostsContext";
+import PostList from "../post/PostList";
 import ThreadStatusIcons from "./ThreadStatusIcons";
 
 type Props = {
@@ -83,6 +83,8 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
   if (!thread) {
     return <PageError message={`No Thread with ID: ${threadId}.`} />;
   }
+
+  console.log(thread.creatorId);
 
   return (
     <PostsContext.Provider value={{ deletePostContext: deletePostFromState }}>

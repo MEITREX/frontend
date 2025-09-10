@@ -1,5 +1,5 @@
 import CloseIcon from "@mui/icons-material/Close";
-import HelpIcon from '@mui/icons-material/Help';
+import HelpIcon from "@mui/icons-material/Help";
 import {
   Box,
   Chip,

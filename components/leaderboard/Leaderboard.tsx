@@ -705,91 +705,24 @@ export default function Leaderboard({
           return (
             <HoverCard
               key={user.id}
-              card={
-                <div
-                  style={userCardStyle(user.id, {
-                    position: "relative",
-                    isolation: "isolate", // erzeugt eigenen Stacking-Context
-                    overflow: "hidden",
-                    borderRadius: 8,
-                    minWidth: 220,
-                    minHeight: 120,
-                  })}
-                >
-                  {/* optionaler Weiß-Schleier für Lesbarkeit */}
-                  {/* <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.35)", zIndex: 0 }} /> */}
-
-                  {/* Inhalt oben drüber */}
-
-                  <div style={{ position: "relative", zIndex: 1, padding: 8 }}>
-                    <div
-                      style={{
-                        position: "relative",
-                        width: 48,
-                        height: 48,
-                        margin: "0 auto 10px",
-                      }}
-                    >
-                      {/* Rahmen-Bild */}
-                      {assetSrc(userProfileFrames[user.id]) && (
-                        <img
-                          src={assetSrc(userProfileFrames[user.id])}
-                          alt={userNickname[user.id] ?? "Unkown"}
-                          style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: "100%",
-                            height: "100%",
-                            borderRadius: 10,
-                            objectFit: "cover",
-                            boxShadow: "0 2px 8px #0001",
-                            zIndex: 1,
-                          }}
-                        />
-                      )}
-
-                      {/* Profilbild */}
-                      <img
-                        src={
-                          assetSrc(
-                            userProfilePics[user.id],
-                            defaultUserImage.src
-                          )!
-                        }
-                        alt={userNickname[user.id] ?? "Unkown"}
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          width: "100%",
-                          height: "100%",
-                          borderRadius: 10,
-                          objectFit: "cover",
-                          boxShadow: "0 2px 8px #0001",
-                          zIndex: 0,
-                        }}
-                      />
-                    </div>
-
-                    <div
-                      style={{
-                        fontWeight: 700,
-                        fontSize: 18,
-                        marginBottom: 4,
-                      }}
-                    >
-                      {userNickname[user.id] ?? "Unkown"}
-                    </div>
-                    <div
-                      style={{ fontSize: 15, color: "#a1a6b2", marginTop: 8 }}
-                    >
-                      Profilinfos folgen…
-                    </div>
-                  </div>
-                </div>
+              background={
+                userColorThemes[user.id]?.backColor ??
+                assetSrc(userPatternThemes[user.id]) ??
+                "#ffffff"
               }
-              position="bottom"
+              foreground={
+                userColorThemes[user.id]?.foreColor ??
+                userColorThemes[user.id]?.foreColor ??
+                "#000000ff"
+              }
+              nickname={userNickname[user.id] ?? "Unkown"}
+              patternThemeBool={userPatternThemes[user.id] != null}
+              frameBool={assetSrc(userProfileFrames[user.id]) != null}
+              frame={assetSrc(userProfileFrames[user.id]) ?? "Unknown"}
+              profilePic={
+                assetSrc(userProfilePics[user.id], defaultUserImage.src)! ??
+                "Unkown"
+              }
             >
               <div
                 style={userCardStyle(user.id, {
@@ -938,93 +871,24 @@ export default function Leaderboard({
             return (
               <HoverCard
                 key={user.id}
-                card={
-                  <div
-                    style={userCardStyle(user.id, {
-                      position: "relative",
-                      isolation: "isolate", // erzeugt eigenen Stacking-Context
-                      overflow: "hidden",
-                      borderRadius: 8,
-                      minWidth: 220,
-                      minHeight: 120,
-                    })}
-                  >
-                    {/* optionaler Weiß-Schleier für Lesbarkeit */}
-                    {/* <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.35)", zIndex: 0 }} /> */}
-
-                    {/* Inhalt oben drüber */}
-
-                    <div
-                      style={{ position: "relative", zIndex: 1, padding: 8 }}
-                    >
-                      <div
-                        style={{
-                          position: "relative",
-                          width: 48,
-                          height: 48,
-                          margin: "0 auto 10px",
-                        }}
-                      >
-                        {/* Rahmen-Bild */}
-                        {assetSrc(userProfileFrames[user.id]) && (
-                          <img
-                            src={assetSrc(userProfileFrames[user.id])}
-                            alt={userNickname[user.id] ?? "Unkown"}
-                            style={{
-                              position: "absolute",
-                              top: 0,
-                              left: 0,
-                              width: "100%",
-                              height: "100%",
-                              borderRadius: 10,
-                              objectFit: "cover",
-                              boxShadow: "0 2px 8px #0001",
-                              zIndex: 1,
-                            }}
-                          />
-                        )}
-
-                        {/* Profilbild */}
-                        <img
-                          src={
-                            assetSrc(
-                              userProfilePics[user.id],
-                              defaultUserImage.src
-                            )!
-                          }
-                          alt={userNickname[user.id] ?? "Unkown"}
-                          style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: "100%",
-                            height: "100%",
-                            borderRadius: 10,
-                            objectFit: "cover",
-                            boxShadow: "0 2px 8px #0001",
-                            zIndex: 0,
-                          }}
-                        />
-                      </div>
-
-                      <div
-                        style={{
-                          fontWeight: 700,
-                          fontSize: 18,
-                          marginBottom: 4,
-                        }}
-                      >
-                        {userNickname[user.id] ?? "Unkown"}
-                      </div>
-                      <div
-                        style={{ fontSize: 15, color: "#a1a6b2", marginTop: 8 }}
-                      >
-                        Profilinfos folgen…
-                      </div>
-                    </div>
-                  </div>
+                background={
+                  userColorThemes[user.id]?.backColor ??
+                  assetSrc(userPatternThemes[user.id]) ??
+                  "#ffffff"
                 }
-                position="bottom"
+                foreground={
+                  userColorThemes[user.id]?.foreColor ??
+                  userColorThemes[user.id]?.foreColor ??
+                  "#000000ff"
+                }
+                nickname={userNickname[user.id] ?? "Unkown"}
+                patternThemeBool={userPatternThemes[user.id] != null}
+                frameBool={assetSrc(userProfileFrames[user.id]) != null}
+                frame={assetSrc(userProfileFrames[user.id]) ?? "Unknown"}
+                profilePic={
+                  assetSrc(userProfilePics[user.id], defaultUserImage.src)! ??
+                  "Unkown"
+                }
               >
                 <div
                   ref={isCurrent ? currentUserRef : undefined}
