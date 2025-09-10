@@ -108,8 +108,15 @@ function QuestItem({
            transition: "max-height 0.3s ease", // sanftes Aufklappen
     maxHeight: 160, // Platz für 2 Zeilen + Rest
     overflow: "hidden",
-    "&:hover": {
-      maxHeight: 400, // genug Platz für volle Beschreibung
+    // Aufklappen bei Hover ODER Tastaturfokus
+    "&:hover, &:focus-within": {
+      maxHeight: 400,
+    },
+    // Beim Aufklappen: Clamp der Beschreibung entfernen
+    "&:hover .quest-desc, &:focus-within .quest-desc": {
+      WebkitLineClamp: "unset",
+      display: "block",
+      whiteSpace: "normal",
     },
       }}
     >
@@ -131,6 +138,7 @@ function QuestItem({
           </Typography>
 
           <Typography
+          className="quest-desc"
             variant="body2"
             sx={{
               color: "text.secondary",
@@ -138,16 +146,12 @@ function QuestItem({
               fontSize: "0.85rem",
               overflow: "hidden",
               display: "-webkit-box",
-              WebkitLineClamp: 2,
+              WebkitLineClamp: 1,
               WebkitBoxOrient: "vertical",
-                minHeight: "2.4em",
+                minHeight: "1.2em",
     lineHeight: 1.2,
               transition: "all 0.3s ease",
-      "&:hover": {
-        WebkitLineClamp: "unset",
-        display: "block",
-        whiteSpace: "normal"
-      }
+
             }}
             title={description}
           >
