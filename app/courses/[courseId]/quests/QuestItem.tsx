@@ -352,49 +352,6 @@ export default function QuestList({
     setOpen(true);
   };
 
-  const quests: Quest[] = [
-    {
-      name: "Gewinne ein Match",
-      description: "Gewinne ein beliebiges Match im DinoBattle.",
-      rewardPoints: 300,
-      completed: false,
-      completedCount: 1,
-      requiredCount: 3,
-      courseId: "",
-      id: "3",
-      trackingEndTime: null,
-      trackingStartTime: null,
-      userId: "",
-    },
-    {
-      name: "Sammle Beeren",
-      description:
-        "Sammle 10 Beeren im Abenteuer-Modus. dfh h fdh fdgh fgdh fdhfgdhdfg fgdhfd gh f",
-      rewardPoints: 300,
-      completed: false,
-      completedCount: 7,
-      requiredCount: 10,
-      courseId: "",
-      id: "1",
-      trackingEndTime: null,
-      trackingStartTime: null,
-      userId: "",
-    },
-    {
-      name: "Login-Serie",
-      description: "Logge dich 3 Tage in Folge ein.",
-      rewardPoints: 300,
-      completed: true,
-      courseId: "",
-      id: "2",
-      trackingEndTime: null,
-      trackingStartTime: null,
-      userId: "",
-      completedCount: null,
-      requiredCount: null,
-    },
-  ];
-
   return (
     <Box sx={{ mx: "auto" }}>
       {/* Header: unten bündig */}
@@ -451,7 +408,7 @@ export default function QuestList({
       {/* Grid: aus Daten-Array gerendert */}
       <Box sx={{ p: 2 }}>
         <Grid container spacing={2}>
-          {quests.map((q) => (
+          {questsProp.map((q) => (
             <Grid key={q.name} item xs={12} sm={4}>
               <QuestItem {...q} onOpen={openDialog} />
             </Grid>

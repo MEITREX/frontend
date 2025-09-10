@@ -72,8 +72,6 @@ export function HoverCard({
     }
   }
 
-  console.log(background, foreground);
-
   return (
     <>
       <div

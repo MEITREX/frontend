@@ -126,8 +126,6 @@ export default function UserPostInformation({
     // cardStyle.backgroundColor = "#ffffff";
   }
 
-  console.log(equipedItemPatternTheme, equipedItemColorTheme);
-
   return (
     <Stack
       direction="row"

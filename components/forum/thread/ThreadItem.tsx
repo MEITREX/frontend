@@ -11,8 +11,6 @@ type Props = {
 };
 
 export default function ThreadItem({ thread, onThreadClick }: Props) {
-  console.log(thread.creatorId);
-
   return (
     <Box
       sx={{

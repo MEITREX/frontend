@@ -84,8 +84,6 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
     return <PageError message={`No Thread with ID: ${threadId}.`} />;
   }
 
-  console.log(thread.creatorId);
-
   return (
     <PostsContext.Provider value={{ deletePostContext: deletePostFromState }}>
       <Button
