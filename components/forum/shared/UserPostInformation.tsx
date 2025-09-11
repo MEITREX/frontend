@@ -153,15 +153,18 @@ export default function UserPostInformation({
           frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
           profilePic={equipedItemPic?.url ?? "Unkown"}
         >
-          <div style={{ position: "relative", width: 24, height: 24 }}onClick={() => {
-            if (!userInfo) return;
-            const isOwnProfile =
-              loggedInUser.currentUserInfo.id === userInfo.id;
-            const profileUrl = isOwnProfile
-              ? "/profile"
-              : `/profile/${userInfo.id}`;
-            router.push(profileUrl);
-          }}>
+          <div
+            style={{ position: "relative", width: 24, height: 24 }}
+            onClick={() => {
+              if (!userInfo) return;
+              const isOwnProfile =
+                loggedInUser.currentUserInfo.id === userInfo.id;
+              const profileUrl = isOwnProfile
+                ? "/profile"
+                : `/profile/${userInfo.id}`;
+              router.push(profileUrl);
+            }}
+          >
             {equipedItemPicFrame && (
               <img
                 src={decodeURIComponent(equipedItemPicFrame?.url ?? "Unkown")}
@@ -196,55 +199,61 @@ export default function UserPostInformation({
         </HoverCard>
       )}
       {userInfo && (
-        <div style={{ display: "inline-flex", alignItems: "center", lineHeight: 0, verticalAlign: "middle" }}>
-         <HoverCard
-
-          key={userInfo?.id}
-          background={
-            (equipedItemColorTheme?.backColor
-              ? equipedItemColorTheme.backColor
-              : equipedItemPatternTheme?.url) ?? "#ffffff"
-          }
-          foreground={
-            (equipedItemColorTheme
-              ? equipedItemColorTheme.foreColor
-              : equipedItemPatternTheme?.foreColor) ?? "#000000"
-          }
-          nickname={userInfo?.nickname ?? "Unknown"}
-          patternThemeBool={equipedItemColorTheme != null}
-          frameBool={equipedItemPicFrame != null}
-          frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
-          profilePic={equipedItemPic?.url ?? "Unkown"}
-        >
-        <Typography
-          noWrap
-          sx={{
-            textOverflow: "ellipsis",
-            overflow: "hidden",
-
-            "&:hover": {
-              cursor: "pointer",
-            },
-          }}
-          color={
-            loggedInUser.currentUserInfo.id === userInfo.id
-              ? "#00a152"
-              : "default"
-          }
-          variant="caption"
-          onClick={() => {
-            if (!userInfo) return;
-            const isOwnProfile =
-              loggedInUser.currentUserInfo.id === userInfo.id;
-            const profileUrl = isOwnProfile
-              ? "/profile"
-              : `/profile/${userInfo.id}`;
-            router.push(profileUrl);
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            lineHeight: 0,
+            verticalAlign: "middle",
           }}
         >
-          {userInfo.nickname ?? "unknown"}
-        </Typography>
-        </HoverCard>
+          <HoverCard
+            key={userInfo?.id}
+            background={
+              (equipedItemColorTheme?.backColor
+                ? equipedItemColorTheme.backColor
+                : equipedItemPatternTheme?.url) ?? "#ffffff"
+            }
+            foreground={
+              (equipedItemColorTheme
+                ? equipedItemColorTheme.foreColor
+                : equipedItemPatternTheme?.foreColor) ?? "#000000"
+            }
+            nickname={userInfo?.nickname ?? "Unknown"}
+            patternThemeBool={equipedItemColorTheme != null}
+            frameBool={equipedItemPicFrame != null}
+            frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
+            profilePic={equipedItemPic?.url ?? "Unkown"}
+          >
+            <Typography
+              noWrap
+              sx={{
+                textOverflow: "ellipsis",
+                overflow: "hidden",
+
+                "&:hover": {
+                  cursor: "pointer",
+                },
+              }}
+              color={
+                loggedInUser.currentUserInfo.id === userInfo.id
+                  ? "#00a152"
+                  : "default"
+              }
+              variant="caption"
+              onClick={() => {
+                if (!userInfo) return;
+                const isOwnProfile =
+                  loggedInUser.currentUserInfo.id === userInfo.id;
+                const profileUrl = isOwnProfile
+                  ? "/profile"
+                  : `/profile/${userInfo.id}`;
+                router.push(profileUrl);
+              }}
+            >
+              {userInfo.nickname ?? "unknown"}
+            </Typography>
+          </HoverCard>
         </div>
       )}
 
