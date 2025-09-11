@@ -29,6 +29,7 @@ const sendMessageMutation = graphql`
       sources {
         ... on DocumentSource {
           page
+          mediaRecordId
           mediaRecords {
             contents {
               id
@@ -41,6 +42,7 @@ const sendMessageMutation = graphql`
         }
         ... on VideoSource {
           startTime
+          mediaRecordId
           mediaRecords {
             contents {
               id
@@ -106,9 +108,9 @@ export default function TutorChat() {
               if (!content || content.metadata.courseId !== courseId) return;
               if ("page" in src && src.page != undefined) {
                 urls.push({
-                  link: `/courses/${courseId}/media/${content.id}?page=${
-                    src.page + 1
-                  }`,
+                  link: `/courses/${courseId}/media/${
+                    content.id
+                  }?selectedDocument=${src.mediaRecordId}&page=${src.page + 1}`,
                   displayText: `${content.metadata.name} Seite: ${
                     src.page + 1
                   }`,
@@ -118,7 +120,7 @@ export default function TutorChat() {
                   .duration(src.startTime ?? 0, "seconds")
                   .format("HH:mm:ss");
                 urls.push({
-                  link: `/courses/${courseId}/media/${content.id}?videoPosition=${src.startTime}`,
+                  link: `/courses/${courseId}/media/${content.id}?selectedDocument=${src.mediaRecordId}&videoPosition=${src.startTime}`,
                   displayText: `${content.metadata.name} Zeitstempel: ${readableTime}`,
                 });
               }
