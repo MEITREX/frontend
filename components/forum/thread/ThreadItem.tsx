@@ -1,10 +1,9 @@
-import { Box, Typography, Stack } from "@mui/material";
-import UpvoteDownvote from "../shared/UpvoteDownvote";
-import UserPostInformation from "../shared/UserPostInformation";
-import { ThreadType } from "@/components/forum/types";
-import React from "react";
 import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
 import ThreadStatusIcons from "@/components/forum/thread/ThreadStatusIcons";
+import { ThreadType } from "@/components/forum/types";
+import { Box, Stack, Typography } from "@mui/material";
+import UpvoteDownvote from "../shared/UpvoteDownvote";
+import UserPostInformation from "../shared/UserPostInformation";
 
 type Props = {
   thread: ThreadType;

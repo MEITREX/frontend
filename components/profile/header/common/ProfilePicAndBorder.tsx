@@ -1,4 +1,4 @@
-import { Avatar, Box, Typography } from "@mui/material";
+import { Avatar, Box } from "@mui/material";
 import Image from "next/image";
 import React from "react";
 import { DecorationItem } from "@/components/items/types/Types";
@@ -22,27 +22,23 @@ export default function ProfilePicAndBorder({
         height: `${height}px`,
         borderRadius: 3,
         overflow: "hidden",
+        backgroundColor: profilePicFrame?.url ? "transparent" : "#089CDC",
       }}
     >
       {/* Frame */}
-      <Box
-        sx={{
-          position: "absolute",
-          width: "100%",
-          height: "100%",
-          ...(profilePicFrame?.url
-            ? {
-                // 1. Use Frame
-                backgroundImage: `url(${profilePicFrame.url})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }
-            : {
-                // 2. Fallback when no frame selected
-                bgcolor: "#089CDC",
-              }),
-        }}
-      />
+      {profilePicFrame?.url && (
+        <Box
+          sx={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            zIndex: 2,
+            backgroundImage: `url(${profilePicFrame.url})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
+      )}
 
       {/* Profile Picture */}
       <Box
@@ -55,6 +51,7 @@ export default function ProfilePicAndBorder({
           height: "80%",
           borderRadius: 2,
           overflow: "hidden",
+          zIndex: 1,
         }}
       >
         {profilePic ? (

@@ -3,16 +3,28 @@ import { createPortal } from "react-dom";
 
 type HoverCardProps = {
   children: ReactNode;
-  card: ReactNode;
   position?: "bottom" | "top" | "left" | "right";
   cardStyle?: React.CSSProperties;
+  background: string | null;
+  foreground: string;
+  nickname: string;
+  patternThemeBool: boolean;
+  frameBool: boolean;
+  frame: string | null;
+  profilePic: string;
 };
 
 export function HoverCard({
   children,
-  card,
   position = "bottom",
   cardStyle,
+  background,
+  foreground,
+  nickname,
+  patternThemeBool,
+  frameBool,
+  frame,
+  profilePic,
 }: HoverCardProps) {
   const [open, setOpen] = useState(false);
   const [coords, setCoords] = useState<{
@@ -92,7 +104,100 @@ export function HoverCard({
             onMouseLeave={() => setOpen(false)}
             onClick={(e) => e.stopPropagation()}
           >
-            {card}
+            <div
+              style={{
+                position: "relative",
+                isolation: "isolate", // erzeugt eigenen Stacking-Context
+                overflow: "hidden",
+                borderRadius: 8,
+                minWidth: 220,
+                minHeight: 120,
+                background: background ?? "#ffffff",
+              }}
+            >
+              {patternThemeBool && (
+                <img
+                  src={background ?? "test"}
+                  alt=""
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    zIndex: -1, // ganz nach unten
+                    pointerEvents: "none", // Hover/Klicks oben bleiben
+                  }}
+                />
+              )}
+
+              {/* optionaler Weiß-Schleier für Lesbarkeit */}
+              {/* <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.35)", zIndex: 0 }} /> */}
+
+              {/* Inhalt oben drüber */}
+
+              <div style={{ position: "relative", zIndex: 1, padding: 8 }}>
+                <div
+                  style={{
+                    position: "relative",
+                    width: 48,
+                    height: 48,
+                    margin: "0 auto 10px",
+                  }}
+                >
+                  {/* Rahmen-Bild */}
+                  {frameBool && (
+                    <img
+                      src={decodeURIComponent(frame ?? "Unkown")}
+                      alt={nickname}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: 10,
+                        objectFit: "cover",
+                        boxShadow: "0 2px 8px #0001",
+                        zIndex: 1,
+                      }}
+                    />
+                  )}
+
+                  {/* Profilbild */}
+                  <img
+                    src={decodeURIComponent(profilePic)}
+                    alt={nickname}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 10,
+                      objectFit: "cover",
+                      boxShadow: "0 2px 8px #0001",
+                      zIndex: 0,
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 18,
+                    marginBottom: 4,
+                    color: foreground,
+                  }}
+                >
+                  {nickname}
+                </div>
+                <div style={{ fontSize: 15, color: "#a1a6b2", marginTop: 8 }}>
+                  Profilinfos folgen…
+                </div>
+              </div>
+            </div>
           </div>,
           document.body
         )}

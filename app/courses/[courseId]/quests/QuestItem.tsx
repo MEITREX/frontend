@@ -1,4 +1,5 @@
 import CloseIcon from "@mui/icons-material/Close";
+import HelpIcon from "@mui/icons-material/Help";
 import {
   Box,
   Chip,
@@ -30,7 +31,6 @@ type Quest = {
 
 type QuestProps = Quest & {
   onOpen: (q: Quest) => void;
-  streak: number;
 };
 
 const PROGRESS_BLOCK_HEIGHT = 48; // feinjustierbar (44–56 je nach Typo)
@@ -42,8 +42,12 @@ function QuestItem({
   completed,
   completedCount,
   requiredCount,
+  courseId,
+  id,
+  trackingStartTime,
+  trackingEndTime,
+  userId,
   onOpen,
-  streak,
 }: QuestProps) {
   let percent = -1;
 
@@ -65,11 +69,11 @@ function QuestItem({
           completed,
           completedCount,
           requiredCount,
-          courseId: "",
-          id: "",
-          trackingEndTime: null,
-          trackingStartTime: null,
-          userId: "",
+          courseId,
+          id,
+          trackingEndTime,
+          trackingStartTime,
+          userId,
         })
       }
       onKeyDown={(e) => {
@@ -81,11 +85,11 @@ function QuestItem({
             completed,
             completedCount,
             requiredCount,
-            courseId: "",
-            id: "",
-            trackingEndTime: null,
-            trackingStartTime: null,
-            userId: "",
+            courseId,
+            id,
+            trackingEndTime,
+            trackingStartTime,
+            userId,
           });
         }
       }}
@@ -100,6 +104,19 @@ function QuestItem({
         border: `3px solid ${completed ? "#1aa80e" : "#009bde"}`,
         background:
           "linear-gradient(180deg, rgba(255,255,255,0.96), rgba(245,245,245,0.96))",
+        transition: "max-height 0.3s ease", // sanftes Aufklappen
+        maxHeight: 160, // Platz für 2 Zeilen + Rest
+        overflow: "hidden",
+        // Aufklappen bei Hover ODER Tastaturfokus
+        "&:hover, &:focus-within": {
+          maxHeight: 400,
+        },
+        // Beim Aufklappen: Clamp der Beschreibung entfernen
+        "&:hover .quest-desc, &:focus-within .quest-desc": {
+          WebkitLineClamp: "unset",
+          display: "block",
+          whiteSpace: "normal",
+        },
       }}
     >
       {/* Top Row: Titel/Description + Chip */}
@@ -120,6 +137,7 @@ function QuestItem({
           </Typography>
 
           <Typography
+            className="quest-desc"
             variant="body2"
             sx={{
               color: "text.secondary",
@@ -127,8 +145,11 @@ function QuestItem({
               fontSize: "0.85rem",
               overflow: "hidden",
               display: "-webkit-box",
-              WebkitLineClamp: 2,
+              WebkitLineClamp: 1,
               WebkitBoxOrient: "vertical",
+              minHeight: "1.2em",
+              lineHeight: 1.2,
+              transition: "all 0.3s ease",
             }}
             title={description}
           >
@@ -150,19 +171,6 @@ function QuestItem({
           }
           sx={{ fontWeight: "bold" }}
         />
-
-        {!completed && (
-          <Tooltip title="Reward multiplier">
-            <Chip
-              label={`x${streak ?? 1}`} // dynamisch oder fallback x3
-              sx={{
-                fontWeight: "bold",
-                backgroundColor: "#009bde",
-                color: "white",
-              }}
-            />
-          </Tooltip>
-        )}
       </Box>
 
       {/* Bottom Row: Progress-Bar */}
@@ -349,22 +357,52 @@ export default function QuestList({
       {/* Header: unten bündig */}
       <Box
         sx={{
+          position: "relative",
           display: "flex",
           alignItems: "flex-end",
           gap: 2,
         }}
       >
-        <Typography variant="h4" sx={{ fontWeight: 800 }}>
+        <Typography variant="h2" sx={{ fontWeight: 400 }}>
           Daily Quests
         </Typography>
 
         <Typography
           variant="body2"
-          sx={{ color: "text.secondary", pb: 0.5 /* Feintuning falls nötig */ }}
+          sx={{
+            color: "text.secondary",
+            pb: 0.15 /* Feintuning falls nötig */,
+          }}
         >
           Finish the quests below to earn additional Dino Points.{" "}
           <strong>Careful:</strong> Quests are only temporarily available!
         </Typography>
+
+        {/* Rechtsbündiger Reward-Multiplier im Header */}
+        <Box
+          sx={{
+            position: "absolute",
+            right: 0,
+            bottom: 0, // ← bündig zur Überschrift
+          }}
+        >
+          <Tooltip title="Reward multiplier">
+            <Chip
+              label={`x${streak ?? 1}`}
+              sx={{
+                fontWeight: "bold",
+                backgroundColor: "#009bde",
+                color: "white",
+              }}
+            />
+          </Tooltip>
+
+          <Tooltip title="Your reward multiplier increases if you complete all your quests for a day. If you break your streak, the reward multiplier resets to 1x. A higher reward multiplier increases the amount of DinoPoints you receive for completing a quest">
+            <IconButton size="small" sx={{ color: "text.secondary" }}>
+              <HelpIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
 
       {/* Grid: aus Daten-Array gerendert */}
@@ -372,7 +410,7 @@ export default function QuestList({
         <Grid container spacing={2}>
           {questsProp.map((q) => (
             <Grid key={q.name} item xs={12} sm={4}>
-              <QuestItem {...q} onOpen={openDialog} streak={streak} />
+              <QuestItem {...q} onOpen={openDialog} />
             </Grid>
           ))}
         </Grid>

@@ -1,11 +1,13 @@
 "use client";
 
-import { pagePublicProfileStudentQuery } from "@/__generated__/pagePublicProfileStudentQuery.graphql";
 import { ForumApiUserInfoByIdQuery } from "@/__generated__/ForumApiUserInfoByIdQuery.graphql";
+import { pagePublicProfileStudentQuery } from "@/__generated__/pagePublicProfileStudentQuery.graphql";
+import { SortProvider } from "@/app/contexts/SortContext";
 import { CombinedLeaderboardCard } from "@/app/profile/leaderboard/ProfileLeaderboardPositions";
 import { forumApiUserInfoByIdQuery } from "@/components/forum/api/ForumApi";
 import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
 import UserProfileCustomHeader from "@/components/profile/header/UserProfileCustomHeader";
+import ProfileInventorySection from "@/components/profile/items/ProfileInventorySection";
 import { Avatar, Box, Grid, Tab, Tabs, Typography } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -145,7 +147,13 @@ function enrichScoresWithNames(
 }
 
 export default function PublicProfilePage() {
-  const publicTabs = ["Achievements", "Forum", "Badges", "Leaderboards"];
+  const publicTabs = [
+    "Achievements",
+    "Forum",
+    "Badges",
+    "Leaderboards",
+    "Items",
+  ];
   const [tabIndex, setTabIndex] = useState(0);
 
   const params = useParams();
@@ -302,15 +310,6 @@ export default function PublicProfilePage() {
       <UserProfileCustomHeader
         displayName={userInfos.findUserInfos[0]?.nickname as string}
       />
-      {/* Kopfbereich: Bild + Name */}
-      <Box display="flex" alignItems="center" gap={3} mb={3}>
-        <Avatar sx={{ width: 80, height: 80, fontSize: 32 }}>
-          {viewedSafe.userName}
-        </Avatar>
-        <Box>
-          <Typography variant="h5">@{viewedSafe.userName}</Typography>
-        </Box>
-      </Box>
 
       {/* Tabs */}
       <Tabs
@@ -406,6 +405,12 @@ export default function PublicProfilePage() {
               })}
             </Grid>
           </Box>
+        )}
+
+        {tabIndex === 4 && (
+          <SortProvider>
+            <ProfileInventorySection userId={userId} />
+          </SortProvider>
         )}
       </Box>
     </Box>

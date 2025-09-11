@@ -5,10 +5,7 @@ import {
   Box,
   Button,
   Divider,
-  Grid,
   IconButton,
-  LinearProgress,
-  Stack,
   Tab,
   Tabs,
   Typography,
@@ -41,154 +38,10 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
-import Link from "next/link";
+import CourseLeaderboards from "@/components/leaderboard/CourseLeaderboard";
 import * as React from "react";
-import { Suspense, useEffect, useMemo, useState } from "react";
-
-/**
- * Small inline XP widget: pulls XP/Level from backend via the new `getUser(userID: ID!)` query.
- * - uses NEXT_PUBLIC_GRAPHQL_URL || NEXT_PUBLIC_GRAPHQL_ENDPOINT || "/graphql"
- * - rounds values to integers
- * - shows a level icon like /levels/level_XX.svg
- */
-const GRAPHQL_URL =
-  process.env.NEXT_PUBLIC_GRAPHQL_URL ||
-  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-  "/graphql";
-
-type UserLevelInfo = {
-  level: number;
-  xpValue: number;
-  requiredXP: number;
-  exceedingXP: number;
-};
-
-async function postGraphQL<TData>(
-  query: string,
-  variables: Record<string, any>
-): Promise<{ data?: TData; errors?: any[] }> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({ query, variables }),
-  });
-
-  try {
-    return (await res.json()) as any;
-  } catch {
-    return { errors: [{ message: "Failed to parse GraphQL response" }] } as any;
-  }
-}
-
-function XPWidget({ userId }: { userId: string }) {
-  const [info, setInfo] = useState<UserLevelInfo | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      if (!userId) return;
-      setLoading(true);
-      const query = `
-        query GetUser($userID: ID!) {
-          getUser(userID: $userID) {
-            id
-            name
-            email
-            xpValue
-            requiredXP
-            exceedingXP
-            level
-          }
-        }
-      `;
-      const { data, errors } = await postGraphQL<{
-        getUser?: Array<{
-          id: string;
-          level: number;
-          xpValue: number;
-          requiredXP: number;
-          exceedingXP: number;
-        }>;
-      }>(query, { userID: userId });
-
-      if (!cancelled) {
-        if (data?.getUser && data.getUser.length > 0) {
-          const u = data.getUser[0];
-          setInfo({
-            level: u.level ?? 0,
-            xpValue: Math.round(u.xpValue ?? 0),
-            requiredXP: Math.round(u.requiredXP ?? 1),
-            exceedingXP: Math.round(u.exceedingXP ?? 0),
-          });
-        } else {
-          if (errors && errors.length) {
-            // eslint-disable-next-line no-console
-            console.warn("[XP Widget] GraphQL errors:", errors);
-          }
-          setInfo({ level: 0, xpValue: 0, requiredXP: 1, exceedingXP: 0 });
-        }
-        setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
-
-  const levelIcon = useMemo(() => {
-    const lvl = Math.max(0, Math.min(99, info?.level ?? 0));
-    return `/levels/level_${String(lvl)}.svg`;
-  }, [info?.level]);
-
-  const progressPct = useMemo(() => {
-    const required = Math.max(1, info?.requiredXP ?? 1);
-    const have = Math.max(0, info?.exceedingXP ?? 0);
-    return Math.max(0, Math.min(100, Math.round((have / required) * 100)));
-  }, [info?.requiredXP, info?.exceedingXP]);
-
-  return (
-    <Box
-      sx={{
-        p: 2,
-        border: "4px solid",
-        borderColor: "divider",
-        borderRadius: "24px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 1.25,
-      }}
-    >
-      <Typography variant="h2" component="h2">
-        Your XP
-      </Typography>
-      <Stack direction="row" spacing={1.5} alignItems="center">
-        <img
-          src={levelIcon}
-          alt={`Level ${info?.level ?? 0}`}
-          width={48}
-          height={48}
-          style={{ display: "block" }}
-        />
-        <Typography variant="body2" color="text.secondary">
-          {loading
-            ? "Loading XP…"
-            : `${info?.exceedingXP ?? 0} / ${info?.requiredXP ?? 1} XP (Level ${
-                info?.level ?? 0
-              })`}
-        </Typography>
-      </Stack>
-      <LinearProgress
-        variant="determinate"
-        value={progressPct}
-        sx={{ height: 10, borderRadius: 999 }}
-      />
-    </Box>
-  );
-}
+import { Suspense, useEffect, useState } from "react";
+import QuestList from "./quests/QuestItem";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -269,6 +122,25 @@ export default function StudentCoursePage() {
           id
           title
           description
+          dailyQuests {
+            forDay
+            id
+            name
+            quests {
+              completed
+              completedCount
+              courseId
+              description
+              id
+              name
+              requiredCount
+              rewardPoints
+              trackingEndTime
+              trackingStartTime
+              userId
+            }
+            rewardMultiplier
+          }
           rewardScores {
             ...RewardScoresFragment
           }
@@ -335,13 +207,6 @@ export default function StudentCoursePage() {
       loginUser(courseId: $id)
     }
   `);
-
-  // Extract scoreboard (top 3 preview)
-  const rows: Data[] = (scoreboard ?? [])
-    .slice(0, 3)
-    .map((element) =>
-      createData(element.user?.userName ?? "Unknown", element.powerScore)
-    );
 
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -464,33 +329,13 @@ export default function StudentCoursePage() {
         )}
       </div>
 
-      {/* Quick widgets row */}
-      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-        <Grid item xs={12} md={6}>
-          {/* Integrated XP widget */}
-          <XPWidget userId={userId} />
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          {/* Keep space for future widgets (Forum/Questions etc.) */}
-          <Box
-            sx={{
-              p: 2,
-              border: "4px solid",
-              borderColor: "divider",
-              borderRadius: "24px",
-              height: "100%",
-            }}
-          >
-            <Typography variant="h2" component="h2" gutterBottom>
-              Forum &amp; Questions
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Check the Forum tab for new posts and open questions.
-            </Typography>
-          </Box>
-        </Grid>
-      </Grid>
+      {/* Quest */}
+      <Box marginBottom={2} marginTop={2}>
+        <QuestList
+          questsProp={course.dailyQuests.quests}
+          streak={course.dailyQuests.rewardMultiplier}
+        />
+      </Box>
 
       {/* Tabs for Learning Progress and Chapters */}
       <Box sx={{ width: "100%", mt: 2 }}>
@@ -504,6 +349,7 @@ export default function StudentCoursePage() {
             <Tab label="Learning Progress" {...a11yProps(1)} />
             <Tab label="Chapters" {...a11yProps(2)} />
             <Tab label="Forum" {...a11yProps(3)} />
+            <Tab label="leaderboard" {...a11yProps(4)} />
           </Tabs>
         </Box>
 
@@ -708,6 +554,16 @@ export default function StudentCoursePage() {
         <CustomTabPanel value={value} index={3}>
           <Suspense fallback={<SkeletonThreadList />}>
             <ForumOverview />
+          </Suspense>
+        </CustomTabPanel>
+
+        <CustomTabPanel value={value} index={4}>
+          <Suspense fallback={<SkeletonThreadList />}>
+            <CourseLeaderboards
+              courseID={id}
+              currentUserId={userId}
+              currentUserName={"Current User"}
+            />
           </Suspense>
         </CustomTabPanel>
       </Box>

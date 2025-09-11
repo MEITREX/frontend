@@ -1,8 +1,7 @@
+import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
+import UserPostInformation from "@/components/forum/shared/UserPostInformation";
 import { Box, Typography } from "@mui/material";
 import { format } from "date-fns";
-import UserPostInformation from "@/components/forum/shared/UserPostInformation";
-import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
-import React from "react";
 import CourseName from "./CourseName";
 
 type ForumActivityEntry = {
@@ -51,13 +50,35 @@ export default function ForumActivity({
     >
       {!post ? (
         <Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <Typography variant="caption" color="text.secondary">
-              {format(new Date(creationTime), "MMMM d, yyyy, hh:mm a")}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5,
+              flexWrap: "nowrap",
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              noWrap
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                minWidth: 0,
+              }}
+            >
+              {format(new Date(creationTime as string), "MM.dd.yyyy, hh:mm a")}
             </Typography>
             <Typography
               variant="caption"
-              sx={{ color: "info.main", fontWeight: "bold" }}
+              sx={{
+                color: "info.main",
+                fontWeight: "bold",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
             >
               New Thread by –
             </Typography>
@@ -88,15 +109,30 @@ export default function ForumActivity({
               display: "flex",
               alignItems: "center",
               gap: 0.5,
-              flexWrap: "wrap",
+              flexWrap: "nowrap",
             }}
           >
-            <Typography variant="caption" color="text.secondary">
-              {format(new Date(creationTime), "MMMM d, yyyy, hh:mm a")}
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              noWrap
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                minWidth: 0,
+              }}
+            >
+              {format(new Date(creationTime as string), "MM.dd.yyyy, hh:mm a")}
             </Typography>
             <Typography
               variant="caption"
-              sx={{ color: "info.main", fontWeight: "bold" }}
+              sx={{
+                color: "info.main",
+                fontWeight: "bold",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
             >
               New Answer by –
             </Typography>

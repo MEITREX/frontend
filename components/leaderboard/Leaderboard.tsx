@@ -1,24 +1,21 @@
 `use client`;
-import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
 import { LeaderboardDataQuery } from "@/__generated__/LeaderboardDataQuery.graphql";
-import type { StaticImageData } from "next/image";
-import { useParams, useSearchParams } from "next/navigation";
+
+import { LeaderboardRowInventoryByUserQuery } from "@/__generated__/LeaderboardRowInventoryByUserQuery.graphql";
+import { LeaderboardRowPublicInfoQuery } from "@/__generated__/LeaderboardRowPublicInfoQuery.graphql";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import React from "react";
-import { graphql, useLazyLoadQuery } from "react-relay";
+import {
+  fetchQuery,
+  graphql,
+  useLazyLoadQuery,
+  useRelayEnvironment,
+} from "react-relay";
 import defaultUserImage from "../../assets/logo.svg";
 import { HoverCard } from "../HoverCard";
-import { inventoryForUserQuery } from "../items/api/ItemsApi";
-import { getItemsMerged } from "../items/logic/GetItems";
+import { getPublicProfileItemsMerged } from "../items/logic/GetItems";
 
-function getImageSrc(image?: string | StaticImageData): string {
-  if (typeof image === "string") {
-    return image;
-  }
-  if (image && typeof image === "object" && "src" in image) {
-    return image.src;
-  }
-  return defaultUserImage.src;
-}
+const buildProfileHref = (id: string) => `/profile/${id}`;
 
 // Format today's date as YYYY-MM-DD in the user's local timezone (not UTC)
 function formatLocalISODate(d: Date = new Date()): string {
@@ -222,25 +219,7 @@ export default function Leaderboard({
   const currentUserRef = React.useRef<HTMLDivElement | null>(null);
   const othersContainerRef = React.useRef<HTMLDivElement | null>(null);
 
-  const { inventoryForUser } = useLazyLoadQuery<ItemsApiInventoryForUserQuery>(
-    inventoryForUserQuery,
-    {},
-    { fetchPolicy: "network-only" }
-  );
-
-  // Combine backend and JSON data
-  const itemsParsedMergedPic = getItemsMerged(inventoryForUser, "profilePics");
-
-  // Find the equiped item for the UnequipCard
-  const equipedItemPic = itemsParsedMergedPic.find((item) => item.equipped);
-
-  const equipedPicSrc = decodeURIComponent(
-    equipedItemPic
-      ? equipedItemPic.url
-        ? equipedItemPic.url
-        : equipedItemPic.id
-      : defaultUserImage.src
-  );
+  const router = useRouter();
 
   // New Relay query for all leaderboard periods (always declared)
   const LeaderboardDataQuery = graphql`
@@ -292,6 +271,41 @@ export default function Leaderboard({
       }
     }
   `;
+
+  const PublicInfoQuery = graphql`
+    query LeaderboardRowPublicInfoQuery($id: [UUID!]!) {
+      findUserInfos(ids: $id) {
+        nickname
+      }
+    }
+  `;
+
+  const InventoryByUserQuery = graphql`
+    query LeaderboardRowInventoryByUserQuery($userId: UUID!) {
+      itemsByUserId(userId: $userId) {
+        equipped
+        id
+        uniqueDescription
+        unlocked
+        unlockedTime
+      }
+    }
+  `;
+
+  function getAvatarSrc(
+    pics: Record<string, Asset | null>,
+    userId: string,
+    fallback: string
+  ) {
+    const pic = pics[userId];
+    const raw = typeof pic === "string" ? pic : pic?.url ?? pic?.id;
+    if (!raw) return fallback;
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return raw;
+    }
+  }
 
   // Allow optional ?date=YYYY-MM-DD override via URL, otherwise use local date
   const overrideDate = searchParams?.get("date");
@@ -416,6 +430,162 @@ export default function Leaderboard({
   const topThree = displayUsers.filter((u) => u.rank <= 3);
   const others = displayUsers.filter((u) => u.rank > 3);
 
+  type Asset = { id: string; url?: string | null; equipped?: boolean };
+  type ColorTheme = {
+    id: string;
+    backColor?: string | null;
+    foreColor?: string | null;
+    equipped?: boolean;
+  };
+  type PatternTheme = {
+    id: string;
+    url?: string | null;
+    foreColor?: string | null;
+    equipped?: boolean;
+  };
+
+  const [userProfilePics, setUserProfilePics] = React.useState<
+    Record<string, Asset | null>
+  >({});
+  const [userProfileFrames, setUserProfileFrames] = React.useState<
+    Record<string, Asset | null>
+  >({});
+  const [userColorThemes, setUserColorThemes] = React.useState<
+    Record<string, ColorTheme | null>
+  >({});
+  const [userPatternThemes, setUserPatternThemes] = React.useState<
+    Record<string, PatternTheme | null>
+  >({});
+  const [userNickname, setUserNickname] = React.useState<
+    Record<string, string | null>
+  >({});
+
+  function assetSrc(
+    a?: { url?: string | null; id?: string } | null,
+    fallback?: string
+  ) {
+    const raw = a?.url ?? a?.id;
+    if (!raw) return fallback;
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return raw;
+    }
+  }
+
+  const env = useRelayEnvironment();
+
+  React.useEffect(() => {
+    const ids = Array.from(
+      new Set(displayUsers.map((u) => u.id).filter(Boolean))
+    );
+    if (ids.length === 0) {
+      setUserProfilePics({});
+      setUserProfileFrames({});
+      setUserColorThemes({});
+      setUserPatternThemes({});
+      setUserNickname({});
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const results = await Promise.all(
+          ids.map(async (userId) => {
+            const data = await fetchQuery<LeaderboardRowInventoryByUserQuery>(
+              env,
+              InventoryByUserQuery,
+              { userId }
+            ).toPromise();
+
+            // Public Info Query
+            const dataNick = await fetchQuery<LeaderboardRowPublicInfoQuery>(
+              env,
+              PublicInfoQuery,
+              { id: [userId] }
+            ).toPromise();
+
+            // je nach Schema das erste Element nehmen:
+            const nick = dataNick?.findUserInfos?.[0]?.nickname ?? null;
+
+            const items = data?.itemsByUserId ?? [];
+
+            const pics = getPublicProfileItemsMerged(items, "profilePics");
+            const frames = getPublicProfileItemsMerged(
+              items,
+              "profilePicFrames"
+            );
+            const colors = getPublicProfileItemsMerged(items, "colorThemes");
+            const patterns = getPublicProfileItemsMerged(
+              items,
+              "patternThemes"
+            );
+
+            const pic = pics.find((it: any) => it.equipped) ?? null;
+            const frame = frames.find((it: any) => it.equipped) ?? null;
+            const color = colors.find((it: any) => it.equipped) ?? null;
+            const pattern = patterns.find((it: any) => it.equipped) ?? null;
+
+            return [userId, pic, frame, color, pattern, nick] as const;
+          })
+        );
+
+        if (!cancelled) {
+          const picsMap: Record<string, Asset | null> = {};
+          const framesMap: Record<string, Asset | null> = {};
+          const colorsMap: Record<string, ColorTheme | null> = {};
+          const patternsMap: Record<string, PatternTheme | null> = {};
+          const nicksMap: Record<string, string | null> = {};
+
+          for (const [id, pic, frame, color, pattern, nick] of results) {
+            picsMap[id] = pic;
+            framesMap[id] = frame;
+            colorsMap[id] = color;
+            patternsMap[id] = pattern;
+            nicksMap[id] = nick;
+          }
+
+          setUserProfilePics(picsMap);
+          setUserProfileFrames(framesMap);
+          setUserColorThemes(colorsMap);
+          setUserPatternThemes(patternsMap);
+          setUserNickname(nicksMap);
+        }
+      } catch (e) {
+        console.warn("[Leaderboard] per-user inventory fetch failed:", e);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [env, JSON.stringify(displayUsers.map((u) => u.id))]);
+
+  function userCardStyle(
+    userId: string,
+    base: React.CSSProperties = {}
+  ): React.CSSProperties {
+    const col = userColorThemes[userId];
+    const pat = userPatternThemes[userId];
+
+    const style: React.CSSProperties = { ...base };
+
+    if (col?.backColor) style.backgroundColor = col.backColor;
+
+    const patUrl = assetSrc(pat);
+    if (patUrl) {
+      style.backgroundImage = `url(${patUrl})`;
+      style.backgroundRepeat = "repeat";
+      style.backgroundSize = "100%";
+    }
+
+    const fg = col?.foreColor ?? pat?.foreColor; // ← wichtig: Pattern-Foreground berücksichtigen
+    if (fg) style.color = fg;
+
+    return style;
+  }
+
   React.useEffect(() => {
     if (currentUserRef.current && othersContainerRef.current) {
       const parent = othersContainerRef.current;
@@ -500,7 +670,7 @@ export default function Leaderboard({
               fontWeight: 600,
               fontSize: 17,
               letterSpacing: ".7px",
-              color: "#79869a",
+              color: "inherit",
               width: "100%",
             }}
           >
@@ -524,45 +694,39 @@ export default function Leaderboard({
       >
         {topThree.map((user, idx) => {
           const isCurrent = user.isCurrentUser;
+          const goProfile = () => router.push(buildProfileHref(user.id));
+
           return (
             <HoverCard
               key={user.id}
-              card={
-                <div>
-                  <img
-                    src={equipedPicSrc}
-                    alt={user.name}
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 10,
-                      objectFit: "cover",
-                      margin: "0 auto 10px",
-                      boxShadow: "0 2px 8px #0001",
-                    }}
-                  />
-                  <div
-                    style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}
-                  >
-                    {user.name}
-                  </div>
-                  <div style={{ fontSize: 16, color: "#79869a" }}>
-                    Points: {user.points}
-                  </div>
-                  <div style={{ fontSize: 15, color: "#a1a6b2", marginTop: 8 }}>
-                    Profilinfos folgen…
-                  </div>
-                </div>
+              background={
+                userColorThemes[user.id]?.backColor ??
+                assetSrc(userPatternThemes[user.id]) ??
+                "#ffffff"
               }
-              position="bottom"
+              foreground={
+                userColorThemes[user.id]?.foreColor ??
+                userColorThemes[user.id]?.foreColor ??
+                "#000000ff"
+              }
+              nickname={userNickname[user.id] ?? "Unkown"}
+              patternThemeBool={userPatternThemes[user.id] != null}
+              frameBool={assetSrc(userProfileFrames[user.id]) != null}
+              frame={assetSrc(userProfileFrames[user.id]) ?? "Unknown"}
+              profilePic={
+                assetSrc(userProfilePics[user.id], defaultUserImage.src)! ??
+                "Unkown"
+              }
             >
               <div
-                style={{
+                onClick={goProfile}
+                style={userCardStyle(user.id, {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                   borderRadius: 14,
                   padding: "8px 18px",
+                  cursor: "pointer",
                   minHeight: 60,
                   fontSize: 18,
                   background:
@@ -571,13 +735,13 @@ export default function Leaderboard({
                       : idx === 1
                       ? "linear-gradient(90deg,#f0f0f0 60%,#e0e0e0 100%)" // silberstich
                       : "linear-gradient(90deg,#e6e6e6 60%,#e4d0c1 100%)", // bronzestich
-                  border: isCurrent ? "3px solid #222" : "2px solid #e1e6ea",
+                  border: isCurrent ? "3px solid #222" : "0px solid #e1e6ea",
                   fontWeight: isCurrent ? 900 : 700,
                   boxShadow: isCurrent
                     ? "0 2px 12px rgba(40,40,40,0.13)"
                     : undefined,
                   marginBottom: 0,
-                }}
+                })}
                 tabIndex={0}
               >
                 {/* Rank number */}
@@ -592,17 +756,51 @@ export default function Leaderboard({
                   {user.rank}.
                 </div>
                 {/* Profilbild */}
-                <div style={{ marginRight: 12 }}>
+                <div
+                  style={{
+                    position: "relative",
+                    width: 48,
+                    height: 48,
+                    margin: "0 auto 10px",
+                    border: isCurrent ? "3px solid #222" : "0px solid #ddd",
+                    objectFit: "cover",
+                    boxShadow: "0 1px 5px #0001",
+                  }}
+                >
+                  {assetSrc(userProfileFrames[user.id]) && (
+                    <img
+                      src={assetSrc(userProfileFrames[user.id])}
+                      alt={user.id}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: 10,
+                        objectFit: "cover",
+                        boxShadow: "0 2px 8px #0001",
+                        zIndex: 1,
+                      }}
+                    />
+                  )}
+
+                  {/* Profilbild */}
                   <img
-                    src={equipedPicSrc}
-                    alt={user.name}
+                    src={
+                      assetSrc(userProfilePics[user.id], defaultUserImage.src)!
+                    }
+                    alt={user.id}
                     style={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: 8,
-                      border: isCurrent ? "3px solid #222" : "2px solid #ddd",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 10,
                       objectFit: "cover",
-                      boxShadow: "0 1px 5px #0001",
+                      boxShadow: "0 2px 8px #0001",
+                      zIndex: 0,
                     }}
                   />
                 </div>
@@ -615,20 +813,20 @@ export default function Leaderboard({
                     justifyContent: "center",
                     gap: 6,
                     fontWeight: isCurrent ? 900 : 700,
-                    color: isCurrent ? "#0b0b0b" : "#2f3541",
+                    color: "inherit",
                     fontSize: 18,
                     letterSpacing: ".5px",
                   }}
                 >
                   {trophies[idx]}
-                  {user.name}
+                  {userNickname[user.id] ?? "Unkown"}
                 </div>
                 {/* Punkte */}
                 <div
                   style={{
                     minWidth: 80,
                     textAlign: "right",
-                    color: isCurrent ? "#222" : "#79869a",
+                    color: "inherit",
                     fontWeight: isCurrent ? 900 : 700,
                     fontSize: 18,
                   }}
@@ -665,65 +863,49 @@ export default function Leaderboard({
         >
           {others.map((user) => {
             const isCurrent = user.isCurrentUser;
+            const goProfile = () => router.push(buildProfileHref(user.id));
+
             return (
               <HoverCard
                 key={user.id}
-                card={
-                  <div>
-                    <img
-                      src={equipedPicSrc}
-                      alt={user.name}
-                      style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 10,
-                        objectFit: "cover",
-                        margin: "0 auto 10px",
-                        boxShadow: "0 2px 8px #0001",
-                      }}
-                    />
-                    <div
-                      style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}
-                    >
-                      {user.name}
-                    </div>
-                    <div style={{ fontSize: 16, color: "#79869a" }}>
-                      Points: {user.points}
-                    </div>
-                    <div
-                      style={{ fontSize: 14, color: "#a1a6b2", marginTop: 6 }}
-                    >
-                      Profilinfos folgen…
-                    </div>
-                  </div>
+                background={
+                  userColorThemes[user.id]?.backColor ??
+                  assetSrc(userPatternThemes[user.id]) ??
+                  "#ffffff"
                 }
-                position="bottom"
+                foreground={
+                  userColorThemes[user.id]?.foreColor ??
+                  userColorThemes[user.id]?.foreColor ??
+                  "#000000ff"
+                }
+                nickname={userNickname[user.id] ?? "Unkown"}
+                patternThemeBool={userPatternThemes[user.id] != null}
+                frameBool={assetSrc(userProfileFrames[user.id]) != null}
+                frame={assetSrc(userProfileFrames[user.id]) ?? "Unknown"}
+                profilePic={
+                  assetSrc(userProfilePics[user.id], defaultUserImage.src)! ??
+                  "Unkown"
+                }
               >
                 <div
+                  onClick={goProfile}
                   ref={isCurrent ? currentUserRef : undefined}
-                  style={{
+                  style={userCardStyle(user.id, {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    borderRadius: 12,
-                    padding: "8px 16px",
+                    borderRadius: 14,
+                    padding: "8px 18px",
                     minHeight: 60,
                     fontSize: 18,
-                    background: "#fff",
-                    border: isCurrent ? "3px solid #000" : "2px solid #e1e6ea",
-                    fontWeight: isCurrent ? 800 : 600,
-                    boxShadow: isCurrent
-                      ? "0 2px 8px rgba(60,60,60,0.11)"
-                      : undefined,
                     cursor: "pointer",
-                    backgroundImage: user.backgroundImage
-                      ? `url(${user.backgroundImage})`
+                    border: isCurrent ? "3px solid #222" : "0px solid #e1e6ea",
+                    fontWeight: isCurrent ? 900 : 700,
+                    boxShadow: isCurrent
+                      ? "0 2px 12px rgba(40,40,40,0.13)"
                       : undefined,
-                    backgroundSize: user.backgroundImage ? "cover" : undefined,
-                    backgroundRepeat: user.backgroundImage
-                      ? "repeat"
-                      : undefined,
-                  }}
+                    marginBottom: 0,
+                  })}
                   tabIndex={0}
                 >
                   <div
@@ -734,36 +916,87 @@ export default function Leaderboard({
                       gap: 4,
                     }}
                   >
-                    <span style={{ fontSize: 18 }}>{user.rank}.</span>
-                  </div>
-                  <div style={{ marginRight: 12 }}>
-                    <img
-                      src={equipedPicSrc}
-                      alt={user.name}
+                    <div
                       style={{
-                        width: 38,
-                        height: 38,
-                        borderRadius: 8,
-                        border: isCurrent
-                          ? "2.5px solid #222"
-                          : "2.5px solid #ddd",
-                        objectFit: "cover",
-                        boxShadow: "0 1px 4px #0001",
+                        minWidth: 24,
+                        textAlign: "center",
+                        fontSize: 18,
+                        fontWeight: isCurrent ? 900 : 700,
                       }}
-                    />
+                    >
+                      {user.rank}.
+                    </div>
+                    {/* Profilbild */}
+                    <div
+                      style={{
+                        position: "relative",
+                        width: 48,
+                        height: 48,
+                        margin: "0 auto 10px",
+                        border: isCurrent ? "3px solid #222" : "0px solid #ddd",
+                        objectFit: "cover",
+                        boxShadow: "0 1px 5px #0001",
+                      }}
+                    >
+                      {assetSrc(userProfileFrames[user.id]) && (
+                        <img
+                          src={assetSrc(userProfileFrames[user.id])}
+                          alt={user.id}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            borderRadius: 10,
+                            objectFit: "cover",
+                            boxShadow: "0 2px 8px #0001",
+                            zIndex: 1,
+                          }}
+                        />
+                      )}
+
+                      {/* Profilbild */}
+                      <img
+                        src={
+                          assetSrc(
+                            userProfilePics[user.id],
+                            defaultUserImage.src
+                          )!
+                        }
+                        alt={user.id}
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: 10,
+                          objectFit: "cover",
+                          boxShadow: "0 2px 8px #0001",
+                          zIndex: 0,
+                        }}
+                      />
+                    </div>
                   </div>
+
+                  {/* Trophy + Username */}
                   <div
                     style={{
                       flex: 1,
-                      textAlign: "center",
-                      fontWeight: isCurrent ? 800 : 600,
-                      color: isCurrent ? "#000" : "#21262b",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 6,
+                      fontWeight: isCurrent ? 900 : 700,
+                      color: "inherit",
                       fontSize: 18,
                       letterSpacing: ".5px",
                     }}
                   >
-                    {user.name}
+                    {userNickname[user.id] ?? "Unkown"}
                   </div>
+
                   <div
                     style={{
                       minWidth: 80,
