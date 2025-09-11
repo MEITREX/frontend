@@ -3,8 +3,7 @@ import { LeaderboardDataQuery } from "@/__generated__/LeaderboardDataQuery.graph
 
 import { LeaderboardRowInventoryByUserQuery } from "@/__generated__/LeaderboardRowInventoryByUserQuery.graphql";
 import { LeaderboardRowPublicInfoQuery } from "@/__generated__/LeaderboardRowPublicInfoQuery.graphql";
-import type { StaticImageData } from "next/image";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import {
   fetchQuery,
@@ -16,15 +15,7 @@ import defaultUserImage from "../../assets/logo.svg";
 import { HoverCard } from "../HoverCard";
 import { getPublicProfileItemsMerged } from "../items/logic/GetItems";
 
-function getImageSrc(image?: string | StaticImageData): string {
-  if (typeof image === "string") {
-    return image;
-  }
-  if (image && typeof image === "object" && "src" in image) {
-    return image.src;
-  }
-  return defaultUserImage.src;
-}
+const buildProfileHref = (id: string) => `/profile/${id}`;
 
 // Format today's date as YYYY-MM-DD in the user's local timezone (not UTC)
 function formatLocalISODate(d: Date = new Date()): string {
@@ -227,6 +218,8 @@ export default function Leaderboard({
   const searchParams = useSearchParams();
   const currentUserRef = React.useRef<HTMLDivElement | null>(null);
   const othersContainerRef = React.useRef<HTMLDivElement | null>(null);
+
+  const router = useRouter();
 
   // New Relay query for all leaderboard periods (always declared)
   const LeaderboardDataQuery = graphql`
@@ -701,6 +694,7 @@ export default function Leaderboard({
       >
         {topThree.map((user, idx) => {
           const isCurrent = user.isCurrentUser;
+          const goProfile = () => router.push(buildProfileHref(user.id));
 
           return (
             <HoverCard
@@ -725,12 +719,14 @@ export default function Leaderboard({
               }
             >
               <div
+              onClick={goProfile}
                 style={userCardStyle(user.id, {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                   borderRadius: 14,
                   padding: "8px 18px",
+                  cursor: "pointer",
                   minHeight: 60,
                   fontSize: 18,
                   background:
@@ -845,6 +841,7 @@ export default function Leaderboard({
 
       {/* Untere Plätze */}
       <div
+
         ref={othersContainerRef}
         style={{
           margin: "0 -24px -24px -24px",
@@ -867,6 +864,7 @@ export default function Leaderboard({
         >
           {others.map((user) => {
             const isCurrent = user.isCurrentUser;
+            const goProfile = () => router.push(buildProfileHref(user.id));
 
             return (
               <HoverCard
@@ -891,6 +889,7 @@ export default function Leaderboard({
                 }
               >
                 <div
+                onClick={goProfile}
                   ref={isCurrent ? currentUserRef : undefined}
                   style={userCardStyle(user.id, {
                     display: "flex",
@@ -900,7 +899,7 @@ export default function Leaderboard({
                     padding: "8px 18px",
                     minHeight: 60,
                     fontSize: 18,
-
+                    cursor: "pointer",
                     border: isCurrent ? "3px solid #222" : "0px solid #e1e6ea",
                     fontWeight: isCurrent ? 900 : 700,
                     boxShadow: isCurrent
