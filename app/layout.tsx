@@ -27,7 +27,7 @@ import {
   useAuth,
 } from "react-oidc-context";
 import { RelayEnvironmentProvider } from "react-relay";
-import { CurrencyProvider } from "./contexts/CurrencyContext";
+import { CurrencyProvider } from "../components/contexts/CurrencyContext";
 import PageLoading from "./loading";
 
 dayjs.extend(isBetween);

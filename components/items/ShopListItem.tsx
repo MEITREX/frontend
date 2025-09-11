@@ -1,7 +1,7 @@
 import { ItemsApiBuyItemTutorMutation } from "@/__generated__/ItemsApiBuyItemTutorMutation.graphql";
 import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
-import { useCurrency } from "@/app/contexts/CurrencyContext";
-import { useSort } from "@/app/contexts/SortContextShop";
+import { useCurrency } from "@/components/contexts/CurrencyContext";
+import { useSort } from "@/components/contexts/SortContextShop";
 import { Box, Typography } from "@mui/material";
 import coins from "assets/lottery/coins.png";
 import Image from "next/image";

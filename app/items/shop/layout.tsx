@@ -1,6 +1,6 @@
 "use client";
 
-import { SortProvider } from "../../contexts/SortContextShop";
+import { SortProvider } from "../../../components/contexts/SortContextShop";
 import ShopLayout from "./ShopLayout";
 
 export default function ShopLayoutWrapper({
