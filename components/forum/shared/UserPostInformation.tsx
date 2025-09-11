@@ -11,7 +11,7 @@ import { getItemsByUserQuery } from "@/components/items/api/ItemsApi";
 import { getPublicProfileItemsMerged } from "@/components/items/logic/GetItems";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
-import { Avatar, Stack, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
@@ -153,15 +153,75 @@ export default function UserPostInformation({
           frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
           profilePic={equipedItemPic?.url ?? "Unkown"}
         >
-          <Avatar sx={{ width: 24, height: 24 }}>A</Avatar>
+          <div style={{ position: "relative", width: 24, height: 24 }}onClick={() => {
+            if (!userInfo) return;
+            const isOwnProfile =
+              loggedInUser.currentUserInfo.id === userInfo.id;
+            const profileUrl = isOwnProfile
+              ? "/profile"
+              : `/profile/${userInfo.id}`;
+            router.push(profileUrl);
+          }}>
+            {equipedItemPicFrame && (
+              <img
+                src={decodeURIComponent(equipedItemPicFrame?.url ?? "Unkown")}
+                alt={equipedItemPicFrame?.id ?? "Unkown"}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: 24,
+                  height: 24,
+                  borderRadius: 2,
+
+                  zIndex: 1,
+                }}
+              />
+            )}
+            <img
+              src={decodeURIComponent(equipedItemPic?.url ?? "Unkown")}
+              alt={equipedItemPic?.id ?? "Unkown"}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: 24,
+                height: 24,
+                borderRadius: 2,
+
+                zIndex: 0,
+              }}
+            />
+          </div>
         </HoverCard>
       )}
       {userInfo && (
+        <div style={{ display: "inline-flex", alignItems: "center", lineHeight: 0, verticalAlign: "middle" }}>
+         <HoverCard
+
+          key={userInfo?.id}
+          background={
+            (equipedItemColorTheme?.backColor
+              ? equipedItemColorTheme.backColor
+              : equipedItemPatternTheme?.url) ?? "#ffffff"
+          }
+          foreground={
+            (equipedItemColorTheme
+              ? equipedItemColorTheme.foreColor
+              : equipedItemPatternTheme?.foreColor) ?? "#000000"
+          }
+          nickname={userInfo?.nickname ?? "Unknown"}
+          patternThemeBool={equipedItemColorTheme != null}
+          frameBool={equipedItemPicFrame != null}
+          frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
+          profilePic={equipedItemPic?.url ?? "Unkown"}
+        >
         <Typography
           noWrap
           sx={{
             textOverflow: "ellipsis",
             overflow: "hidden",
+
             "&:hover": {
               cursor: "pointer",
             },
@@ -184,6 +244,8 @@ export default function UserPostInformation({
         >
           {userInfo.nickname ?? "unknown"}
         </Typography>
+        </HoverCard>
+        </div>
       )}
 
       {displayDate && (

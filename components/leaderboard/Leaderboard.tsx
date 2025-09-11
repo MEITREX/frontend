@@ -719,7 +719,7 @@ export default function Leaderboard({
               }
             >
               <div
-              onClick={goProfile}
+                onClick={goProfile}
                 style={userCardStyle(user.id, {
                   display: "flex",
                   alignItems: "center",
@@ -841,7 +841,6 @@ export default function Leaderboard({
 
       {/* Untere Plätze */}
       <div
-
         ref={othersContainerRef}
         style={{
           margin: "0 -24px -24px -24px",
@@ -889,7 +888,7 @@ export default function Leaderboard({
                 }
               >
                 <div
-                onClick={goProfile}
+                  onClick={goProfile}
                   ref={isCurrent ? currentUserRef : undefined}
                   style={userCardStyle(user.id, {
                     display: "flex",
