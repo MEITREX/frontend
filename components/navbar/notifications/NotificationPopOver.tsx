@@ -1,3 +1,6 @@
+"use client";
+import React from "react";
+import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 import {
   Box,
   Button,
@@ -7,6 +10,26 @@ import {
   Typography
 } from "@mui/material";
 
+const USER_ID_QUERY = graphql`
+  query NotificationPopOverUserIdQuery {
+    currentUserInfo {
+      id
+    }
+  }
+`;
+
+const MARK_ALL_READ = graphql`
+  mutation NotificationPopOver_MarkAllReadMutation($userId: UUID!) {
+    markAllRead(userId: $userId)
+  }
+`;
+
+const MARK_ONE_READ = graphql`
+  mutation NotificationPopOver_MarkOneReadMutation($userId: UUID!, $notificationId: UUID!) {
+    markOneRead(userId: $userId, notificationId: $notificationId)
+  }
+`;
+
 interface NotificationPopOverProps {
   anchorEl: any;
   setAnchorEl: (el: any) => void;
@@ -15,32 +38,51 @@ interface NotificationPopOverProps {
 }
 
 export default function NotificationPopOver({
-  anchorEl,
-  setAnchorEl,
-  setNotifications,
-  notifications,
-}: NotificationPopOverProps) {
+                                              anchorEl,
+                                              setAnchorEl,
+                                              setNotifications,
+                                              notifications,
+                                            }: NotificationPopOverProps) {
   const handleCloseNotifications = () => {
     setAnchorEl(null);
   };
 
   const isOpen = Boolean(anchorEl);
 
+  const { currentUserInfo } = useLazyLoadQuery<any>(
+    USER_ID_QUERY,
+    {},
+    { fetchPolicy: "store-and-network" }
+  );
+  const userId: string | undefined = currentUserInfo?.id;
+
+  const [commitMarkAllRead, allInFlight] = useMutation(MARK_ALL_READ);
+  const [commitMarkOneRead, oneInFlight] = useMutation(MARK_ONE_READ);
+
+  const list = Array.isArray(notifications) ? notifications : [];
+
   const handleMarkAsRead = (event: React.MouseEvent, index: number) => {
     event.stopPropagation();
     event.preventDefault();
-
-    setNotifications((prev: any) =>
-      prev.map((n: any, i: any) => (i === index ? { ...n, read: true } : n))
-    );
+    const target = list[index];
+    if (!userId || !target?.id) return;
+    commitMarkOneRead({
+      variables: { userId, notificationId: target.id },
+      onCompleted: () => {
+        setNotifications((prev: any) =>
+          (Array.isArray(prev) ? prev : []).map((n: any, i: number) =>
+            i === index ? { ...n, read: true } : n
+          )
+        );
+      },
+    });
   };
 
   const handleDelete = (event: React.MouseEvent, index: number) => {
     event.stopPropagation();
     event.preventDefault();
-
     setNotifications((prev: any) =>
-      prev.filter((_: any, i: any) => i !== index)
+      (Array.isArray(prev) ? prev : []).filter((_: any, i: number) => i !== index)
     );
   };
 
@@ -75,9 +117,6 @@ export default function NotificationPopOver({
     }
   }
 
-
-  // Dummy data, will be reomoved later
-
   return (
     <Popover
       open={isOpen}
@@ -107,8 +146,6 @@ export default function NotificationPopOver({
         },
       }}
     >
-
-
       <Box sx={{ p: 2, minWidth: 250 }}>
         <Box
           display="flex"
@@ -122,20 +159,29 @@ export default function NotificationPopOver({
           <Box display="flex" gap={1}>
             <Button
               size="small"
-              variant="outlined"
-              onClick={() =>
-                setNotifications((prev: any[]) =>
-                  prev.map((n) => ({ ...n, read: true }))
-                )
-              }
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                if (!userId || allInFlight) return;
+                commitMarkAllRead({
+                  variables: { userId },
+                  onCompleted: () => {
+                    setNotifications((prev: any[]) =>
+                      (Array.isArray(prev) ? prev : []).map((n) => ({ ...n, read: true }))
+                    );
+                  },
+                });
+              }}
+              sx={{ borderRadius: 999 }}
             >
               MARK ALL AS READ
             </Button>
             <Button
               size="small"
-              variant="outlined"
+              variant="contained"
               color="error"
               onClick={() => setNotifications([])}
+              sx={{ borderRadius: 999 }}
             >
               DELETE ALL
             </Button>
@@ -143,36 +189,36 @@ export default function NotificationPopOver({
         </Box>
 
         {/* Beispiel-Inhalte */}
-        {notifications.length === 0 ? (
+        {list.length === 0 ? (
           <Typography variant="body2" color="text.secondary">
             No new notifications.
           </Typography>
         ) : (
-          notifications.map((note, index) => (
-            <Box key={index} mb={2}>
-              <Link href={note.href} style={{ textDecoration: "none" }}>
+          list.map((note, index) => (
+            <Box key={note?.id ?? index} mb={2}>
+              <Link href={note?.href} style={{ textDecoration: "none" }}>
                 <Box
                   sx={{
-                    position: "relative", // 👈 wichtig für absolute Zeit
+                    position: "relative",
                     borderRadius: 2,
                     p: 2,
                     "&:hover": {
                       backgroundColor: "#f5f5f5",
                       cursor: "pointer",
                     },
-                    border: note.read
+                    border: note?.read
                       ? "1px solid #e0e0e0"
                       : "2px solid #009bde",
-                    boxShadow: note.read
+                    boxShadow: note?.read
                       ? "none"
                       : "0 0 8px rgba(51,105,173,255, 0.4)",
                     transition: "box-shadow 0.3s ease-in-out",
                   }}
                 >
                   <Typography variant="subtitle1" fontWeight="bold">
-                    {note.title}
+                    {note?.title}
                   </Typography>
-                  <Tooltip title={note.description} placement="top" arrow>
+                  <Tooltip title={note?.description ?? ""} placement="top" arrow>
                     <Typography
                       variant="body2"
                       color="text.secondary"
@@ -181,13 +227,12 @@ export default function NotificationPopOver({
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                        maxWidth: "100%", // oder z. B. 400 wenn du begrenzen willst
+                        maxWidth: "100%",
                       }}
                     >
-                      {note.description}
+                      {note?.description}
                     </Typography>
                   </Tooltip>
-                  {/* Zeit oben rechts in dieser Box */}
                   <Typography
                     variant="caption"
                     color="text.secondary"
@@ -197,23 +242,25 @@ export default function NotificationPopOver({
                       right: 12,
                     }}
                   >
-                    {getRelativeTime(note.createdAt)}
+                    {note?.createdAt ? getRelativeTime(note.createdAt) : ""}
                   </Typography>
 
                   <Box sx={{ display: "flex", gap: 1, marginTop: 2 }}>
                     <Button
                       size="small"
-                      variant="outlined"
+                      variant="contained"
                       onClick={(event) => handleMarkAsRead(event, index)}
-                      disabled={note.read}
+                      disabled={note?.read || oneInFlight || !userId}
+                      sx={{ borderRadius: 999 }}
                     >
                       Mark as read
                     </Button>
                     <Button
                       size="small"
-                      variant="outlined"
+                      variant="contained"
                       color="error"
                       onClick={(event) => handleDelete(event, index)}
+                      sx={{ borderRadius: 999 }}
                     >
                       Delete
                     </Button>

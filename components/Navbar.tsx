@@ -44,13 +44,44 @@ import {
 import dayjs from "dayjs";
 import { chain, debounce } from "lodash";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactElement, useCallback, useState, useTransition } from "react";
+import React, { ReactElement, useEffect, useCallback, useState, useTransition } from "react";
 import { useAuth } from "react-oidc-context";
-import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
+import { graphql, useFragment, useLazyLoadQuery, useSubscription } from "react-relay";
 import NotificationsWithArrow from "./navbar/notifications/NotificationsWithArrow";
+import { NavbarNotificationsQuery } from "@/__generated__/NavbarNotificationsQuery.graphql";
+
+const NAVBAR_NOTIFICATIONS_QUERY = graphql`
+  query NavbarNotificationsQuery {
+    currentUserInfo {
+      id
+      notificationUnreadCount
+      notifications {
+        id
+        title
+        description
+        href
+        createdAt
+        read
+      }
+    }
+  }
+`;
+
+const NAVBAR_NOTIFICATION_ADDED_SUB = graphql`
+  subscription NavbarNotificationAddedSubscription($userId: UUID!) {
+    notificationAdded(userId: $userId) {
+      id
+      title
+      description
+      href
+      createdAt
+      read
+    }
+  }
+`;
 
 function useIsTutor(_frag: NavbarIsTutor$key) {
-  const { realmRoles, courseMemberships } = useFragment(
+  const data = useFragment(
     graphql`
       fragment NavbarIsTutor on UserInfo {
         realmRoles
@@ -61,12 +92,12 @@ function useIsTutor(_frag: NavbarIsTutor$key) {
     `,
     _frag
   );
+  const realmRoles = Array.isArray(data?.realmRoles) ? data.realmRoles : [];
+  const courseMemberships = Array.isArray(data?.courseMemberships) ? data.courseMemberships : [];
   return (
     realmRoles.includes("SUPER_USER") ||
     realmRoles.includes("COURSE_CREATOR") ||
-    courseMemberships.some(
-      (x) => x.role === "TUTOR" || x.role === "ADMINISTRATOR"
-    )
+    courseMemberships.some((x) => x && (x.role === "TUTOR" || x.role === "ADMINISTRATOR"))
   );
 }
 
@@ -78,11 +109,13 @@ type SearchResultType = {
 };
 
 function NavbarBase({
-  children,
-  _isTutor,
-}: {
+                      children,
+                      tutor,
+                      userId,
+                    }: {
   children: React.ReactElement;
-  _isTutor: NavbarIsTutor$key;
+  tutor: boolean;
+  userId: string;
 }) {
   const [term, setTerm] = useState("");
   const router = useRouter();
@@ -167,7 +200,6 @@ function NavbarBase({
 
   const [isPending, startTransition] = useTransition();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSetter = useCallback(
     debounce((value: string) => startTransition(() => setTerm(value)), 150),
     [setTerm, startTransition]
@@ -342,7 +374,7 @@ function NavbarBase({
         />
       </NavbarSection>
       {children}
-      <UserInfo _isTutor={_isTutor} />
+      <UserInfo tutor={tutor} userId={userId} />
     </div>
   );
 }
@@ -364,11 +396,11 @@ function NavbarSection({ children, title }: { children: any; title?: string }) {
 }
 
 function NavbarLink({
-  icon,
-  title,
-  href,
-  exact,
-}: {
+                      icon,
+                      title,
+                      href,
+                      exact,
+                    }: {
   icon?: ReactElement;
   title: string;
   href: string;
@@ -414,78 +446,35 @@ function SwitchPageViewButton() {
   }
 }
 
-function UserInfo({ _isTutor }: { _isTutor: NavbarIsTutor$key }) {
+function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
   const auth = useAuth();
-
-  const tutor = useIsTutor(_isTutor);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const [notifications, setNotifications] = useState([
-    {
-      title: "🎯 New Mission Available",
-      description:
-        "You’ve unlocked a new level – check it out now! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      href: "/missions/new",
-      read: true,
-      createdAt: new Date(Date.now() - 300000).toISOString(), // z. B. vor 30 Sek.
+  const notifData = useLazyLoadQuery<NavbarNotificationsQuery>(NAVBAR_NOTIFICATIONS_QUERY, {}, { fetchPolicy: "store-and-network" });
+
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    const list = notifData?.currentUserInfo?.notifications ?? [];
+    setNotifications([...list]);
+  }, [notifData]);
+
+  useSubscription({
+    subscription: NAVBAR_NOTIFICATION_ADDED_SUB,
+    variables: { userId },
+    onNext: (ev: any) => {
+      const n = ev?.notificationAdded;
+      if (!n) return;
+      setNotifications((prev) => [n, ...prev]);
     },
-    {
-      title: "🏆 Weekly Summary",
-      description: "Your score has increased by 30 points",
-      href: "/dashboard",
-      read: false,
-      createdAt: new Date(Date.now() - 300392390200).toISOString(), // z. B. vor 30 Sek.
-    },
-    {
-      title: "🎯 New Mission Available",
-      description: "You’ve unlocked a new level – check it out now!",
-      href: "/missions/new",
-      read: true,
-      createdAt: new Date(Date.now() - 30000).toISOString(), // z. B. vor 30 Sek.
-    },
-    {
-      title: "🏆 Weekly Summary",
-      description: "Your score has increased by 30 points",
-      href: "/dashboard",
-      read: false,
-      createdAt: new Date(Date.now() - 3009900).toISOString(), // z. B. vor 30 Sek.
-    },
-    {
-      title: "🎯 New Mission Available",
-      description: "You’ve unlocked a new level – check it out now!",
-      href: "/missions/new",
-      read: true,
-      createdAt: new Date(Date.now() - 30656576000).toISOString(), // z. B. vor 30 Sek.
-    },
-    {
-      title: "🏆 Weekly Summary",
-      description: "Your score has increased by 30 points",
-      href: "/dashboard",
-      read: false,
-      createdAt: new Date(Date.now() - 3000000).toISOString(), // z. B. vor 30 Sek.
-    },
-    {
-      title: "🎯 New Mission Available",
-      description: "You’ve unlocked a new level – check it out now!",
-      href: "/missions/new",
-      read: true,
-      createdAt: new Date(Date.now() - 60000).toISOString(), // z. B. vor 30 Sek.
-    },
-    {
-      title: "🏆 Weekly Summary",
-      description: "Your score has increased by 30 points",
-      href: "/dashboard",
-      read: false,
-      createdAt: new Date(Date.now() - 300000).toISOString(), // z. B. vor 30 Sek.
-    },
-  ]);
+  });
 
   const handleOpenNotifications = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = (notifications ?? []).filter((n) => !n.read).length;
 
   return (
     <div className="sticky bottom-0 py-6 -mt-6 bg-gradient-to-t from-slate-200 from-75% to-transparent">
@@ -580,7 +569,8 @@ export function Navbar() {
     {}
   );
 
-  const filtered = currentUserInfo.courseMemberships
+  const memberships = currentUserInfo?.courseMemberships ?? [];
+  const filtered = memberships
     .filter(
       (x) =>
         ["ADMINISTRATOR", "TUTOR"].includes(x.role) ||
@@ -593,8 +583,11 @@ export function Navbar() {
           dayjs(x.course.startDate) <= dayjs()) ||
         pageView === PageView.Lecturer
     );
+
+  const tutor = useIsTutor(currentUserInfo);
+
   return (
-    <NavbarBase _isTutor={currentUserInfo}>
+    <NavbarBase tutor={tutor} userId={currentUserInfo.id}>
       {filtered.length > 0 ? (
         <NavbarSection
           title={
