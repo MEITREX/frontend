@@ -73,7 +73,7 @@ export default function ForumActivity({
             </Typography>
             <Typography
               variant="caption"
-              sx={{ color: "info.main", fontWeight: "bold" }}
+              sx={{ color: "info.main", fontWeight: "bold",   whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", }}
             >
               New Thread by –
             </Typography>
@@ -104,7 +104,7 @@ export default function ForumActivity({
               display: "flex",
               alignItems: "center",
               gap: 0.5,
-              flexWrap: "wrap",
+              flexWrap: "nowrap",
             }}
           >
             <Typography
@@ -121,7 +121,9 @@ export default function ForumActivity({
             </Typography>
             <Typography
               variant="caption"
-              sx={{ color: "info.main", fontWeight: "bold" }}
+              sx={{ color: "info.main", fontWeight: "bold", whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis", }}
             >
               New Answer by –
             </Typography>
@@ -129,7 +131,7 @@ export default function ForumActivity({
               creationTime={creationTime}
               creatorId={post.authorId}
               displayDate={false}
-              displayPB={false}
+              displayPB={true}
             />
           </Box>
 
