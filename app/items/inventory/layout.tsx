@@ -1,6 +1,6 @@
 "use client";
 
-import { SortProvider } from "../../../components/contexts/SortContext";
+import { SortProvider } from "../../contexts/SortContext";
 import InventoryLayout from "./InventoryLayout";
 
 export default function InventoryLayoutWrapper({

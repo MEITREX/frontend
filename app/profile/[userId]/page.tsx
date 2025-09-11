@@ -2,13 +2,13 @@
 
 import { ForumApiUserInfoByIdQuery } from "@/__generated__/ForumApiUserInfoByIdQuery.graphql";
 import { pagePublicProfileStudentQuery } from "@/__generated__/pagePublicProfileStudentQuery.graphql";
+import { SortProvider } from "@/app/contexts/SortContext";
 import { CombinedLeaderboardCard } from "@/app/profile/leaderboard/ProfileLeaderboardPositions";
-import { SortProvider } from "@/components/contexts/SortContext";
 import { forumApiUserInfoByIdQuery } from "@/components/forum/api/ForumApi";
 import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
 import UserProfileCustomHeader from "@/components/profile/header/UserProfileCustomHeader";
 import ProfileInventorySection from "@/components/profile/items/ProfileInventorySection";
-import { Box, Grid, Tab, Tabs, Typography } from "@mui/material";
+import { Avatar, Box, Grid, Tab, Tabs, Typography } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLazyLoadQuery } from "react-relay";

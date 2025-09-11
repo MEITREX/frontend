@@ -1,7 +1,7 @@
 // CurrencyHydrator.tsx
 "use client";
 import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
-import { useCurrency } from "@/components/contexts/CurrencyContext";
+import { useCurrency } from "@/app/contexts/CurrencyContext";
 import { inventoryForUserQuery } from "@/components/items/api/ItemsApi";
 import { useEffect } from "react";
 import { useLazyLoadQuery } from "react-relay";

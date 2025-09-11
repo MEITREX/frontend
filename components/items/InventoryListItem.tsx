@@ -3,7 +3,7 @@
 import { ItemsApiEquipItemMutation } from "@/__generated__/ItemsApiEquipItemMutation.graphql";
 import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
 import { ItemsApiUnequipItemMutation } from "@/__generated__/ItemsApiUnequipItemMutation.graphql";
-import { useSort } from "@/components/contexts/SortContext";
+import { useSort } from "@/app/contexts/SortContext";
 import { Box, Typography } from "@mui/material";
 import { useMemo, useRef, useState } from "react";
 import { useLazyLoadQuery, useMutation } from "react-relay";

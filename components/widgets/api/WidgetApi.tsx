@@ -3,7 +3,6 @@ import { graphql } from "react-relay";
 export const widgetApiItemInventoryForUserQuery = graphql`
   query WidgetApiItemInventoryForUserQuery {
     inventoryForUser {
-      userId
       items {
         equipped
         id
