@@ -6,10 +6,9 @@ import { Typography } from "@mui/material";
 
 type Props = {
   threads: any;
-  onThreadClick?: (threadId: string) => void;
 };
 
-export default function ThreadList({ threads, onThreadClick }: Props) {
+export default function ThreadList({ threads }: Props) {
   if (threads.length === 0) {
     return (
       <Typography
@@ -29,7 +28,6 @@ export default function ThreadList({ threads, onThreadClick }: Props) {
     <Box sx={{ overflowY: "auto", p: 1 }}>
       {threads.map((thread: any) => (
         <ThreadItem
-          onThreadClick={onThreadClick}
           key={thread.id}
           thread={thread}
         />

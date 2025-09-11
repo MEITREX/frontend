@@ -11,13 +11,13 @@ import {
   alpha,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import { useRouter } from "next/navigation";
 
 type ForumHeaderProps = {
   sortBy: string;
   setSortBy: (value: string) => void;
   categoryFilter: string;
   setCategoryFilter: (value: string) => void;
-  createThread?: () => void;
 };
 
 export default function ForumHeader({
@@ -25,8 +25,8 @@ export default function ForumHeader({
   setSortBy,
   categoryFilter,
   setCategoryFilter,
-  createThread,
 }: ForumHeaderProps) {
+  const router = useRouter();
   const handleCategoryChange = (
     event: React.MouseEvent<HTMLElement>,
     newCategory: string | null
@@ -92,7 +92,7 @@ export default function ForumHeader({
         </Stack>
       </Stack>
 
-      <Button variant="contained" color="primary" onClick={createThread}>
+      <Button variant="contained" color="primary" onClick={() => router.push('/forum/create')}>
         <AddIcon />
       </Button>
     </Box>

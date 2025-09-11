@@ -20,13 +20,12 @@ import { useLazyLoadQuery, useMutation } from "react-relay";
 import PostsContext from "../context/PostsContext";
 import PostList from "../post/PostList";
 import ThreadStatusIcons from "./ThreadStatusIcons";
+import { useParams, useRouter } from "next/navigation";
 
-type Props = {
-  threadId: string;
-  redirect: () => void;
-};
+export default function ThreadDetail() {
+  const { threadId } = useParams();
+  const router = useRouter();
 
-export default function ThreadDetail({ threadId, redirect }: Props) {
   const data = useLazyLoadQuery<ForumApiThreadDetailQuery>(
     forumApiThreadDetailQuery,
     { id: threadId },
@@ -87,9 +86,7 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
   return (
     <PostsContext.Provider value={{ deletePostContext: deletePostFromState }}>
       <Button
-        onClick={() => {
-          redirect();
-        }}
+        onClick={()=> router.back()}
         variant="text"
         startIcon={<ArrowBackIcon />}
         sx={{ mb: 2 }}

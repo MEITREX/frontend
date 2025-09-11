@@ -22,24 +22,9 @@ export default function ForumOverview() {
   const [contentIdForQuery, setcontentIdForQuery] = useState(
     params.mediaId || ""
   );
+
   const isMediaPage = pathname.includes("/media/");
 
-  const [selectedThreadId, setSelectedThreadId] = useState<string>("");
-  /*
-   The navigation is done by displaying the necessary components via 'viewMode'.
-   We cannot use Next.js folder routes because we also want to display the forum alongside the media content.
-   After CRUD operations we have to refetch, maybe we need to seperate components for the different views in the future
- */
-  const [viewMode, setViewMode] = useState<
-    "threadDetail" | "createNewThreadMediaContent" | "headerThreadList"
-  >("headerThreadList");
-
-  const handleThreadClick = (threadId: string) => {
-    setSelectedThreadId(threadId);
-    setViewMode("threadDetail");
-  };
-
-  const [fetchKey, setFetchKey] = useState(0);
 
   const data = useLazyLoadQuery<ForumApiThreadsCombinedQuery>(
     forumApiThreadByMediaRecordQuery,
@@ -48,17 +33,8 @@ export default function ForumOverview() {
       hasContentId: isMediaPage,
       contentId: contentIdForQuery,
     },
-    { fetchPolicy: "network-only", fetchKey: fetchKey }
+    { fetchPolicy: "network-only" }
   );
-
-  const handleCreationComplete = () => {
-    setViewMode("headerThreadList");
-    triggerRefetch();
-  };
-
-  const triggerRefetch = () => {
-    setFetchKey((prevKey) => prevKey + 1);
-  };
 
   const [sortBy, setSortBy] = useState("Latest");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
@@ -102,52 +78,31 @@ export default function ForumOverview() {
           flexDirection: "column",
         }}
       >
-        {viewMode === "headerThreadList" && (
-          <>
-            <ForumHeader
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              categoryFilter={categoryFilter}
-              setCategoryFilter={setCategoryFilter}
-              createThread={() => setViewMode("createNewThreadMediaContent")}
+        <>
+          <ForumHeader
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            categoryFilter={categoryFilter}
+            setCategoryFilter={setCategoryFilter}
+          />
+          {isMediaPage && (
+            <Typography
+              variant="caption"
+              sx={{
+                p: 2,
+                fontStyle: "italic",
+                color: "text.secondary",
+              }}
+            >
+              All displayed Threads are related to this Content!
+            </Typography>
+          )}
+          <Suspense fallback={<SkeletonThreadList />}>
+            <ThreadList
+              threads={filteredAndSortedThreads}
             />
-            {isMediaPage && (
-              <Typography
-                variant="caption"
-                sx={{
-                  p: 2,
-                  fontStyle: "italic",
-                  color: "text.secondary",
-                }}
-              >
-                All displayed Threads are related to this Content!
-              </Typography>
-            )}
-            <Suspense fallback={<SkeletonThreadList />}>
-              <ThreadList
-                threads={filteredAndSortedThreads}
-                onThreadClick={handleThreadClick}
-              />
-            </Suspense>
-          </>
-        )}
-        {viewMode === "createNewThreadMediaContent" && (
-          <Box sx={{ overflowY: "scroll" }}>
-            <Suspense fallback={<SkeletonThreadForm />}>
-              <ThreadForm redirect={() => handleCreationComplete()} />
-            </Suspense>
-          </Box>
-        )}
-        {viewMode === "threadDetail" && (
-          <Box sx={{ height: "78vh", overflowY: "auto", p: 2 }}>
-            <Suspense fallback={<SkeletonThreadDetail />}>
-              <ThreadDetail
-                threadId={selectedThreadId}
-                redirect={() => handleCreationComplete()}
-              />
-            </Suspense>
-          </Box>
-        )}
+          </Suspense>
+        </>
       </Box>
     </>
   );

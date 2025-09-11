@@ -4,13 +4,15 @@ import { ThreadType } from "@/components/forum/types";
 import { Box, Stack, Typography } from "@mui/material";
 import UpvoteDownvote from "../shared/UpvoteDownvote";
 import UserPostInformation from "../shared/UserPostInformation";
+import { useRouter } from "next/navigation";
 
 type Props = {
   thread: ThreadType;
-  onThreadClick?: (threadId: string) => void;
 };
 
-export default function ThreadItem({ thread, onThreadClick }: Props) {
+export default function ThreadItem({ thread }: Props) {
+  const router = useRouter();
+
   return (
     <Box
       sx={{
@@ -45,7 +47,7 @@ export default function ThreadItem({ thread, onThreadClick }: Props) {
           justifyContent="space-between"
           sx={{ flexGrow: 1, overflow: "hidden", position: "relative" }}
         >
-          <Box onClick={() => onThreadClick?.(thread.id)}>
+          <Box onClick={() => router.push(`/forum/${thread.id}`)}>
             <Typography variant="h6" sx={{ color: "#089CDC", fontWeight: 600 }}>
               {thread.title}
             </Typography>
