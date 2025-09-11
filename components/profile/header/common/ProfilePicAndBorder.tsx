@@ -1,7 +1,6 @@
+import { DecorationItem } from "@/components/items/types/Types";
 import { Avatar, Box } from "@mui/material";
 import Image from "next/image";
-import React from "react";
-import { DecorationItem } from "@/components/items/types/Types";
 
 type Props = {
   height: number;
@@ -10,10 +9,10 @@ type Props = {
 };
 
 export default function ProfilePicAndBorder({
-                                              profilePicFrame,
-                                              profilePic,
-                                              height,
-                                            }: Props) {
+  profilePicFrame,
+  profilePic,
+  height,
+}: Props) {
   return (
     <Box
       sx={{

@@ -9,18 +9,20 @@ import logo from "@/assets/logo.svg";
 import StoreIcon from "@mui/icons-material/Store";
 import coins from "assets/lottery/coins.png";
 
-import duration from "dayjs/plugin/duration";
 import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
 dayjs.extend(duration);
 
 import Image from "next/image";
 import Link from "next/link";
 
-import { useCurrency } from "@/app/contexts/CurrencyContext";
+import { useCurrency } from "@/components/contexts/CurrencyContext";
 import { getUnlockedItemAndEquiped } from "@/components/items/logic/GetItems";
 import ProfilePicAndBorder from "@/components/profile/header/common/ProfilePicAndBorder";
+import { createIsolatedEnvironment } from '@/components/relay/createIsolatedEnvironment';
 import { widgetApiItemInventoryForUserQuery } from "@/components/widgets/api/WidgetApi";
 import { PageView, usePageView } from "@/src/currentView";
+import { fetchFn } from '@/src/relay-helpers/fetchFn';
 import { useAITutorStore } from "@/stores/aiTutorStore";
 
 import {
@@ -38,6 +40,7 @@ import {
   Divider,
   IconButton,
   InputAdornment,
+  LinearProgress,
   List,
   ListItem,
   ListItemAvatar,
@@ -48,11 +51,10 @@ import {
   TextField,
   Tooltip,
   Typography,
-  LinearProgress,
 } from "@mui/material";
 import type {
-  AutocompleteRenderOptionState,
   AutocompleteOwnerState,
+  AutocompleteRenderOptionState,
 } from "@mui/material/Autocomplete";
 
 import { chain, debounce } from "lodash";
@@ -61,6 +63,7 @@ import {
   ReactElement,
   useCallback,
   useEffect,
+  useMemo,
   useState,
   useTransition,
 } from "react";
@@ -331,6 +334,8 @@ function NavbarBase({
 
   const [isSearchPopupOpen, setSearchPopupOpen] = useState(false);
 
+  const isolatedEnv = useMemo(() => createIsolatedEnvironment(fetchFn), []);
+
   return (
     <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
       <div className="text-center mt-8 text-3xl font-medium tracking-wider sticky">
@@ -422,7 +427,9 @@ function NavbarBase({
       </NavbarSection>
 
       {children}
+
       <UserInfo _isTutor={_isTutor} userId={userId} />
+
     </div>
   );
 }
@@ -682,6 +689,7 @@ function UserInfo({
                 height={50}
                 profilePicFrame={profilePicFrame}
                 profilePic={profilePic}
+                key={userId}
               />
             </Link>
           </ListItemAvatar>

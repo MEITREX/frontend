@@ -1,7 +1,7 @@
 "use client";
 
 import { ItemsApiItemInventoryForUserByIdQuery } from "@/__generated__/ItemsApiItemInventoryForUserByIdQuery.graphql";
-import { useSort } from "@/app/contexts/SortContext";
+import { useSort } from "@/components/contexts/SortContext";
 import { Box, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
 import { useLazyLoadQuery } from "react-relay";

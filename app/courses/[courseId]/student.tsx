@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
-import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
+import { graphql, RelayEnvironmentProvider, useLazyLoadQuery, useMutation } from "react-relay";
 
 import { studentCourseLeaveMutation } from "@/__generated__/studentCourseLeaveMutation.graphql";
 import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
@@ -39,8 +39,10 @@ import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
 import CourseLeaderboards from "@/components/leaderboard/CourseLeaderboard";
+import { createIsolatedEnvironment } from "@/components/relay/createIsolatedEnvironment";
+import fetchFn from "@/src/relay-helpers/fetchFn";
 import * as React from "react";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import QuestList from "./quests/QuestItem";
 
 function CustomTabPanel(props: TabPanelProps) {
@@ -92,6 +94,8 @@ export default function StudentCoursePage() {
 
   const router = useRouter();
   const [error, setError] = useState<any>(null);
+
+  const isolatedEnv = useMemo(() => createIsolatedEnvironment(fetchFn), []);
 
   // Fetch course data
   const {
@@ -553,17 +557,21 @@ export default function StudentCoursePage() {
 
         <CustomTabPanel value={value} index={3}>
           <Suspense fallback={<SkeletonThreadList />}>
+          <RelayEnvironmentProvider environment={isolatedEnv}>
             <ForumOverview />
+            </RelayEnvironmentProvider>
           </Suspense>
         </CustomTabPanel>
 
         <CustomTabPanel value={value} index={4}>
           <Suspense fallback={<SkeletonThreadList />}>
+          <RelayEnvironmentProvider environment={isolatedEnv}>
             <CourseLeaderboards
               courseID={id}
               currentUserId={userId}
               currentUserName={"Current User"}
             />
+            </RelayEnvironmentProvider>
           </Suspense>
         </CustomTabPanel>
       </Box>

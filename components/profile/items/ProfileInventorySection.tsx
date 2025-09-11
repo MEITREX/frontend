@@ -1,7 +1,7 @@
 // app/items/inventory/InventoryLayout.tsx
 "use client";
 
-import { useSort } from "@/app/contexts/SortContext";
+import { useSort } from "@/components/contexts/SortContext";
 import PublicProfileListItem from "@/components/items/PublicProfileListItem";
 import {
   Box,
