@@ -1,8 +1,7 @@
 // src/relay/fetchFn.ts
 import type { RequestParameters, Variables } from "relay-runtime";
 
-const GRAPHQL_URL =
-  "http://localhost:8080/graphql";
+const GRAPHQL_URL = "http://localhost:8080/graphql";
 
 // Falls du einen Token global ablegst (z. B. window.__AUTH_TOKEN__)
 function getAuthHeader(): Record<string, string> {
@@ -18,7 +17,7 @@ export async function fetchFn(
 ): Promise<any> {
   // Wichtig: params.text enthält das Query (bei persisted queries evtl. null)
   const body: any = {
-    query: params.text,          // wenn du persisted queries nutzt, hier ggf. params.id senden
+    query: params.text, // wenn du persisted queries nutzt, hier ggf. params.id senden
     variables,
     operationName: params.name,
   };
