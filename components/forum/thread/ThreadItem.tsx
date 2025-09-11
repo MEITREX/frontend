@@ -1,10 +1,12 @@
+"use client";
+
 import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
 import ThreadStatusIcons from "@/components/forum/thread/ThreadStatusIcons";
 import { ThreadType } from "@/components/forum/types";
 import { Box, Stack, Typography } from "@mui/material";
 import UpvoteDownvote from "../shared/UpvoteDownvote";
 import UserPostInformation from "../shared/UserPostInformation";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 type Props = {
   thread: ThreadType;
@@ -12,6 +14,7 @@ type Props = {
 
 export default function ThreadItem({ thread }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
 
   return (
     <Box
@@ -47,7 +50,7 @@ export default function ThreadItem({ thread }: Props) {
           justifyContent="space-between"
           sx={{ flexGrow: 1, overflow: "hidden", position: "relative" }}
         >
-          <Box onClick={() => router.push(`/forum/${thread.id}`)}>
+          <Box onClick={() => router.push(`${pathname}/${thread.id}`)}>
             <Typography variant="h6" sx={{ color: "#089CDC", fontWeight: 600 }}>
               {thread.title}
             </Typography>

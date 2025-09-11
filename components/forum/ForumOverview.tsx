@@ -7,11 +7,7 @@ import ThreadList from "@/components/forum/thread/ThreadList";
 import ForumHeader from "@/components/forum/header/ForumHeader";
 import { Box, Typography } from "@mui/material";
 import { forumApiThreadByMediaRecordQuery } from "@/components/forum/api/ForumApi";
-import ThreadForm from "@/components/forum/thread/ThreadForm";
 import { ForumApiThreadsCombinedQuery } from "@/__generated__/ForumApiThreadsCombinedQuery.graphql";
-import ThreadDetail from "./thread/ThreadDetail";
-import SkeletonThreadForm from "@/components/forum/skeleton/SkeletonThreadForm";
-import SkeletonThreadDetail from "./skeleton/SkeletonThreadDetail";
 import SkeletonThreadList from "./skeleton/SkeletonThreadList";
 
 export default function ForumOverview() {

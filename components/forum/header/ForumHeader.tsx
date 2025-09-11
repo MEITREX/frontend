@@ -11,7 +11,7 @@ import {
   alpha,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 type ForumHeaderProps = {
   sortBy: string;
@@ -27,6 +27,8 @@ export default function ForumHeader({
   setCategoryFilter,
 }: ForumHeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
+
   const handleCategoryChange = (
     event: React.MouseEvent<HTMLElement>,
     newCategory: string | null
@@ -92,7 +94,7 @@ export default function ForumHeader({
         </Stack>
       </Stack>
 
-      <Button variant="contained" color="primary" onClick={() => router.push('/forum/create')}>
+      <Button variant="contained" color="primary" onClick={() => router.push(`${pathname}/create`)}>
         <AddIcon />
       </Button>
     </Box>
