@@ -1,7 +1,8 @@
 import type { LeaderboardWidgetQuery } from "@/__generated__/LeaderboardWidgetQuery.graphql";
 import React, { useEffect, useMemo, useRef } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
-import defaultUserImage from "../../assets/logo.svg";
+//import defaultUserImage from "../../assets/logo.svg";
+import defaultUserImage from "@/assets/logo.svg";
 import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
 
 interface Props {
