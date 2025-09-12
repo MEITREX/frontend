@@ -298,8 +298,6 @@ export default function StudentCoursePage() {
     }
   };
 
-
-
   return (
     <main>
       <FormErrors error={error} onClose={() => setError(null)} />
