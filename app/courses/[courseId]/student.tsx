@@ -232,6 +232,20 @@ export default function StudentCoursePage() {
     }
   }, [course?.id, studentUserLogin]);
 
+  const auth = useAuth();
+
+  const tokenRef = React.useRef<string | undefined>(auth.user?.access_token);
+  useEffect(() => {
+    tokenRef.current = auth.user?.access_token;
+  }, [auth.user?.access_token]);
+
+  const getToken = React.useCallback(() => tokenRef.current, []);
+
+  const env = React.useMemo(
+    () => createIsolatedEnvironment({ getToken }),
+    [getToken]
+  );
+
   if (coursesByIds.length == 0) {
     return <PageError message="No course found with given id." />;
   }
@@ -284,19 +298,7 @@ export default function StudentCoursePage() {
     }
   };
 
-  const auth = useAuth();
 
-  const tokenRef = React.useRef<string | undefined>(auth.user?.access_token);
-  useEffect(() => {
-    tokenRef.current = auth.user?.access_token;
-  }, [auth.user?.access_token]);
-
-  const getToken = React.useCallback(() => tokenRef.current, []);
-
-  const env = React.useMemo(
-    () => createIsolatedEnvironment({ getToken }),
-    [getToken]
-  );
 
   return (
     <main>
