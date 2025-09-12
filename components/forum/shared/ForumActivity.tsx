@@ -1,9 +1,12 @@
+"use client";
+
 import { Box, Typography } from "@mui/material";
 import { format } from "date-fns";
 import UserPostInformation from "@/components/forum/shared/UserPostInformation";
 import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
 import React from "react";
 import CourseName from "./CourseName";
+import { usePathname, useRouter } from "next/navigation";
 
 type ForumActivityEntry = {
   courseId: string | null;
@@ -29,11 +32,28 @@ export default function ForumActivity({
   data,
   displayCourseName = false,
 }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+
   if (!data) return null;
   const { creationTime, thread, post, courseId } = data;
 
+  /* The navigation depends on where the thread is clicked:
+       1. Course page
+       2. Profile page
+       3. Profile page other user
+  */
+  const navigate = () => {
+    if(pathname.includes('/courses')) {
+    router.push(`${pathname}/forum/${thread.id}`);
+    } else if (pathname.includes('/profile')) {
+      router.push(`/courses/${courseId}/forum/${thread.id}`);
+    }
+  }
+
   return (
     <Box
+      onClick={navigate}
       sx={{
         border: "1px solid #e0e0e0",
         borderRadius: 2,

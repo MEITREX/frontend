@@ -22,9 +22,10 @@ import { useLazyLoadQuery, useMutation } from "react-relay";
 import PostsContext from "../context/PostsContext";
 import PostList from "../post/PostList";
 import ThreadStatusIcons from "./ThreadStatusIcons";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 
 export default function ThreadDetail() {
+  const pathname = usePathname();
   const { threadId } = useParams();
   const router = useRouter();
 
@@ -88,7 +89,7 @@ export default function ThreadDetail() {
   return (
     <PostsContext.Provider value={{ deletePostContext: deletePostFromState }}>
       <Button
-        onClick={()=> router.back()}
+        onClick={()=> router.push(`../forum`)}
         variant="text"
         startIcon={<ArrowBackIcon />}
         sx={{ mb: 2 }}

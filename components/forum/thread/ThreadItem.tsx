@@ -6,7 +6,8 @@ import { ThreadType } from "@/components/forum/types";
 import { Box, Stack, Typography } from "@mui/material";
 import UpvoteDownvote from "../shared/UpvoteDownvote";
 import UserPostInformation from "../shared/UserPostInformation";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useCourseData } from "@/components/courses/student/StudentCourseDataContext";
 
 type Props = {
   thread: ThreadType;
@@ -14,7 +15,11 @@ type Props = {
 
 export default function ThreadItem({ thread }: Props) {
   const router = useRouter();
-  const pathname = usePathname();
+
+  // Get data from context
+  const data = useCourseData();
+  const course = data.coursesByIds[0];
+  const courseId = course.id;
 
   return (
     <Box
@@ -50,7 +55,7 @@ export default function ThreadItem({ thread }: Props) {
           justifyContent="space-between"
           sx={{ flexGrow: 1, overflow: "hidden", position: "relative" }}
         >
-          <Box onClick={() => router.push(`${pathname}/${thread.id}`)}>
+          <Box onClick={() => router.push(`/courses/${courseId}/forum/${thread.id}`)}>
             <Typography variant="h6" sx={{ color: "#089CDC", fontWeight: 600 }}>
               {thread.title}
             </Typography>
