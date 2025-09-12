@@ -209,7 +209,7 @@ export default function PublicProfilePage() {
       `,
       { id: userId },
       {
-        fetchPolicy: "network-only", // <-- wichtig!
+        fetchPolicy: "network-only",
       }
     );
 

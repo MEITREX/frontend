@@ -8,16 +8,13 @@ import { createIsolatedEnvironment } from "./relay/createIsolatedEnvironment";
 export function PageLayout({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
 
-  // 1) Token in Ref aktuell halten (ohne Rebuild des Environments)
   const tokenRef = useRef<string | undefined>(auth.user?.access_token);
   useEffect(() => {
     tokenRef.current = auth.user?.access_token;
   }, [auth.user?.access_token]);
 
-  // 2) Stabiler Getter (Identität ändert sich nie)
   const getToken = useCallback(() => tokenRef.current, []);
 
-  // 3) Environment genau einmal bauen
   const env = useMemo(
     () => createIsolatedEnvironment({ getToken }),
     [getToken]
