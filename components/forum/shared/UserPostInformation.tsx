@@ -87,12 +87,8 @@ export default function UserPostInformation({
     "profilePics"
   );
 
-  console.log("Pic", itemsParsedMergedPic);
-
   // Find the equiped item for the UnequipCard
   const equipedItemPic = itemsParsedMergedPic.find((item) => item.equipped);
-
-  console.log("Pic", equipedItemPic);
 
   // Combine backend and JSON data
   const itemsParsedMergedColorTheme = getPublicProfileItemsMergedCustomID(
