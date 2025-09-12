@@ -14,6 +14,8 @@ import {
 import { useLazyLoadQuery, graphql } from "react-relay/hooks";
 import type { XPWidgetQuery as XPWidgetQueryType } from "@/__generated__/XPWidgetQuery.graphql";
 import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
+import WidgetFeedback from "@/components/widgets/common/WidgetFeedback";
+import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
 
 // --- Types to mirror the profile implementation ---
 type UserLevelInfo = {
@@ -90,6 +92,8 @@ const XPWidgetQuery = graphql`
   }
 `;
 
+type Props = { openFeedback?: boolean; category?: GamificationCategory; };
+
 // --- Robust GraphQL URL + Auth handling (same as profile) ---
 function resolveGraphqlUrl(): string {
   const fromEnv =
@@ -162,7 +166,7 @@ async function postGraphQL<TData>(
   }
 }
 
-export default function XPWidget() {
+export default function XPWidget({ openFeedback, category }: Props) {
   const data = useLazyLoadQuery<XPWidgetQueryType>(
     XPWidgetQuery,
     {},
@@ -249,6 +253,7 @@ export default function XPWidget() {
       linkLabel="Profile"
       overflow="auto"
     >
+      <WidgetFeedback openFeedback={openFeedback} category={category} />
       {/* Kopfzeile: Level + Progress */}
       <Box
         display="flex"
