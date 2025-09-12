@@ -163,7 +163,7 @@ export default function UserPostInformation({
               : equipedItemPatternTheme?.foreColor) ?? "#000000"
           }
           nickname={userInfo?.nickname ?? "Unknown"}
-          patternThemeBool={equipedItemPatternTheme != null}
+          patternThemeBool={equipedItemPatternTheme?.url != null}
           frameBool={equipedItemPicFrame != null}
           frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
           profilePic={equipedItemPic?.url ?? "Unkown"}
@@ -235,7 +235,7 @@ export default function UserPostInformation({
                 : equipedItemPatternTheme?.foreColor) ?? "#000000"
             }
             nickname={userInfo?.nickname ?? "Unknown"}
-            patternThemeBool={equipedItemPatternTheme != null}
+            patternThemeBool={equipedItemPatternTheme?.url != null}
             frameBool={equipedItemPicFrame != null}
             frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
             profilePic={equipedItemPic?.url ?? "Unkown"}
