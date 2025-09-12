@@ -347,7 +347,6 @@ export default function PublicProfilePage() {
         variant="text"
         startIcon={<NavigateBefore sx={{ color: "text.primary" }} />}
         sx={{ mb: 2, color: "#000000" }}
-
       >
         Back
       </Button>
