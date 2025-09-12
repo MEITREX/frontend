@@ -10,7 +10,7 @@ import AchievementList from "@/components/profile/AchievementList";
 import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
 import UserProfileCustomHeader from "@/components/profile/header/UserProfileCustomHeader";
 import ProfileInventorySection from "@/components/profile/items/ProfileInventorySection";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { NavigateBefore } from "@mui/icons-material";
 import { Box, Button, Grid, Tab, Tabs, Typography } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -345,8 +345,9 @@ export default function PublicProfilePage() {
         onClick={() => router.back()}
         component="a"
         variant="text"
-        startIcon={<ArrowBackIcon />}
-        sx={{ mb: 2 }}
+        startIcon={<NavigateBefore sx={{ color: "text.primary" }} />}
+        sx={{ mb: 2, color: "#000000" }}
+
       >
         Back
       </Button>
