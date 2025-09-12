@@ -12,7 +12,12 @@ import {
 } from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
-import { graphql, RelayEnvironmentProvider, useLazyLoadQuery, useMutation } from "react-relay";
+import {
+  graphql,
+  RelayEnvironmentProvider,
+  useLazyLoadQuery,
+  useMutation,
+} from "react-relay";
 
 import { studentCourseLeaveMutation } from "@/__generated__/studentCourseLeaveMutation.graphql";
 import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
@@ -575,12 +580,12 @@ export default function StudentCoursePage() {
 
         <CustomTabPanel value={value} index={4}>
           <Suspense fallback={<SkeletonThreadList />}>
-                    <RelayEnvironmentProvider environment={env}>
-            <CourseLeaderboards
-              courseID={id}
-              currentUserId={userId}
-              currentUserName={"Current User"}
-            />
+            <RelayEnvironmentProvider environment={env}>
+              <CourseLeaderboards
+                courseID={id}
+                currentUserId={userId}
+                currentUserName={"Current User"}
+              />
             </RelayEnvironmentProvider>
           </Suspense>
         </CustomTabPanel>
