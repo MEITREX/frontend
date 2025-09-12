@@ -25,9 +25,7 @@ export function PageLayout({ children }: { children: React.ReactNode }) {
 
       <div className="grow overflow-auto flex flex-col">
         <div className="px-8 py-11 mr-8 my-8 bg-white rounded-[3rem] grow">
-
-            {children}
-
+          {children}
         </div>
       </div>
     </div>

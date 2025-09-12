@@ -418,8 +418,8 @@ export default function PublicProfilePage() {
             )}
             {!loadingLB && sharedMemberships.length === 0 && (
               <Typography variant="body2" color="text.secondary">
-                Ihr habt aktuell keine gemeinsamen Kurse – keine
-                Leaderboard-Überschneidungen.
+                No common courses with the user can be found – no leaderboard
+                entries available.
               </Typography>
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>
