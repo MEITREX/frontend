@@ -1,7 +1,8 @@
+import { ForumApiItemInventoryForUserByIdQuery } from "@/__generated__/ForumApiItemInventoryForUserByIdQuery.graphql";
 import { ForumApiUserInfoByIdQuery } from "@/__generated__/ForumApiUserInfoByIdQuery.graphql";
 import { ForumApiUserInfoQuery } from "@/__generated__/ForumApiUserInfoQuery.graphql";
-import { UserPostInformationItemInventoryForUserByIdQuery } from "@/__generated__/UserPostInformationItemInventoryForUserByIdQuery.graphql";
 import {
+  forumApiGetIntemsForEveryUserQuery,
   forumApiUserInfoByIdQuery,
   forumApiUserInfoQuery,
 } from "@/components/forum/api/ForumApi";
@@ -13,7 +14,7 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import { Stack, Typography } from "@mui/material";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
-import { graphql, useLazyLoadQuery } from "react-relay";
+import { useLazyLoadQuery } from "react-relay";
 
 type Props = {
   creatorId: ThreadType["creatorId"];
@@ -47,36 +48,19 @@ export default function UserPostInformation({
 
   const userInfo = userInfos.findUserInfos[0];
 
-  // Styles vorbereiten
   const cardStyle: React.CSSProperties = {
     padding: 8,
     borderRadius: 8,
-    minWidth: 220, // damit man das Muster sieht
+    minWidth: 220,
     minHeight: 120,
     backgroundPosition: "center",
   };
 
   const { inventoriesForUsers } =
-    useLazyLoadQuery<UserPostInformationItemInventoryForUserByIdQuery>(
-      graphql`
-        query UserPostInformationItemInventoryForUserByIdQuery(
-          $userIds: [UUID!]!
-        ) {
-          inventoriesForUsers(userIds: $userIds) {
-            items {
-              equipped
-              catalogItemId: id
-              uniqueDescription
-              unlocked
-              unlockedTime
-            }
-            unspentPoints
-            userId
-          }
-        }
-      `,
+    useLazyLoadQuery<ForumApiItemInventoryForUserByIdQuery>(
+      forumApiGetIntemsForEveryUserQuery,
       {
-        userIds: [creatorId], // <- Variablenname muss zu $userIds passen
+        userIds: [creatorId],
       },
       { fetchPolicy: "network-only" }
     );
@@ -125,20 +109,16 @@ export default function UserPostInformation({
 
   let foreground = "#000000";
 
-  // Farben/Pattern setzen
   if (equipedItemColorTheme) {
     cardStyle.backgroundColor = equipedItemColorTheme.backColor ?? "#ffffff";
     cardStyle.color = equipedItemColorTheme.foreColor ?? "#000000";
     foreground = equipedItemColorTheme.foreColor ?? "#000000";
   } else if (equipedItemPatternTheme?.url) {
-    // Data-URI direkt verwenden (kein decode!)
     cardStyle.backgroundImage = decodeURIComponent(equipedItemPatternTheme.url);
-    cardStyle.backgroundRepeat = "repeat"; // Kacheln (Pattern)
-    cardStyle.backgroundSize = "100%"; // meist für SVG-Pattern besser als "cover"
+    cardStyle.backgroundRepeat = "repeat";
+    cardStyle.backgroundSize = "100%";
     cardStyle.color = equipedItemPatternTheme.foreColor ?? "#000000";
     foreground = equipedItemPatternTheme.foreColor ?? "#000000";
-    // optional Fallback-Farbe unter dem Pattern:
-    // cardStyle.backgroundColor = "#ffffff";
   }
 
   return (
