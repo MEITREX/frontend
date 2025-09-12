@@ -1,7 +1,6 @@
 "use client";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useAuth } from "react-oidc-context";
-import { RelayEnvironmentProvider } from "react-relay";
 import { Navbar } from "./Navbar";
 import { createIsolatedEnvironment } from "./relay/createIsolatedEnvironment";
 
@@ -26,9 +25,9 @@ export function PageLayout({ children }: { children: React.ReactNode }) {
 
       <div className="grow overflow-auto flex flex-col">
         <div className="px-8 py-11 mr-8 my-8 bg-white rounded-[3rem] grow">
-          <RelayEnvironmentProvider environment={env}>
+
             {children}
-          </RelayEnvironmentProvider>
+
         </div>
       </div>
     </div>
