@@ -1,20 +1,19 @@
 import { ForumApiUserInfoByIdQuery } from "@/__generated__/ForumApiUserInfoByIdQuery.graphql";
 import { ForumApiUserInfoQuery } from "@/__generated__/ForumApiUserInfoQuery.graphql";
-import { ItemsApiItemInventoryForUserByIdQuery } from "@/__generated__/ItemsApiItemInventoryForUserByIdQuery.graphql";
+import { UserPostInformationItemInventoryForUserByIdQuery } from "@/__generated__/UserPostInformationItemInventoryForUserByIdQuery.graphql";
 import {
   forumApiUserInfoByIdQuery,
   forumApiUserInfoQuery,
 } from "@/components/forum/api/ForumApi";
 import { ThreadType } from "@/components/forum/types";
 import { HoverCard } from "@/components/HoverCard";
-import { getItemsByUserQuery } from "@/components/items/api/ItemsApi";
-import { getPublicProfileItemsMerged } from "@/components/items/logic/GetItems";
+import { getPublicProfileItemsMergedCustomID } from "@/components/items/logic/GetItems";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import { Stack, Typography } from "@mui/material";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
-import { useLazyLoadQuery } from "react-relay";
+import { graphql, useLazyLoadQuery } from "react-relay";
 
 type Props = {
   creatorId: ThreadType["creatorId"];
@@ -57,27 +56,47 @@ export default function UserPostInformation({
     backgroundPosition: "center",
   };
 
-  const { itemsByUserId } =
-    useLazyLoadQuery<ItemsApiItemInventoryForUserByIdQuery>(
-      getItemsByUserQuery,
+  const { inventoriesForUsers } =
+    useLazyLoadQuery<UserPostInformationItemInventoryForUserByIdQuery>(
+      graphql`
+        query UserPostInformationItemInventoryForUserByIdQuery(
+          $userIds: [UUID!]!
+        ) {
+          inventoriesForUsers(userIds: $userIds) {
+            items {
+              equipped
+              catalogItemId: id
+              uniqueDescription
+              unlocked
+              unlockedTime
+            }
+            unspentPoints
+            userId
+          }
+        }
+      `,
       {
-        userId: creatorId,
+        userIds: [creatorId], // <- Variablenname muss zu $userIds passen
       },
       { fetchPolicy: "network-only" }
     );
 
   // Combine backend and JSON data
-  const itemsParsedMergedPic = getPublicProfileItemsMerged(
-    itemsByUserId,
+  const itemsParsedMergedPic = getPublicProfileItemsMergedCustomID(
+    inventoriesForUsers[0].items,
     "profilePics"
   );
+
+  console.log("Pic", itemsParsedMergedPic);
 
   // Find the equiped item for the UnequipCard
   const equipedItemPic = itemsParsedMergedPic.find((item) => item.equipped);
 
+  console.log("Pic", equipedItemPic);
+
   // Combine backend and JSON data
-  const itemsParsedMergedColorTheme = getPublicProfileItemsMerged(
-    itemsByUserId,
+  const itemsParsedMergedColorTheme = getPublicProfileItemsMergedCustomID(
+    inventoriesForUsers[0].items,
     "colorThemes"
   );
 
@@ -87,8 +106,8 @@ export default function UserPostInformation({
   );
 
   // Combine backend and JSON data
-  const itemsParsedMergedPatternTheme = getPublicProfileItemsMerged(
-    itemsByUserId,
+  const itemsParsedMergedPatternTheme = getPublicProfileItemsMergedCustomID(
+    inventoriesForUsers[0].items,
     "patternThemes"
   );
 
@@ -98,8 +117,8 @@ export default function UserPostInformation({
   );
 
   // Combine backend and JSON data
-  const itemsParsedMergedPicFrame = getPublicProfileItemsMerged(
-    itemsByUserId,
+  const itemsParsedMergedPicFrame = getPublicProfileItemsMergedCustomID(
+    inventoriesForUsers[0].items,
     "profilePicFrames"
   );
 
@@ -148,7 +167,7 @@ export default function UserPostInformation({
               : equipedItemPatternTheme?.foreColor) ?? "#000000"
           }
           nickname={userInfo?.nickname ?? "Unknown"}
-          patternThemeBool={equipedItemColorTheme != null}
+          patternThemeBool={equipedItemPatternTheme != null}
           frameBool={equipedItemPicFrame != null}
           frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
           profilePic={equipedItemPic?.url ?? "Unkown"}
@@ -220,7 +239,7 @@ export default function UserPostInformation({
                 : equipedItemPatternTheme?.foreColor) ?? "#000000"
             }
             nickname={userInfo?.nickname ?? "Unknown"}
-            patternThemeBool={equipedItemColorTheme != null}
+            patternThemeBool={equipedItemPatternTheme != null}
             frameBool={equipedItemPicFrame != null}
             frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
             profilePic={equipedItemPic?.url ?? "Unkown"}

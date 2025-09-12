@@ -277,6 +277,8 @@ export default function StudentCoursePage() {
     }
   };
 
+  console.log(userId);
+
   return (
     <main>
       <FormErrors error={error} onClose={() => setError(null)} />

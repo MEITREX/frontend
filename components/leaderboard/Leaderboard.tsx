@@ -562,6 +562,8 @@ export default function Leaderboard({
     };
   }, [env, JSON.stringify(displayUsers.map((u) => u.id))]);
 
+  console.log(userColorThemes, userPatternThemes);
+
   function userCardStyle(
     userId: string,
     base: React.CSSProperties = {}
@@ -601,6 +603,8 @@ export default function Leaderboard({
     // UI handling for missing courseID, even though Relay hook is still called above.
     return <div>Kein Kurs ausgewählt!</div>;
   }
+
+  console.log(userPatternThemes);
 
   return (
     <div
@@ -710,7 +714,7 @@ export default function Leaderboard({
                 "#000000ff"
               }
               nickname={userNickname[user.id] ?? "Unkown"}
-              patternThemeBool={userPatternThemes[user.id] != null}
+              patternThemeBool={userPatternThemes[user.id]?.url != null}
               frameBool={assetSrc(userProfileFrames[user.id]) != null}
               frame={assetSrc(userProfileFrames[user.id]) ?? "Unknown"}
               profilePic={
@@ -879,7 +883,7 @@ export default function Leaderboard({
                   "#000000ff"
                 }
                 nickname={userNickname[user.id] ?? "Unkown"}
-                patternThemeBool={userPatternThemes[user.id] != null}
+                patternThemeBool={userPatternThemes[user.id]?.url != null}
                 frameBool={assetSrc(userProfileFrames[user.id]) != null}
                 frame={assetSrc(userProfileFrames[user.id]) ?? "Unknown"}
                 profilePic={

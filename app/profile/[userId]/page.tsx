@@ -2,14 +2,17 @@
 
 import { ForumApiUserInfoByIdQuery } from "@/__generated__/ForumApiUserInfoByIdQuery.graphql";
 import { pagePublicProfileStudentQuery } from "@/__generated__/pagePublicProfileStudentQuery.graphql";
+import { pageUserAchievementsPublicProfileQuery } from "@/__generated__/pageUserAchievementsPublicProfileQuery.graphql";
 import { SortProvider } from "@/app/contexts/SortContext";
 import { CombinedLeaderboardCard } from "@/app/profile/leaderboard/ProfileLeaderboardPositions";
 import { forumApiUserInfoByIdQuery } from "@/components/forum/api/ForumApi";
+import AchievementList from "@/components/profile/AchievementList";
 import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
 import UserProfileCustomHeader from "@/components/profile/header/UserProfileCustomHeader";
 import ProfileInventorySection from "@/components/profile/items/ProfileInventorySection";
-import { Avatar, Box, Grid, Tab, Tabs, Typography } from "@mui/material";
-import { useParams } from "next/navigation";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { Box, Button, Grid, Tab, Tabs, Typography } from "@mui/material";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
@@ -147,6 +150,8 @@ function enrichScoresWithNames(
 }
 
 export default function PublicProfilePage() {
+  const router = useRouter(); // Hook holen
+
   const publicTabs = [
     "Achievements",
     "Forum",
@@ -182,6 +187,35 @@ export default function PublicProfilePage() {
       id: userId,
     }
   );
+
+  const { achievementsByUserId } =
+    useLazyLoadQuery<pageUserAchievementsPublicProfileQuery>(
+      graphql`
+        query pageUserAchievementsPublicProfileQuery($id: UUID!) {
+          achievementsByUserId(userId: $id) {
+            id
+            name
+            imageUrl
+            description
+            courseId
+            userId
+            completed
+            requiredCount
+            completedCount
+            trackingStartTime
+            trackingEndTime
+          }
+        }
+      `,
+      { id: userId },
+      {
+        fetchPolicy: "network-only", // <-- wichtig!
+      }
+    );
+
+  console.log(achievementsByUserId);
+
+  const mutableAchievements = [...achievementsByUserId];
 
   const findPublicUserInfos = data.findPublicUserInfos;
   // Fallback to empty object when backend is down
@@ -307,6 +341,15 @@ export default function PublicProfilePage() {
 
   return (
     <Box sx={{ p: 4 }}>
+      <Button
+        onClick={() => router.back()}
+        component="a"
+        variant="text"
+        startIcon={<ArrowBackIcon />}
+        sx={{ mb: 2 }}
+      >
+        Back
+      </Button>
       <UserProfileCustomHeader
         displayName={userInfos.findUserInfos[0]?.nickname as string}
       />
@@ -351,9 +394,12 @@ export default function PublicProfilePage() {
 
       {/* Tab-Inhalte */}
       <Box>
-        {tabIndex === 0 &&
-          // Achievements (kept disabled until backend is ready)
-          null}
+        {tabIndex === 0 && (
+          <AchievementList
+            achievements={mutableAchievements}
+            profileTypeSortString={"achieved"}
+          />
+        )}
 
         {tabIndex === 1 && <OtherUserProfileForumActivity />}
         {tabIndex === 2 && (
