@@ -92,7 +92,7 @@ const XPWidgetQuery = graphql`
   }
 `;
 
-type Props = { openFeedback?: boolean; category?: GamificationCategory; };
+type Props = { openFeedback?: boolean; category?: GamificationCategory };
 
 // --- Robust GraphQL URL + Auth handling (same as profile) ---
 function resolveGraphqlUrl(): string {
