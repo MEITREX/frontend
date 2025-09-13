@@ -38,19 +38,23 @@ export default function WidgetSettings({
   const handleClose = () => setAnchorEl(null);
 
   const handleIntervalChange = (_: unknown, value: number) => {
-    setInterval(value);
-    updateSettings({
-      recommendationRefreshInterval: value,
-      numberOfRecommendations: numWidgets,
-    });
+    if (value !== null) {
+      setInterval(value);
+      updateSettings({
+        recommendationRefreshInterval: value,
+        numberOfRecommendations: numWidgets,
+      });
+    }
   };
 
   const handleNumWidgetsChange = (_: unknown, value: number) => {
-    onNumWidgetsChange(value);
-    updateSettings({
-      recommendationRefreshInterval: interval,
-      numberOfRecommendations: value,
-    });
+    if (value !== null) {
+      onNumWidgetsChange(value);
+      updateSettings({
+        recommendationRefreshInterval: interval,
+        numberOfRecommendations: value,
+      });
+    }
   };
 
   function updateSettings(newSettings: {

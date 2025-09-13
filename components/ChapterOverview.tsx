@@ -1,7 +1,7 @@
 import { ChapterOverviewFragment$key } from "@/__generated__/ChapterOverviewFragment.graphql";
 import { useTheme } from "@mui/material/styles";
 import _ from "lodash";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { graphql, useFragment } from "react-relay";
 import { ChapterOverviewItem } from "./ChapterOverviewItem";
 import { StudentChapter } from "./StudentChapter";
@@ -76,16 +76,6 @@ export function ChapterOverview({
   const [selectedIndex, setSelectedIndex] = useState<number>(startIndex);
 
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  useEffect(() => {
-    if (itemRefs.current[selectedIndex]) {
-      itemRefs.current[selectedIndex]!.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-        inline: "center",
-      });
-    }
-  }, [selectedIndex]);
 
   if (numberOfChapters === 0) {
     return (

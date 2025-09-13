@@ -50,6 +50,7 @@ import * as React from "react";
 import { Suspense, useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
 import QuestList from "./quests/QuestItem";
+import WidgetSkeleton from "@/components/widgets/Skeleton/WidgetSkeleton";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -393,7 +394,9 @@ export default function StudentCoursePage() {
         </Box>
 
         <CustomTabPanel value={value} index={0}>
-          <WidgetsOverview userId={currentUserInfo.id} courseId={course.id} />
+          <Suspense fallback={<WidgetSkeleton />}>
+            <WidgetsOverview userId={currentUserInfo.id} courseId={course.id} />
+          </Suspense>
           <ChapterOverview _chapters={course} />
         </CustomTabPanel>
 
