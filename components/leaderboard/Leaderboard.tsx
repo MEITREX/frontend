@@ -751,6 +751,7 @@ export default function Leaderboard({
                     textAlign: "center",
                     fontSize: 18,
                     fontWeight: isCurrent ? 900 : 700,
+                    color: userCardStyle(user.id).color
                   }}
                 >
                   {user.rank}.
@@ -813,7 +814,7 @@ export default function Leaderboard({
                     justifyContent: "center",
                     gap: 6,
                     fontWeight: isCurrent ? 900 : 700,
-                    color: "inherit",
+                    color: userCardStyle(user.id).color,
                     fontSize: 18,
                     letterSpacing: ".5px",
                   }}
@@ -826,7 +827,7 @@ export default function Leaderboard({
                   style={{
                     minWidth: 80,
                     textAlign: "right",
-                    color: "inherit",
+                    color: userCardStyle(user.id).color,
                     fontWeight: isCurrent ? 900 : 700,
                     fontSize: 18,
                   }}
@@ -922,6 +923,7 @@ export default function Leaderboard({
                         textAlign: "center",
                         fontSize: 18,
                         fontWeight: isCurrent ? 900 : 700,
+                        color: userCardStyle(user.id).color
                       }}
                     >
                       {user.rank}.
@@ -989,7 +991,7 @@ export default function Leaderboard({
                       justifyContent: "center",
                       gap: 6,
                       fontWeight: isCurrent ? 900 : 700,
-                      color: "inherit",
+                      color: userCardStyle(user.id).color,
                       fontSize: 18,
                       letterSpacing: ".5px",
                     }}
@@ -1001,7 +1003,7 @@ export default function Leaderboard({
                     style={{
                       minWidth: 80,
                       textAlign: "right",
-                      color: isCurrent ? "#222" : "#79869a",
+                      color: userCardStyle(user.id).color,
                       fontWeight: isCurrent ? 800 : 600,
                       fontSize: 18,
                     }}
