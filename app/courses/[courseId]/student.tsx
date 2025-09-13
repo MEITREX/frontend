@@ -43,6 +43,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
+import { studentPrivateProfileStudentGeneralQuery } from "@/__generated__/studentPrivateProfileStudentGeneralQuery.graphql";
 import CourseLeaderboards from "@/components/leaderboard/CourseLeaderboard";
 import { createIsolatedEnvironment } from "@/components/relay/createIsolatedEnvironment";
 import * as React from "react";
@@ -99,6 +100,23 @@ export default function StudentCoursePage() {
 
   const router = useRouter();
   const [error, setError] = useState<any>(null);
+
+  // 1) UserID stabil über Relay
+  const { currentUserInfo } =
+    useLazyLoadQuery<studentPrivateProfileStudentGeneralQuery>(
+      graphql`
+        query studentPrivateProfileStudentGeneralQuery {
+          currentUserInfo {
+            id
+            lastName
+            firstName
+            userName
+            nickname
+          }
+        }
+      `,
+      {}
+    );
 
   // Fetch course data
   const {
@@ -298,6 +316,8 @@ export default function StudentCoursePage() {
     }
   };
 
+  console.log(currentUserInfo.id, "iiiiiiiiiiiiidddddddddddddddd");
+
   return (
     <main>
       <FormErrors error={error} onClose={() => setError(null)} />
@@ -375,7 +395,7 @@ export default function StudentCoursePage() {
         </Box>
 
         <CustomTabPanel value={value} index={0}>
-          <WidgetsOverview userId={userId} courseId={course.id} />
+          <WidgetsOverview userId={currentUserInfo.id} courseId={course.id} />
           <ChapterOverview _chapters={course} />
         </CustomTabPanel>
 
