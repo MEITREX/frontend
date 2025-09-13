@@ -148,11 +148,7 @@ const trophies = [
   </svg>,
 ];
 
-// Runtime GraphQL fetcher for fallback names (when leaderboard.user.name is missing)
-const GRAPHQL_URL =
-  process.env.NEXT_PUBLIC_GRAPHQL_URL ||
-  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-  "/graphql";
+const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
 async function postGraphQL<TData>(
   query: string,
