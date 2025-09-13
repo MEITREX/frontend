@@ -38,7 +38,7 @@ export default function WidgetSettings({
   const handleClose = () => setAnchorEl(null);
 
   const handleIntervalChange = (_: unknown, value: number) => {
-    if(value !== null) {
+    if (value !== null) {
       setInterval(value);
       updateSettings({
         recommendationRefreshInterval: value,
@@ -48,7 +48,7 @@ export default function WidgetSettings({
   };
 
   const handleNumWidgetsChange = (_: unknown, value: number) => {
-    if(value !== null) {
+    if (value !== null) {
       onNumWidgetsChange(value);
       updateSettings({
         recommendationRefreshInterval: interval,

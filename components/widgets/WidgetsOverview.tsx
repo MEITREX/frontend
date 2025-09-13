@@ -96,7 +96,6 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
 
   const recommendations = courseMembership?.course?.widgetRecommendations ?? [];
 
-
   // Settings
   const { currentUserWidgetSettings } =
     useLazyLoadQuery<WidgetApiSettingsQuery>(
