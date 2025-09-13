@@ -96,12 +96,12 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
 
   const recommendations = courseMembership?.course?.widgetRecommendations ?? [];
 
-
   // Settings
   const { currentUserWidgetSettings } =
-    useLazyLoadQuery<WidgetApiSettingsQuery>(widgetApiSettingsQuery,
+    useLazyLoadQuery<WidgetApiSettingsQuery>(
+      widgetApiSettingsQuery,
       {},
-      { fetchPolicy: "store-or-network", }
+      { fetchPolicy: "store-or-network" }
     );
 
   const [numWidgetsToShow, setNumWidgetsToShow] = React.useState<number>(2);
@@ -130,7 +130,6 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
       )
       .slice(0, numWidgetsToShow);
   }, [widgets, recommendations, numWidgetsToShow]);
-
 
   return (
     <Box

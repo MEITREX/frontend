@@ -1,7 +1,7 @@
 import { ChapterOverviewFragment$key } from "@/__generated__/ChapterOverviewFragment.graphql";
 import { useTheme } from "@mui/material/styles";
 import _ from "lodash";
-import {  useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { graphql, useFragment } from "react-relay";
 import { ChapterOverviewItem } from "./ChapterOverviewItem";
 import { StudentChapter } from "./StudentChapter";
