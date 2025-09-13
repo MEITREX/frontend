@@ -32,7 +32,7 @@ export default function LeaderboardPage() {
         query pagePrivateProfileLeaderboardsQuery {
           currentUserInfo {
             id
-            userName
+            nickname
             courseMemberships {
               courseId
               course {
@@ -121,7 +121,7 @@ export default function LeaderboardPage() {
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h4" gutterBottom>
-        Hi, {currentUserInfo.userName}
+        Hi, {currentUserInfo.nickname}
       </Typography>
       <Typography variant="body1" color="text.secondary" mb={3}>
         Here you can see your leaderboard positions across your courses.
