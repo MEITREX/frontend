@@ -22,6 +22,7 @@ export const dialogSections: (
         label: "Title",
         type: "text",
         required: true,
+        fullWidth: true,
       },
       {
         key: "description",

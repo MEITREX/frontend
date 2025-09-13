@@ -313,8 +313,8 @@ export function EditContentModal({
             })}
           </List>
         </DialogContent>
-
-        <DialogContent>
+        <DialogContent style={{ flex: "0 0 auto" }}>
+           {  /* Add flex with 0 base to avoid a scrollbar at the Add content elements           */}
           {/* add flashcard button */}
           <Button
             onClick={() => setOpenFlashcardModal(true)}
