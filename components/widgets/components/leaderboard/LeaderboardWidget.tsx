@@ -4,11 +4,15 @@ import { graphql, useLazyLoadQuery } from "react-relay";
 //import defaultUserImage from "../../assets/logo.svg";
 import defaultUserImage from "@/assets/logo.svg";
 import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
+import WidgetFeedback from "@/components/widgets/common/WidgetFeedback";
+import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
 
 interface Props {
   courseID: string;
   date?: string;
   currentUserID: string;
+  openFeedback?: boolean;
+  category?: GamificationCategory;
 }
 
 // Helpers to compute correct dates for backend
@@ -31,6 +35,8 @@ const LeaderboardWidget: React.FC<Props> = ({
   courseID,
   date,
   currentUserID,
+  openFeedback,
+  category,
 }) => {
   // Compute the date we have to send (must be the Monday of the week)
   const weeklyDateISO = useMemo(() => {
@@ -106,6 +112,7 @@ const LeaderboardWidget: React.FC<Props> = ({
       linkLabel="Leaderboards"
       overflow="auto"
     >
+      <WidgetFeedback openFeedback={openFeedback} category={category} />
       {noCourse ? (
         <div style={{ padding: 8, color: "#666" }}>No course selected.</div>
       ) : noData ? (
