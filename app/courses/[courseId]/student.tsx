@@ -12,12 +12,7 @@ import {
 } from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
-import {
-  graphql,
-  RelayEnvironmentProvider,
-  useLazyLoadQuery,
-  useMutation,
-} from "react-relay";
+import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
 import { studentCourseLeaveMutation } from "@/__generated__/studentCourseLeaveMutation.graphql";
 import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
@@ -45,12 +40,12 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
 import { studentPrivateProfileStudentGeneralQuery } from "@/__generated__/studentPrivateProfileStudentGeneralQuery.graphql";
 import CourseLeaderboards from "@/components/leaderboard/CourseLeaderboard";
-import { createIsolatedEnvironment } from "@/components/relay/createIsolatedEnvironment";
+
+import WidgetSkeleton from "@/components/widgets/Skeleton/WidgetSkeleton";
 import * as React from "react";
 import { Suspense, useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
 import QuestList from "./quests/QuestItem";
-import WidgetSkeleton from "@/components/widgets/Skeleton/WidgetSkeleton";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -257,13 +252,6 @@ export default function StudentCoursePage() {
   useEffect(() => {
     tokenRef.current = auth.user?.access_token;
   }, [auth.user?.access_token]);
-
-  const getToken = React.useCallback(() => tokenRef.current, []);
-
-  const env = React.useMemo(
-    () => createIsolatedEnvironment({ getToken }),
-    [getToken]
-  );
 
   if (coursesByIds.length == 0) {
     return <PageError message="No course found with given id." />;
@@ -601,13 +589,11 @@ export default function StudentCoursePage() {
 
         <CustomTabPanel value={value} index={4}>
           <Suspense fallback={<SkeletonThreadList />}>
-            <RelayEnvironmentProvider environment={env}>
-              <CourseLeaderboards
-                courseID={id}
-                currentUserId={userId}
-                currentUserName={"Current User"}
-              />
-            </RelayEnvironmentProvider>
+            <CourseLeaderboards
+              courseID={id}
+              currentUserId={userId}
+              currentUserName={"Current User"}
+            />
           </Suspense>
         </CustomTabPanel>
       </Box>
