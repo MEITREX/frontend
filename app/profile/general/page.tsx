@@ -22,45 +22,17 @@ type UserLevelInfo = {
   exceedingXP: number; // XP gathered within current level
 };
 
-/**
- * Resolve GraphQL endpoint robustly.
- * Priority:
- * 1) NEXT_PUBLIC_GRAPHQL_URL (full URL)
- * 2) NEXT_PUBLIC_GRAPHQL_ENDPOINT (full URL or port number)
- * 3) Default: http://localhost:8080/graphql
- */
 function resolveGraphqlUrl(): string {
-  const envUrl =
-    process.env.NEXT_PUBLIC_GRAPHQL_URL ||
-    process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-    "";
-
-  if (envUrl) {
-    // Full URL provided
-    if (/^https?:\/\//i.test(envUrl)) return envUrl;
-    // Only a port number like "8080" or ":8080"
-    const portMatch = envUrl.match(/:?([0-9]{2,5})$/);
-    if (portMatch) return `http://localhost:${portMatch[1]}/graphql`;
-    // A bare path like "/graphql"
-    if (envUrl.startsWith("/")) return `http://localhost:8080${envUrl}`;
-  }
-  return "http://localhost:8080/graphql";
+  return process.env.NEXT_PUBLIC_BACKEND_URL || "";
 }
 
 const GRAPHQL_URL = resolveGraphqlUrl();
 
-/**
- * Runtime GraphQL fetcher. We do this outside of Relay because the schema
- * currently doesn't expose the user-level fields in the Relay-validated schema.
- * As soon as the backend exposes a field like `getUserById(userId: UUID!): User!`
- * in the Relay schema, replace this with a proper `useLazyLoadQuery`.
- */
 function getAuthHeader(): Record<string, string> {
-  // 1) Explicit global token if you set it somewhere: (window as any).__AUTH_TOKEN__
   if (typeof window !== "undefined" && (window as any).__AUTH_TOKEN__) {
     return { Authorization: `Bearer ${(window as any).__AUTH_TOKEN__}` };
   }
-  // 2) Try to read from oidc.user:* entry in localStorage (Keycloak/oidc)
+
   try {
     if (typeof window !== "undefined" && window.localStorage) {
       for (let i = 0; i < localStorage.length; i++) {

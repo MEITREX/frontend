@@ -15,10 +15,7 @@ import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 
 // ---- Leaderboard helpers & runtime GraphQL fetch (date handling matches main LB) ----
-const GRAPHQL_URL =
-  process.env.NEXT_PUBLIC_GRAPHQL_URL ||
-  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-  "/graphql"; // fallback
+const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
 function toLocalISODate(d: Date): string {
   const year = d.getFullYear();
