@@ -75,7 +75,7 @@ export function DialogBase<T extends { [k in string]: any }>({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>{title}</DialogTitle>
-      <DialogContent className="relative fullWidth">
+      <DialogContent className="relative full-width">
         <FormErrors error={error} onClose={clearError} />
         <Form>
           {sections.map((section) => (
