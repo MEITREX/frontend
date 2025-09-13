@@ -10,7 +10,6 @@ import AchievementList from "@/components/profile/AchievementList";
 import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
 import UserProfileCustomHeader from "@/components/profile/header/UserProfileCustomHeader";
 import ProfileInventorySection from "@/components/profile/items/ProfileInventorySection";
-import { createIsolatedEnvironment } from "@/components/relay/createIsolatedEnvironment";
 import { NavigateBefore } from "@mui/icons-material";
 import { Box, Button, Grid, Tab, Tabs, Typography } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
@@ -348,12 +347,6 @@ export default function PublicProfilePage() {
     tokenRef.current = auth.user?.access_token;
   }, [auth.user?.access_token]);
 
-  const getToken = React.useCallback(() => tokenRef.current, []);
-
-  const env = React.useMemo(
-    () => createIsolatedEnvironment({ getToken }),
-    [getToken]
-  );
 
   return (
     <Box sx={{ p: 4 }}>

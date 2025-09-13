@@ -13,7 +13,7 @@ import {
 } from "react-relay";
 import defaultUserImage from "../../assets/logo.svg";
 import { HoverCard } from "../HoverCard";
-import { getPublicProfileItemsMerged } from "../items/logic/GetItems";
+import { getPublicProfileItemsMergedCustomID } from "../items/logic/GetItems";
 
 const buildProfileHref = (id: string) => `/profile/${id}`;
 
@@ -281,14 +281,18 @@ export default function Leaderboard({
   `;
 
   const InventoryByUserQuery = graphql`
-    query LeaderboardRowInventoryByUserQuery($userId: UUID!) {
-      itemsByUserId(userId: $userId) {
+    query LeaderboardRowInventoryByUserQuery($userIds: [UUID!]!) {
+      inventoriesForUsers(userIds: $userIds) {
+      items {
         equipped
-        id
+        catalogItemId: id
         uniqueDescription
         unlocked
         unlockedTime
       }
+      unspentPoints
+      userId
+    }
     }
   `;
 
@@ -496,7 +500,7 @@ export default function Leaderboard({
             const data = await fetchQuery<LeaderboardRowInventoryByUserQuery>(
               env,
               InventoryByUserQuery,
-              { userId }
+              { userIds: [userId] }
             ).toPromise();
 
             // Public Info Query
@@ -509,15 +513,15 @@ export default function Leaderboard({
             // je nach Schema das erste Element nehmen:
             const nick = dataNick?.findUserInfos?.[0]?.nickname ?? null;
 
-            const items = data?.itemsByUserId ?? [];
+            const items = data?.inventoriesForUsers[0].items ?? [];
 
-            const pics = getPublicProfileItemsMerged(items, "profilePics");
-            const frames = getPublicProfileItemsMerged(
+            const pics = getPublicProfileItemsMergedCustomID(items, "profilePics");
+            const frames = getPublicProfileItemsMergedCustomID(
               items,
               "profilePicFrames"
             );
-            const colors = getPublicProfileItemsMerged(items, "colorThemes");
-            const patterns = getPublicProfileItemsMerged(
+            const colors = getPublicProfileItemsMergedCustomID(items, "colorThemes");
+            const patterns = getPublicProfileItemsMergedCustomID(
               items,
               "patternThemes"
             );

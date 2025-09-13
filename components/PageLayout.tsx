@@ -1,8 +1,8 @@
 "use client";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useAuth } from "react-oidc-context";
 import { Navbar } from "./Navbar";
-import { createIsolatedEnvironment } from "./relay/createIsolatedEnvironment";
+
 
 export function PageLayout({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
@@ -12,12 +12,7 @@ export function PageLayout({ children }: { children: React.ReactNode }) {
     tokenRef.current = auth.user?.access_token;
   }, [auth.user?.access_token]);
 
-  const getToken = useCallback(() => tokenRef.current, []);
 
-  const env = useMemo(
-    () => createIsolatedEnvironment({ getToken }),
-    [getToken]
-  );
 
   return (
     <div className="flex overflow-hidden h-full bg-slate-200">
