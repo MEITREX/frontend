@@ -12,6 +12,7 @@ import {
   LinearProgress,
 } from "@mui/material";
 import { useLazyLoadQuery, graphql } from "react-relay/hooks";
+import { fetchQuery, useRelayEnvironment } from "react-relay";
 import type { XPWidgetQuery as XPWidgetQueryType } from "@/__generated__/XPWidgetQuery.graphql";
 import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
 import WidgetFeedback from "@/components/widgets/common/WidgetFeedback";
@@ -97,71 +98,19 @@ const XPWidgetQuery = graphql`
   }
 `;
 
-const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
-if (!GRAPHQL_URL) {
-  console.error(
-    "[XPWidget] Missing NEXT_PUBLIC_BACKEND_URL. Please set it (e.g. via docker-compose.yml)."
-  );
-}
-
-function getAuthHeader(): Record<string, string> {
-  try {
-    if (typeof window === "undefined") return {};
-    const tokenFromGlobal = (window as any).__AUTH_TOKEN__;
-    if (tokenFromGlobal) {
-      return { Authorization: `Bearer ${tokenFromGlobal}` };
+const XPWidgetGetUserXPQuery = graphql`
+  query XPWidgetGetUserXPQuery($userID: ID!) {
+    getUser(userID: $userID) {
+      id
+      name
+      email
+      xpValue
+      requiredXP
+      exceedingXP
+      level
     }
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i) || "";
-      if (k.startsWith("oidc.user:")) {
-        const raw = localStorage.getItem(k);
-        if (!raw) continue;
-        try {
-          const parsed = JSON.parse(raw);
-          const access =
-            parsed?.access_token || parsed?.accessToken || parsed?.token;
-          if (access) return { Authorization: `Bearer ${access}` };
-        } catch {}
-      }
-    }
-  } catch {}
-  return {};
-}
-
-async function postGraphQL<TData>(
-  query: string,
-  variables: Record<string, any>
-): Promise<{ data?: TData; errors?: any[] }> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-
-  let response: Response;
-  try {
-    response = await fetch(GRAPHQL_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...getAuthHeader(),
-      },
-      body: JSON.stringify({ query, variables }),
-      credentials: "include",
-      signal: controller.signal,
-    });
-  } catch (e) {
-    return {
-      errors: [{ message: `Network/Fetch error: ${String(e)}` }],
-    } as any;
-  } finally {
-    clearTimeout(timeout);
   }
-
-  try {
-    const json = (await response.json()) as any;
-    return json;
-  } catch {
-    return { errors: [{ message: "Failed to parse GraphQL response" }] } as any;
-  }
-}
+`;
 
 export default function XPWidget({ openFeedback, category }: Props) {
   const data = useLazyLoadQuery<XPWidgetQueryType>(
@@ -172,66 +121,57 @@ export default function XPWidget({ openFeedback, category }: Props) {
   const userId = data.currentUserInfo?.id ?? "";
   const userName = data.currentUserInfo?.userName ?? "";
 
+  const relayEnv = useRelayEnvironment();
+
   // State for live XP/Level pulled from backend (same pattern as profile)
   const [levelInfo, setLevelInfo] = React.useState<UserLevelInfo | null>(null);
   const [loadingLevel, setLoadingLevel] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     let cancelled = false;
-    const load = async () => {
-      if (!userId) return;
-      setLoadingLevel(true);
+    if (!userId) return;
 
-      const userLevelQuery = `
-        query GetUserLevel($userID: ID!) {
-          getUser(userID: $userID) {
-            id
-            name
-            email
-            xpValue
-            requiredXP
-            exceedingXP
-            level
-          }
-        }
-      `;
+    setLoadingLevel(true);
 
-      const { data: userData, errors } = await postGraphQL<{
-        getUser?: Array<{
-          id: string;
-          name: string | null;
-          email: string | null;
-          xpValue: number;
-          requiredXP: number;
-          exceedingXP: number;
-          level: number;
-        }>;
-      }>(userLevelQuery, { userID: userId });
+    fetchQuery(relayEnv, XPWidgetGetUserXPQuery, { userID: userId })
+      .toPromise()
+      .then((resp: any) => {
+        if (cancelled) return;
 
-      if (!cancelled) {
-        if (errors && errors.length) {
-          // eslint-disable-next-line no-console
-          console.warn("[XPWidget] getUser errors:", errors);
-        }
-        const u = userData?.getUser?.[0];
+        // Backend may return array or single object – normalize here
+        const raw = resp?.getUser;
+        const u = Array.isArray(raw) ? raw[0] : raw;
+
         if (u) {
+          const requiredXP = Number(u.requiredXP ?? 1);
+          const exceedingXP = Number(u.exceedingXP ?? 0);
+          const level = Number(u.level ?? 0);
+
           setLevelInfo({
-            level: Number.isFinite(u.level) ? u.level : 0,
-            requiredXP: Number.isFinite(u.requiredXP) ? u.requiredXP : 1,
-            exceedingXP: Number.isFinite(u.exceedingXP) ? u.exceedingXP : 0,
+            level: Number.isFinite(level) ? level : 0,
+            requiredXP:
+              Number.isFinite(requiredXP) && requiredXP > 0 ? requiredXP : 1,
+            exceedingXP: Number.isFinite(exceedingXP) ? exceedingXP : 0,
           });
         } else {
           setLevelInfo({ level: 0, requiredXP: 1, exceedingXP: 0 });
         }
-        setLoadingLevel(false);
-      }
-    };
+      })
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.warn("[XPWidget] getUser via Relay failed:", err);
+        if (!cancelled) {
+          setLevelInfo({ level: 0, requiredXP: 1, exceedingXP: 0 });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingLevel(false);
+      });
 
-    load();
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [userId, relayEnv]);
 
   const level = levelInfo?.level ?? 0;
   const currentXP = levelInfo?.exceedingXP ?? 0;

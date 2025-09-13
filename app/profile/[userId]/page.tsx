@@ -8,11 +8,21 @@ import { forumApiUserInfoByIdQuery } from "@/components/forum/api/ForumApi";
 import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
 import UserProfileCustomHeader from "@/components/profile/header/UserProfileCustomHeader";
 import ProfileInventorySection from "@/components/profile/items/ProfileInventorySection";
-import { Avatar, Box, Grid, Tab, Tabs, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Grid,
+  Tab,
+  Tabs,
+  Typography,
+  LinearProgress,
+} from "@mui/material";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
+
+import { pagePublicProfileUserXPQuery } from "@/__generated__/pagePublicProfileUserXPQuery.graphql";
 
 // ---- Leaderboard helpers & runtime GraphQL fetch (date handling matches main LB) ----
 const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
@@ -107,6 +117,18 @@ const FIND_PUBLIC_USER_INFOS = `
   }
 `;
 
+const PublicProfileUserXPQueryGQL = graphql`
+  query pagePublicProfileUserXPQuery($userID: ID!) {
+    getUser(userID: $userID) {
+      id
+      xpValue
+      requiredXP
+      exceedingXP
+      level
+    }
+  }
+`;
+
 /** Build id -> display name map (prefer explicit user.name if present; otherwise userName from public info). */
 function buildNameMap(
   fromScores: Array<any>[],
@@ -155,6 +177,31 @@ export default function PublicProfilePage() {
 
   const params = useParams();
   const userId = params?.userId as string;
+
+  // Fetch XP/Level for the viewed user via Relay (no manual fetch)
+  const xpData = useLazyLoadQuery<pagePublicProfileUserXPQuery>(
+    PublicProfileUserXPQueryGQL,
+    { userID: userId },
+    { fetchPolicy: "network-only" }
+  );
+  // Backend may return either an object or an array; normalize it
+  const xpPayload: any = Array.isArray((xpData as any)?.getUser)
+    ? (xpData as any)?.getUser?.[0] ?? null
+    : (xpData as any)?.getUser ?? null;
+
+  const level: number = Number(xpPayload?.level ?? 0);
+  const xpInLevel: number = Number(xpPayload?.exceedingXP ?? 0);
+  const xpRequired: number = Math.max(1, Number(xpPayload?.requiredXP ?? 1));
+  const xpPercent: number = Math.max(
+    0,
+    Math.min(100, Math.round((xpInLevel / xpRequired) * 100))
+  );
+  const fmtInt = (n: number) =>
+    Math.round(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+  const levelIconSrc = `/levels/level_${Math.max(
+    0,
+    Math.min(99, Math.round(level || 0))
+  )}.svg`;
 
   // 👉 Query nur mit Feldern, die es sicher gibt (PublicUserInfo + aktueller User)
   const data = useLazyLoadQuery<pagePublicProfileStudentQuery>(
@@ -307,6 +354,40 @@ export default function PublicProfilePage() {
       <UserProfileCustomHeader
         displayName={userInfos.findUserInfos[0]?.nickname as string}
       />
+
+      {/* XP / Level overview for viewed user */}
+      <Box
+        sx={{ mt: 2, mb: 2, display: "flex", alignItems: "center", gap: 1.5 }}
+      >
+        <img
+          src={levelIconSrc}
+          alt={`Level ${level}`}
+          width={44}
+          height={44}
+          style={{ display: "block" }}
+          onError={(e) => {
+            const el = e.currentTarget as HTMLImageElement;
+            el.src = "/levels/level_0.svg";
+          }}
+        />
+        <Box sx={{ flexGrow: 1 }}>
+          <LinearProgress
+            variant="determinate"
+            value={xpPercent}
+            sx={{ height: 8, borderRadius: 999 }}
+          />
+          <Typography variant="caption" sx={{ mt: 0.5, display: "block" }}>
+            {fmtInt(xpInLevel)} / {fmtInt(xpRequired)} XP
+          </Typography>
+        </Box>
+        <Typography
+          variant="body2"
+          fontWeight={700}
+          sx={{ minWidth: 64, textAlign: "right" }}
+        >
+          Level {fmtInt(level)}
+        </Typography>
+      </Box>
 
       {/* Tabs */}
       <Tabs

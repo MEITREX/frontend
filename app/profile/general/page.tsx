@@ -11,7 +11,8 @@ import {
 } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { useLazyLoadQuery } from "react-relay";
+import { useAuth } from "react-oidc-context";
+import { fetchQuery, useLazyLoadQuery, useRelayEnvironment } from "react-relay";
 import { graphql } from "relay-runtime";
 import GeneralPage from "../GeneralPage";
 import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
@@ -22,71 +23,6 @@ type UserLevelInfo = {
   exceedingXP: number; // XP gathered within current level
 };
 
-function resolveGraphqlUrl(): string {
-  return process.env.NEXT_PUBLIC_BACKEND_URL as string;
-}
-
-const GRAPHQL_URL = resolveGraphqlUrl();
-
-function getAuthHeader(): Record<string, string> {
-  if (typeof window !== "undefined" && (window as any).__AUTH_TOKEN__) {
-    return { Authorization: `Bearer ${(window as any).__AUTH_TOKEN__}` };
-  }
-
-  try {
-    if (typeof window !== "undefined" && window.localStorage) {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i) || "";
-        if (key.startsWith("oidc.user:")) {
-          const raw = localStorage.getItem(key);
-          if (!raw) continue;
-          const parsed = JSON.parse(raw);
-          const token = parsed?.access_token || parsed?.accessToken;
-          if (token) return { Authorization: `Bearer ${token}` };
-        }
-      }
-    }
-  } catch (e) {
-    // ignore
-  }
-  return {};
-}
-
-async function postGraphQL<TData>(
-  query: string,
-  variables: Record<string, any>
-): Promise<{ data?: TData; errors?: any[] }> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-  try {
-    const res = await fetch(GRAPHQL_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...getAuthHeader() },
-      body: JSON.stringify({ query, variables }),
-      credentials: "include",
-      signal: controller.signal,
-    });
-
-    const text = await res.text();
-    if (!res.ok) {
-      return { errors: [{ message: `HTTP ${res.status}: ${text}` }] } as any;
-    }
-    try {
-      return JSON.parse(text) as any;
-    } catch (e) {
-      return {
-        errors: [{ message: "Failed to parse GraphQL response", raw: text }],
-      } as any;
-    }
-  } catch (e: any) {
-    const msg =
-      e?.name === "AbortError" ? "Request timed out" : e?.message || String(e);
-    return { errors: [{ message: msg }] } as any;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
 const tabs = [
   { label: "General", path: "general" },
   { label: "Achievements", path: "achievements" },
@@ -95,9 +31,23 @@ const tabs = [
   { label: "Leaderboards", path: "leaderboard" }, // Added new tab
 ];
 
+const getUserXPQuery = graphql`
+  query pagePrivateProfileStudentGeneral_GetUserXPQuery($userID: ID!) {
+    getUser(userID: $userID) {
+      id
+      xpValue
+      requiredXP
+      exceedingXP
+      level
+    }
+  }
+`;
+
 export default function GeneralPageWrapper() {
   const router = useRouter();
   const pathname = usePathname();
+  const auth = useAuth();
+  const relayEnv = useRelayEnvironment();
 
   const activeIndex = tabs.findIndex((tab) => pathname.includes(tab.path));
 
@@ -130,41 +80,29 @@ export default function GeneralPageWrapper() {
     let cancelled = false;
     const load = async () => {
       if (!currentUserInfo?.id) return;
+
       setLoadingLevel(true);
 
-      const userLevelQuery = `
-        query GetUser($userID: ID!) {
-          getUser(userID: $userID) {
-            id
-            name
-            email
-            xpValue
-            requiredXP
-            exceedingXP
-            level
-          }
-        }
-      `;
-
       try {
-        const { data: userData, errors: userErrors } = await postGraphQL<{
-          getUser?: any;
-        }>(userLevelQuery, { userID: currentUserInfo.id });
+        const result = await fetchQuery(relayEnv, getUserXPQuery, {
+          userID: currentUserInfo.id,
+        }).toPromise();
 
         if (!cancelled) {
-          const payload: any = userData?.getUser;
-          const u = Array.isArray(payload) ? payload[0] : payload; // supports both array and object
+          const payload = (result as any)?.getUser;
+          const u = Array.isArray(payload) ? payload[0] : payload;
           if (u) {
             setLevelInfo({
-              level: u.level ?? 0,
-              requiredXP: Math.max(1, Math.round(u.requiredXP ?? 1)),
-              exceedingXP: Math.max(0, Math.round(u.exceedingXP ?? 0)),
+              level: Number(u.level ?? 0),
+              requiredXP: Math.max(1, Math.round(Number(u.requiredXP ?? 1))),
+              exceedingXP: Math.max(0, Math.round(Number(u.exceedingXP ?? 0))),
             });
           } else {
-            if (userErrors) {
-              // eslint-disable-next-line no-console
-              console.warn("[XP] getUser errors:", userErrors);
-            }
+            console.warn(
+              "[XP] getUser returned empty payload for",
+              currentUserInfo?.id,
+              result
+            );
             setLevelInfo({ level: 0, requiredXP: 1, exceedingXP: 0 });
           }
         }
@@ -177,7 +115,7 @@ export default function GeneralPageWrapper() {
     return () => {
       cancelled = true;
     };
-  }, [currentUserInfo?.id]);
+  }, [currentUserInfo?.id, relayEnv]);
 
   const levelIconSrc = useMemo(() => {
     const lvl = Math.max(0, Math.min(99, levelInfo?.level ?? 0));

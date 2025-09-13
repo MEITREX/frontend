@@ -65,78 +65,13 @@ import {
   useTransition,
 } from "react";
 import { useAuth } from "react-oidc-context";
-import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
-
-/** ---------------- GraphQL runtime fetch helper (XP endpoint) ---------------- */
-const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
-
-async function postGraphQL<TData>(
-  query: string,
-  variables: Record<string, any>
-): Promise<{ data?: TData; errors?: any[] }> {
-  try {
-    const token =
-      typeof window !== "undefined" && (window as any).__AUTH_TOKEN__
-        ? (window as any).__AUTH_TOKEN__
-        : undefined;
-
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-
-    const res = await fetch(GRAPHQL_URL, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ query, variables }),
-      credentials: "include",
-    });
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      console.error(
-        `[GraphQL] HTTP ${res.status} when calling ${GRAPHQL_URL}:`,
-        text?.slice(0, 500)
-      );
-      return {
-        errors: [
-          {
-            message: `HTTP ${res.status} - ${res.statusText}`,
-            detail: text?.slice(0, 500),
-          },
-        ],
-      } as any;
-    }
-
-    const contentType = res.headers.get("content-type") || "";
-    if (!contentType.includes("application/json")) {
-      const text = await res.text().catch(() => "");
-      console.error("[GraphQL] Non-JSON response:", text?.slice(0, 500));
-      return {
-        errors: [
-          {
-            message: "Non-JSON response from GraphQL endpoint",
-            detail: text?.slice(0, 500),
-          },
-        ],
-      } as any;
-    }
-
-    const json = (await res.json()) as any;
-    if (json?.errors) {
-      console.warn("[GraphQL] Returned errors:", json.errors);
-    }
-    return json;
-  } catch (e) {
-    console.error("[GraphQL] Network/parse error:", e);
-    return {
-      errors: [
-        { message: "Failed to parse GraphQL response", detail: String(e) },
-      ],
-    } as any;
-  }
-}
+import {
+  fetchQuery,
+  graphql,
+  useFragment,
+  useLazyLoadQuery,
+  useRelayEnvironment,
+} from "react-relay";
 
 /** ---------------- Utilities ---------------- */
 function useIsTutor(_frag: NavbarIsTutor$key) {
@@ -533,6 +468,7 @@ function UserInfo({
     xpRequiredForLevelUp: number;
   } | null>(null);
 
+  const relayEnv = useRelayEnvironment();
   useEffect(() => {
     let cancelled = false;
 
@@ -540,14 +476,9 @@ function UserInfo({
       if (!userId) return;
       if (auth?.isLoading) return;
 
-      // make token available to runtime fetcher
-      if (typeof window !== "undefined" && auth?.user?.access_token) {
-        (window as any).__AUTH_TOKEN__ = auth.user.access_token;
-      }
-
       try {
-        const getUserQuery = `
-          query GetUserXP($userID: ID!) {
+        const query = graphql`
+          query NavbarGetUserXPQuery($userID: ID!) {
             getUser(userID: $userID) {
               id
               name
@@ -560,31 +491,9 @@ function UserInfo({
           }
         `;
 
-        const { data: levelData, errors } = await postGraphQL<{
-          getUser?:
-            | {
-                id: string;
-                name?: string | null;
-                email?: string | null;
-                xpValue: number | string;
-                requiredXP: number | string;
-                exceedingXP: number | string;
-                level: number | string;
-              }
-            | Array<{
-                id: string;
-                name?: string | null;
-                email?: string | null;
-                xpValue: number | string;
-                requiredXP: number | string;
-                exceedingXP: number | string;
-                level: number | string;
-              }>;
-        }>(getUserQuery, { userID: userId });
-
-        if (errors && errors.length) {
-          console.warn("[Navbar XP] GraphQL errors:", errors);
-        }
+        const levelData = await fetchQuery(relayEnv, query, {
+          userID: userId,
+        }).toPromise();
 
         const rawUser = (levelData as any)?.getUser;
         const payload: any = Array.isArray(rawUser)
@@ -619,7 +528,7 @@ function UserInfo({
     return () => {
       cancelled = true;
     };
-  }, [userId, auth?.user?.access_token, auth?.isLoading]);
+  }, [userId, auth?.isLoading, relayEnv]);
 
   const level = levelInfo?.level ?? 0;
   const xpInLevel = levelInfo?.xpInLevel ?? 0;
