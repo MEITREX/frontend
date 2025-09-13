@@ -17,6 +17,11 @@ import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
 import WidgetFeedback from "@/components/widgets/common/WidgetFeedback";
 import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
 
+type Props = {
+  openFeedback?: boolean;
+  category?: GamificationCategory;
+};
+
 // --- Types to mirror the profile implementation ---
 type UserLevelInfo = {
   level: number;
@@ -92,18 +97,12 @@ const XPWidgetQuery = graphql`
   }
 `;
 
-type Props = { openFeedback?: boolean; category?: GamificationCategory };
-
-// --- Robust GraphQL URL + Auth handling (same as profile) ---
-function resolveGraphqlUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_GRAPHQL_URL ||
-    process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-    "/graphql"
+const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
+if (!GRAPHQL_URL) {
+  console.error(
+    "[XPWidget] Missing NEXT_PUBLIC_BACKEND_URL. Please set it (e.g. via docker-compose.yml)."
   );
 }
-
-const GRAPHQL_URL = resolveGraphqlUrl();
 
 function getAuthHeader(): Record<string, string> {
   try {
