@@ -45,7 +45,7 @@ export function FormActions({
 
 export function Form({ children }: { children: ReactNode }) {
   return (
-    <div className="grid grid-cols-[max-content_auto] gap-3 gap-x-24 w-fit">
+    <div className="grid grid-cols-[max-content_auto] gap-3 gap-x-24 fullWidth">
       {children}
     </div>
   );

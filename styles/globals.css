@@ -70,3 +70,6 @@
     transform: translateX(-100%);
   }
 }
+.fullWidth {
+  width: 100%;
+}
