@@ -68,7 +68,7 @@ import { useAuth } from "react-oidc-context";
 import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
 
 /** ---------------- GraphQL runtime fetch helper (XP endpoint) ---------------- */
-const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
 async function postGraphQL<TData>(
   query: string,

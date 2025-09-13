@@ -23,7 +23,7 @@ type UserLevelInfo = {
 };
 
 function resolveGraphqlUrl(): string {
-  return process.env.NEXT_PUBLIC_BACKEND_URL || "";
+  return process.env.NEXT_PUBLIC_BACKEND_URL as string;
 }
 
 const GRAPHQL_URL = resolveGraphqlUrl();
