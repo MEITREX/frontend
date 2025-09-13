@@ -6,14 +6,12 @@ import { FormErrors } from "@/components/FormErrors";
 import { Heading } from "@/components/Heading";
 import { PageError } from "@/components/PageError";
 import { StudentFlashcardSet } from "@/components/StudentFlashcardSet";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
 
 export default function StudentFlashcards() {
-  // Get course id from url
   const { flashcardSetId, courseId } = useParams();
-  const router = useRouter();
   const [error, setError] = useState<any>(null);
 
   const safeCourseId = Array.isArray(courseId) ? courseId[0] : courseId;
@@ -21,7 +19,6 @@ export default function StudentFlashcards() {
     ? flashcardSetId[0]
     : flashcardSetId;
 
-  // Fetch course data
   const { findContentsByIds } = useLazyLoadQuery<studentFlashcardsQuery>(
     graphql`
       query studentFlashcardsQuery($id: [UUID!]!) {
@@ -46,28 +43,32 @@ export default function StudentFlashcards() {
   );
 
   const content = findContentsByIds[0];
-  if (!content)
+  const flashcardSet =
+    content && "flashcardSet" in content ? content.flashcardSet : null;
+
+  const memoFlashcards = useMemo(
+    () =>
+      flashcardSet
+        ? flashcardSet.flashcards.map((x) => ({ id: x.itemId, _flashcard: x }))
+        : [],
+    [flashcardSet]
+  );
+
+  const handleComplete = useCallback(() => {
+    window.location.replace(`/courses/${safeCourseId}`);
+  }, [safeCourseId]);
+
+  if (!content) {
     return <PageError message="No flashcards found with given id." />;
-  if (!("flashcardSet" in content) || !content.flashcardSet)
+  }
+  if (!flashcardSet) {
     return (
       <PageError
         title={content.metadata.name}
         message="Content is not of type flashcards."
       />
     );
-
-  const memoFlashcards = useMemo(
-    () =>
-      content.flashcardSet!.flashcards.map((x) => ({
-        id: x.itemId,
-        _flashcard: x,
-      })),
-    [content.flashcardSet]
-  );
-
-  const handleComplete = useCallback(() => {
-    window.location.replace(`/courses/${safeCourseId}`);
-  }, [safeCourseId]);
+  }
 
   return (
     <main className="flex flex-col h-full">
