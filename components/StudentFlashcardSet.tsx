@@ -3,7 +3,7 @@ import { StudentFlashcardSetLogProgressMutation } from "@/__generated__/StudentF
 import { SimilarSegments } from "@/app/courses/[courseId]/media/[mediaId]/SimilarSegments";
 import { Search } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { graphql, useMutation } from "react-relay";
 import { dispatch } from "use-bus";
 import { DisplayError } from "./PageError";
@@ -27,6 +27,10 @@ export function StudentFlashcardSet({
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [knew, setKnew] = useState(false);
+
+  const handleChange = useCallback((correctness: number) => {
+    setKnew(correctness === 1);
+  }, []);
 
   const [setFlashcardLearned, logging] =
     useMutation<StudentFlashcardSetLogProgressMutation>(graphql`
@@ -71,7 +75,7 @@ export function StudentFlashcardSet({
         key={currentFlashcard.id}
         _flashcard={currentFlashcard._flashcard}
         label={`${currentIndex + 1}/${flashcards.length}`}
-        onChange={(correctness) => setKnew(correctness === 1)}
+        onChange={handleChange}
       />
 
       <div className="mt-6 w-full flex justify-center">

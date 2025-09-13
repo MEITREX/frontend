@@ -6,17 +6,19 @@ import { FormErrors } from "@/components/FormErrors";
 import { Heading } from "@/components/Heading";
 import { PageError } from "@/components/PageError";
 import { StudentFlashcardSet } from "@/components/StudentFlashcardSet";
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useParams } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
 
 export default function StudentFlashcards() {
-  // Get course id from url
   const { flashcardSetId, courseId } = useParams();
-  const router = useRouter();
   const [error, setError] = useState<any>(null);
 
-  // Fetch course data
+  const safeCourseId = Array.isArray(courseId) ? courseId[0] : courseId;
+  const safeSetId = Array.isArray(flashcardSetId)
+    ? flashcardSetId[0]
+    : flashcardSetId;
+
   const { findContentsByIds } = useLazyLoadQuery<studentFlashcardsQuery>(
     graphql`
       query studentFlashcardsQuery($id: [UUID!]!) {
@@ -37,17 +39,32 @@ export default function StudentFlashcards() {
         }
       }
     `,
-    { id: [flashcardSetId] }
+    { id: [safeSetId] }
   );
 
-  const flashcards = findContentsByIds[0];
-  if (!flashcards) {
+  const content = findContentsByIds[0];
+  const flashcardSet =
+    content && "flashcardSet" in content ? content.flashcardSet : null;
+
+  const memoFlashcards = useMemo(
+    () =>
+      flashcardSet
+        ? flashcardSet.flashcards.map((x) => ({ id: x.itemId, _flashcard: x }))
+        : [],
+    [flashcardSet]
+  );
+
+  const handleComplete = useCallback(() => {
+    window.location.replace(`/courses/${safeCourseId}`);
+  }, [safeCourseId]);
+
+  if (!content) {
     return <PageError message="No flashcards found with given id." />;
   }
-  if (!flashcards.flashcardSet) {
+  if (!flashcardSet) {
     return (
       <PageError
-        title={flashcards.metadata.name}
+        title={content.metadata.name}
         message="Content is not of type flashcards."
       />
     );
@@ -55,17 +72,14 @@ export default function StudentFlashcards() {
 
   return (
     <main className="flex flex-col h-full">
-      <Heading title={flashcards.metadata.name} backButton />
-      <ContentTags metadata={flashcards.metadata} />
+      <Heading title={content.metadata.name} backButton />
+      <ContentTags metadata={content.metadata} />
       <FormErrors error={error} onClose={() => setError(null)} />
 
       <StudentFlashcardSet
-        flashcards={flashcards.flashcardSet.flashcards.map((x) => ({
-          id: x.itemId,
-          _flashcard: x,
-        }))}
+        flashcards={memoFlashcards}
         emptyMessage="Empty flashcard set."
-        onComplete={() => window.location.replace(`/courses/${courseId}`)}
+        onComplete={handleComplete}
         onError={setError}
       />
     </main>

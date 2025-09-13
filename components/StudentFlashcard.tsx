@@ -3,8 +3,7 @@ import { StudentFlashcard$key } from "@/__generated__/StudentFlashcard.graphql";
 import { Item } from "@/components/form-sections/item/ItemFormSection";
 import ItemFormSectionPreview from "@/components/form-sections/item/ItemFormSectionPreview";
 import { Stack } from "@mui/material";
-import { sample } from "lodash";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { graphql, useFragment } from "react-relay";
 import { StudentFlashcardSide } from "./StudentFlashcardSide";
 
@@ -43,13 +42,29 @@ export function StudentFlashcard({
     _flashcard
   );
 
+  const questionCandidates = useMemo(
+    () => flashcard.sides.filter((x) => x.isQuestion),
+    [flashcard.sides]
+  );
+  const answerCandidates = useMemo(
+    () => flashcard.sides.filter((x) => x.isAnswer),
+    [flashcard.sides]
+  );
+
+  const [questionLabel, setQuestionLabel] = useState<string | null>(null);
+
+  useEffect(() => {
+    setQuestionLabel(questionCandidates[0]?.label ?? null);
+    setKnew({});
+  }, [flashcard.itemId, questionCandidates]);
+
   const question = useMemo(
-    () => sample(flashcard.sides.filter((x) => x.isQuestion)),
-    [flashcard]
+    () => questionCandidates.find((q) => q.label === questionLabel),
+    [questionCandidates, questionLabel]
   );
   const answers = useMemo(
-    () => flashcard.sides.filter((x) => x.isAnswer && x !== question),
-    [flashcard, question]
+    () => answerCandidates.filter((a) => a.label !== questionLabel),
+    [answerCandidates, questionLabel]
   );
   const [knew, setKnew] = useState<Record<string, boolean>>({});
 
@@ -58,13 +73,19 @@ export function StudentFlashcard({
     setKnew({});
   }, [flashcard]);
 
+  const onChangeRef = useRef(onChange);
   useEffect(() => {
-    // Notify parent about known status
-    const numCorrect = answers
-      .map((x) => knew[x.label] ?? false)
-      .filter((x) => x).length;
-    onChange(numCorrect / answers.length);
-  }, [answers, question, knew, onChange]);
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    if (answers.length === 0) return;
+    const numCorrect = answers.reduce(
+      (acc, x) => acc + (knew[x.label] ? 1 : 0),
+      0
+    );
+    onChangeRef.current(numCorrect / answers.length);
+  }, [answers, knew]);
 
   const currentItem = useMemo<Item>(
     () => ({
