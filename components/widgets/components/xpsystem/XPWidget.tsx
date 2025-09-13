@@ -96,13 +96,11 @@ type Props = { openFeedback?: boolean; category?: GamificationCategory };
 
 // --- Robust GraphQL URL + Auth handling (same as profile) ---
 function resolveGraphqlUrl(): string {
-  const fromEnv =
+  return (
     process.env.NEXT_PUBLIC_GRAPHQL_URL ||
     process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-    "";
-  if (fromEnv && /^https?:\/\//.test(fromEnv)) return fromEnv;
-  if (fromEnv && fromEnv.startsWith("/")) return fromEnv;
-  return "http://localhost:8080/graphql";
+    "/graphql"
+  );
 }
 
 const GRAPHQL_URL = resolveGraphqlUrl();
