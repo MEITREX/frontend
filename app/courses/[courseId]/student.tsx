@@ -12,7 +12,12 @@ import {
 } from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
-import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
+import {
+  graphql,
+  RelayEnvironmentProvider,
+  useLazyLoadQuery,
+  useMutation,
+} from "react-relay";
 
 import { studentCourseLeaveMutation } from "@/__generated__/studentCourseLeaveMutation.graphql";
 import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
@@ -38,9 +43,12 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
+import { studentPrivateProfileStudentGeneralQuery } from "@/__generated__/studentPrivateProfileStudentGeneralQuery.graphql";
 import CourseLeaderboards from "@/components/leaderboard/CourseLeaderboard";
+import { createIsolatedEnvironment } from "@/components/relay/createIsolatedEnvironment";
 import * as React from "react";
 import { Suspense, useEffect, useState } from "react";
+import { useAuth } from "react-oidc-context";
 import QuestList from "./quests/QuestItem";
 
 function CustomTabPanel(props: TabPanelProps) {
@@ -92,6 +100,23 @@ export default function StudentCoursePage() {
 
   const router = useRouter();
   const [error, setError] = useState<any>(null);
+
+  // 1) UserID stabil über Relay
+  const { currentUserInfo } =
+    useLazyLoadQuery<studentPrivateProfileStudentGeneralQuery>(
+      graphql`
+        query studentPrivateProfileStudentGeneralQuery {
+          currentUserInfo {
+            id
+            lastName
+            firstName
+            userName
+            nickname
+          }
+        }
+      `,
+      {}
+    );
 
   // Fetch course data
   const {
@@ -225,6 +250,20 @@ export default function StudentCoursePage() {
     }
   }, [course?.id, studentUserLogin]);
 
+  const auth = useAuth();
+
+  const tokenRef = React.useRef<string | undefined>(auth.user?.access_token);
+  useEffect(() => {
+    tokenRef.current = auth.user?.access_token;
+  }, [auth.user?.access_token]);
+
+  const getToken = React.useCallback(() => tokenRef.current, []);
+
+  const env = React.useMemo(
+    () => createIsolatedEnvironment({ getToken }),
+    [getToken]
+  );
+
   if (coursesByIds.length == 0) {
     return <PageError message="No course found with given id." />;
   }
@@ -354,7 +393,7 @@ export default function StudentCoursePage() {
         </Box>
 
         <CustomTabPanel value={value} index={0}>
-          <WidgetsOverview userId={userId} courseId={course.id} />
+          <WidgetsOverview userId={currentUserInfo.id} courseId={course.id} />
           <ChapterOverview _chapters={course} />
         </CustomTabPanel>
 
@@ -559,11 +598,13 @@ export default function StudentCoursePage() {
 
         <CustomTabPanel value={value} index={4}>
           <Suspense fallback={<SkeletonThreadList />}>
-            <CourseLeaderboards
-              courseID={id}
-              currentUserId={userId}
-              currentUserName={"Current User"}
-            />
+            <RelayEnvironmentProvider environment={env}>
+              <CourseLeaderboards
+                courseID={id}
+                currentUserId={userId}
+                currentUserName={"Current User"}
+              />
+            </RelayEnvironmentProvider>
           </Suspense>
         </CustomTabPanel>
       </Box>

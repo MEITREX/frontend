@@ -3,6 +3,7 @@
 
 import { useSort } from "@/app/contexts/SortContext";
 import PublicProfileListItem from "@/components/items/PublicProfileListItem";
+import { createIsolatedEnvironment } from "@/components/relay/createIsolatedEnvironment";
 import {
   Box,
   FormControl,
@@ -12,7 +13,9 @@ import {
   Tab,
   Tabs,
 } from "@mui/material";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useAuth } from "react-oidc-context";
+import { RelayEnvironmentProvider } from "react-relay";
 import { ItemStringType } from "../../items/types/Types";
 
 const tabs: { label: string; type: ItemStringType }[] = [
@@ -31,6 +34,20 @@ export default function ProfileInventorySection({
 }: ProfileInventorySectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const { sortBy, setSortBy, showLocked, setShowLocked } = useSort();
+
+  const auth = useAuth();
+
+  const tokenRef = React.useRef<string | undefined>(auth.user?.access_token);
+  useEffect(() => {
+    tokenRef.current = auth.user?.access_token;
+  }, [auth.user?.access_token]);
+
+  const getToken = React.useCallback(() => tokenRef.current, []);
+
+  const env = React.useMemo(
+    () => createIsolatedEnvironment({ getToken }),
+    [getToken]
+  );
 
   return (
     <Box
@@ -112,12 +129,14 @@ export default function ProfileInventorySection({
 
       {/* Content: genau eine Kategorie je nach aktivem Tab */}
       <Box sx={{ mt: 2 }}>
-        <PublicProfileListItem
-          key={userId}
-          itemStringType={tabs[activeIndex].type}
-          publicProfile={true}
-          userId={userId}
-        />
+        <RelayEnvironmentProvider environment={env}>
+          <PublicProfileListItem
+            key={userId}
+            itemStringType={tabs[activeIndex].type}
+            publicProfile={true}
+            userId={userId}
+          />
+        </RelayEnvironmentProvider>
       </Box>
     </Box>
   );
