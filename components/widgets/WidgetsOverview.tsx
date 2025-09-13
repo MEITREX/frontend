@@ -47,8 +47,6 @@ const mockedRecommendations: MockedRecommendation[] = [
 ];
 
 export default function WidgetsOverview({ userId, courseId }: Properties) {
-  const [numWidgetsToShow, setNumWidgetsToShow] = React.useState<number>(2);
-
   // ADD NEW WIDGETS HERE:
   const widgets = [
     {
@@ -89,7 +87,7 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
   const data = useLazyLoadQuery<WidgetApiCurrentUserInfoQuery>(
     widgetApiCurrentUserInfoQuery,
     {},
-    { fetchPolicy: "network-only", fetchKey: numWidgetsToShow }
+    { fetchPolicy: "network-only" }
   );
 
   const courseMembership = data.currentUserInfo?.courseMemberships?.find(
@@ -107,6 +105,7 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
       { fetchPolicy: "store-or-network" }
     );
 
+  const [numWidgetsToShow, setNumWidgetsToShow] = React.useState<number>(2);
 
   React.useEffect(() => {
     if (currentUserWidgetSettings?.numberOfRecommendations != null) {
