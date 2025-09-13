@@ -41,8 +41,6 @@ export default function ProfileInventorySection({
     tokenRef.current = auth.user?.access_token;
   }, [auth.user?.access_token]);
 
-
-
   return (
     <Box
       sx={{
@@ -123,14 +121,12 @@ export default function ProfileInventorySection({
 
       {/* Content: genau eine Kategorie je nach aktivem Tab */}
       <Box sx={{ mt: 2 }}>
-
-          <PublicProfileListItem
-            key={userId}
-            itemStringType={tabs[activeIndex].type}
-            publicProfile={true}
-            userId={userId}
-          />
-
+        <PublicProfileListItem
+          key={userId}
+          itemStringType={tabs[activeIndex].type}
+          publicProfile={true}
+          userId={userId}
+        />
       </Box>
     </Box>
   );

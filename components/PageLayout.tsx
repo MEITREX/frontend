@@ -3,7 +3,6 @@ import React, { useEffect, useRef } from "react";
 import { useAuth } from "react-oidc-context";
 import { Navbar } from "./Navbar";
 
-
 export function PageLayout({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
 
@@ -11,8 +10,6 @@ export function PageLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     tokenRef.current = auth.user?.access_token;
   }, [auth.user?.access_token]);
-
-
 
   return (
     <div className="flex overflow-hidden h-full bg-slate-200">

@@ -347,7 +347,6 @@ export default function PublicProfilePage() {
     tokenRef.current = auth.user?.access_token;
   }, [auth.user?.access_token]);
 
-
   return (
     <Box sx={{ p: 4 }}>
       <Button

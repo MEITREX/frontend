@@ -283,16 +283,16 @@ export default function Leaderboard({
   const InventoryByUserQuery = graphql`
     query LeaderboardRowInventoryByUserQuery($userIds: [UUID!]!) {
       inventoriesForUsers(userIds: $userIds) {
-      items {
-        equipped
-        catalogItemId: id
-        uniqueDescription
-        unlocked
-        unlockedTime
+        items {
+          equipped
+          catalogItemId: id
+          uniqueDescription
+          unlocked
+          unlockedTime
+        }
+        unspentPoints
+        userId
       }
-      unspentPoints
-      userId
-    }
     }
   `;
 
@@ -515,12 +515,18 @@ export default function Leaderboard({
 
             const items = data?.inventoriesForUsers[0].items ?? [];
 
-            const pics = getPublicProfileItemsMergedCustomID(items, "profilePics");
+            const pics = getPublicProfileItemsMergedCustomID(
+              items,
+              "profilePics"
+            );
             const frames = getPublicProfileItemsMergedCustomID(
               items,
               "profilePicFrames"
             );
-            const colors = getPublicProfileItemsMergedCustomID(items, "colorThemes");
+            const colors = getPublicProfileItemsMergedCustomID(
+              items,
+              "colorThemes"
+            );
             const patterns = getPublicProfileItemsMergedCustomID(
               items,
               "patternThemes"

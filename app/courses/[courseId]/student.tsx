@@ -12,11 +12,7 @@ import {
 } from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
-import {
-  graphql,
-  useLazyLoadQuery,
-  useMutation
-} from "react-relay";
+import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
 import { studentCourseLeaveMutation } from "@/__generated__/studentCourseLeaveMutation.graphql";
 import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
@@ -256,7 +252,6 @@ export default function StudentCoursePage() {
   useEffect(() => {
     tokenRef.current = auth.user?.access_token;
   }, [auth.user?.access_token]);
-
 
   if (coursesByIds.length == 0) {
     return <PageError message="No course found with given id." />;
@@ -594,13 +589,11 @@ export default function StudentCoursePage() {
 
         <CustomTabPanel value={value} index={4}>
           <Suspense fallback={<SkeletonThreadList />}>
-
-              <CourseLeaderboards
-                courseID={id}
-                currentUserId={userId}
-                currentUserName={"Current User"}
-              />
-
+            <CourseLeaderboards
+              courseID={id}
+              currentUserId={userId}
+              currentUserName={"Current User"}
+            />
           </Suspense>
         </CustomTabPanel>
       </Box>
