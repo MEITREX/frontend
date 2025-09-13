@@ -282,9 +282,9 @@ const CourseQuery = graphql`
 // 3) Public user infos for resolving user names
 const PublicUserInfosQuery = graphql`
   query ProfileLeaderboardPositionsPublicUsersQuery($ids: [UUID!]!) {
-    findPublicUserInfos(ids: $ids) {
+    findUserInfos(ids: $ids) {
       id
-      userName
+      nickname
     }
   }
 `;
@@ -1121,12 +1121,12 @@ function CourseLeaderboardsForCourse({
     for (const s of allScores) {
       if (s.user?.id && s.user?.name) m.set(s.user.id, s.user.name);
     }
-    for (const u of publicUsers.findPublicUserInfos ?? []) {
-      // Map userName to name
-      if (u?.id && u?.userName && !m.has(u.id)) m.set(u.id, u.userName);
+    for (const u of publicUsers.findUserInfos ?? []) {
+      // Map nickname to name
+      if (u?.id && u?.nickname && !m.has(u.id)) m.set(u.id, u.nickname);
     }
     return m;
-  }, [allScores, publicUsers.findPublicUserInfos]);
+  }, [allScores, publicUsers.findUserInfos]);
 
   // Helper to enrich scores with resolved names
   const enrich = (arr: UserScore[]): UserScore[] =>
