@@ -1,5 +1,5 @@
-import React from 'react';
-import { Box, Skeleton } from '@mui/material';
+import React from "react";
+import { Box, Skeleton } from "@mui/material";
 
 const SingleWidgetSkeleton = () => {
   return (
@@ -10,14 +10,23 @@ const SingleWidgetSkeleton = () => {
         p: 1,
         width: 450,
         height: 400,
-        display: 'flex',
-        flexDirection: 'column',
-        boxSizing: 'border-box'
+        display: "flex",
+        flexDirection: "column",
+        boxSizing: "border-box",
       }}
     >
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Skeleton variant="text" sx={{ mt: 1, ml: 1, fontSize: '1.25rem' }} width="45%" />
-        <Skeleton variant="rectangular" width={90} height={32} sx={{ borderRadius: 1 }} />
+        <Skeleton
+          variant="text"
+          sx={{ mt: 1, ml: 1, fontSize: "1.25rem" }}
+          width="45%"
+        />
+        <Skeleton
+          variant="rectangular"
+          width={90}
+          height={32}
+          sx={{ borderRadius: 1 }}
+        />
       </Box>
 
       <Box sx={{ flexGrow: 1, mt: 2 }}>
@@ -31,10 +40,10 @@ const WidgetsSkeleton = () => {
   return (
     <Box
       sx={{
-        border: '1px solid #e0e0e0',
+        border: "1px solid #e0e0e0",
         borderRadius: 2,
         p: 3,
-        position: 'relative'
+        position: "relative",
       }}
     >
       <Skeleton
@@ -42,7 +51,7 @@ const WidgetsSkeleton = () => {
         width={24}
         height={24}
         sx={{
-          position: 'absolute',
+          position: "absolute",
           top: 16,
           right: 16,
         }}

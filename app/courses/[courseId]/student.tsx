@@ -394,7 +394,7 @@ export default function StudentCoursePage() {
         </Box>
 
         <CustomTabPanel value={value} index={0}>
-          <Suspense fallback={<WidgetSkeleton/>}>
+          <Suspense fallback={<WidgetSkeleton />}>
             <WidgetsOverview userId={currentUserInfo.id} courseId={course.id} />
           </Suspense>
           <ChapterOverview _chapters={course} />
