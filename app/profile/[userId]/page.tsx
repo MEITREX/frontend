@@ -10,10 +10,12 @@ import AchievementList from "@/components/profile/AchievementList";
 import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
 import UserProfileCustomHeader from "@/components/profile/header/UserProfileCustomHeader";
 import ProfileInventorySection from "@/components/profile/items/ProfileInventorySection";
+import { createIsolatedEnvironment } from "@/components/relay/createIsolatedEnvironment";
 import { NavigateBefore } from "@mui/icons-material";
 import { Box, Button, Grid, Tab, Tabs, Typography } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useAuth } from "react-oidc-context";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 
@@ -339,6 +341,20 @@ export default function PublicProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(sharedMemberships), viewedSafe.id, currentUserInfo.id]);
 
+  const auth = useAuth();
+
+  const tokenRef = React.useRef<string | undefined>(auth.user?.access_token);
+  useEffect(() => {
+    tokenRef.current = auth.user?.access_token;
+  }, [auth.user?.access_token]);
+
+  const getToken = React.useCallback(() => tokenRef.current, []);
+
+  const env = React.useMemo(
+    () => createIsolatedEnvironment({ getToken }),
+    [getToken]
+  );
+
   return (
     <Box sx={{ p: 4 }}>
       <Button
@@ -350,6 +366,7 @@ export default function PublicProfilePage() {
       >
         Back
       </Button>
+
       <UserProfileCustomHeader
         displayName={userInfos.findUserInfos[0]?.nickname as string}
       />

@@ -751,7 +751,7 @@ export default function Leaderboard({
                     textAlign: "center",
                     fontSize: 18,
                     fontWeight: isCurrent ? 900 : 700,
-                    color: userCardStyle(user.id).color
+                    color: userCardStyle(user.id).color,
                   }}
                 >
                   {user.rank}.
@@ -923,7 +923,7 @@ export default function Leaderboard({
                         textAlign: "center",
                         fontSize: 18,
                         fontWeight: isCurrent ? 900 : 700,
-                        color: userCardStyle(user.id).color
+                        color: userCardStyle(user.id).color,
                       }}
                     >
                       {user.rank}.
