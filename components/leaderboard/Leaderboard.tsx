@@ -148,40 +148,6 @@ const trophies = [
   </svg>,
 ];
 
-const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
-
-async function postGraphQL<TData>(
-  query: string,
-  variables: Record<string, any>
-): Promise<{ data?: TData; errors?: any[] }> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(typeof window !== "undefined" && (window as any).__AUTH_TOKEN__
-        ? { Authorization: `Bearer ${(window as any).__AUTH_TOKEN__}` }
-        : {}),
-    },
-    body: JSON.stringify({ query, variables }),
-    credentials: "include",
-  });
-
-  try {
-    return (await res.json()) as any;
-  } catch {
-    return { errors: [{ message: "Failed to parse GraphQL response" }] } as any;
-  }
-}
-
-const FIND_PUBLIC_USER_INFOS = `
-  query FindPublicUserInfos($ids: [UUID!]!) {
-    findPublicUserInfos(ids: $ids) {
-      id
-      userName
-    }
-  }
-`;
-
 export type User = {
   id: string;
   name: string;
@@ -331,9 +297,6 @@ export default function Leaderboard({
     { fetchPolicy: "network-only" }
   );
 
-  // Fallback name map (id -> userName) when leaderboard.user.name is missing
-  const [nameMap, setNameMap] = React.useState<Record<string, string>>({});
-
   // Derive a period label from server data (startDate/period) for accurate ranges
   const firstLeaderboard =
     period === "weekly"
@@ -372,42 +335,6 @@ export default function Leaderboard({
       ? [...raw[0].userScores].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
       : [];
 
-  // When leaderboard omits user names, fetch them via findPublicUserInfos
-  React.useEffect(() => {
-    const ids =
-      scores
-        .map((us) => us.user?.id)
-        .filter((id): id is string => typeof id === "string") || [];
-    if (ids.length === 0) {
-      setNameMap({});
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      const { data, errors } = await postGraphQL<{
-        findPublicUserInfos?: { id: string; userName: string }[];
-      }>(FIND_PUBLIC_USER_INFOS, { ids });
-      if (errors) {
-        // eslint-disable-next-line no-console
-        console.warn("[Leaderboard] findPublicUserInfos errors:", errors);
-      }
-      if (!cancelled) {
-        const map: Record<string, string> = {};
-        (data?.findPublicUserInfos ?? []).forEach((u) => {
-          if (u.id) map[u.id] = u.userName;
-        });
-        setNameMap(map);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    /* refresh when the score list changes */ JSON.stringify(
-      scores.map((s) => s.user?.id)
-    ),
-  ]);
-
   // displayUsers logic unchanged
   const displayUsers: User[] = scores
     .filter((us) => us.user)
@@ -415,7 +342,7 @@ export default function Leaderboard({
       const user = us.user!;
       return {
         id: user.id,
-        name: user.name ?? nameMap[user.id] ?? "Unknown",
+        name: user.name ?? "Unknown",
         points: us.score ?? 0,
         rank: idx + 1,
         isCurrentUser: user.id === data?.currentUserInfo?.id,
@@ -471,10 +398,12 @@ export default function Leaderboard({
 
   const env = useRelayEnvironment();
 
+  const idsMemo = React.useMemo(() => {
+    return Array.from(new Set(displayUsers.map((u) => u.id).filter(Boolean)));
+  }, [displayUsers]);
+
   React.useEffect(() => {
-    const ids = Array.from(
-      new Set(displayUsers.map((u) => u.id).filter(Boolean))
-    );
+    const ids = idsMemo;
     if (ids.length === 0) {
       setUserProfilePics({});
       setUserProfileFrames({});
@@ -556,7 +485,7 @@ export default function Leaderboard({
     return () => {
       cancelled = true;
     };
-  }, [env, JSON.stringify(displayUsers.map((u) => u.id))]);
+  }, [env, idsMemo]);
 
   function userCardStyle(
     userId: string,
