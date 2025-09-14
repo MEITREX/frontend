@@ -109,15 +109,15 @@ const FIND_PUBLIC_USER_INFOS = `
   query PublicUserInfos($ids: [UUID!]!) {
     findPublicUserInfos(ids: $ids) {
       id
-      userName
+      nickname
     }
   }
 `;
 
-/** Build id -> display name map (prefer explicit user.name if present; otherwise userName from public info). */
+/** Build id -> display name map (prefer explicit user.name if present; otherwise nickname from public info). */
 function buildNameMap(
   fromScores: Array<any>[],
-  publicInfos: Array<{ id: string; userName: string }> = []
+  publicInfos: Array<{ id: string; nickname: string }> = []
 ): Record<string, string> {
   const map: Record<string, string> = {};
   for (const arr of fromScores) {
@@ -128,8 +128,8 @@ function buildNameMap(
     }
   }
   for (const pi of publicInfos ?? []) {
-    if (pi?.id && pi?.userName && !map[pi.id]) {
-      map[pi.id] = pi.userName;
+    if (pi?.id && pi?.nickname && !map[pi.id]) {
+      map[pi.id] = pi.nickname;
     }
   }
   return map;
@@ -289,10 +289,10 @@ export default function PublicProfilePage() {
         }
 
         // Fetch public user infos for any ids we saw
-        let publicInfos: Array<{ id: string; userName: string }> = [];
+        let publicInfos: Array<{ id: string; nickname: string }> = [];
         if (idSet.size > 0) {
           const { data: piData } = await postGraphQL<{
-            findPublicUserInfos: Array<{ id: string; userName: string }>;
+            findPublicUserInfos: Array<{ id: string; nickname: string }>;
           }>(FIND_PUBLIC_USER_INFOS, { ids: Array.from(idSet) });
           publicInfos = piData?.findPublicUserInfos ?? [];
         }
