@@ -12,22 +12,21 @@ import UserProfileCustomHeader from "@/components/profile/header/UserProfileCust
 import ProfileInventorySection from "@/components/profile/items/ProfileInventorySection";
 import { NavigateBefore } from "@mui/icons-material";
 import {
-  Avatar,
   Box,
   Button,
   Grid,
+  LinearProgress,
   Tab,
   Tabs,
-  Typography,
-  LinearProgress,
+  Typography
 } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
 import { fetchQuery, useLazyLoadQuery, useRelayEnvironment } from "react-relay";
 
-import { graphql } from "relay-runtime";
 import { pagePublicProfileUserXPQuery } from "@/__generated__/pagePublicProfileUserXPQuery.graphql";
+import { graphql } from "relay-runtime";
 
 const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
@@ -125,7 +124,7 @@ const PagePublicProfileCourseLBQueryGQL = graphql`
 
 const PagePublicProfileManyUserInfosQueryGQL = graphql`
   query pagePublicProfileManyUserInfosQuery($ids: [UUID!]!) {
-    findPublicUserInfos(ids: $ids) {
+    findUserInfos(ids: $ids) {
       id
       nickname
     }
@@ -221,6 +220,7 @@ export default function PublicProfilePage() {
           id
           userName
         }
+
       }
     `,
     { id: [userId] }
@@ -337,7 +337,7 @@ export default function PublicProfilePage() {
           ).toPromise();
           publicInfos = ((piData as any)?.findPublicUserInfos ?? []) as Array<{
             id: string;
-            userName: string;
+            nickname: string;
           }>;
         }
 
