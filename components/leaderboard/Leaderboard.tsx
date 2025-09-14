@@ -345,20 +345,24 @@ export default function Leaderboard({
   );
 
   // displayUsers logic unchanged
-  const displayUsers: User[] = scores
-    .filter((us) => us.user)
-    .map((us, idx) => {
-      const user = us.user!;
-      return {
-        id: user.id,
-        name: user.name ?? "Unknown",
-        points: us.score ?? 0,
-        rank: idx + 1,
-        isCurrentUser: user.id === data?.currentUserInfo?.id,
-        profileImage: undefined,
-        backgroundImage: undefined,
-      };
-    });
+  const displayUsers = React.useMemo(
+  () =>
+    scores
+      .filter((us) => us.user)
+      .map((us, idx) => {
+        const user = us.user!;
+        return {
+          id: user.id,
+          name: user.name ?? "Unknown",
+          points: us.score ?? 0,
+          rank: idx + 1,
+          isCurrentUser: user.id === data?.currentUserInfo?.id,
+          profileImage: undefined,
+          backgroundImage: undefined,
+        };
+      }),
+  [scores, data?.currentUserInfo?.id]
+);
   const topThree = React.useMemo(
     () => displayUsers.filter((u) => u.rank <= 3),
     [displayUsers]
@@ -506,7 +510,7 @@ export default function Leaderboard({
     return () => {
       cancelled = true;
     };
-  }, [env, idsMemo]);
+  }, [idsMemo]);
 
   function userCardStyle(
     userId: string,
