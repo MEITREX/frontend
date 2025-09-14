@@ -70,9 +70,12 @@ export default function GeneralPageWrapper() {
       {}
     );
 
-  const xpData = useLazyLoadQuery<
-    pagePrivateProfileStudentGeneral_GetUserXPQuery
-  >(getUserXPQuery, { userID: currentUserInfo.id }, { fetchPolicy: "network-only" });
+  const xpData =
+    useLazyLoadQuery<pagePrivateProfileStudentGeneral_GetUserXPQuery>(
+      getUserXPQuery,
+      { userID: currentUserInfo.id },
+      { fetchPolicy: "network-only" }
+    );
 
   const levelInfo = useMemo<UserLevelInfo>(() => {
     const payload: any = xpData?.getUser;
@@ -115,7 +118,9 @@ export default function GeneralPageWrapper() {
             style={{ display: "block" }}
           />
           <Typography variant="body2" color="text.secondary">
-            {`Level ${levelInfo.level} · ${Math.round(levelInfo.exceedingXP)} / ${Math.max(1, Math.round(levelInfo.requiredXP))} XP`}
+            {`Level ${levelInfo.level} · ${Math.round(
+              levelInfo.exceedingXP
+            )} / ${Math.max(1, Math.round(levelInfo.requiredXP))} XP`}
           </Typography>
         </Stack>
         <LinearProgress

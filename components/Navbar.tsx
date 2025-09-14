@@ -533,10 +533,13 @@ function UserInfo({
   const level = levelInfo?.level ?? 0;
   const xpInLevel = levelInfo?.xpInLevel ?? 0;
   const xpRequired = levelInfo?.xpRequiredForLevelUp ?? 1;
-
+  const xpInLevelClamped = Math.max(0, Math.min(xpInLevel, xpRequired));
   const percent = Math.max(
     0,
-    Math.min(100, Math.round((xpInLevel / Math.max(1, xpRequired)) * 100))
+    Math.min(
+      100,
+      Math.round((xpInLevelClamped / Math.max(1, xpRequired)) * 100)
+    )
   );
   const fmtInt = (n: number) =>
     Math.round(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
@@ -656,7 +659,7 @@ function UserInfo({
             />
             <Typography variant="caption" sx={{ mt: 0.25, display: "block" }}>
               {levelInfo
-                ? `${fmtInt(xpInLevel)} / ${fmtInt(xpRequired)} XP`
+                ? `${fmtInt(xpInLevelClamped)} / ${fmtInt(xpRequired)} XP`
                 : "Loading XP…"}
             </Typography>
             <Box sx={{ mt: 1, display: "flex", justifyContent: "center" }}>
