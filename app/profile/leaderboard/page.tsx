@@ -7,6 +7,7 @@ import { Box, Tab, Tabs, Typography } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
+import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
 
 const tabs = [
   { label: "General", path: "general" },
@@ -32,6 +33,7 @@ export default function LeaderboardPage() {
         query pagePrivateProfileLeaderboardsQuery {
           currentUserInfo {
             id
+            userName
             nickname
             courseMemberships {
               courseId
@@ -113,9 +115,6 @@ export default function LeaderboardPage() {
     { courseID: firstCourseId, date }
   );
 
-  // Hinweis: Die Daten werden hier nur vorab geladen. Die Darstellung erfolgt
-  // weiterhin über <ProfileLeaderboardPositions />. So bleibt das Verhalten gleich,
-  // und die Backend-Anbindung ist dennoch vorhanden, sobald das Schema generiert ist.
   void leaderboardData; // avoid unused var warning
 
   return (
@@ -126,6 +125,7 @@ export default function LeaderboardPage() {
       <Typography variant="body1" color="text.secondary" mb={3}>
         Here you can see your leaderboard positions across your courses.
       </Typography>
+      <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
 
       <Tabs
         value={activeIndex}
