@@ -29,7 +29,6 @@ import { graphql } from "relay-runtime";
 import { pagePublicProfileUserXPQuery } from "@/__generated__/pagePublicProfileUserXPQuery.graphql";
 
 const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
-const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
 function toLocalISODate(d: Date): string {
   const year = d.getFullYear();
