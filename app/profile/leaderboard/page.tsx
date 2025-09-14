@@ -115,13 +115,16 @@ export default function LeaderboardPage() {
     { courseID: firstCourseId, date }
   );
 
-  // Hinweis: Die Daten werden hier nur vorab geladen. Die Darstellung erfolgt
-  // weiterhin über <ProfileLeaderboardPositions />. So bleibt das Verhalten gleich,
-  // und die Backend-Anbindung ist dennoch vorhanden, sobald das Schema generiert ist.
   void leaderboardData; // avoid unused var warning
 
   return (
     <Box sx={{ p: 2 }}>
+      <Typography variant="h4" gutterBottom>
+        Hi, {currentUserInfo.nickname}
+      </Typography>
+      <Typography variant="body1" color="text.secondary" mb={3}>
+        Here you can see your leaderboard positions across your courses.
+      </Typography>
       <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
 
       <Tabs
