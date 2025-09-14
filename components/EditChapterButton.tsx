@@ -66,8 +66,6 @@ export default function EditChapterButton({
     [chapter.course]
   );
 
-  console.log(chapter.course.startDate, chapter.course.endDate);
-
   const schema = useMemo(
     () => validationSchema(chapter.course.startDate, chapter.course.endDate),
     [chapter.course]
