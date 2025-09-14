@@ -148,44 +148,6 @@ const trophies = [
   </svg>,
 ];
 
-// Runtime GraphQL fetcher for fallback names (when leaderboard.user.name is missing)
-const GRAPHQL_URL =
-  process.env.NEXT_PUBLIC_GRAPHQL_URL ||
-  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-  "/graphql";
-
-async function postGraphQL<TData>(
-  query: string,
-  variables: Record<string, any>
-): Promise<{ data?: TData; errors?: any[] }> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(typeof window !== "undefined" && (window as any).__AUTH_TOKEN__
-        ? { Authorization: `Bearer ${(window as any).__AUTH_TOKEN__}` }
-        : {}),
-    },
-    body: JSON.stringify({ query, variables }),
-    credentials: "include",
-  });
-
-  try {
-    return (await res.json()) as any;
-  } catch {
-    return { errors: [{ message: "Failed to parse GraphQL response" }] } as any;
-  }
-}
-
-const FIND_PUBLIC_USER_INFOS = `
-  query FindPublicUserInfos($ids: [UUID!]!) {
-    findPublicUserInfos(ids: $ids) {
-      id
-      userName
-    }
-  }
-`;
-
 export type User = {
   id: string;
   name: string;
@@ -339,9 +301,6 @@ export default function Leaderboard({
     { fetchPolicy: "network-only" }
   );
 
-  // Fallback name map (id -> userName) when leaderboard.user.name is missing
-  const [nameMap, setNameMap] = React.useState<Record<string, string>>({});
-
   // Derive a period label from server data (startDate/period) for accurate ranges
   const firstLeaderboard =
     period === "weekly"
@@ -369,70 +328,49 @@ export default function Leaderboard({
     : periodLabel;
 
   // Scores depend on data, but keep logic unchanged
-  const raw =
-    period === "weekly"
-      ? data?.weekly
-      : period === "monthly"
-      ? data?.monthly
-      : data?.allTime;
-  const scores =
-    raw && raw.length > 0 && raw[0]?.userScores
-      ? [...raw[0].userScores].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
-      : [];
+  const raw = React.useMemo(() => {
+    if (period === "weekly") return data?.weekly ?? [];
+    if (period === "monthly") return data?.monthly ?? [];
+    return data?.allTime ?? [];
+  }, [data, period]);
 
-  // When leaderboard omits user names, fetch them via findPublicUserInfos
-  React.useEffect(() => {
-    const ids =
-      scores
-        .map((us) => us.user?.id)
-        .filter((id): id is string => typeof id === "string") || [];
-    if (ids.length === 0) {
-      setNameMap({});
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      const { data, errors } = await postGraphQL<{
-        findPublicUserInfos?: { id: string; userName: string }[];
-      }>(FIND_PUBLIC_USER_INFOS, { ids });
-      if (errors) {
-        // eslint-disable-next-line no-console
-        console.warn("[Leaderboard] findPublicUserInfos errors:", errors);
-      }
-      if (!cancelled) {
-        const map: Record<string, string> = {};
-        (data?.findPublicUserInfos ?? []).forEach((u) => {
-          if (u.id) map[u.id] = u.userName;
-        });
-        setNameMap(map);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    /* refresh when the score list changes */ JSON.stringify(
-      scores.map((s) => s.user?.id)
-    ),
-  ]);
+  const rawScores = React.useMemo(
+    () => (raw.length > 0 && raw[0]?.userScores ? raw[0].userScores : []),
+    [raw]
+  );
+
+  const scores = React.useMemo(
+    () => [...rawScores].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)),
+    [rawScores]
+  );
 
   // displayUsers logic unchanged
-  const displayUsers: User[] = scores
-    .filter((us) => us.user)
-    .map((us, idx) => {
-      const user = us.user!;
-      return {
-        id: user.id,
-        name: user.name ?? nameMap[user.id] ?? "Unknown",
-        points: us.score ?? 0,
-        rank: idx + 1,
-        isCurrentUser: user.id === data?.currentUserInfo?.id,
-        profileImage: undefined,
-        backgroundImage: undefined,
-      };
-    });
-  const topThree = displayUsers.filter((u) => u.rank <= 3);
-  const others = displayUsers.filter((u) => u.rank > 3);
+  const displayUsers = React.useMemo(
+    () =>
+      scores
+        .filter((us) => us.user)
+        .map((us, idx) => {
+          const user = us.user!;
+          return {
+            id: user.id,
+            name: user.name ?? "Unknown",
+            points: us.score ?? 0,
+            rank: idx + 1,
+            isCurrentUser: user.id === data?.currentUserInfo?.id,
+            profileImage: undefined,
+            backgroundImage: undefined,
+          };
+        }),
+    [scores, data?.currentUserInfo?.id]
+  );
+  const topThree = React.useMemo(
+    () => displayUsers.filter((u) => u.rank <= 3),
+    [displayUsers]
+  );
+  const others = React.useMemo(
+    () => displayUsers.filter((u) => u.rank > 3),
+    [displayUsers]
+  );
 
   type Asset = { id: string; url?: string | null; equipped?: boolean };
   type ColorTheme = {
@@ -479,10 +417,12 @@ export default function Leaderboard({
 
   const env = useRelayEnvironment();
 
+  const idsMemo = React.useMemo(() => {
+    return Array.from(new Set(displayUsers.map((u) => u.id).filter(Boolean)));
+  }, [displayUsers]);
+
   React.useEffect(() => {
-    const ids = Array.from(
-      new Set(displayUsers.map((u) => u.id).filter(Boolean))
-    );
+    const ids = idsMemo;
     if (ids.length === 0) {
       setUserProfilePics({});
       setUserProfileFrames({});
@@ -497,7 +437,7 @@ export default function Leaderboard({
       try {
         const results = await Promise.all(
           ids.map(async (userId) => {
-            const data = await fetchQuery<LeaderboardRowInventoryByUserQuery>(
+            const invRes = await fetchQuery<LeaderboardRowInventoryByUserQuery>(
               env,
               InventoryByUserQuery,
               { userIds: [userId] }
@@ -513,7 +453,7 @@ export default function Leaderboard({
             // je nach Schema das erste Element nehmen:
             const nick = dataNick?.findUserInfos?.[0]?.nickname ?? null;
 
-            const items = data?.inventoriesForUsers[0].items ?? [];
+            const items = invRes?.inventoriesForUsers?.[0]?.items ?? [];
 
             const pics = getPublicProfileItemsMergedCustomID(
               items,
@@ -570,7 +510,7 @@ export default function Leaderboard({
     return () => {
       cancelled = true;
     };
-  }, [env, JSON.stringify(displayUsers.map((u) => u.id))]);
+  }, [idsMemo]);
 
   function userCardStyle(
     userId: string,
