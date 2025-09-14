@@ -550,10 +550,13 @@ function UserInfo({
   const xpRetryRef = useRef(0);
   useEffect(() => {
     if (!levelInfo) return;
-    if (
-      levelInfo.xpInLevel >= levelInfo.xpRequiredForLevelUp &&
-      xpRetryRef.current < 3
-    ) {
+    // Recompute progress correctly from exceedingXP (xpInLevel) and requiredXP (remaining)
+    const remaining = Math.max(0, levelInfo.xpRequiredForLevelUp ?? 0);
+    const gained = Math.max(0, levelInfo.xpInLevel ?? 0);
+    const total = Math.max(1, Math.round(gained + remaining));
+    const perc = Math.round((gained / total) * 100);
+
+    if ((remaining <= 0 || perc >= 100) && xpRetryRef.current < 3) {
       xpRetryRef.current += 1;
       const t = setTimeout(() => fetchXP(), 1200);
       return () => clearTimeout(t);
@@ -563,15 +566,12 @@ function UserInfo({
   }, [levelInfo, fetchXP]);
 
   const level = levelInfo?.level ?? 0;
-  const xpInLevel = levelInfo?.xpInLevel ?? 0;
-  const xpRequired = levelInfo?.xpRequiredForLevelUp ?? 1;
-  const xpInLevelClamped = Math.max(0, Math.min(xpInLevel, xpRequired));
+  const xpInLevel = levelInfo?.xpInLevel ?? 0; // exceedingXP
+  const xpRemaining = Math.max(0, levelInfo?.xpRequiredForLevelUp ?? 0); // requiredXP (rest to level-up)
+  const xpTotalThisLevel = Math.max(1, Math.round(xpInLevel + xpRemaining));
   const percent = Math.max(
     0,
-    Math.min(
-      100,
-      Math.round((xpInLevelClamped / Math.max(1, xpRequired)) * 100)
-    )
+    Math.min(100, Math.round((Math.max(0, xpInLevel) / xpTotalThisLevel) * 100))
   );
   const fmtInt = (n: number) =>
     Math.round(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
@@ -691,7 +691,7 @@ function UserInfo({
             />
             <Typography variant="caption" sx={{ mt: 0.25, display: "block" }}>
               {levelInfo
-                ? `${fmtInt(xpInLevelClamped)} / ${fmtInt(xpRequired)} XP`
+                ? `${fmtInt(xpInLevel)} / ${fmtInt(xpTotalThisLevel)} XP`
                 : "Loading XP…"}
             </Typography>
             <Box sx={{ mt: 1, display: "flex", justifyContent: "center" }}>
