@@ -61,6 +61,7 @@ import {
   ReactElement,
   useCallback,
   useEffect,
+  useRef,
   useState,
   useTransition,
 } from "react";
@@ -468,67 +469,98 @@ function UserInfo({
     xpRequiredForLevelUp: number;
   } | null>(null);
 
+  // central XP fetcher (Relay)
   const relayEnv = useRelayEnvironment();
-  useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      if (!userId) return;
-      if (auth?.isLoading) return;
-
-      try {
-        const query = graphql`
-          query NavbarGetUserXPQuery($userID: ID!) {
-            getUser(userID: $userID) {
-              id
-              name
-              email
-              xpValue
-              requiredXP
-              exceedingXP
-              level
-            }
+  const fetchXP = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const query = graphql`
+        query NavbarGetUserXPQuery($userID: ID!) {
+          getUser(userID: $userID) {
+            id
+            name
+            email
+            xpValue
+            requiredXP
+            exceedingXP
+            level
           }
-        `;
-
-        const levelData = await fetchQuery(relayEnv, query, {
-          userID: userId,
-        }).toPromise();
-
-        const rawUser = (levelData as any)?.getUser;
-        const payload: any = Array.isArray(rawUser)
-          ? rawUser[0] ?? null
-          : rawUser ?? null;
-
-        if (!payload) {
-          if (!cancelled)
-            setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
-          return;
         }
+      `;
+      const levelData = await fetchQuery(relayEnv, query, {
+        userID: userId,
+      }).toPromise();
 
-        const requiredXP = Number(payload.requiredXP ?? 0);
-        const exceedingXP = Number(payload.exceedingXP ?? 0);
-        const level = Number(payload.level ?? 0);
+      const rawUser = (levelData as any)?.getUser;
+      const payload: any = Array.isArray(rawUser)
+        ? rawUser[0] ?? null
+        : rawUser ?? null;
 
-        if (!cancelled) {
-          setLevelInfo({
-            level: Number.isFinite(level) ? level : 0,
-            xpInLevel: Number.isFinite(exceedingXP) ? exceedingXP : 0,
-            xpRequiredForLevelUp:
-              Number.isFinite(requiredXP) && requiredXP > 0 ? requiredXP : 1,
-          });
-        }
-      } catch (e) {
-        console.error("[Navbar XP] fetch failed", e);
-        if (!cancelled)
-          setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
+      if (!payload) {
+        setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
+        return;
       }
-    })();
+      const requiredXP = Number(payload.requiredXP ?? 0);
+      const exceedingXP = Number(payload.exceedingXP ?? 0);
+      const level = Number(payload.level ?? 0);
+      setLevelInfo({
+        level: Number.isFinite(level) ? level : 0,
+        xpInLevel: Number.isFinite(exceedingXP) ? exceedingXP : 0,
+        xpRequiredForLevelUp:
+          Number.isFinite(requiredXP) && requiredXP > 0 ? requiredXP : 1,
+      });
+    } catch (e) {
+      console.error("[Navbar XP] fetch failed", e);
+      setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
+    }
+  }, [relayEnv, userId]);
 
-    return () => {
-      cancelled = true;
+  // initial fetch and on identity changes
+  useEffect(() => {
+    fetchXP();
+  }, [fetchXP]);
+
+  // refresh when window regains focus / becomes visible / custom XP events fire
+  useEffect(() => {
+    const handleFocus = () => fetchXP();
+    const handleVisible = () => {
+      if (document.visibilityState === "visible") fetchXP();
     };
-  }, [userId, auth?.isLoading, relayEnv]);
+    const handleCustom = () => fetchXP(); // dispatch window.dispatchEvent(new Event('xp:updated')) elsewhere
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisible);
+    window.addEventListener("xp:updated", handleCustom as EventListener);
+    window.addEventListener(
+      "meitrex:xp-updated",
+      handleCustom as EventListener
+    );
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisible);
+      window.removeEventListener("xp:updated", handleCustom as EventListener);
+      window.removeEventListener(
+        "meitrex:xp-updated",
+        handleCustom as EventListener
+      );
+    };
+  }, [fetchXP]);
+
+  // If UI shows a full bar (xp >= required), poll a few times to pick up backend level-up
+  const xpRetryRef = useRef(0);
+  useEffect(() => {
+    if (!levelInfo) return;
+    if (
+      levelInfo.xpInLevel >= levelInfo.xpRequiredForLevelUp &&
+      xpRetryRef.current < 3
+    ) {
+      xpRetryRef.current += 1;
+      const t = setTimeout(() => fetchXP(), 1200);
+      return () => clearTimeout(t);
+    }
+    // reset retries once things look normal
+    xpRetryRef.current = 0;
+  }, [levelInfo, fetchXP]);
 
   const level = levelInfo?.level ?? 0;
   const xpInLevel = levelInfo?.xpInLevel ?? 0;

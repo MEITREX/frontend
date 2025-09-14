@@ -422,7 +422,7 @@ export default function Leaderboard({
       try {
         const results = await Promise.all(
           ids.map(async (userId) => {
-            const data = await fetchQuery<LeaderboardRowInventoryByUserQuery>(
+            const invRes = await fetchQuery<LeaderboardRowInventoryByUserQuery>(
               env,
               InventoryByUserQuery,
               { userIds: [userId] }
@@ -438,7 +438,7 @@ export default function Leaderboard({
             // je nach Schema das erste Element nehmen:
             const nick = dataNick?.findUserInfos?.[0]?.nickname ?? null;
 
-            const items = data?.inventoriesForUsers[0].items ?? [];
+            const items = invRes?.inventoriesForUsers?.[0]?.items ?? [];
 
             const pics = getPublicProfileItemsMergedCustomID(
               items,

@@ -108,7 +108,7 @@ const LeaderboardWidget: React.FC<Props> = ({
   return (
     <WidgetWrapper
       title="Leaderboard"
-      linkHref="/profile/leaderboards"
+      linkHref="/profile/leaderboard"
       linkLabel="Leaderboards"
       overflow="auto"
     >
