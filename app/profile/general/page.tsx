@@ -1,6 +1,7 @@
 "use client";
 
 import { pagePrivateProfileStudentGeneralQuery } from "@/__generated__/pagePrivateProfileStudentGeneralQuery.graphql";
+import { pagePrivateProfileStudentGeneral_GetUserXPQuery } from "@/__generated__/pagePrivateProfileStudentGeneral_GetUserXPQuery.graphql";
 import {
   Box,
   Tab,
@@ -10,9 +11,8 @@ import {
   Stack,
 } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { useAuth } from "react-oidc-context";
-import { fetchQuery, useLazyLoadQuery, useRelayEnvironment } from "react-relay";
+import { useMemo } from "react";
+import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import GeneralPage from "../GeneralPage";
 import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
@@ -46,8 +46,6 @@ const getUserXPQuery = graphql`
 export default function GeneralPageWrapper() {
   const router = useRouter();
   const pathname = usePathname();
-  const auth = useAuth();
-  const relayEnv = useRelayEnvironment();
 
   const activeIndex = tabs.findIndex((tab) => pathname.includes(tab.path));
 
@@ -72,61 +70,30 @@ export default function GeneralPageWrapper() {
       {}
     );
 
-  // 2) Runtime-Queries: (a) User XP/Level
-  const [levelInfo, setLevelInfo] = useState<UserLevelInfo | null>(null);
-  const [loadingLevel, setLoadingLevel] = useState<boolean>(false);
+  const xpData = useLazyLoadQuery<
+    pagePrivateProfileStudentGeneral_GetUserXPQuery
+  >(getUserXPQuery, { userID: currentUserInfo.id }, { fetchPolicy: "network-only" });
 
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      if (!currentUserInfo?.id) return;
-
-      setLoadingLevel(true);
-
-      try {
-        const result = await fetchQuery(relayEnv, getUserXPQuery, {
-          userID: currentUserInfo.id,
-        }).toPromise();
-
-        if (!cancelled) {
-          const payload = (result as any)?.getUser;
-          const u = Array.isArray(payload) ? payload[0] : payload;
-          if (u) {
-            setLevelInfo({
-              level: Number(u.level ?? 0),
-              requiredXP: Math.max(1, Math.round(Number(u.requiredXP ?? 1))),
-              exceedingXP: Math.max(0, Math.round(Number(u.exceedingXP ?? 0))),
-            });
-          } else {
-            console.warn(
-              "[XP] getUser returned empty payload for",
-              currentUserInfo?.id,
-              result
-            );
-            setLevelInfo({ level: 0, requiredXP: 1, exceedingXP: 0 });
-          }
-        }
-      } finally {
-        if (!cancelled) setLoadingLevel(false);
-      }
+  const levelInfo = useMemo<UserLevelInfo>(() => {
+    const payload: any = xpData?.getUser;
+    const u = Array.isArray(payload) ? payload[0] : payload;
+    return {
+      level: Number(u?.level ?? 0),
+      requiredXP: Math.max(1, Math.round(Number(u?.requiredXP ?? 1))),
+      exceedingXP: Math.max(0, Math.round(Number(u?.exceedingXP ?? 0))),
     };
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [currentUserInfo?.id, relayEnv]);
+  }, [xpData]);
 
   const levelIconSrc = useMemo(() => {
-    const lvl = Math.max(0, Math.min(99, levelInfo?.level ?? 0));
+    const lvl = Math.max(0, Math.min(99, levelInfo.level));
     return `/levels/level_${String(lvl)}.svg`;
-  }, [levelInfo?.level]);
+  }, [levelInfo.level]);
 
   const progressPct = useMemo(() => {
-    const required = Math.max(1, levelInfo?.requiredXP ?? 1);
-    const have = Math.max(0, levelInfo?.exceedingXP ?? 0);
+    const required = Math.max(1, levelInfo.requiredXP);
+    const have = Math.max(0, levelInfo.exceedingXP);
     return Math.max(0, Math.min(100, Math.round((have / required) * 100)));
-  }, [levelInfo?.requiredXP, levelInfo?.exceedingXP]);
+  }, [levelInfo.requiredXP, levelInfo.exceedingXP]);
 
   return (
     <Box sx={{ p: 2 }}>
@@ -142,17 +109,13 @@ export default function GeneralPageWrapper() {
         >
           <img
             src={levelIconSrc}
-            alt={`Level ${levelInfo?.level ?? 0}`}
+            alt={`Level ${levelInfo.level}`}
             width={48}
             height={48}
             style={{ display: "block" }}
           />
           <Typography variant="body2" color="text.secondary">
-            {loadingLevel
-              ? "Loading XP…"
-              : `Level ${levelInfo?.level ?? 0} · ${Math.round(
-                  levelInfo?.exceedingXP ?? 0
-                )} / ${Math.max(1, Math.round(levelInfo?.requiredXP ?? 1))} XP`}
+            {`Level ${levelInfo.level} · ${Math.round(levelInfo.exceedingXP)} / ${Math.max(1, Math.round(levelInfo.requiredXP))} XP`}
           </Typography>
         </Stack>
         <LinearProgress

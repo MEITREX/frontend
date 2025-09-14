@@ -24,7 +24,8 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
-import { useLazyLoadQuery } from "react-relay";
+import { fetchQuery, useLazyLoadQuery, useRelayEnvironment } from "react-relay";
+
 import { graphql } from "relay-runtime";
 import { pagePublicProfileUserXPQuery } from "@/__generated__/pagePublicProfileUserXPQuery.graphql";
 
@@ -49,77 +50,6 @@ function startOfMonth(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), 1);
 }
 
-async function postGraphQL<TData>(
-  query: string,
-  variables: Record<string, any>
-): Promise<{ data?: TData; errors?: any[] }> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      // Wenn der Token global abgelegt ist (z.B. via window.__AUTH_TOKEN__), nutzen:
-      ...(typeof window !== "undefined" && (window as any).__AUTH_TOKEN__
-        ? { Authorization: `Bearer ${(window as any).__AUTH_TOKEN__}` }
-        : {}),
-    },
-    body: JSON.stringify({ query, variables }),
-    credentials: "include",
-  });
-
-  try {
-    return (await res.json()) as any;
-  } catch (e) {
-    return { errors: [{ message: "Failed to parse GraphQL response" }] } as any;
-  }
-}
-
-const COURSE_LB_QUERY = `
-  query PublicProfileCourseLB($courseID: ID!, $weeklyDate: String!, $monthlyDate: String!, $allTimeDate: String!) {
-    weekly: getWeeklyCourseLeaderboards(courseID: $courseID, date: $weeklyDate) {
-      id
-      title
-      startDate
-      period
-      userScores {
-        id
-        score
-        user { id name }
-      }
-    }
-    monthly: getMonthlyCourseLeaderboards(courseID: $courseID, date: $monthlyDate) {
-      id
-      title
-      startDate
-      period
-      userScores {
-        id
-        score
-        user { id name }
-      }
-    }
-    allTime: getAllTimeCourseLeaderboards(courseID: $courseID, date: $allTimeDate) {
-      id
-      title
-      startDate
-      period
-      userScores {
-        id
-        score
-        user { id name }
-      }
-    }
-  }
-`;
-
-const FIND_PUBLIC_USER_INFOS = `
-  query PublicUserInfos($ids: [UUID!]!) {
-    findPublicUserInfos(ids: $ids) {
-      id
-      userName
-    }
-  }
-`;
-
 const PublicProfileUserXPQueryGQL = graphql`
   query pagePublicProfileUserXPQuery($userID: ID!) {
     getUser(userID: $userID) {
@@ -128,6 +58,76 @@ const PublicProfileUserXPQueryGQL = graphql`
       requiredXP
       exceedingXP
       level
+    }
+  }
+`;
+
+const PagePublicProfileCourseLBQueryGQL = graphql`
+  query pagePublicProfileCourseLBQuery(
+    $courseID: ID!
+    $weeklyDate: String!
+    $monthlyDate: String!
+    $allTimeDate: String!
+  ) {
+    weekly: getWeeklyCourseLeaderboards(
+      courseID: $courseID
+      date: $weeklyDate
+    ) {
+      id
+      title
+      startDate
+      period
+      userScores {
+        id
+        score
+        user {
+          id
+          name
+        }
+      }
+    }
+    monthly: getMonthlyCourseLeaderboards(
+      courseID: $courseID
+      date: $monthlyDate
+    ) {
+      id
+      title
+      startDate
+      period
+      userScores {
+        id
+        score
+        user {
+          id
+          name
+        }
+      }
+    }
+    allTime: getAllTimeCourseLeaderboards(
+      courseID: $courseID
+      date: $allTimeDate
+    ) {
+      id
+      title
+      startDate
+      period
+      userScores {
+        id
+        score
+        user {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+const PagePublicProfileManyUserInfosQueryGQL = graphql`
+  query pagePublicProfileManyUserInfosQuery($ids: [UUID!]!) {
+    findPublicUserInfos(ids: $ids) {
+      id
+      userName
     }
   }
 `;
@@ -182,6 +182,7 @@ export default function PublicProfilePage() {
 
   const params = useParams();
   const userId = params?.userId as string;
+  const relayEnv = useRelayEnvironment();
 
   // Fetch XP/Level for the viewed user via Relay (no manual fetch)
   const xpData = useLazyLoadQuery<pagePublicProfileUserXPQuery>(
@@ -303,25 +304,20 @@ export default function PublicProfilePage() {
       const result: Record<string, any> = {};
 
       for (const m of sharedMemberships) {
-        const { data, errors } = await postGraphQL<{
-          weekly?: any[];
-          monthly?: any[];
-          allTime?: any[];
-        }>(COURSE_LB_QUERY, {
-          courseID: m.courseId,
-          weeklyDate: weeklyDateISO,
-          monthlyDate: monthlyDateISO,
-          allTimeDate: allTimeDateISO,
-        });
+        const lbData = await fetchQuery(
+          relayEnv,
+          PagePublicProfileCourseLBQueryGQL,
+          {
+            courseID: m.courseId,
+            weeklyDate: weeklyDateISO,
+            monthlyDate: monthlyDateISO,
+            allTimeDate: allTimeDateISO,
+          }
+        ).toPromise();
 
-        if (errors) {
-          // eslint-disable-next-line no-console
-          console.warn("[PublicProfile LB] GraphQL errors", errors);
-        }
-
-        const weeklyRaw = data?.weekly ?? [];
-        const monthlyRaw = data?.monthly ?? [];
-        const allTimeRaw = data?.allTime ?? [];
+        const weeklyRaw = (lbData as any)?.weekly ?? [];
+        const monthlyRaw = (lbData as any)?.monthly ?? [];
+        const allTimeRaw = (lbData as any)?.allTime ?? [];
 
         // Collect all unique user ids from the three boards
         const idSet = new Set<string>();
@@ -334,10 +330,15 @@ export default function PublicProfilePage() {
         // Fetch public user infos for any ids we saw
         let publicInfos: Array<{ id: string; userName: string }> = [];
         if (idSet.size > 0) {
-          const { data: piData } = await postGraphQL<{
-            findPublicUserInfos: Array<{ id: string; userName: string }>;
-          }>(FIND_PUBLIC_USER_INFOS, { ids: Array.from(idSet) });
-          publicInfos = piData?.findPublicUserInfos ?? [];
+          const piData = await fetchQuery(
+            relayEnv,
+            PagePublicProfileManyUserInfosQueryGQL,
+            { ids: Array.from(idSet) }
+          ).toPromise();
+          publicInfos = ((piData as any)?.findPublicUserInfos ?? []) as Array<{
+            id: string;
+            userName: string;
+          }>;
         }
 
         // Build name map (prefer names coming directly from scores)
