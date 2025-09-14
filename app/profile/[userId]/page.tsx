@@ -18,7 +18,7 @@ import {
   LinearProgress,
   Tab,
   Tabs,
-  Typography
+  Typography,
 } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -220,7 +220,6 @@ export default function PublicProfilePage() {
           id
           userName
         }
-
       }
     `,
     { id: [userId] }
