@@ -24,6 +24,7 @@ export type DecorationItem = {
   equipped: boolean;
   unlockedTime: string | null;
   obtainableInShop: boolean | null;
+  catalogItemId: string | null;
 };
 
 interface RarityStyle {

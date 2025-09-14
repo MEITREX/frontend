@@ -13,7 +13,7 @@ import {
 } from "react-relay";
 import defaultUserImage from "../../assets/logo.svg";
 import { HoverCard } from "../HoverCard";
-import { getPublicProfileItemsMerged } from "../items/logic/GetItems";
+import { getPublicProfileItemsMergedCustomID } from "../items/logic/GetItems";
 
 const buildProfileHref = (id: string) => `/profile/${id}`;
 
@@ -243,13 +243,17 @@ export default function Leaderboard({
   `;
 
   const InventoryByUserQuery = graphql`
-    query LeaderboardRowInventoryByUserQuery($userId: UUID!) {
-      itemsByUserId(userId: $userId) {
-        equipped
-        id
-        uniqueDescription
-        unlocked
-        unlockedTime
+    query LeaderboardRowInventoryByUserQuery($userIds: [UUID!]!) {
+      inventoriesForUsers(userIds: $userIds) {
+        items {
+          equipped
+          catalogItemId: id
+          uniqueDescription
+          unlocked
+          unlockedTime
+        }
+        unspentPoints
+        userId
       }
     }
   `;
@@ -421,7 +425,7 @@ export default function Leaderboard({
             const data = await fetchQuery<LeaderboardRowInventoryByUserQuery>(
               env,
               InventoryByUserQuery,
-              { userId }
+              { userIds: [userId] }
             ).toPromise();
 
             // Public Info Query
@@ -434,15 +438,21 @@ export default function Leaderboard({
             // je nach Schema das erste Element nehmen:
             const nick = dataNick?.findUserInfos?.[0]?.nickname ?? null;
 
-            const items = data?.itemsByUserId ?? [];
+            const items = data?.inventoriesForUsers[0].items ?? [];
 
-            const pics = getPublicProfileItemsMerged(items, "profilePics");
-            const frames = getPublicProfileItemsMerged(
+            const pics = getPublicProfileItemsMergedCustomID(
+              items,
+              "profilePics"
+            );
+            const frames = getPublicProfileItemsMergedCustomID(
               items,
               "profilePicFrames"
             );
-            const colors = getPublicProfileItemsMerged(items, "colorThemes");
-            const patterns = getPublicProfileItemsMerged(
+            const colors = getPublicProfileItemsMergedCustomID(
+              items,
+              "colorThemes"
+            );
+            const patterns = getPublicProfileItemsMergedCustomID(
               items,
               "patternThemes"
             );
@@ -635,7 +645,7 @@ export default function Leaderboard({
                 "#000000ff"
               }
               nickname={userNickname[user.id] ?? "Unkown"}
-              patternThemeBool={userPatternThemes[user.id] != null}
+              patternThemeBool={userPatternThemes[user.id]?.url != null}
               frameBool={assetSrc(userProfileFrames[user.id]) != null}
               frame={assetSrc(userProfileFrames[user.id]) ?? "Unknown"}
               profilePic={
@@ -676,6 +686,7 @@ export default function Leaderboard({
                     textAlign: "center",
                     fontSize: 18,
                     fontWeight: isCurrent ? 900 : 700,
+                    color: userCardStyle(user.id).color,
                   }}
                 >
                   {user.rank}.
@@ -738,7 +749,7 @@ export default function Leaderboard({
                     justifyContent: "center",
                     gap: 6,
                     fontWeight: isCurrent ? 900 : 700,
-                    color: "inherit",
+                    color: userCardStyle(user.id).color,
                     fontSize: 18,
                     letterSpacing: ".5px",
                   }}
@@ -751,7 +762,7 @@ export default function Leaderboard({
                   style={{
                     minWidth: 80,
                     textAlign: "right",
-                    color: "inherit",
+                    color: userCardStyle(user.id).color,
                     fontWeight: isCurrent ? 900 : 700,
                     fontSize: 18,
                   }}
@@ -804,7 +815,7 @@ export default function Leaderboard({
                   "#000000ff"
                 }
                 nickname={userNickname[user.id] ?? "Unkown"}
-                patternThemeBool={userPatternThemes[user.id] != null}
+                patternThemeBool={userPatternThemes[user.id]?.url != null}
                 frameBool={assetSrc(userProfileFrames[user.id]) != null}
                 frame={assetSrc(userProfileFrames[user.id]) ?? "Unknown"}
                 profilePic={
@@ -847,6 +858,7 @@ export default function Leaderboard({
                         textAlign: "center",
                         fontSize: 18,
                         fontWeight: isCurrent ? 900 : 700,
+                        color: userCardStyle(user.id).color,
                       }}
                     >
                       {user.rank}.
@@ -914,7 +926,7 @@ export default function Leaderboard({
                       justifyContent: "center",
                       gap: 6,
                       fontWeight: isCurrent ? 900 : 700,
-                      color: "inherit",
+                      color: userCardStyle(user.id).color,
                       fontSize: 18,
                       letterSpacing: ".5px",
                     }}
@@ -926,7 +938,7 @@ export default function Leaderboard({
                     style={{
                       minWidth: 80,
                       textAlign: "right",
-                      color: isCurrent ? "#222" : "#79869a",
+                      color: userCardStyle(user.id).color,
                       fontWeight: isCurrent ? 800 : 600,
                       fontSize: 18,
                     }}

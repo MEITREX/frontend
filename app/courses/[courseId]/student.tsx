@@ -38,9 +38,13 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
+import { studentPrivateProfileStudentGeneralQuery } from "@/__generated__/studentPrivateProfileStudentGeneralQuery.graphql";
 import CourseLeaderboards from "@/components/leaderboard/CourseLeaderboard";
+
+import WidgetSkeleton from "@/components/widgets/Skeleton/WidgetSkeleton";
 import * as React from "react";
 import { Suspense, useEffect, useState } from "react";
+import { useAuth } from "react-oidc-context";
 import QuestList from "./quests/QuestItem";
 
 function CustomTabPanel(props: TabPanelProps) {
@@ -92,6 +96,23 @@ export default function StudentCoursePage() {
 
   const router = useRouter();
   const [error, setError] = useState<any>(null);
+
+  // 1) UserID stabil über Relay
+  const { currentUserInfo } =
+    useLazyLoadQuery<studentPrivateProfileStudentGeneralQuery>(
+      graphql`
+        query studentPrivateProfileStudentGeneralQuery {
+          currentUserInfo {
+            id
+            lastName
+            firstName
+            userName
+            nickname
+          }
+        }
+      `,
+      {}
+    );
 
   // Fetch course data
   const {
@@ -225,6 +246,13 @@ export default function StudentCoursePage() {
     }
   }, [course?.id, studentUserLogin]);
 
+  const auth = useAuth();
+
+  const tokenRef = React.useRef<string | undefined>(auth.user?.access_token);
+  useEffect(() => {
+    tokenRef.current = auth.user?.access_token;
+  }, [auth.user?.access_token]);
+
   if (coursesByIds.length == 0) {
     return <PageError message="No course found with given id." />;
   }
@@ -354,7 +382,9 @@ export default function StudentCoursePage() {
         </Box>
 
         <CustomTabPanel value={value} index={0}>
-          <WidgetsOverview userId={userId} courseId={course.id} />
+          <Suspense fallback={<WidgetSkeleton />}>
+            <WidgetsOverview userId={currentUserInfo.id} courseId={course.id} />
+          </Suspense>
           <ChapterOverview _chapters={course} />
         </CustomTabPanel>
 

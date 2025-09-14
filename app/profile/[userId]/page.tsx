@@ -2,29 +2,33 @@
 
 import { ForumApiUserInfoByIdQuery } from "@/__generated__/ForumApiUserInfoByIdQuery.graphql";
 import { pagePublicProfileStudentQuery } from "@/__generated__/pagePublicProfileStudentQuery.graphql";
+import { pageUserAchievementsPublicProfileQuery } from "@/__generated__/pageUserAchievementsPublicProfileQuery.graphql";
 import { SortProvider } from "@/app/contexts/SortContext";
 import { CombinedLeaderboardCard } from "@/app/profile/leaderboard/ProfileLeaderboardPositions";
 import { forumApiUserInfoByIdQuery } from "@/components/forum/api/ForumApi";
+import AchievementList from "@/components/profile/AchievementList";
 import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
 import UserProfileCustomHeader from "@/components/profile/header/UserProfileCustomHeader";
 import ProfileInventorySection from "@/components/profile/items/ProfileInventorySection";
+import { NavigateBefore } from "@mui/icons-material";
 import {
   Avatar,
   Box,
+  Button,
   Grid,
   Tab,
   Tabs,
   Typography,
   LinearProgress,
 } from "@mui/material";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useAuth } from "react-oidc-context";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
-
 import { pagePublicProfileUserXPQuery } from "@/__generated__/pagePublicProfileUserXPQuery.graphql";
 
-// ---- Leaderboard helpers & runtime GraphQL fetch (date handling matches main LB) ----
+const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
 function toLocalISODate(d: Date): string {
@@ -166,6 +170,8 @@ function enrichScoresWithNames(
 }
 
 export default function PublicProfilePage() {
+  const router = useRouter(); // Hook holen
+
   const publicTabs = [
     "Achievements",
     "Forum",
@@ -226,6 +232,35 @@ export default function PublicProfilePage() {
       id: userId,
     }
   );
+
+  const { achievementsByUserId } =
+    useLazyLoadQuery<pageUserAchievementsPublicProfileQuery>(
+      graphql`
+        query pageUserAchievementsPublicProfileQuery($id: UUID!) {
+          achievementsByUserId(userId: $id) {
+            id
+            name
+            imageUrl
+            description
+            courseId
+            userId
+            completed
+            requiredCount
+            completedCount
+            trackingStartTime
+            trackingEndTime
+          }
+        }
+      `,
+      { id: userId },
+      {
+        fetchPolicy: "network-only",
+      }
+    );
+
+  console.log(achievementsByUserId);
+
+  const mutableAchievements = [...achievementsByUserId];
 
   const findPublicUserInfos = data.findPublicUserInfos;
   // Fallback to empty object when backend is down
@@ -349,8 +384,25 @@ export default function PublicProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(sharedMemberships), viewedSafe.id, currentUserInfo.id]);
 
+  const auth = useAuth();
+
+  const tokenRef = React.useRef<string | undefined>(auth.user?.access_token);
+  useEffect(() => {
+    tokenRef.current = auth.user?.access_token;
+  }, [auth.user?.access_token]);
+
   return (
     <Box sx={{ p: 4 }}>
+      <Button
+        onClick={() => router.back()}
+        component="a"
+        variant="text"
+        startIcon={<NavigateBefore sx={{ color: "text.primary" }} />}
+        sx={{ mb: 2, color: "#000000" }}
+      >
+        Back
+      </Button>
+
       <UserProfileCustomHeader
         displayName={userInfos.findUserInfos[0]?.nickname as string}
       />
@@ -429,9 +481,12 @@ export default function PublicProfilePage() {
 
       {/* Tab-Inhalte */}
       <Box>
-        {tabIndex === 0 &&
-          // Achievements (kept disabled until backend is ready)
-          null}
+        {tabIndex === 0 && (
+          <AchievementList
+            achievements={mutableAchievements}
+            profileTypeSortString={"achieved"}
+          />
+        )}
 
         {tabIndex === 1 && <OtherUserProfileForumActivity />}
         {tabIndex === 2 && (
@@ -450,8 +505,8 @@ export default function PublicProfilePage() {
             )}
             {!loadingLB && sharedMemberships.length === 0 && (
               <Typography variant="body2" color="text.secondary">
-                Ihr habt aktuell keine gemeinsamen Kurse – keine
-                Leaderboard-Überschneidungen.
+                No common courses with the user can be found – no leaderboard
+                entries available.
               </Typography>
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>
