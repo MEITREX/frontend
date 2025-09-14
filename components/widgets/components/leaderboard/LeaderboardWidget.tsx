@@ -1,11 +1,19 @@
 import type { LeaderboardWidgetQuery } from "@/__generated__/LeaderboardWidgetQuery.graphql";
 import React, { useEffect, useMemo, useRef } from "react";
-import { graphql, useLazyLoadQuery } from "react-relay";
+import {
+  fetchQuery,
+  graphql,
+  useLazyLoadQuery,
+  useRelayEnvironment,
+} from "react-relay";
 //import defaultUserImage from "../../assets/logo.svg";
-import defaultUserImage from "@/assets/logo.svg";
-import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
-import WidgetFeedback from "@/components/widgets/common/WidgetFeedback";
+import { LeaderboardWidgetRowInventoryByUserQuery } from "@/__generated__/LeaderboardWidgetRowInventoryByUserQuery.graphql";
+import { LeaderboardWidgetRowPublicInfoQuery } from "@/__generated__/LeaderboardWidgetRowPublicInfoQuery.graphql";
 import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
+import defaultUserImage from "@/assets/logo.svg";
+import { getPublicProfileItemsMergedCustomID } from "@/components/items/logic/GetItems";
+import WidgetFeedback from "@/components/widgets/common/WidgetFeedback";
+import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
 
 interface Props {
   courseID: string;
@@ -64,6 +72,30 @@ const LeaderboardWidget: React.FC<Props> = ({
     { courseID: courseID ?? "", date: weeklyDateISO }
   );
 
+  const InventoryByUserQuery = graphql`
+    query LeaderboardWidgetRowInventoryByUserQuery($userIds: [UUID!]!) {
+      inventoriesForUsers(userIds: $userIds) {
+        items {
+          equipped
+          catalogItemId: id
+          uniqueDescription
+          unlocked
+          unlockedTime
+        }
+        unspentPoints
+        userId
+      }
+    }
+  `;
+
+  const PublicInfoQuery = graphql`
+    query LeaderboardWidgetRowPublicInfoQuery($id: [UUID!]!) {
+      findUserInfos(ids: $id) {
+        nickname
+      }
+    }
+  `;
+
   const weeklyList = data.weekly ?? [];
   const selectedWeekly =
     weeklyList.find((lb) => lb?.startDate?.slice(0, 10) === weeklyDateISO) ||
@@ -71,7 +103,10 @@ const LeaderboardWidget: React.FC<Props> = ({
   const rawScores = selectedWeekly?.userScores ?? [];
   const noData = rawScores.length === 0;
 
-  const sorted = [...rawScores].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  const sorted = React.useMemo(
+    () => [...rawScores].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)),
+    [rawScores]
+  );
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const currentRef = useRef<HTMLDivElement | null>(null);
@@ -104,6 +139,149 @@ const LeaderboardWidget: React.FC<Props> = ({
     const start = Math.max(0, userIndex - 2);
     windowList = sorted.slice(start, userIndex + 3);
   }
+
+  type Asset = { id: string; url?: string | null; equipped?: boolean };
+  type ColorTheme = {
+    id: string;
+    backColor?: string | null;
+    foreColor?: string | null;
+    equipped?: boolean;
+  };
+  type PatternTheme = {
+    id: string;
+    url?: string | null;
+    foreColor?: string | null;
+    equipped?: boolean;
+  };
+
+  const [userProfilePics, setUserProfilePics] = React.useState<
+    Record<string, Asset | null>
+  >({});
+  const [userProfileFrames, setUserProfileFrames] = React.useState<
+    Record<string, Asset | null>
+  >({});
+  const [userColorThemes, setUserColorThemes] = React.useState<
+    Record<string, ColorTheme | null>
+  >({});
+  const [userPatternThemes, setUserPatternThemes] = React.useState<
+    Record<string, PatternTheme | null>
+  >({});
+  const [userNickname, setUserNickname] = React.useState<
+    Record<string, string | null>
+  >({});
+
+  function assetSrc(
+    a?: { url?: string | null; id?: string } | null,
+    fallback?: string
+  ) {
+    const raw = a?.url ?? a?.id;
+    if (!raw) return fallback;
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return raw;
+    }
+  }
+
+  const env = useRelayEnvironment();
+
+  const idsMemo = React.useMemo(() => {
+    return Array.from(new Set(sorted.map((u) => u.user?.id).filter(Boolean)));
+  }, [sorted]);
+
+  React.useEffect(() => {
+    const ids = idsMemo;
+    if (ids.length === 0) {
+      setUserProfilePics({});
+      setUserProfileFrames({});
+      setUserColorThemes({});
+      setUserPatternThemes({});
+      setUserNickname({});
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const results = await Promise.all(
+          ids.map(async (userId) => {
+            const invRes =
+              await fetchQuery<LeaderboardWidgetRowInventoryByUserQuery>(
+                env,
+                InventoryByUserQuery,
+                { userIds: [userId ?? "n.A."] }
+              ).toPromise();
+
+            // Public Info Query
+            const dataNick =
+              await fetchQuery<LeaderboardWidgetRowPublicInfoQuery>(
+                env,
+                PublicInfoQuery,
+                { id: [userId ?? "n.A."] }
+              ).toPromise();
+
+            // je nach Schema das erste Element nehmen:
+            const nick = dataNick?.findUserInfos?.[0]?.nickname ?? null;
+
+            const items = invRes?.inventoriesForUsers?.[0]?.items ?? [];
+
+            const pics = getPublicProfileItemsMergedCustomID(
+              items,
+              "profilePics"
+            );
+            const frames = getPublicProfileItemsMergedCustomID(
+              items,
+              "profilePicFrames"
+            );
+            const colors = getPublicProfileItemsMergedCustomID(
+              items,
+              "colorThemes"
+            );
+            const patterns = getPublicProfileItemsMergedCustomID(
+              items,
+              "patternThemes"
+            );
+
+            const pic = pics.find((it: any) => it.equipped) ?? null;
+            const frame = frames.find((it: any) => it.equipped) ?? null;
+            const color = colors.find((it: any) => it.equipped) ?? null;
+            const pattern = patterns.find((it: any) => it.equipped) ?? null;
+
+            return [userId, pic, frame, color, pattern, nick] as const;
+          })
+        );
+
+        if (!cancelled) {
+          const picsMap: Record<string, Asset | null> = {};
+          const framesMap: Record<string, Asset | null> = {};
+          const colorsMap: Record<string, ColorTheme | null> = {};
+          const patternsMap: Record<string, PatternTheme | null> = {};
+          const nicksMap: Record<string, string | null> = {};
+
+          for (const [id, pic, frame, color, pattern, nick] of results) {
+            picsMap[id ?? "n.A."] = pic;
+            framesMap[id ?? "n.A."] = frame;
+            colorsMap[id ?? "n.A."] = color;
+            patternsMap[id ?? "n.A."] = pattern;
+            nicksMap[id ?? "n.A."] = nick;
+          }
+
+          setUserProfilePics(picsMap);
+          setUserProfileFrames(framesMap);
+          setUserColorThemes(colorsMap);
+          setUserPatternThemes(patternsMap);
+          setUserNickname(nicksMap);
+        }
+      } catch (e) {
+        console.warn("[Leaderboard] per-user inventory fetch failed:", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [env, idsMemo]);
+
+  console.log(userNickname);
 
   return (
     <WidgetWrapper
@@ -144,7 +322,10 @@ const LeaderboardWidget: React.FC<Props> = ({
                   {idx + 1}.
                 </span>
                 <img
-                  src={defaultUserImage.src}
+                  src={
+                    assetSrc(userProfilePics[us.user?.id ?? ""]) ??
+                    defaultUserImage.src
+                  }
                   alt={us.user?.name ?? "User avatar"}
                   style={{
                     width: 24,
@@ -153,7 +334,11 @@ const LeaderboardWidget: React.FC<Props> = ({
                     marginRight: 8,
                   }}
                 />
-                <span style={{ fontWeight: 600 }}>{us.user?.name}</span>
+                <span style={{ fontWeight: 600 }}>
+                  {userNickname[us.user?.id ?? ""] ??
+                    us.user?.name ??
+                    "Unknown"}
+                </span>
                 <span style={{ marginLeft: "auto" }}>{us.score}</span>
               </div>
             ))}
@@ -190,7 +375,10 @@ const LeaderboardWidget: React.FC<Props> = ({
                 >
                   <span style={{ width: 20, textAlign: "right" }}>{rank}.</span>
                   <img
-                    src={defaultUserImage.src}
+                    src={
+                      assetSrc(userProfilePics[us.user?.id ?? ""]) ??
+                      defaultUserImage.src
+                    }
                     alt={us.user?.name ?? "User avatar"}
                     style={{
                       width: 20,
@@ -200,7 +388,9 @@ const LeaderboardWidget: React.FC<Props> = ({
                     }}
                   />
                   <span style={{ flex: 1, textAlign: "left" }}>
-                    {us.user?.name}
+                    {userNickname[us.user?.id ?? ""] ??
+                      us.user?.name ??
+                      "Unknown"}
                   </span>
                   <span style={{ marginLeft: 8 }}>{us.score}</span>
                 </div>

@@ -328,16 +328,21 @@ export default function Leaderboard({
     : periodLabel;
 
   // Scores depend on data, but keep logic unchanged
-  const raw =
-    period === "weekly"
-      ? data?.weekly
-      : period === "monthly"
-      ? data?.monthly
-      : data?.allTime;
-  const scores =
-    raw && raw.length > 0 && raw[0]?.userScores
-      ? [...raw[0].userScores].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
-      : [];
+  const raw = React.useMemo(() => {
+    if (period === "weekly") return data?.weekly ?? [];
+    if (period === "monthly") return data?.monthly ?? [];
+    return data?.allTime ?? [];
+  }, [data, period]);
+
+  const rawScores = React.useMemo(
+    () => (raw.length > 0 && raw[0]?.userScores ? raw[0].userScores : []),
+    [raw]
+  );
+
+  const scores = React.useMemo(
+    () => [...rawScores].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)),
+    [rawScores]
+  );
 
   // displayUsers logic unchanged
   const displayUsers: User[] = scores
@@ -354,8 +359,14 @@ export default function Leaderboard({
         backgroundImage: undefined,
       };
     });
-  const topThree = displayUsers.filter((u) => u.rank <= 3);
-  const others = displayUsers.filter((u) => u.rank > 3);
+  const topThree = React.useMemo(
+    () => displayUsers.filter((u) => u.rank <= 3),
+    [displayUsers]
+  );
+  const others = React.useMemo(
+    () => displayUsers.filter((u) => u.rank > 3),
+    [displayUsers]
+  );
 
   type Asset = { id: string; url?: string | null; equipped?: boolean };
   type ColorTheme = {
