@@ -17,6 +17,9 @@ keycloak-build:
 	docker compose -f $(ComposeFile) --project-name $(ProjectName) build $(KeycloakContainer)
 keycloak-stop:
 	docker compose -f $(ComposeFile) --project-name $(ProjectName) stop $(KeycloakContainer)
+keycloak-theme-build:
+	npm install
+	npm run keycloak-build-theme
 frontend-start:
 	docker compose -f $(ComposeFile) --project-name $(ProjectName) up -d $(FrontendContainer)
 frontend-build:

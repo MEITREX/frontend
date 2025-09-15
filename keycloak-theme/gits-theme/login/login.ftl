@@ -10,11 +10,6 @@
             }
         </script>
     <#elseif section = "welcome">
-        <div class="login-left">
-            <img class="logo" src="${url.resourcesPath}/img/logo.png" alt="Meitrex">
-            <p class="application-welcome-text">Welcome to</p>
-            <p class="application-name">MEITREX</p>
-        </div>
     <#elseif section = "form">
         <p class="login-title">${msg("loginAccountTitle")}</p>
         <#if realm.password>
@@ -31,12 +26,19 @@
                 </div>
                 <input class="submit" type="submit" value="${msg("doLogIn")}" tabindex="0">
                 <#if realm.registrationAllowed>
-                    <div class="register-link">
+                    <div class="action-link register-link">
                         <span>${msg("noAccount")} <a tabindex="6" href="${url.registrationUrl}">${msg("doRegister")}</a></span>
                     </div>
                 </#if>
             </form>
         </#if>
+        <div class="${properties.kcFormOptionsWrapperClass!} mt-sm">
+            <#if realm.resetPasswordAllowed>
+                <span class="action-link"><a tabindex="5" href="${url.loginResetCredentialsUrl}">
+                    ${msg("doForgotPassword")}
+                </a></span>
+            </#if>
+        </div>
         <#if social.providers?? && social.providers?has_content>
             <div id="social-providers">
                 <#list social.providers as p>
