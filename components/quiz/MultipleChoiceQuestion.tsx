@@ -49,7 +49,15 @@ export function MultipleChoiceQuestion({
     );
   }
 
-  const questionPlainText = getPlainTextOfSlateJS(question.text);
+  function buildHintInput() {
+    const questionText = getPlainTextOfSlateJS(question.text);
+    const answers = question.answers.map((answer) => {
+      return getPlainTextOfSlateJS(answer.answerText);
+    });
+    return { text: questionText, answers: answers };
+  }
+
+  const hintGenerationInput = buildHintInput();
 
   useEffect(() => {
     // Notify parent about correctness of answer
@@ -75,7 +83,7 @@ export function MultipleChoiceQuestion({
       <QuestionDivider
         _question={question}
         onHint={onHint}
-        questionText={questionPlainText}
+        questionInput={hintGenerationInput}
       />
 
       {/* Answer options */}

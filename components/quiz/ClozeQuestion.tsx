@@ -1,12 +1,12 @@
 import { ClozeQuestionFragment$key } from "@/__generated__/ClozeQuestionFragment.graphql";
-import { TextField, colors } from "@mui/material";
+import { colors, TextField } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import { graphql, useFragment } from "react-relay";
 import { AutosizeByText } from "../AutosizeByText";
 import { RenderRichText } from "../RichTextEditor";
 import { FeedbackTooltip } from "./FeedbackTooltip";
-import { QuestionDivider } from "./QuestionDivider";
+import { getPlainTextOfSlateJS, QuestionDivider } from "./QuestionDivider";
 
 export function ClozeQuestion({
   _question,
@@ -73,6 +73,24 @@ export function ClozeQuestion({
     setCorrect({});
   }, [question]);
 
+  function buildHintInput() {
+    let clozeText = "";
+    let blanks: string[] = [];
+    for (let element of question.clozeElements) {
+      if (element.__typename === "ClozeTextElement") {
+        console.log(element.text);
+        clozeText += `${getPlainTextOfSlateJS(element.text)}`;
+      }
+      if (element.__typename === "ClozeBlankElement") {
+        blanks.push(element.correctAnswer);
+        clozeText += `[${blanks.length}]`;
+      }
+    }
+    return { text: clozeText, blanks: blanks };
+  }
+
+  const hintGenerationInput = buildHintInput();
+
   return (
     <div>
       {/* Cloze text */}
@@ -117,7 +135,11 @@ export function ClozeQuestion({
         )}
       </div>
 
-      <QuestionDivider _question={question} onHint={onHint} />
+      <QuestionDivider
+        _question={question}
+        onHint={onHint}
+        questionInput={hintGenerationInput}
+      />
 
       {/* Answer options */}
       {question.showBlanksList && (

@@ -39,7 +39,15 @@ export function AssociationQuestion({
   const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
   const [selectedRight, setSelectedRight] = useState<string | null>(null);
 
-  const questionPlainText = getPlainTextOfSlateJS(question.text);
+  function buildHintInput() {
+    const questionText = getPlainTextOfSlateJS(question.text);
+    const pairs = question.correctAssociations.map((pair) => {
+      return { left: pair.left, right: pair.right };
+    });
+    return { text: questionText, pairs: pairs };
+  }
+
+  const hintGenerationInput = buildHintInput();
 
   const removeAssociation = (index: number) => {
     setAssociated((oldValue) => [
@@ -107,7 +115,7 @@ export function AssociationQuestion({
       <QuestionDivider
         _question={question}
         onHint={onHint}
-        questionText={questionPlainText}
+        questionInput={hintGenerationInput}
       />
       {(associated.length > 0 || feedbackMode) && (
         <div className="flex flex-col items-center gap-2 mb-6">
