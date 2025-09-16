@@ -68,7 +68,11 @@ export function QuestionDivider({
         questionInput: buildQuestionInput(),
       },
       onCompleted(response) {
+        if (onHint) onHint();
         showHint(response.generateHint.hint);
+      },
+      onError() {
+        showHint("Something went wrong! Please try again!");
       },
     });
   }
@@ -141,9 +145,9 @@ function HintDialogButton({
           if (!plainHintText.trim()) {
             if (generateHint) generateHint();
           } else {
+            if (onHint) onHint();
             showHint(plainHintText);
           }
-          if (onHint) onHint();
         }}
         sx={{ color: "grey" }}
       >
