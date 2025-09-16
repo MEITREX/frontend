@@ -313,7 +313,7 @@ export default function TutorChat() {
             fontWeight: 600,
           }}
         >
-          Senden
+          Send
         </Button>
       </form>
     </div>
