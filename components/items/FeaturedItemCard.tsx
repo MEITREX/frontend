@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Chip, Typography } from "@mui/material";
 import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
 import ItemInventoryPictureOnly from "./ItemInventoryPictureOnly";
 import { DecorationItem, Rarity, rarityMap } from "./types/Types";
@@ -15,6 +15,13 @@ export default function FeaturedItemCard({
   const rarityKey = (item.rarity || "common").toLowerCase().replace(/\s+/g, "");
 
   const colors = rarityMap[rarityKey as Rarity] ?? rarityMap.common;
+
+  // Define label to dsiplay
+  const rarityLabel =
+    item.rarity === "ultra_rare"
+      ? "Ultra Rare"
+      : item.rarity?.charAt(0).toUpperCase() +
+        (item.rarity?.slice(1) ?? "Common");
 
   return (
     <Box
@@ -40,10 +47,33 @@ export default function FeaturedItemCard({
       )}
 
       {/* Informations about item */}
-      <Box sx={{ px: 2, pb: 2, pt: 1 }}>
-        <Typography variant="body2">
-          <strong>Rarity:</strong> {item.rarity || "Common"}
-        </Typography>
+      <Box
+        sx={{
+          px: 2,
+          pb: 2,
+          pt: 1,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        <Typography variant="body2">Rarity:</Typography>
+        <Chip
+          label={rarityLabel.replace("_", " ").toUpperCase()}
+          size="small"
+          sx={{
+            bgcolor: rarityMap[rarityKey as Rarity].border ?? rarityMap.common,
+            color: "white",
+            fontSize: "0.75rem",
+            fontWeight: "bold",
+            borderRadius: 1,
+            height: 20, // etwas kompakter
+            "& .MuiChip-label": {
+              px: 1.2, // horizontal padding im Label
+              py: 0, // vertikal ausgleichen
+            },
+          }}
+        />
       </Box>
     </Box>
   );
