@@ -274,9 +274,7 @@ const DecorationPopup: React.FC<Props> = ({
             {/* Informations about item */}
             <Box
               sx={{
-                px: 2,
-                pb: 2,
-                pt: 1,
+
                 display: "flex",
                 alignItems: "center",
                 gap: 1,

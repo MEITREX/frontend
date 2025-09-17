@@ -2,7 +2,7 @@ import { ItemsApiBuyItemTutorMutation } from "@/__generated__/ItemsApiBuyItemTut
 import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
 import { useCurrency } from "@/app/contexts/CurrencyContext";
 import { useSort } from "@/app/contexts/SortContextShop";
-import { Box, Typography } from "@mui/material";
+import { Box, Chip, Typography } from "@mui/material";
 import coins from "assets/lottery/coins.png";
 import Image from "next/image";
 import { useMemo, useState } from "react";
@@ -167,9 +167,34 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
                     />
                   </Box>
                 )}
-                <Typography variant="body2">
-                  <strong>Rarity:</strong> {rarityLabel || "Common"}
-                </Typography>
+                <Box
+              sx={{
+
+
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              <Typography variant="body2">Rarity:</Typography>
+              <Chip
+                label={rarityLabel.replace("_", " ").toUpperCase()}
+                size="small"
+                sx={{
+                  bgcolor:
+                    rarityMap[rarityKey as Rarity].border ?? rarityMap.common,
+                  color: "white",
+                  fontSize: "0.75rem",
+                  fontWeight: "bold",
+                  borderRadius: 1,
+                  height: 20, // etwas kompakter
+                  "& .MuiChip-label": {
+                    px: 1.2, // horizontal padding im Label
+                    py: 0, // vertikal ausgleichen
+                  },
+                }}
+              />
+            </Box>
               </Box>
             </Box>
           );
