@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "prepare": "husky install",
-    "update-schema": "node scripts/update-schema.mjs"
+    "update-schema": "node scripts/update-schema.mjs",
+    "keycloak-build-theme": "sass keycloak-theme/gits-theme/login/resources/css/login.scss keycloak-theme/gits-theme/login/resources/css/login.css --no-source-map --style=compressed"
   },
   "lint-staged": {
     "*.{ts,tsx,css,json}": "prettier --write"
@@ -92,6 +93,7 @@
     "lint-staged": "^13.3.0",
     "prettier": "^2.8.8",
     "raw-loader": "^4.0.2",
-    "relay-compiler": "15.0.0"
+    "relay-compiler": "15.0.0",
+    "sass": "^1.92.1"
   }
 }

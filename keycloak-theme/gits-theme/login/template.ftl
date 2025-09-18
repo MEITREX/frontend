@@ -8,7 +8,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="robots" content="noindex, nofollow">
         <link rel="icon" href="${url.resourcesPath}/img/favicon.ico"/>
-        
+
         <title><#nested "title"></title>
         <#if properties.styles?has_content>
             <#list properties.styles?split(' ') as style>
@@ -18,12 +18,18 @@
     </head>
 
 	<body>
-        <#nested "header">
         <div class="login-content">
             <div class="box">
                 <#nested "welcome">
+                 <div class="login-left">
+                    <img class="logo" src="${url.resourcesPath}/img/logo.png" alt="Meitrex">
+                    <p class="application-welcome-text">Welcome to</p>
+                    <p class="application-name">MEITREX</p>
+                </div>
                 <div class="login-right">
+                    <#nested "header">
                     <#nested "form">
+
                     <div class="message-area">
                         <#if displayMessage && message?has_content>
                             <div class="alert alert-${message.type}">
