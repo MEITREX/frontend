@@ -56,7 +56,7 @@
                 </#if>
             </div>
             <input class="register-submit" type="submit" value="${msg("doRegister")}">
-            <div id="kc-form-options" class="${properties.kcFormOptionsClass!}">
+            <div id="kc-form-options" class="${properties.kcFormOptionsClass!} mt-sm">
                 <div class="register-link">
                     <span><a href="${url.loginUrl}">${kcSanitize(msg("backToLogin"))?no_esc}</a></span>
                 </div>
