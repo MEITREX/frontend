@@ -311,9 +311,8 @@ const DecorationPopup: React.FC<Props> = ({
             variant="contained"
             disabled={
               (isBuyMode && unspentPoints < equipped) ||
-              (!isBuyMode && category === "tutors" && equipped) ||
-              (!isBuyMode && equipped && name == "Default Profile Picture") ||
-              (!unlocked && !isBuyMode)
+              (!isBuyMode && (category === "tutors" || category === "profilePics") && equipped) ||
+                            (!unlocked && !isBuyMode)
             }
           >
             {isBuyMode ? (
@@ -340,14 +339,12 @@ const DecorationPopup: React.FC<Props> = ({
                   />
                 </>
               )
-            ) : category === "tutors" && equipped ? (
-              "Tutor can not be unequipped. Equip other tutor to unequip this one"
+            ) : category === "tutors" || category === "profilePics" && equipped ? (
+              "Tutors and profile pictures can not be unequipped. Equip other items to unequip this one"
             ) : equipped ? (
-              name == "Default Profile Picture" ? (
-                "Default profile picture can not be unequiped"
-              ) : (
+
                 "Unequip"
-              )
+
             ) : (
               "Equip"
             )}
