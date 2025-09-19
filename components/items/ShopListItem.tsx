@@ -168,33 +168,32 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
                   </Box>
                 )}
                 <Box
-              sx={{
-
-
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-              }}
-            >
-              <Typography variant="body2">Rarity:</Typography>
-              <Chip
-                label={rarityLabel.replace("_", " ").toUpperCase()}
-                size="small"
-                sx={{
-                  bgcolor:
-                    rarityMap[rarityKey as Rarity].border ?? rarityMap.common,
-                  color: "white",
-                  fontSize: "0.75rem",
-                  fontWeight: "bold",
-                  borderRadius: 1,
-                  height: 20, // etwas kompakter
-                  "& .MuiChip-label": {
-                    px: 1.2, // horizontal padding im Label
-                    py: 0, // vertikal ausgleichen
-                  },
-                }}
-              />
-            </Box>
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <Typography variant="body2">Rarity:</Typography>
+                  <Chip
+                    label={rarityLabel.replace("_", " ").toUpperCase()}
+                    size="small"
+                    sx={{
+                      bgcolor:
+                        rarityMap[rarityKey as Rarity].border ??
+                        rarityMap.common,
+                      color: "white",
+                      fontSize: "0.75rem",
+                      fontWeight: "bold",
+                      borderRadius: 1,
+                      height: 20, // etwas kompakter
+                      "& .MuiChip-label": {
+                        px: 1.2, // horizontal padding im Label
+                        py: 0, // vertikal ausgleichen
+                      },
+                    }}
+                  />
+                </Box>
               </Box>
             </Box>
           );

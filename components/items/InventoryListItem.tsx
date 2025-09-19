@@ -163,7 +163,8 @@ export default function InventoryListItem({
           <Box />
         )}
 
-        {itemStringType !== "tutors" && itemStringType !== "profilePics" &&
+        {itemStringType !== "tutors" &&
+          itemStringType !== "profilePics" &&
           publicProfile === false &&
           equipedItem && <UnequipCard equippedItem={equipedItem} />}
       </Box>

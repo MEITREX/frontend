@@ -274,7 +274,6 @@ const DecorationPopup: React.FC<Props> = ({
             {/* Informations about item */}
             <Box
               sx={{
-
                 display: "flex",
                 alignItems: "center",
                 gap: 1,
@@ -311,8 +310,10 @@ const DecorationPopup: React.FC<Props> = ({
             variant="contained"
             disabled={
               (isBuyMode && unspentPoints < equipped) ||
-              (!isBuyMode && (category === "tutors" || category === "profilePics") && equipped) ||
-                            (!unlocked && !isBuyMode)
+              (!isBuyMode &&
+                (category === "tutors" || category === "profilePics") &&
+                equipped) ||
+              (!unlocked && !isBuyMode)
             }
           >
             {isBuyMode ? (
@@ -339,12 +340,11 @@ const DecorationPopup: React.FC<Props> = ({
                   />
                 </>
               )
-            ) : category === "tutors" || category === "profilePics" && equipped ? (
+            ) : category === "tutors" ||
+              (category === "profilePics" && equipped) ? (
               "Tutors and profile pictures can not be unequipped. Equip other items to unequip this one"
             ) : equipped ? (
-
-                "Unequip"
-
+              "Unequip"
             ) : (
               "Equip"
             )}
