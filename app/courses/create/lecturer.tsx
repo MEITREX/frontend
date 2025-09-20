@@ -1,5 +1,4 @@
 "use client";
-
 import { ForumApiAddUserToForumMutation } from "@/__generated__/ForumApiAddUserToForumMutation.graphql";
 import { ForumApiCreateForumMutation } from "@/__generated__/ForumApiCreateForumMutation.graphql";
 import { lecturerCreateChapterMutation } from "@/__generated__/lecturerCreateChapterMutation.graphql";
@@ -201,16 +200,16 @@ export default function NewCourse() {
             label="Start date"
             value={startDate}
             maxDate={endDate ?? undefined}
-            onChange={setStartDate}
-            slotProps={{ textField: { required: true } }}
+            onChange={(newValue: Dayjs | null) => setStartDate(newValue)}
+            renderInput={(params) => <TextField {...params} required />}
           />
           <DatePicker
             label="End date"
             value={endDate}
             minDate={startDate ?? undefined}
             defaultCalendarMonth={startDate ?? undefined}
-            onChange={setEndDate}
-            slotProps={{ textField: { required: true } }}
+            onChange={(newValue: Dayjs | null) => setEndDate(newValue)}
+            renderInput={(params) => <TextField {...params} required />}
           />
           <Box sx={{ minWidth: 120, maxWidth: 200 }}>
             <FormControl fullWidth>

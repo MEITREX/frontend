@@ -2,6 +2,7 @@ import {
   TutorChatSendMessageMutation,
   TutorChatSendMessageMutation$data,
 } from "@/__generated__/TutorChatSendMessageMutation.graphql";
+//from "@/__generated__/TutorChatSendMessageMutation.graphql";
 import { MessageSource, useAITutorStore } from "@/stores/aiTutorStore";
 import { Link } from "@mui/material";
 import Button from "@mui/material/Button";
@@ -28,6 +29,7 @@ const sendMessageMutation = graphql`
       sources {
         ... on DocumentSource {
           page
+          mediaRecordId
           mediaRecords {
             contents {
               id
@@ -40,6 +42,7 @@ const sendMessageMutation = graphql`
         }
         ... on VideoSource {
           startTime
+          mediaRecordId
           mediaRecords {
             contents {
               id
@@ -103,21 +106,21 @@ export default function TutorChat() {
           if (mr.contents) {
             mr.contents.forEach((content) => {
               if (!content || content.metadata.courseId !== courseId) return;
-              if (src.page != undefined) {
+              if ("page" in src && src.page != undefined) {
                 urls.push({
-                  link: `/courses/${courseId}/media/${content.id}?page=${
-                    src.page + 1
-                  }`,
+                  link: `/courses/${courseId}/media/${
+                    content.id
+                  }?selectedDocument=${src.mediaRecordId}&page=${src.page + 1}`,
                   displayText: `${content.metadata.name} Seite: ${
                     src.page + 1
                   }`,
                 });
-              } else if (src.startTime != undefined) {
+              } else if ("startTime" in src && src.startTime != undefined) {
                 const readableTime = dayjs
                   .duration(src.startTime ?? 0, "seconds")
                   .format("HH:mm:ss");
                 urls.push({
-                  link: `/courses/${courseId}/media/${content.id}?videoPosition=${src.startTime}`,
+                  link: `/courses/${courseId}/media/${content.id}?selectedDocument=${src.mediaRecordId}&videoPosition=${src.startTime}`,
                   displayText: `${content.metadata.name} Zeitstempel: ${readableTime}`,
                 });
               }
@@ -126,6 +129,7 @@ export default function TutorChat() {
         });
       }
     });
+
     return urls;
   }
 

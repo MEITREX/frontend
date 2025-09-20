@@ -4,6 +4,7 @@ type AccessToken {
 }
 
 type Achievement implements HasGoal {
+  adaptive: Boolean!
   completed: Boolean!
   completedCount: Int
   courseId: UUID!
@@ -14,7 +15,7 @@ type Achievement implements HasGoal {
   requiredCount: Int
   trackingEndTime: DateTime
   trackingStartTime: DateTime
-  userId: UUID
+  userId: UUID!
 }
 
 type AiEntityProcessingProgress {
@@ -30,32 +31,20 @@ enum AiEntityProcessingState {
   UNKNOWN
 }
 
-input AiGenQuestionContext {
-  description: String!
-  maxAnswersPerQuestion: Int! = 5
-  maxExactQuestions: Int! = 5
-  maxFreeTextQuestions: Int! = 5
-  maxMultipleChoiceQuestions: Int! = 5
-  maxNumericQuestions: Int! = 5
-  mediaRecordIds: [UUID]!
-  minExactQuestions: Int! = 1
-  minFreeTextQuestions: Int! = 1
-  minMultipleChoiceQuestions: Int! = 1
-  minNumericQuestions: Int! = 1
-}
-
 input AnswerInput {
   playerTypes: [PlayerType!]!
   text: String!
 }
 
 interface Assessment {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   assessmentMetadata: AssessmentMetadata!
   id: UUID!
   isAvailableToBeWorkedOn: Boolean!
   items: [Item!]!
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
+  required: Boolean!
   userProgressData: UserProgressData!
 }
 
@@ -65,6 +54,7 @@ type AssessmentContentReference {
 
 type AssessmentMetadata {
   initialLearningInterval: Int
+  required: Boolean!
   skillPoints: Int!
   skillTypes: [SkillType!]!
 }
@@ -96,6 +86,7 @@ type Assignment {
 }
 
 type AssignmentAssessment implements Assessment & Content {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   aiProcessingProgress: AiEntityProcessingProgress!
   assessmentMetadata: AssessmentMetadata!
   assignment: Assignment
@@ -104,6 +95,7 @@ type AssignmentAssessment implements Assessment & Content {
   items: [Item!]!
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
+  required: Boolean!
   suggestedTags: [String!]!
   userProgressData: UserProgressData!
 }
@@ -137,7 +129,6 @@ input AssociationInput {
 }
 
 type AssociationQuestion implements Question {
-  aiGenerated: Boolean!
   correctAssociations: [SingleAssociation!]!
   hint: JSON
   item: Item!
@@ -215,7 +206,6 @@ enum ClozeElementType {
 
 type ClozeQuestion implements Question {
   additionalWrongAnswers: [String!]!
-  aiGenerated: Boolean!
   allBlanks: [String!]!
   clozeElements: [ClozeElement!]!
   hint: JSON
@@ -253,10 +243,12 @@ directive @ContainerNotEmpty(message: String = "graphql.validation.ContainerNotE
 directive @ContainerSize(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.ContainerSize.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 interface Content {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   id: UUID!
   isAvailableToBeWorkedOn: Boolean!
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
+  required: Boolean!
   userProgressData: UserProgressData!
 }
 
@@ -295,6 +287,7 @@ enum ContentType {
 
 type Course {
   chapters(filter: ChapterFilter, pagination: Pagination, sortBy: [String!]! = [], sortDirection: [SortDirection!]! = [ASC]): ChapterPayload!
+  dailyQuests: QuestSet!
   description: String!
   endDate: DateTime!
   id: UUID!
@@ -309,6 +302,7 @@ type Course {
   suggestions(amount: Int!, skillTypes: [SkillType!]! = []): [Suggestion!]!
   title: String!
   userProgress: CompositeProgressInformation!
+  widgetRecommendations: [GamificationCategoryRecommendation!]!
   yearDivision: YearDivision
 }
 
@@ -597,7 +591,6 @@ type DocumentSource implements Source {
 }
 
 type ExactAnswerQuestion implements Question {
-  aiGenerated: Boolean!
   caseSensitive: Boolean!
   correctAnswers: [String!]!
   feedback: JSON
@@ -688,6 +681,7 @@ type FlashcardSet {
 }
 
 type FlashcardSetAssessment implements Assessment & Content {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   aiProcessingProgress: AiEntityProcessingProgress!
   assessmentMetadata: AssessmentMetadata!
   flashcardSet: FlashcardSet
@@ -696,6 +690,7 @@ type FlashcardSetAssessment implements Assessment & Content {
   items: [Item!]!
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
+  required: Boolean!
   suggestedTags: [String!]!
   userProgressData: UserProgressData!
 }
@@ -746,6 +741,22 @@ enum Gamification {
   GAMIFICATION_ENABLED
 }
 
+enum GamificationCategory {
+  ALTRUISM
+  ASSISTANCE
+  CUSTOMIZATION
+  IMMERSION
+  INCENTIVE
+  PROGRESSION
+  RISK_REWARD
+  SOCIALIZATION
+}
+
+type GamificationCategoryRecommendation {
+  category: GamificationCategory!
+  requestFeedback: Boolean!
+}
+
 input GenerateAccessTokenInput {
   authorizationCode: String!
   provider: ExternalServiceProviderDto!
@@ -771,8 +782,14 @@ type Grading {
 }
 
 interface HasGoal {
+  completed: Boolean!
+  completedCount: Int
   courseId: UUID!
-  userId: UUID
+  description: String!
+  requiredCount: Int
+  trackingEndTime: DateTime
+  trackingStartTime: DateTime
+  userId: UUID!
 }
 
 type HintResponse {
@@ -864,6 +881,14 @@ type ItemProgress {
 
 scalar JSON
 
+type Leaderboard {
+  id: ID!
+  period: Period
+  startDate: Date
+  title: String
+  userScores: [UserScore!]
+}
+
 type LectureQuestionResponse {
   answer: String!
   sources: [Source!]!
@@ -896,12 +921,14 @@ type ManualMappingInstance {
 directive @Max(value: Int! = 2147483647, message: String = "graphql.validation.Max.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 type MediaContent implements Content {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   aiProcessingProgress: AiEntityProcessingProgress!
   id: UUID!
   isAvailableToBeWorkedOn: Boolean!
   mediaRecords: [MediaRecord!]!
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
+  required: Boolean!
   segmentLinks: [MediaRecordSegmentLink!]!
   userProgressData: UserProgressData!
 }
@@ -973,7 +1000,6 @@ input MultipleChoiceAnswerInput {
 }
 
 type MultipleChoiceQuestion implements Question {
-  aiGenerated: Boolean!
   answers: [MultipleChoiceAnswer!]!
   hint: JSON
   item: Item!
@@ -1036,6 +1062,8 @@ type Mutation {
   saveStudentMappings(courseId: UUID!, studentMappingInputs: [StudentMappingInput!]!): [String]!
   selectAnswer(postId: UUID!): QuestionThread!
   sendMessage(courseId: UUID, userInput: String!): LectureQuestionResponse!
+  sendRecommendationFeedback(category: GamificationCategory!, feedback: RecommendationUserFeedback!): Boolean!
+  setCurrentUserWidgetSettings(settings: WidgetSettingsInput!): WidgetSettings!
   setLinkedMediaRecordsForContent(contentId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
   setMediaRecordsForCourse(courseId: UUID!, mediaRecordIds: [UUID!]!): [MediaRecord!]!
   setNickname(nickname: String!): UserInfo!
@@ -1070,7 +1098,6 @@ input NotificationInput {
 }
 
 type NumericQuestion implements Question {
-  aiGenerated: Boolean!
   correctAnswer: Float!
   feedback: JSON
   hint: JSON
@@ -1100,6 +1127,12 @@ type PaginationInfo {
 }
 
 directive @Pattern(regexp: String! = ".*", message: String = "graphql.validation.Pattern.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+enum Period {
+  ALL_TIME
+  MONTHLY
+  WEEKLY
+}
 
 input PlayerAnswerInput {
   questions: [QuestionInput!]!
@@ -1162,6 +1195,7 @@ type Query {
   courses(filter: CourseFilter, pagination: Pagination, sortBy: [String!], sortDirection: [SortDirection!]! = [ASC]): CoursePayload!
   coursesByIds(ids: [UUID!]!): [Course!]!
   currentUserInfo: UserInfo!
+  currentUserWidgetSettings: WidgetSettings!
   dueFlashcardsByCourseId(courseId: UUID!): [Flashcard!]!
   findAssignmentsByAssessmentIds(assessmentIds: [UUID!]!): [Assignment]!
   findContentsByIds(ids: [UUID!]!): [Content]!
@@ -1177,13 +1211,18 @@ type Query {
   forumActivity(id: UUID!): [ForumActivityEntry!]!
   forumActivityByUserId: [ForumActivityEntry!]!
   forumByCourseId(id: UUID!): Forum
+  getAllTimeCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
   getExternalAssignments(courseId: UUID!): [ExternalAssignment!]!
   getExternalCodeAssignments(courseId: UUID!): [String!]!
   getExternalCourse(courseId: UUID!): ExternalCourse
   getGradingsForAssignment(assessmentId: UUID!): [Grading!]!
   getManualMappingInstances(courseId: UUID!): [ManualMappingInstance]!
+  getMonthlyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
   getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
   getSemanticallySimilarEntities(count: Int! = 10, courseWhitelist: [UUID!], excludeEntitiesWithSameParent: Boolean, segmentId: UUID!): [SemanticSearchResult!]!
+  getUser(userID: ID!): [User!]
+  getWeeklyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+  inventoriesForUsers(userIds: [UUID!]!): [Inventory!]!
   inventoryForUser: Inventory!
   isAccessTokenAvailable(provider: ExternalServiceProviderDto!): Boolean!
   itemsByUserId(userId: UUID!): [UserItem!]!
@@ -1200,12 +1239,26 @@ type Query {
   suggestionsByChapterIds(amount: Int!, chapterIds: [UUID!]!, skillTypes: [SkillType!]! = []): [Suggestion!]!
   thread(id: UUID!): Thread
   threadsByContentId(id: UUID!): [Thread!]!
+  tutorImmersiveWidgetSpeechContent(courseId: UUID!): String!
   userCourseRewardScores(courseId: UUID!): RewardScores!
   userMediaRecords: [MediaRecord!]!
 }
 
+type Quest implements HasGoal {
+  completed: Boolean!
+  completedCount: Int
+  courseId: UUID!
+  description: String!
+  id: UUID!
+  name: String!
+  requiredCount: Int
+  rewardPoints: Int!
+  trackingEndTime: DateTime
+  trackingStartTime: DateTime
+  userId: UUID!
+}
+
 interface Question {
-  aiGenerated: Boolean!
   hint: JSON
   itemId: UUID!
   number: Int!
@@ -1250,6 +1303,14 @@ enum QuestionType {
   SELF_ASSESSMENT
 }
 
+type QuestSet {
+  forDay: Date
+  id: UUID!
+  name: String!
+  quests: [Quest!]!
+  rewardMultiplier: Float!
+}
+
 type Quiz {
   assessmentId: UUID!
   content: Content
@@ -1261,11 +1322,8 @@ type Quiz {
   selectedQuestions: [Question!]!
 }
 
-type QuizAIGenAsyncResponse {
-  quiz: Quiz
-}
-
 type QuizAssessment implements Assessment & Content {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   aiProcessingProgress: AiEntityProcessingProgress!
   assessmentMetadata: AssessmentMetadata!
   id: UUID!
@@ -1274,6 +1332,7 @@ type QuizAssessment implements Assessment & Content {
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
   quiz: Quiz
+  required: Boolean!
   suggestedTags: [String!]!
   userProgressData: UserProgressData!
 }
@@ -1296,7 +1355,6 @@ type QuizMutation {
   addMultipleChoiceQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateMultipleChoiceQuestionInputWithoutItem!): QuizOutput!
   addNumericQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateNumericQuestionInputWithoutItem!): QuizOutput!
   addSelfAssessmentQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateSelfAssessmentQuestionInputWithoutItem!): QuizOutput!
-  aiGenerateQuestionAsync(context: AiGenQuestionContext): QuizAIGenAsyncResponse
   assessmentId: UUID!
   removeQuestion(number: Int!): Quiz!
   setNumberOfRandomlySelectedQuestions(numberOfRandomlySelectedQuestions: Int!): Quiz!
@@ -1318,6 +1376,12 @@ type QuizOutput {
 }
 
 directive @Range(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.Range.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+enum RecommendationUserFeedback {
+  JUST_RIGHT
+  LESS_OFTEN
+  MORE_OFTEN
+}
 
 directive @resolveTo(requiredSelectionSet: String, sourceName: String, sourceTypeName: String, sourceFieldName: String, sourceSelectionSet: String, sourceArgs: ResolveToSourceArgs, keyField: String, keysArg: String, pubsubTopic: String, filterBy: String, additionalArgs: ResolveToSourceArgs, result: String, resultType: String) on FIELD_DEFINITION
 
@@ -1381,7 +1445,6 @@ type SectionMutation {
 }
 
 type SelfAssessmentQuestion implements Question {
-  aiGenerated: Boolean!
   hint: JSON
   itemId: UUID!
   number: Int!
@@ -1473,6 +1536,9 @@ interface Source {
 directive @specifiedBy(url: String!) on SCALAR
 
 type Stage {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
+  _internal_noauth_optionalContentsProgressForUser(userId: UUID!): Float!
+  _internal_noauth_requiredContentsProgressForUser(userId: UUID!): Float!
   id: UUID!
   isAvailableToBeWorkedOn: Boolean!
   optionalContents: [Content!]!
@@ -1676,6 +1742,16 @@ input UpdateSubexerciseInput {
 
 scalar Url
 
+type User {
+  email: String
+  exceedingXP: Float!
+  id: UUID!
+  level: Int!
+  name: String
+  requiredXP: Float!
+  xpValue: Int!
+}
+
 type UserInfo {
   availableCourseMemberships: [CourseMembership!]!
   courseMemberships: [CourseMembership!]!
@@ -1735,6 +1811,12 @@ enum UserRoleInCourse {
   TUTOR
 }
 
+type UserScore {
+  id: ID!
+  score: Float
+  user: User
+}
+
 scalar UUID
 
 type VideoRecordSegment implements MediaRecordSegment {
@@ -1752,6 +1834,16 @@ type VideoSource implements Source {
   mediaRecordId: UUID!
   mediaRecords: [MediaRecord!]!
   startTime: Float!
+}
+
+type WidgetSettings {
+  numberOfRecommendations: Int!
+  recommendationRefreshInterval: Int!
+}
+
+input WidgetSettingsInput {
+  numberOfRecommendations: Int!
+  recommendationRefreshInterval: Int!
 }
 
 enum YearDivision {

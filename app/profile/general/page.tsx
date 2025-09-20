@@ -1,18 +1,47 @@
 "use client";
 
 import { pagePrivateProfileStudentGeneralQuery } from "@/__generated__/pagePrivateProfileStudentGeneralQuery.graphql";
-import { Box, Tab, Tabs, Typography } from "@mui/material";
+import { pagePrivateProfileStudentGeneral_GetUserXPQuery } from "@/__generated__/pagePrivateProfileStudentGeneral_GetUserXPQuery.graphql";
+import {
+  Box,
+  Tab,
+  Tabs,
+  Typography,
+  LinearProgress,
+  Stack,
+} from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
+import { useMemo } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import GeneralPage from "../GeneralPage";
+import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
+
+type UserLevelInfo = {
+  level: number;
+  requiredXP: number;
+  exceedingXP: number; // XP gathered within current level
+};
 
 const tabs = [
   { label: "General", path: "general" },
   { label: "Achievements", path: "achievements" },
   { label: "Forum", path: "forum" },
   { label: "Badges", path: "badges" },
+  { label: "Leaderboards", path: "leaderboard" }, // Added new tab
 ];
+
+const getUserXPQuery = graphql`
+  query pagePrivateProfileStudentGeneral_GetUserXPQuery($userID: ID!) {
+    getUser(userID: $userID) {
+      id
+      xpValue
+      requiredXP
+      exceedingXP
+      level
+    }
+  }
+`;
 
 export default function GeneralPageWrapper() {
   const router = useRouter();
@@ -24,6 +53,7 @@ export default function GeneralPageWrapper() {
     router.push(`/profile/${tabs[newValue].path}`);
   };
 
+  // 1) UserID stabil über Relay
   const { currentUserInfo } =
     useLazyLoadQuery<pagePrivateProfileStudentGeneralQuery>(
       graphql`
@@ -40,21 +70,72 @@ export default function GeneralPageWrapper() {
       {}
     );
 
+  const xpData =
+    useLazyLoadQuery<pagePrivateProfileStudentGeneral_GetUserXPQuery>(
+      getUserXPQuery,
+      { userID: currentUserInfo.id },
+      { fetchPolicy: "network-only" }
+    );
+
+  const levelInfo = useMemo<UserLevelInfo>(() => {
+    const payload: any = xpData?.getUser;
+    const u = Array.isArray(payload) ? payload[0] : payload;
+    return {
+      level: Number(u?.level ?? 0),
+      requiredXP: Math.max(1, Math.round(Number(u?.requiredXP ?? 1))),
+      exceedingXP: Math.max(0, Math.round(Number(u?.exceedingXP ?? 0))),
+    };
+  }, [xpData]);
+
+  const levelIconSrc = useMemo(() => {
+    const lvl = Math.max(0, Math.min(99, levelInfo.level));
+    return `/levels/level_${String(lvl)}.svg`;
+  }, [levelInfo.level]);
+
+  const progressPct = useMemo(() => {
+    const required = Math.max(1, levelInfo.requiredXP);
+    const have = Math.max(0, levelInfo.exceedingXP);
+    return Math.max(0, Math.min(100, Math.round((have / required) * 100)));
+  }, [levelInfo.requiredXP, levelInfo.exceedingXP]);
+
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h4" gutterBottom>
-        Hi, {currentUserInfo.userName}
-      </Typography>
-      <Typography variant="body1" color="text.secondary" mb={3}>
-        Welcome to your profile. Use the tabs to navigate.
-      </Typography>
+      <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
+
+      {/* Level + XP overview */}
+      <Box sx={{ mb: 2 }}>
+        <Stack
+          direction="row"
+          spacing={1.5}
+          alignItems="center"
+          sx={{ mb: 0.5 }}
+        >
+          <img
+            src={levelIconSrc}
+            alt={`Level ${levelInfo.level}`}
+            width={48}
+            height={48}
+            style={{ display: "block" }}
+          />
+          <Typography variant="body2" color="text.secondary">
+            {`Level ${levelInfo.level} · ${Math.round(
+              levelInfo.exceedingXP
+            )} / ${Math.max(1, Math.round(levelInfo.requiredXP))} XP`}
+          </Typography>
+        </Stack>
+        <LinearProgress
+          variant="determinate"
+          value={progressPct}
+          sx={{ height: 10, borderRadius: 999 }}
+        />
+      </Box>
 
       <Tabs
         value={activeIndex}
         onChange={handleChange}
         textColor="primary"
         indicatorColor="primary"
-        sx={{ mb: 3, ".MuiTabs-indicator": { display: "none" } }}
+        sx={{ mt: 3, mb: 3, ".MuiTabs-indicator": { display: "none" } }}
       >
         {tabs.map((tab, index) => (
           <Tab
@@ -75,15 +156,13 @@ export default function GeneralPageWrapper() {
                   ? "rgba(0, 169, 214, 0.1)"
                   : "transparent",
               transition: "all 0.2s ease-in-out",
-              "&:hover": {
-                backgroundColor: "rgba(0, 169, 214, 0.1)",
-              },
+              "&:hover": { backgroundColor: "rgba(0, 169, 214, 0.1)" },
             }}
           />
         ))}
       </Tabs>
 
-      {/* Eigentliche Page-Inhalte */}
+      {/* Actual page content */}
       <GeneralPage studentData={currentUserInfo} />
     </Box>
   );

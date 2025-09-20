@@ -1,6 +1,6 @@
 "use client";
 
-import { ItemsApiItemInventoryForUserByIdQuery } from "@/__generated__/ItemsApiItemInventoryForUserByIdQuery.graphql";
+import { ItemsApiItemInventoryForUserByIdCustomIdQuery } from "@/__generated__/ItemsApiItemInventoryForUserByIdCustomIdQuery.graphql";
 import { useSort } from "@/app/contexts/SortContext";
 import { Box, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
@@ -10,9 +10,14 @@ import FeaturedItemCard from "./FeaturedItemCard";
 import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
 import ItemInventoryPictureOnly from "./ItemInventoryPictureOnly";
 import UnequipCard from "./UnequipCard";
-import { getItemsByUserQuery } from "./api/ItemsApi";
-import { getPublicProfileItemsMerged } from "./logic/GetItems";
-import { DecorationItem, ItemStringType, rarityMap } from "./types/Types";
+import { getItemsByUserQueryCustomId } from "./api/ItemsApi";
+import { getPublicProfileItemsMergedCustomID } from "./logic/GetItems";
+import {
+  DecorationItem,
+  ItemStringType,
+  Rarity,
+  rarityMap,
+} from "./types/Types";
 
 type PublicProfileListItemProps = {
   itemStringType: ItemStringType;
@@ -28,11 +33,11 @@ export default function PublicProfileListItem({
   const { sortBy, showLocked } = useSort();
   const [selectedItem, setSelectedItem] = useState<DecorationItem | null>(null);
 
-  const { itemsByUserId } =
-    useLazyLoadQuery<ItemsApiItemInventoryForUserByIdQuery>(
-      getItemsByUserQuery,
+  const { inventoriesForUsers } =
+    useLazyLoadQuery<ItemsApiItemInventoryForUserByIdCustomIdQuery>(
+      getItemsByUserQueryCustomId,
       {
-        userId: userId,
+        userIds: [userId],
       },
       {
         fetchPolicy: "network-only",
@@ -41,8 +46,8 @@ export default function PublicProfileListItem({
     );
 
   // Combine backend and JSON data
-  const itemsParsedMerged = getPublicProfileItemsMerged(
-    itemsByUserId,
+  const itemsParsedMerged = getPublicProfileItemsMergedCustomID(
+    inventoriesForUsers[0].items,
     itemStringType
   );
 
@@ -136,7 +141,7 @@ export default function PublicProfileListItem({
               .replace(/\s+/g, "");
 
             // Map rarity to color
-            const colors = rarityMap[rarityKey] ?? rarityMap.common;
+            const colors = rarityMap[rarityKey as Rarity] ?? rarityMap.common;
 
             // Define label to dsiplay
             const rarityLabel =

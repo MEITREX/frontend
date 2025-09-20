@@ -5,12 +5,14 @@ import { Box, Tab, Tabs, Typography } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
+import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
 
 const tabs = [
   { label: "General", path: "general" },
   { label: "Achievements", path: "achievements" },
   { label: "Forum", path: "forum" },
   { label: "Badges", path: "badges" },
+  { label: "Leaderboards", path: "leaderboard" },
 ];
 
 export default function BadgesPage() {
@@ -29,6 +31,7 @@ export default function BadgesPage() {
           currentUserInfo {
             id
             userName
+            nickname
           }
         }
       `,
@@ -37,12 +40,7 @@ export default function BadgesPage() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h4" gutterBottom>
-        Hi, {currentUserInfo.userName}
-      </Typography>
-      <Typography variant="body1" color="text.secondary" mb={3}>
-        Welcome to your profile. Use the tabs to navigate.
-      </Typography>
+      <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
 
       <Tabs
         value={activeIndex}

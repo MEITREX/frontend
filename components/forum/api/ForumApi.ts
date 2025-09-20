@@ -131,6 +131,7 @@ export const forumApiUserInfoByIdQuery = graphql`
     findUserInfos(ids: [$id]) {
       id
       userName
+      nickname
     }
   }
 `;
@@ -314,6 +315,22 @@ export const forumApiThreadByMediaRecordQuery = graphql`
           }
         }
       }
+    }
+  }
+`;
+
+export const forumApiGetIntemsForEveryUserQuery = graphql`
+  query ForumApiItemInventoryForUserByIdQuery($userIds: [UUID!]!) {
+    inventoriesForUsers(userIds: $userIds) {
+      items {
+        equipped
+        catalogItemId: id
+        uniqueDescription
+        unlocked
+        unlockedTime
+      }
+      unspentPoints
+      userId
     }
   }
 `;

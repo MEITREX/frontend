@@ -6,18 +6,24 @@ import { Box, Tab, Tabs, Typography } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
+import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
 
 const tabs = [
   { label: "General", path: "general" },
   { label: "Achievements", path: "achievements" },
   { label: "Forum", path: "forum" },
   { label: "Badges", path: "badges" },
+  { label: "Leaderboards", path: "leaderboard" },
 ];
 
 export default function ForumPage() {
   const router = useRouter();
   const pathname = usePathname();
-  const activeIndex = tabs.findIndex((tab) => pathname.includes(tab.path));
+  const section = (pathname.split("/profile/")[1] || "").split("/")[0];
+  const activeIndex = Math.max(
+    0,
+    tabs.findIndex((tab) => section === tab.path)
+  );
 
   const handleChange = (_: any, newValue: number) => {
     router.push(`/profile/${tabs[newValue].path}`);
@@ -30,6 +36,7 @@ export default function ForumPage() {
           currentUserInfo {
             id
             userName
+            nickname
           }
         }
       `,
@@ -38,12 +45,7 @@ export default function ForumPage() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h4" gutterBottom>
-        Hi, {currentUserInfo.userName}
-      </Typography>
-      <Typography variant="body1" color="text.secondary" mb={3}>
-        Welcome to your profile. Use the tabs to navigate.
-      </Typography>
+      <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
 
       <Tabs
         value={activeIndex}
