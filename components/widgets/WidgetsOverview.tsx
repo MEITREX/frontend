@@ -15,6 +15,8 @@ import { Box } from "@mui/material";
 import * as React from "react";
 import { useLazyLoadQuery } from "react-relay";
 import AchievementWidgetOverview from "./components/achievement/AchievementWidgetOverview";
+import XPWidget from "@/components/widgets/components/xpsystem/XPWidget";
+import LeaderboardWidget from "@/components/widgets/components/leaderboard/LeaderboardWidget";
 
 type Properties = {
   userId: string;
@@ -50,6 +52,18 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
   // ADD NEW WIDGETS HERE:
   const widgets = [
     {
+      category: "PROGRESSION" as GamificationCategory,
+      key: "xp",
+      component: <XPWidget />,
+    },
+    {
+      category: "SOCIALIZATION" as GamificationCategory,
+      key: "leaderboard",
+      component: (
+        <LeaderboardWidget courseID={courseId} currentUserID={userId} />
+      ),
+    },
+    {
       category: "INCENTIVE" as GamificationCategory,
       key: "achievements",
       component: (
@@ -83,6 +97,7 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
     },
   ];
 
+  // Widget Recommendation
   const data = useLazyLoadQuery<WidgetApiCurrentUserInfoQuery>(
     widgetApiCurrentUserInfoQuery,
     {},
@@ -95,33 +110,40 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
 
   const recommendations = courseMembership?.course?.widgetRecommendations ?? [];
 
+  // Settings
   const { currentUserWidgetSettings } =
-    useLazyLoadQuery<WidgetApiSettingsQuery>(widgetApiSettingsQuery, {
-      fetchPolicy: "store-or-network",
-    });
+    useLazyLoadQuery<WidgetApiSettingsQuery>(
+      widgetApiSettingsQuery,
+      {},
+      { fetchPolicy: "store-or-network" }
+    );
 
-  const [numWidgetsToShow, setNumWidgetsToShow] = React.useState(
-    currentUserWidgetSettings?.numberOfRecommendations ?? 2
-  );
+  const [numWidgetsToShow, setNumWidgetsToShow] = React.useState<number>(2);
 
-  if (!data || !currentUserWidgetSettings) {
-    return <p>Loading Wigets...</p>;
-  }
+  React.useEffect(() => {
+    if (currentUserWidgetSettings?.numberOfRecommendations != null) {
+      setNumWidgetsToShow(currentUserWidgetSettings.numberOfRecommendations);
+    }
+  }, [currentUserWidgetSettings]);
 
   // Map User preferred categories to Widget-Components
   // Testing: Use mockedRecommendations
-  const selectedWidgets = widgets
-    .map((w) => {
-      const recommendation = recommendations.find(
-        (r) => r.category === w.category
-      );
-      if (!recommendation) return null;
-      return { ...w, requestFeedback: recommendation.requestFeedback };
-    })
-    .filter(
-      (w): w is (typeof widgets)[0] & { requestFeedback: boolean } => w !== null
-    )
-    .slice(0, numWidgetsToShow);
+  const selectedWidgets = React.useMemo(() => {
+    if (!recommendations.length) return [];
+    return widgets
+      .map((w) => {
+        const recommendation = recommendations.find(
+          (r) => r.category === w.category
+        );
+        if (!recommendation) return null;
+        return { ...w, requestFeedback: recommendation.requestFeedback };
+      })
+      .filter(
+        (w): w is (typeof widgets)[0] & { requestFeedback: boolean } =>
+          w !== null
+      )
+      .slice(0, numWidgetsToShow);
+  }, [widgets, recommendations, numWidgetsToShow]);
 
   return (
     <Box

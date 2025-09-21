@@ -12,7 +12,16 @@ import {
   LinearProgress,
 } from "@mui/material";
 import { useLazyLoadQuery, graphql } from "react-relay/hooks";
+import { fetchQuery, useRelayEnvironment } from "react-relay";
 import type { XPWidgetQuery as XPWidgetQueryType } from "@/__generated__/XPWidgetQuery.graphql";
+import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
+import WidgetFeedback from "@/components/widgets/common/WidgetFeedback";
+import { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
+
+type Props = {
+  openFeedback?: boolean;
+  category?: GamificationCategory;
+};
 
 // --- Types to mirror the profile implementation ---
 type UserLevelInfo = {
@@ -89,90 +98,21 @@ const XPWidgetQuery = graphql`
   }
 `;
 
-// --- Robust GraphQL URL + Auth handling (same as profile) ---
-function resolveGraphqlUrl(): string {
-  // Prefer explicit envs; fall back to localhost:8080
-  const fromEnv =
-    process.env.NEXT_PUBLIC_GRAPHQL_URL ||
-    process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-    "";
-  if (fromEnv && /^https?:\/\//.test(fromEnv)) {
-    return fromEnv;
-  }
-  if (fromEnv && fromEnv.startsWith("/")) {
-    // absolute path, keep as-is
-    return fromEnv;
-  }
-  // default dev backend
-  return "http://localhost:8080/graphql";
-}
-
-const GRAPHQL_URL = resolveGraphqlUrl();
-
-function getAuthHeader(): Record<string, string> {
-  try {
-    if (typeof window === "undefined") return {};
-
-    // 1) explicit global (e.g., set in app):
-    const tokenFromGlobal = (window as any).__AUTH_TOKEN__;
-    if (tokenFromGlobal) {
-      return { Authorization: `Bearer ${tokenFromGlobal}` };
+const XPWidgetGetUserXPQuery = graphql`
+  query XPWidgetGetUserXPQuery($userID: ID!) {
+    getUser(userID: $userID) {
+      id
+      name
+      email
+      xpValue
+      requiredXP
+      exceedingXP
+      level
     }
-
-    // 2) try Keycloak OIDC token in localStorage (key starts with 'oidc.user:')
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i) || "";
-      if (k.startsWith("oidc.user:")) {
-        const raw = localStorage.getItem(k);
-        if (!raw) continue;
-        try {
-          const parsed = JSON.parse(raw);
-          const access =
-            parsed?.access_token || parsed?.accessToken || parsed?.token;
-          if (access) return { Authorization: `Bearer ${access}` };
-        } catch {}
-      }
-    }
-  } catch {}
-  return {};
-}
-
-async function postGraphQL<TData>(
-  query: string,
-  variables: Record<string, any>
-): Promise<{ data?: TData; errors?: any[] }> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-
-  let response: Response;
-  try {
-    response = await fetch(GRAPHQL_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...getAuthHeader(),
-      },
-      body: JSON.stringify({ query, variables }),
-      credentials: "include",
-      signal: controller.signal,
-    });
-  } catch (e) {
-    return {
-      errors: [{ message: `Network/Fetch error: ${String(e)}` }],
-    } as any;
-  } finally {
-    clearTimeout(timeout);
   }
+`;
 
-  try {
-    const json = (await response.json()) as any;
-    return json;
-  } catch (e) {
-    return { errors: [{ message: "Failed to parse GraphQL response" }] } as any;
-  }
-}
-
-export default function XPWidget() {
+export default function XPWidget({ openFeedback, category }: Props) {
   const data = useLazyLoadQuery<XPWidgetQueryType>(
     XPWidgetQuery,
     {},
@@ -181,66 +121,57 @@ export default function XPWidget() {
   const userId = data.currentUserInfo?.id ?? "";
   const userName = data.currentUserInfo?.userName ?? "";
 
+  const relayEnv = useRelayEnvironment();
+
   // State for live XP/Level pulled from backend (same pattern as profile)
   const [levelInfo, setLevelInfo] = React.useState<UserLevelInfo | null>(null);
   const [loadingLevel, setLoadingLevel] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     let cancelled = false;
-    const load = async () => {
-      if (!userId) return;
-      setLoadingLevel(true);
+    if (!userId) return;
 
-      const userLevelQuery = `
-        query GetUserLevel($userID: ID!) {
-          getUser(userID: $userID) {
-            id
-            name
-            email
-            xpValue
-            requiredXP
-            exceedingXP
-            level
-          }
-        }
-      `;
+    setLoadingLevel(true);
 
-      const { data: userData, errors } = await postGraphQL<{
-        getUser?: Array<{
-          id: string;
-          name: string | null;
-          email: string | null;
-          xpValue: number;
-          requiredXP: number;
-          exceedingXP: number;
-          level: number;
-        }>;
-      }>(userLevelQuery, { userID: userId });
+    fetchQuery(relayEnv, XPWidgetGetUserXPQuery, { userID: userId })
+      .toPromise()
+      .then((resp: any) => {
+        if (cancelled) return;
 
-      if (!cancelled) {
-        if (errors && errors.length) {
-          // eslint-disable-next-line no-console
-          console.warn("[XPWidget] getUser errors:", errors);
-        }
-        const u = userData?.getUser?.[0];
+        // Backend may return array or single object – normalize here
+        const raw = resp?.getUser;
+        const u = Array.isArray(raw) ? raw[0] : raw;
+
         if (u) {
+          const requiredXP = Number(u.requiredXP ?? 1);
+          const exceedingXP = Number(u.exceedingXP ?? 0);
+          const level = Number(u.level ?? 0);
+
           setLevelInfo({
-            level: Number.isFinite(u.level) ? u.level : 0,
-            requiredXP: Number.isFinite(u.requiredXP) ? u.requiredXP : 1,
-            exceedingXP: Number.isFinite(u.exceedingXP) ? u.exceedingXP : 0,
+            level: Number.isFinite(level) ? level : 0,
+            requiredXP:
+              Number.isFinite(requiredXP) && requiredXP > 0 ? requiredXP : 1,
+            exceedingXP: Number.isFinite(exceedingXP) ? exceedingXP : 0,
           });
         } else {
           setLevelInfo({ level: 0, requiredXP: 1, exceedingXP: 0 });
         }
-        setLoadingLevel(false);
-      }
-    };
+      })
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.warn("[XPWidget] getUser via Relay failed:", err);
+        if (!cancelled) {
+          setLevelInfo({ level: 0, requiredXP: 1, exceedingXP: 0 });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingLevel(false);
+      });
 
-    load();
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [userId, relayEnv]);
 
   const level = levelInfo?.level ?? 0;
   const currentXP = levelInfo?.exceedingXP ?? 0;
@@ -253,61 +184,43 @@ export default function XPWidget() {
   );
 
   return (
-    <Box
-      key={userId}
-      sx={{
-        border: "1px solid #ccc",
-        borderRadius: 2,
-        p: 0.75,
-        mb: 4,
-        maxWidth: 450,
-        backgroundColor: "background.paper",
-        maxHeight: "none",
-        minHeight: "auto",
-        overflow: "hidden",
-      }}
+    <WidgetWrapper
+      title={`XP Allocation${userName ? ` · ${userName}` : ""}`}
+      linkHref="/profile/general"
+      linkLabel="Profile"
+      overflow="auto"
     >
+      <WidgetFeedback openFeedback={openFeedback} category={category} />
+      {/* Kopfzeile: Level + Progress */}
       <Box
         display="flex"
         alignItems="center"
         justifyContent="space-between"
-        mb={0.25}
+        mb={0.5}
+        px={1}
       >
         <Typography
-          variant="subtitle1"
-          sx={{
-            fontWeight: 800,
-            lineHeight: 1.1,
-            textTransform: "none",
-            fontSize: "0.9rem",
-          }}
+          variant="caption"
+          sx={{ fontWeight: 700, fontSize: "0.9rem", mr: 0.75 }}
         >
-          {`XP Allocation${userName ? ` · ${userName}` : ""}`}
+          Level {level}
         </Typography>
-
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Typography
-            variant="caption"
-            sx={{ fontWeight: 700, fontSize: "0.85rem", mr: 0.75 }}
-          >
-            Level {level}
-          </Typography>
-          <Box sx={{ flexGrow: 1, mr: 0.75, minWidth: 130 }}>
-            <LinearProgress
-              variant="determinate"
-              value={progress}
-              sx={{ height: 6 }}
-            />
-          </Box>
-          <Typography
-            variant="caption"
-            sx={{ minWidth: 50, fontSize: "0.85rem", lineHeight: 1.1 }}
-          >
-            {loadingLevel ? "…" : `${currentXPRounded} / ${requiredXPRounded}`}
-          </Typography>
+        <Box sx={{ flexGrow: 1, mr: 0.75, minWidth: 130 }}>
+          <LinearProgress
+            variant="determinate"
+            value={progress}
+            sx={{ height: 6 }}
+          />
         </Box>
+        <Typography
+          variant="caption"
+          sx={{ minWidth: 50, fontSize: "0.85rem", lineHeight: 1.1 }}
+        >
+          {loadingLevel ? "…" : `${currentXPRounded} / ${requiredXPRounded}`}
+        </Typography>
       </Box>
 
+      {/* Tabelle der XP-Quellen */}
       <Table
         size="small"
         sx={{
@@ -319,7 +232,7 @@ export default function XPWidget() {
         <TableHead>
           <TableRow>
             <TableCell
-              sx={{ fontWeight: 700, pl: 0, fontSize: "0.9rem", width: "70%" }}
+              sx={{ fontWeight: 700, pl: 1, fontSize: "0.9rem", width: "70%" }}
             >
               <Typography
                 sx={{ lineHeight: 1.1, fontSize: "0.9rem", fontWeight: 700 }}
@@ -329,7 +242,7 @@ export default function XPWidget() {
             </TableCell>
             <TableCell
               align="right"
-              sx={{ fontWeight: 700, pr: 0, fontSize: "0.9rem", width: "30%" }}
+              sx={{ fontWeight: 700, pr: 1, fontSize: "0.9rem", width: "30%" }}
             >
               <Typography
                 sx={{ lineHeight: 1.1, fontSize: "0.9rem", fontWeight: 700 }}
@@ -344,7 +257,7 @@ export default function XPWidget() {
             <TableRow key={id}>
               <TableCell
                 sx={{
-                  pl: 0,
+                  pl: 1,
                   pr: 1.5,
                   fontSize: "0.9rem",
                   verticalAlign: "top",
@@ -384,7 +297,7 @@ export default function XPWidget() {
               <TableCell
                 align="right"
                 sx={{
-                  pr: 0,
+                  pr: 1,
                   fontSize: "0.9rem",
                   verticalAlign: "top",
                   width: "30%",
@@ -407,6 +320,6 @@ export default function XPWidget() {
           ))}
         </TableBody>
       </Table>
-    </Box>
+    </WidgetWrapper>
   );
 }

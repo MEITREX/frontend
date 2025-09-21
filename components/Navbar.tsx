@@ -61,86 +61,18 @@ import {
   ReactElement,
   useCallback,
   useEffect,
+  useRef,
   useState,
   useTransition,
 } from "react";
 import { useAuth } from "react-oidc-context";
-import { graphql, useFragment, useLazyLoadQuery } from "react-relay";
-
-/** ---------------- GraphQL runtime fetch helper (XP endpoint) ---------------- */
-const GRAPHQL_URL =
-  process.env.NEXT_PUBLIC_GRAPHQL_URL ||
-  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-  (typeof window !== "undefined" && (window as any).__GRAPHQL_URL) ||
-  "http://localhost:8080/graphql";
-
-async function postGraphQL<TData>(
-  query: string,
-  variables: Record<string, any>
-): Promise<{ data?: TData; errors?: any[] }> {
-  try {
-    const token =
-      typeof window !== "undefined" && (window as any).__AUTH_TOKEN__
-        ? (window as any).__AUTH_TOKEN__
-        : undefined;
-
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-
-    const res = await fetch(GRAPHQL_URL, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ query, variables }),
-      credentials: "include",
-    });
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      console.error(
-        `[GraphQL] HTTP ${res.status} when calling ${GRAPHQL_URL}:`,
-        text?.slice(0, 500)
-      );
-      return {
-        errors: [
-          {
-            message: `HTTP ${res.status} - ${res.statusText}`,
-            detail: text?.slice(0, 500),
-          },
-        ],
-      } as any;
-    }
-
-    const contentType = res.headers.get("content-type") || "";
-    if (!contentType.includes("application/json")) {
-      const text = await res.text().catch(() => "");
-      console.error("[GraphQL] Non-JSON response:", text?.slice(0, 500));
-      return {
-        errors: [
-          {
-            message: "Non-JSON response from GraphQL endpoint",
-            detail: text?.slice(0, 500),
-          },
-        ],
-      } as any;
-    }
-
-    const json = (await res.json()) as any;
-    if (json?.errors) {
-      console.warn("[GraphQL] Returned errors:", json.errors);
-    }
-    return json;
-  } catch (e) {
-    console.error("[GraphQL] Network/parse error:", e);
-    return {
-      errors: [
-        { message: "Failed to parse GraphQL response", detail: String(e) },
-      ],
-    } as any;
-  }
-}
+import {
+  fetchQuery,
+  graphql,
+  useFragment,
+  useLazyLoadQuery,
+  useRelayEnvironment,
+} from "react-relay";
 
 /** ---------------- Utilities ---------------- */
 function useIsTutor(_frag: NavbarIsTutor$key) {
@@ -537,101 +469,109 @@ function UserInfo({
     xpRequiredForLevelUp: number;
   } | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      if (!userId) return;
-      if (auth?.isLoading) return;
-
-      // make token available to runtime fetcher
-      if (typeof window !== "undefined" && auth?.user?.access_token) {
-        (window as any).__AUTH_TOKEN__ = auth.user.access_token;
-      }
-
-      try {
-        const getUserQuery = `
-          query GetUserXP($userID: ID!) {
-            getUser(userID: $userID) {
-              id
-              name
-              email
-              xpValue
-              requiredXP
-              exceedingXP
-              level
-            }
+  // central XP fetcher (Relay)
+  const relayEnv = useRelayEnvironment();
+  const fetchXP = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const query = graphql`
+        query NavbarGetUserXPQuery($userID: ID!) {
+          getUser(userID: $userID) {
+            id
+            name
+            email
+            xpValue
+            requiredXP
+            exceedingXP
+            level
           }
-        `;
-
-        const { data: levelData, errors } = await postGraphQL<{
-          getUser?:
-            | {
-                id: string;
-                name?: string | null;
-                email?: string | null;
-                xpValue: number | string;
-                requiredXP: number | string;
-                exceedingXP: number | string;
-                level: number | string;
-              }
-            | Array<{
-                id: string;
-                name?: string | null;
-                email?: string | null;
-                xpValue: number | string;
-                requiredXP: number | string;
-                exceedingXP: number | string;
-                level: number | string;
-              }>;
-        }>(getUserQuery, { userID: userId });
-
-        if (errors && errors.length) {
-          console.warn("[Navbar XP] GraphQL errors:", errors);
         }
+      `;
+      const levelData = await fetchQuery(relayEnv, query, {
+        userID: userId,
+      }).toPromise();
 
-        const rawUser = (levelData as any)?.getUser;
-        const payload: any = Array.isArray(rawUser)
-          ? rawUser[0] ?? null
-          : rawUser ?? null;
+      const rawUser = (levelData as any)?.getUser;
+      const payload: any = Array.isArray(rawUser)
+        ? rawUser[0] ?? null
+        : rawUser ?? null;
 
-        if (!payload) {
-          if (!cancelled)
-            setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
-          return;
-        }
-
-        const requiredXP = Number(payload.requiredXP ?? 0);
-        const exceedingXP = Number(payload.exceedingXP ?? 0);
-        const level = Number(payload.level ?? 0);
-
-        if (!cancelled) {
-          setLevelInfo({
-            level: Number.isFinite(level) ? level : 0,
-            xpInLevel: Number.isFinite(exceedingXP) ? exceedingXP : 0,
-            xpRequiredForLevelUp:
-              Number.isFinite(requiredXP) && requiredXP > 0 ? requiredXP : 1,
-          });
-        }
-      } catch (e) {
-        console.error("[Navbar XP] fetch failed", e);
-        if (!cancelled)
-          setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
+      if (!payload) {
+        setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
+        return;
       }
-    })();
+      const requiredXP = Number(payload.requiredXP ?? 0);
+      const exceedingXP = Number(payload.exceedingXP ?? 0);
+      const level = Number(payload.level ?? 0);
+      setLevelInfo({
+        level: Number.isFinite(level) ? level : 0,
+        xpInLevel: Number.isFinite(exceedingXP) ? exceedingXP : 0,
+        xpRequiredForLevelUp:
+          Number.isFinite(requiredXP) && requiredXP > 0 ? requiredXP : 1,
+      });
+    } catch (e) {
+      console.error("[Navbar XP] fetch failed", e);
+      setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
+    }
+  }, [relayEnv, userId]);
 
-    return () => {
-      cancelled = true;
+  // initial fetch and on identity changes
+  useEffect(() => {
+    fetchXP();
+  }, [fetchXP]);
+
+  // refresh when window regains focus / becomes visible / custom XP events fire
+  useEffect(() => {
+    const handleFocus = () => fetchXP();
+    const handleVisible = () => {
+      if (document.visibilityState === "visible") fetchXP();
     };
-  }, [userId, auth?.user?.access_token, auth?.isLoading]);
+    const handleCustom = () => fetchXP(); // dispatch window.dispatchEvent(new Event('xp:updated')) elsewhere
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisible);
+    window.addEventListener("xp:updated", handleCustom as EventListener);
+    window.addEventListener(
+      "meitrex:xp-updated",
+      handleCustom as EventListener
+    );
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisible);
+      window.removeEventListener("xp:updated", handleCustom as EventListener);
+      window.removeEventListener(
+        "meitrex:xp-updated",
+        handleCustom as EventListener
+      );
+    };
+  }, [fetchXP]);
+
+  // If UI shows a full bar (xp >= required), poll a few times to pick up backend level-up
+  const xpRetryRef = useRef(0);
+  useEffect(() => {
+    if (!levelInfo) return;
+    // Recompute progress correctly from exceedingXP (xpInLevel) and requiredXP (remaining)
+    const remaining = Math.max(0, levelInfo.xpRequiredForLevelUp ?? 0);
+    const gained = Math.max(0, levelInfo.xpInLevel ?? 0);
+    const total = Math.max(1, Math.round(gained + remaining));
+    const perc = Math.round((gained / total) * 100);
+
+    if ((remaining <= 0 || perc >= 100) && xpRetryRef.current < 3) {
+      xpRetryRef.current += 1;
+      const t = setTimeout(() => fetchXP(), 1200);
+      return () => clearTimeout(t);
+    }
+    // reset retries once things look normal
+    xpRetryRef.current = 0;
+  }, [levelInfo, fetchXP]);
 
   const level = levelInfo?.level ?? 0;
-  const xpInLevel = levelInfo?.xpInLevel ?? 0;
-  const xpRequired = levelInfo?.xpRequiredForLevelUp ?? 1;
-
+  const xpInLevel = levelInfo?.xpInLevel ?? 0; // exceedingXP
+  const xpRemaining = Math.max(0, levelInfo?.xpRequiredForLevelUp ?? 0); // requiredXP (rest to level-up)
+  const xpTotalThisLevel = Math.max(1, Math.round(xpInLevel + xpRemaining));
   const percent = Math.max(
     0,
-    Math.min(100, Math.round((xpInLevel / Math.max(1, xpRequired)) * 100))
+    Math.min(100, Math.round((Math.max(0, xpInLevel) / xpTotalThisLevel) * 100))
   );
   const fmtInt = (n: number) =>
     Math.round(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
@@ -751,7 +691,7 @@ function UserInfo({
             />
             <Typography variant="caption" sx={{ mt: 0.25, display: "block" }}>
               {levelInfo
-                ? `${fmtInt(xpInLevel)} / ${fmtInt(xpRequired)} XP`
+                ? `${fmtInt(xpInLevel)} / ${fmtInt(xpTotalThisLevel)} XP`
                 : "Loading XP…"}
             </Typography>
             <Box sx={{ mt: 1, display: "flex", justifyContent: "center" }}>

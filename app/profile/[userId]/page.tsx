@@ -2,23 +2,33 @@
 
 import { ForumApiUserInfoByIdQuery } from "@/__generated__/ForumApiUserInfoByIdQuery.graphql";
 import { pagePublicProfileStudentQuery } from "@/__generated__/pagePublicProfileStudentQuery.graphql";
+import { pageUserAchievementsPublicProfileQuery } from "@/__generated__/pageUserAchievementsPublicProfileQuery.graphql";
 import { SortProvider } from "@/app/contexts/SortContext";
 import { CombinedLeaderboardCard } from "@/app/profile/leaderboard/ProfileLeaderboardPositions";
 import { forumApiUserInfoByIdQuery } from "@/components/forum/api/ForumApi";
+import AchievementList from "@/components/profile/AchievementList";
 import OtherUserProfileForumActivity from "@/components/profile/forum/OtherUserProfileForumActivity";
 import UserProfileCustomHeader from "@/components/profile/header/UserProfileCustomHeader";
 import ProfileInventorySection from "@/components/profile/items/ProfileInventorySection";
-import { Avatar, Box, Grid, Tab, Tabs, Typography } from "@mui/material";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useLazyLoadQuery } from "react-relay";
+import { NavigateBefore } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Grid,
+  LinearProgress,
+  Tab,
+  Tabs,
+  Typography,
+} from "@mui/material";
+import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useAuth } from "react-oidc-context";
+import { fetchQuery, useLazyLoadQuery, useRelayEnvironment } from "react-relay";
+
+import { pagePublicProfileUserXPQuery } from "@/__generated__/pagePublicProfileUserXPQuery.graphql";
 import { graphql } from "relay-runtime";
 
-// ---- Leaderboard helpers & runtime GraphQL fetch (date handling matches main LB) ----
-const GRAPHQL_URL =
-  process.env.NEXT_PUBLIC_GRAPHQL_URL ||
-  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
-  "/graphql"; // fallback
+const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
 function toLocalISODate(d: Date): string {
   const year = d.getFullYear();
@@ -39,33 +49,29 @@ function startOfMonth(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), 1);
 }
 
-async function postGraphQL<TData>(
-  query: string,
-  variables: Record<string, any>
-): Promise<{ data?: TData; errors?: any[] }> {
-  const res = await fetch(GRAPHQL_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      // Wenn der Token global abgelegt ist (z.B. via window.__AUTH_TOKEN__), nutzen:
-      ...(typeof window !== "undefined" && (window as any).__AUTH_TOKEN__
-        ? { Authorization: `Bearer ${(window as any).__AUTH_TOKEN__}` }
-        : {}),
-    },
-    body: JSON.stringify({ query, variables }),
-    credentials: "include",
-  });
-
-  try {
-    return (await res.json()) as any;
-  } catch (e) {
-    return { errors: [{ message: "Failed to parse GraphQL response" }] } as any;
+const PublicProfileUserXPQueryGQL = graphql`
+  query pagePublicProfileUserXPQuery($userID: ID!) {
+    getUser(userID: $userID) {
+      id
+      xpValue
+      requiredXP
+      exceedingXP
+      level
+    }
   }
-}
+`;
 
-const COURSE_LB_QUERY = `
-  query PublicProfileCourseLB($courseID: ID!, $weeklyDate: String!, $monthlyDate: String!, $allTimeDate: String!) {
-    weekly: getWeeklyCourseLeaderboards(courseID: $courseID, date: $weeklyDate) {
+const PagePublicProfileCourseLBQueryGQL = graphql`
+  query pagePublicProfileCourseLBQuery(
+    $courseID: ID!
+    $weeklyDate: String!
+    $monthlyDate: String!
+    $allTimeDate: String!
+  ) {
+    weekly: getWeeklyCourseLeaderboards(
+      courseID: $courseID
+      date: $weeklyDate
+    ) {
       id
       title
       startDate
@@ -73,10 +79,16 @@ const COURSE_LB_QUERY = `
       userScores {
         id
         score
-        user { id name }
+        user {
+          id
+          name
+        }
       }
     }
-    monthly: getMonthlyCourseLeaderboards(courseID: $courseID, date: $monthlyDate) {
+    monthly: getMonthlyCourseLeaderboards(
+      courseID: $courseID
+      date: $monthlyDate
+    ) {
       id
       title
       startDate
@@ -84,10 +96,16 @@ const COURSE_LB_QUERY = `
       userScores {
         id
         score
-        user { id name }
+        user {
+          id
+          name
+        }
       }
     }
-    allTime: getAllTimeCourseLeaderboards(courseID: $courseID, date: $allTimeDate) {
+    allTime: getAllTimeCourseLeaderboards(
+      courseID: $courseID
+      date: $allTimeDate
+    ) {
       id
       title
       startDate
@@ -95,25 +113,28 @@ const COURSE_LB_QUERY = `
       userScores {
         id
         score
-        user { id name }
+        user {
+          id
+          name
+        }
       }
     }
   }
 `;
 
-const FIND_PUBLIC_USER_INFOS = `
-  query PublicUserInfos($ids: [UUID!]!) {
-    findPublicUserInfos(ids: $ids) {
+const PagePublicProfileManyUserInfosQueryGQL = graphql`
+  query pagePublicProfileManyUserInfosQuery($ids: [UUID!]!) {
+    findUserInfos(ids: $ids) {
       id
-      userName
+      nickname
     }
   }
 `;
 
-/** Build id -> display name map (prefer explicit user.name if present; otherwise userName from public info). */
+/** Build id -> display name map (prefer explicit user.name if present; otherwise nickname from public info). */
 function buildNameMap(
   fromScores: Array<any>[],
-  publicInfos: Array<{ id: string; userName: string }> = []
+  publicInfos: Array<{ id: string; nickname: string }> = []
 ): Record<string, string> {
   const map: Record<string, string> = {};
   for (const arr of fromScores) {
@@ -124,8 +145,8 @@ function buildNameMap(
     }
   }
   for (const pi of publicInfos ?? []) {
-    if (pi?.id && pi?.userName && !map[pi.id]) {
-      map[pi.id] = pi.userName;
+    if (pi?.id && pi?.nickname && !map[pi.id]) {
+      map[pi.id] = pi.nickname;
     }
   }
   return map;
@@ -147,6 +168,8 @@ function enrichScoresWithNames(
 }
 
 export default function PublicProfilePage() {
+  const router = useRouter(); // Hook holen
+
   const publicTabs = [
     "Achievements",
     "Forum",
@@ -158,6 +181,32 @@ export default function PublicProfilePage() {
 
   const params = useParams();
   const userId = params?.userId as string;
+  const relayEnv = useRelayEnvironment();
+
+  // Fetch XP/Level for the viewed user via Relay (no manual fetch)
+  const xpData = useLazyLoadQuery<pagePublicProfileUserXPQuery>(
+    PublicProfileUserXPQueryGQL,
+    { userID: userId },
+    { fetchPolicy: "network-only" }
+  );
+  // Backend may return either an object or an array; normalize it
+  const xpPayload: any = Array.isArray((xpData as any)?.getUser)
+    ? (xpData as any)?.getUser?.[0] ?? null
+    : (xpData as any)?.getUser ?? null;
+
+  const level: number = Number(xpPayload?.level ?? 0);
+  const xpInLevel: number = Number(xpPayload?.exceedingXP ?? 0);
+  const xpRequired: number = Math.max(1, Number(xpPayload?.requiredXP ?? 1));
+  const xpPercent: number = Math.max(
+    0,
+    Math.min(100, Math.round((xpInLevel / xpRequired) * 100))
+  );
+  const fmtInt = (n: number) =>
+    Math.round(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+  const levelIconSrc = `/levels/level_${Math.max(
+    0,
+    Math.min(99, Math.round(level || 0))
+  )}.svg`;
 
   // 👉 Query nur mit Feldern, die es sicher gibt (PublicUserInfo + aktueller User)
   const data = useLazyLoadQuery<pagePublicProfileStudentQuery>(
@@ -182,6 +231,35 @@ export default function PublicProfilePage() {
       id: userId,
     }
   );
+
+  const { achievementsByUserId } =
+    useLazyLoadQuery<pageUserAchievementsPublicProfileQuery>(
+      graphql`
+        query pageUserAchievementsPublicProfileQuery($id: UUID!) {
+          achievementsByUserId(userId: $id) {
+            id
+            name
+            imageUrl
+            description
+            courseId
+            userId
+            completed
+            requiredCount
+            completedCount
+            trackingStartTime
+            trackingEndTime
+          }
+        }
+      `,
+      { id: userId },
+      {
+        fetchPolicy: "network-only",
+      }
+    );
+
+  console.log(achievementsByUserId);
+
+  const mutableAchievements = [...achievementsByUserId];
 
   const findPublicUserInfos = data.findPublicUserInfos;
   // Fallback to empty object when backend is down
@@ -225,25 +303,20 @@ export default function PublicProfilePage() {
       const result: Record<string, any> = {};
 
       for (const m of sharedMemberships) {
-        const { data, errors } = await postGraphQL<{
-          weekly?: any[];
-          monthly?: any[];
-          allTime?: any[];
-        }>(COURSE_LB_QUERY, {
-          courseID: m.courseId,
-          weeklyDate: weeklyDateISO,
-          monthlyDate: monthlyDateISO,
-          allTimeDate: allTimeDateISO,
-        });
+        const lbData = await fetchQuery(
+          relayEnv,
+          PagePublicProfileCourseLBQueryGQL,
+          {
+            courseID: m.courseId,
+            weeklyDate: weeklyDateISO,
+            monthlyDate: monthlyDateISO,
+            allTimeDate: allTimeDateISO,
+          }
+        ).toPromise();
 
-        if (errors) {
-          // eslint-disable-next-line no-console
-          console.warn("[PublicProfile LB] GraphQL errors", errors);
-        }
-
-        const weeklyRaw = data?.weekly ?? [];
-        const monthlyRaw = data?.monthly ?? [];
-        const allTimeRaw = data?.allTime ?? [];
+        const weeklyRaw = (lbData as any)?.weekly ?? [];
+        const monthlyRaw = (lbData as any)?.monthly ?? [];
+        const allTimeRaw = (lbData as any)?.allTime ?? [];
 
         // Collect all unique user ids from the three boards
         const idSet = new Set<string>();
@@ -254,12 +327,17 @@ export default function PublicProfilePage() {
         }
 
         // Fetch public user infos for any ids we saw
-        let publicInfos: Array<{ id: string; userName: string }> = [];
+        let publicInfos: Array<{ id: string; nickname: string }> = [];
         if (idSet.size > 0) {
-          const { data: piData } = await postGraphQL<{
-            findPublicUserInfos: Array<{ id: string; userName: string }>;
-          }>(FIND_PUBLIC_USER_INFOS, { ids: Array.from(idSet) });
-          publicInfos = piData?.findPublicUserInfos ?? [];
+          const piData = await fetchQuery(
+            relayEnv,
+            PagePublicProfileManyUserInfosQueryGQL,
+            { ids: Array.from(idSet) }
+          ).toPromise();
+          publicInfos = ((piData as any)?.findPublicUserInfos ?? []) as Array<{
+            id: string;
+            nickname: string;
+          }>;
         }
 
         // Build name map (prefer names coming directly from scores)
@@ -305,11 +383,62 @@ export default function PublicProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(sharedMemberships), viewedSafe.id, currentUserInfo.id]);
 
+  const auth = useAuth();
+
+  const tokenRef = React.useRef<string | undefined>(auth.user?.access_token);
+  useEffect(() => {
+    tokenRef.current = auth.user?.access_token;
+  }, [auth.user?.access_token]);
+
   return (
     <Box sx={{ p: 4 }}>
+      <Button
+        onClick={() => router.back()}
+        component="a"
+        variant="text"
+        startIcon={<NavigateBefore sx={{ color: "text.primary" }} />}
+        sx={{ mb: 2, color: "#000000" }}
+      >
+        Back
+      </Button>
+
       <UserProfileCustomHeader
         displayName={userInfos.findUserInfos[0]?.nickname as string}
       />
+
+      {/* XP / Level overview for viewed user */}
+      <Box
+        sx={{ mt: 2, mb: 2, display: "flex", alignItems: "center", gap: 1.5 }}
+      >
+        <img
+          src={levelIconSrc}
+          alt={`Level ${level}`}
+          width={44}
+          height={44}
+          style={{ display: "block" }}
+          onError={(e) => {
+            const el = e.currentTarget as HTMLImageElement;
+            el.src = "/levels/level_0.svg";
+          }}
+        />
+        <Box sx={{ flexGrow: 1 }}>
+          <LinearProgress
+            variant="determinate"
+            value={xpPercent}
+            sx={{ height: 8, borderRadius: 999 }}
+          />
+          <Typography variant="caption" sx={{ mt: 0.5, display: "block" }}>
+            {fmtInt(xpInLevel)} / {fmtInt(xpRequired)} XP
+          </Typography>
+        </Box>
+        <Typography
+          variant="body2"
+          fontWeight={700}
+          sx={{ minWidth: 64, textAlign: "right" }}
+        >
+          Level {fmtInt(level)}
+        </Typography>
+      </Box>
 
       {/* Tabs */}
       <Tabs
@@ -351,9 +480,12 @@ export default function PublicProfilePage() {
 
       {/* Tab-Inhalte */}
       <Box>
-        {tabIndex === 0 &&
-          // Achievements (kept disabled until backend is ready)
-          null}
+        {tabIndex === 0 && (
+          <AchievementList
+            achievements={mutableAchievements}
+            profileTypeSortString={"achieved"}
+          />
+        )}
 
         {tabIndex === 1 && <OtherUserProfileForumActivity />}
         {tabIndex === 2 && (
@@ -372,8 +504,8 @@ export default function PublicProfilePage() {
             )}
             {!loadingLB && sharedMemberships.length === 0 && (
               <Typography variant="body2" color="text.secondary">
-                Ihr habt aktuell keine gemeinsamen Kurse – keine
-                Leaderboard-Überschneidungen.
+                No common courses with the user can be found – no leaderboard
+                entries available.
               </Typography>
             )}
             <Grid container spacing={2} sx={{ mt: 1 }}>

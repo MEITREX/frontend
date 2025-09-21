@@ -75,3 +75,19 @@ export const getItemsByUserQuery = graphql`
     }
   }
 `;
+
+export const getItemsByUserQueryCustomId = graphql`
+  query ItemsApiItemInventoryForUserByIdCustomIdQuery($userIds: [UUID!]!) {
+    inventoriesForUsers(userIds: $userIds) {
+      items {
+        equipped
+        catalogItemId: id
+        uniqueDescription
+        unlocked
+        unlockedTime
+      }
+      unspentPoints
+      userId
+    }
+  }
+`;

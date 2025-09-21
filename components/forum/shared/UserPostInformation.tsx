@@ -1,14 +1,14 @@
+import { ForumApiItemInventoryForUserByIdQuery } from "@/__generated__/ForumApiItemInventoryForUserByIdQuery.graphql";
 import { ForumApiUserInfoByIdQuery } from "@/__generated__/ForumApiUserInfoByIdQuery.graphql";
 import { ForumApiUserInfoQuery } from "@/__generated__/ForumApiUserInfoQuery.graphql";
-import { ItemsApiItemInventoryForUserByIdQuery } from "@/__generated__/ItemsApiItemInventoryForUserByIdQuery.graphql";
 import {
+  forumApiGetIntemsForEveryUserQuery,
   forumApiUserInfoByIdQuery,
   forumApiUserInfoQuery,
 } from "@/components/forum/api/ForumApi";
 import { ThreadType } from "@/components/forum/types";
 import { HoverCard } from "@/components/HoverCard";
-import { getItemsByUserQuery } from "@/components/items/api/ItemsApi";
-import { getPublicProfileItemsMerged } from "@/components/items/logic/GetItems";
+import { getPublicProfileItemsMergedCustomID } from "@/components/items/logic/GetItems";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import { Stack, Typography } from "@mui/material";
@@ -48,27 +48,26 @@ export default function UserPostInformation({
 
   const userInfo = userInfos.findUserInfos[0];
 
-  // Styles vorbereiten
   const cardStyle: React.CSSProperties = {
     padding: 8,
     borderRadius: 8,
-    minWidth: 220, // damit man das Muster sieht
+    minWidth: 220,
     minHeight: 120,
     backgroundPosition: "center",
   };
 
-  const { itemsByUserId } =
-    useLazyLoadQuery<ItemsApiItemInventoryForUserByIdQuery>(
-      getItemsByUserQuery,
+  const { inventoriesForUsers } =
+    useLazyLoadQuery<ForumApiItemInventoryForUserByIdQuery>(
+      forumApiGetIntemsForEveryUserQuery,
       {
-        userId: creatorId,
+        userIds: [creatorId],
       },
       { fetchPolicy: "network-only" }
     );
 
   // Combine backend and JSON data
-  const itemsParsedMergedPic = getPublicProfileItemsMerged(
-    itemsByUserId,
+  const itemsParsedMergedPic = getPublicProfileItemsMergedCustomID(
+    inventoriesForUsers[0].items,
     "profilePics"
   );
 
@@ -76,8 +75,8 @@ export default function UserPostInformation({
   const equipedItemPic = itemsParsedMergedPic.find((item) => item.equipped);
 
   // Combine backend and JSON data
-  const itemsParsedMergedColorTheme = getPublicProfileItemsMerged(
-    itemsByUserId,
+  const itemsParsedMergedColorTheme = getPublicProfileItemsMergedCustomID(
+    inventoriesForUsers[0].items,
     "colorThemes"
   );
 
@@ -87,8 +86,8 @@ export default function UserPostInformation({
   );
 
   // Combine backend and JSON data
-  const itemsParsedMergedPatternTheme = getPublicProfileItemsMerged(
-    itemsByUserId,
+  const itemsParsedMergedPatternTheme = getPublicProfileItemsMergedCustomID(
+    inventoriesForUsers[0].items,
     "patternThemes"
   );
 
@@ -98,8 +97,8 @@ export default function UserPostInformation({
   );
 
   // Combine backend and JSON data
-  const itemsParsedMergedPicFrame = getPublicProfileItemsMerged(
-    itemsByUserId,
+  const itemsParsedMergedPicFrame = getPublicProfileItemsMergedCustomID(
+    inventoriesForUsers[0].items,
     "profilePicFrames"
   );
 
@@ -110,20 +109,16 @@ export default function UserPostInformation({
 
   let foreground = "#000000";
 
-  // Farben/Pattern setzen
   if (equipedItemColorTheme) {
     cardStyle.backgroundColor = equipedItemColorTheme.backColor ?? "#ffffff";
     cardStyle.color = equipedItemColorTheme.foreColor ?? "#000000";
     foreground = equipedItemColorTheme.foreColor ?? "#000000";
   } else if (equipedItemPatternTheme?.url) {
-    // Data-URI direkt verwenden (kein decode!)
     cardStyle.backgroundImage = decodeURIComponent(equipedItemPatternTheme.url);
-    cardStyle.backgroundRepeat = "repeat"; // Kacheln (Pattern)
-    cardStyle.backgroundSize = "100%"; // meist für SVG-Pattern besser als "cover"
+    cardStyle.backgroundRepeat = "repeat";
+    cardStyle.backgroundSize = "100%";
     cardStyle.color = equipedItemPatternTheme.foreColor ?? "#000000";
     foreground = equipedItemPatternTheme.foreColor ?? "#000000";
-    // optional Fallback-Farbe unter dem Pattern:
-    // cardStyle.backgroundColor = "#ffffff";
   }
 
   return (
@@ -148,7 +143,7 @@ export default function UserPostInformation({
               : equipedItemPatternTheme?.foreColor) ?? "#000000"
           }
           nickname={userInfo?.nickname ?? "Unknown"}
-          patternThemeBool={equipedItemColorTheme != null}
+          patternThemeBool={equipedItemPatternTheme?.url != null}
           frameBool={equipedItemPicFrame != null}
           frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
           profilePic={equipedItemPic?.url ?? "Unkown"}
@@ -220,7 +215,7 @@ export default function UserPostInformation({
                 : equipedItemPatternTheme?.foreColor) ?? "#000000"
             }
             nickname={userInfo?.nickname ?? "Unknown"}
-            patternThemeBool={equipedItemColorTheme != null}
+            patternThemeBool={equipedItemPatternTheme?.url != null}
             frameBool={equipedItemPicFrame != null}
             frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
             profilePic={equipedItemPic?.url ?? "Unkown"}

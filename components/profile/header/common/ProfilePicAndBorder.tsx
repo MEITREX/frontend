@@ -10,10 +10,10 @@ type Props = {
 };
 
 export default function ProfilePicAndBorder({
-                                              profilePicFrame,
-                                              profilePic,
-                                              height,
-                                            }: Props) {
+  profilePicFrame,
+  profilePic,
+  height,
+}: Props) {
   return (
     <Box
       sx={{

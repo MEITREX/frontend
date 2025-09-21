@@ -1223,6 +1223,7 @@ type Query {
   getSemanticallySimilarEntities(count: Int! = 10, courseWhitelist: [UUID!], excludeEntitiesWithSameParent: Boolean, segmentId: UUID!): [SemanticSearchResult!]!
   getUser(userID: ID!): [User!]
   getWeeklyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+  inventoriesForUsers(userIds: [UUID!]!): [Inventory!]!
   inventoryForUser: Inventory!
   isAccessTokenAvailable(provider: ExternalServiceProviderDto!): Boolean!
   itemsByUserId(userId: UUID!): [UserItem!]!

@@ -218,9 +218,9 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
               }}
             >
               <span style={{ flex: 1 }}>
-                Hallo, willkommen bei Meitrex!
+                Hello, welcome to Meitrex!
                 <br />
-                Falls du Fragen hast, meld dich einfach!
+                If you have any questions, just reach out!
               </span>
               <button
                 onClick={handleCloseWelcome}

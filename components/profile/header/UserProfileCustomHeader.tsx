@@ -1,9 +1,9 @@
-import { useParams } from "next/navigation";
+import { ItemsApiItemInventoryForUserByIdCustomIdQuery } from "@/__generated__/ItemsApiItemInventoryForUserByIdCustomIdQuery.graphql";
+import { getItemsByUserQueryCustomId } from "@/components/items/api/ItemsApi";
 import ProfileCustomHeader from "@/components/profile/header/common/ProfileCustomHeader";
-import { useLazyLoadQuery } from "react-relay";
-import { widgetApiItemsByUserIdQuery } from "@/components/widgets/api/WidgetApi";
-import { WidgetApiItemsByUserIdQuery } from "@/__generated__/WidgetApiItemsByUserIdQuery.graphql";
+import { useParams } from "next/navigation";
 import { useMemo } from "react";
+import { useLazyLoadQuery } from "react-relay";
 
 type Props = {
   displayName: string;
@@ -13,22 +13,23 @@ export default function UserProfileCustomHeader({ displayName }: Props) {
   const params = useParams();
   const userId = params.userId as string;
 
-  const queryData = useLazyLoadQuery<WidgetApiItemsByUserIdQuery>(
-    widgetApiItemsByUserIdQuery,
-    { userId: userId },
-    { fetchPolicy: "network-only" }
-  );
+  const queryData =
+    useLazyLoadQuery<ItemsApiItemInventoryForUserByIdCustomIdQuery>(
+      getItemsByUserQueryCustomId,
+      { userIds: [userId] },
+      { fetchPolicy: "network-only" }
+    );
 
   const inventoryForUser = useMemo(() => {
-    if (!queryData?.itemsByUserId) {
+    if (!queryData?.inventoriesForUsers[0].items) {
       return null;
     }
 
     return {
       inventoryForUser: {
-        items: queryData.itemsByUserId.map((item) => ({
+        items: queryData.inventoriesForUsers[0].items.map((item) => ({
           equipped: item.equipped,
-          id: item.id,
+          id: item.catalogItemId,
           unlocked: item.unlocked,
           unlockedTime: item.unlockedTime,
         })),
