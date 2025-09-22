@@ -70,10 +70,19 @@ export const forumApiForumIdQuery = graphql`
   query ForumApiForumIdQuery($id: UUID!) {
     forumByCourseId(id: $id) {
       id
+      userIds
     }
   }
 `;
 
+export const forumApiPublicUserInfoQuery = graphql`
+  query ForumApiPublicUserInfoQuery($ids: [UUID!]!) {
+    findPublicUserInfos(ids: $ids) {
+      id
+      nickname
+    }
+  }
+`;
 export const forumApiCreateQuestionThreadMutation = graphql`
   mutation ForumApiCreateQuestionThreadMutation($thread: InputQuestionThread!) {
     createQuestionThread(thread: $thread) {
