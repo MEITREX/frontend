@@ -9,6 +9,7 @@ import {
   Tooltip,
   Typography
 } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 const USER_ID_QUERY = graphql`
   query NotificationPopOverUserIdQuery {
@@ -48,6 +49,7 @@ export default function NotificationPopOver({
   };
 
   const isOpen = Boolean(anchorEl);
+  const router = useRouter();
 
   const { currentUserInfo } = useLazyLoadQuery<any>(
     USER_ID_QUERY,
@@ -86,18 +88,37 @@ export default function NotificationPopOver({
     );
   };
 
+  const handleOpenLink = (event: React.MouseEvent, index: number, href?: string | null) => {
+    event.preventDefault();
+    const target = list[index];
+    if (target && !target.read) {
+      setNotifications((prev: any) =>
+        (Array.isArray(prev) ? prev : []).map((n: any, i: number) =>
+          i === index ? { ...n, read: true } : n
+        )
+      );
+      if (userId && target.id) {
+        commitMarkOneRead({
+          variables: { userId, notificationId: target.id },
+        });
+      }
+    }
+    if (href) {
+      handleCloseNotifications();
+      router.push(href);
+    }
+  };
+
   function getRelativeTime(createdAt: string): string {
     const now = new Date();
     const created = new Date(createdAt);
     const diffSec = Math.floor((now.getTime() - created.getTime()) / 1000);
-
     const seconds = diffSec;
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
     const months = Math.floor(days / 30);
     const years = Math.floor(days / 365);
-
     if (seconds < 60) {
       const rounded = Math.floor(seconds / 10) * 10 || 10;
       return `${rounded} seconds ago`;
@@ -188,7 +209,6 @@ export default function NotificationPopOver({
           </Box>
         </Box>
 
-        {/* Beispiel-Inhalte */}
         {list.length === 0 ? (
           <Typography variant="body2" color="text.secondary">
             No new notifications.
@@ -196,7 +216,11 @@ export default function NotificationPopOver({
         ) : (
           list.map((note, index) => (
             <Box key={note?.id ?? index} mb={2}>
-              <Link href={note?.href} style={{ textDecoration: "none" }}>
+              <Link
+                href={note?.href ?? "#"}
+                onClick={(e) => handleOpenLink(e, index, note?.href)}
+                style={{ textDecoration: "none" }}
+              >
                 <Box
                   sx={{
                     position: "relative",
