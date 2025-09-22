@@ -43,6 +43,8 @@ export default function ThreadDetail() {
 
   const [displayTextEditor, setDisplayTextEditor] = useState(false);
 
+  const [replyingToPostId, setReplyingToPostId] = useState<string | null>(null);
+
   const [commitPost] = useMutation<ForumApiAddPostMutation>(
     forumApiAddPostMutation
   );
@@ -57,6 +59,11 @@ export default function ThreadDetail() {
     );
   };
 
+  const handleOpenReplyEditor = (postId: string) => {
+    setReplyingToPostId(postId);
+    setDisplayTextEditor(true);
+  };
+
   const handleSubmit = () => {
     const replyTextTrimmed = replyText.trim();
     if (replyTextTrimmed === "") return;
@@ -64,15 +71,17 @@ export default function ThreadDetail() {
     const post: InputPost = {
       content: replyTextTrimmed,
       threadId: thread?.id,
+      reference: replyingToPostId,
     };
 
     commitPost({
       variables: { post: post },
-      onCompleted(data) {
-        const newPost = data.addPost;
+      onCompleted(dataThread) {
+        const newPost = dataThread.addPost;
         if (newPost) {
           setLocalPosts([...localPosts, newPost as Post]);
           setDisplayTextEditor(false);
+          setReplyingToPostId(null);
         }
       },
       onError(error) {
@@ -82,12 +91,23 @@ export default function ThreadDetail() {
     setReplyText("");
   };
 
+
+  const handleCancel = () => {
+    setDisplayTextEditor(!displayTextEditor);
+    setReplyingToPostId(null);
+  }
+
   if (!thread) {
     return <PageError message={`No Thread with ID: ${threadId}.`} />;
   }
 
   return (
-    <PostsContext.Provider value={{ deletePostContext: deletePostFromState }}>
+    <PostsContext.Provider
+      value={{
+        deletePostContext: deletePostFromState,
+        openReplyEditor: handleOpenReplyEditor,
+      }}
+    >
       <Button
         onClick={()=> router.push(`../forum`)}
         variant="text"
@@ -107,6 +127,7 @@ export default function ThreadDetail() {
           position: "relative",
         }}
       >
+        {/*Question/Information Thread*/}
         <Stack
           sx={{ backgroundColor: "#f5f7fa", borderRadius: 2, p: 2 }}
           direction="row"
@@ -130,6 +151,7 @@ export default function ThreadDetail() {
 
             <Box sx={{ mb: 1 }}>
               <EditableContent
+                isThread={true}
                 authorId={thread.question?.authorId ?? thread.info?.authorId!}
                 initialContent={
                   thread.question?.content ?? thread.info?.content!
@@ -157,8 +179,10 @@ export default function ThreadDetail() {
 
         <Divider sx={{ my: 2 }} />
 
+        {/*Postings*/}
         <PostList
           bestAnswerId={thread?.selectedAnswer}
+          markPostAnswerId={replyingToPostId}
           threadCreatorId={thread?.creatorId}
           posts={localPosts ?? []}
         ></PostList>
@@ -171,6 +195,7 @@ export default function ThreadDetail() {
             alignItems: "start",
           }}
         >
+          {/*Answer*/}
           <Button
             onClick={() => setDisplayTextEditor(!displayTextEditor)}
             variant="text"
@@ -180,6 +205,23 @@ export default function ThreadDetail() {
           </Button>
           {displayTextEditor && (
             <Box sx={{ width: "100%" }}>
+              {/*Reply to Post*/}
+              {replyingToPostId && (
+                <Box
+                  sx={{
+                    backgroundColor: '#f2f3f5',
+                    borderLeft: '4px solid #5865f2',
+                    padding: '8px 12px',
+                    marginBottom: '8px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: '#4f5660' }}>
+                    Replying to post
+                  </Typography>
+                </Box>
+              )}
+              {/*Editor*/}
               <TextEditor onContentChange={(html) => setReplyText(html)} />
               <Box
                 sx={{
@@ -192,7 +234,7 @@ export default function ThreadDetail() {
                 <Button
                   color="warning"
                   variant="contained"
-                  onClick={() => setDisplayTextEditor(!displayTextEditor)}
+                  onClick={handleCancel}
                   sx={{ height: "fit-content" }}
                 >
                   Cancel

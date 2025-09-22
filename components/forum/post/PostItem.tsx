@@ -12,6 +12,7 @@ type Props = {
   threadCreatorId: ThreadType["creatorId"];
   bestAnswerId?: string | null;
   onMarkAsBest: () => void;
+  markPostAnswerId: string | null;
 };
 
 export default function PostItem({
@@ -19,24 +20,34 @@ export default function PostItem({
   threadCreatorId,
   bestAnswerId,
   onMarkAsBest,
+  markPostAnswerId
 }: Props) {
   const loggedInUser = useLazyLoadQuery<ForumApiUserInfoQuery>(
     forumApiUserInfoQuery,
     {}
   );
 
+  const isPostAnswer = markPostAnswerId === post.id;
   const isBestAnswer = bestAnswerId === post.id;
   const isThreadAuthor = loggedInUser.currentUserInfo.id === threadCreatorId;
 
   return (
     <Box
       sx={{
-        border: "1px solid #e0e0e0",
-        borderColor: isBestAnswer ? "#00c853" : "#e0e0e0",
+        border: "1px solid",
+        borderColor: isBestAnswer
+          ? "#00c853"
+          : isPostAnswer
+            ? "#FFA500"
+            : "#e0e0e0",
         borderRadius: 2,
         p: 2,
         mb: 2,
-        backgroundColor: isBestAnswer ? "#e8f5e9" : "#fafafa",
+        backgroundColor: isBestAnswer
+          ? "#e8f5e9"
+          : isPostAnswer
+            ? "#e3f2fd"
+            : "#fafafa",
         position: "relative",
       }}
     >
@@ -54,6 +65,7 @@ export default function PostItem({
         >
           <Box sx={{ mb: 1 }}>
             <EditableContent
+              isPost={true}
               contentIsEdited={post.edited}
               authorId={post?.authorId}
               initialContent={post.content}

@@ -5,6 +5,8 @@ import { createContext, useContext } from "react";
 const PostsContext = createContext({
   deletePostContext: (postId: string) =>
     console.warn("deletePost function not provided"),
+  openReplyEditor: (postId: string) =>
+    console.warn("openReplyEditor function not provided"),
 });
 
 export const usePostsActions = () => {

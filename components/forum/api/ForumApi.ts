@@ -58,6 +58,9 @@ export const forumApiThreadDetailQuery = graphql`
         downvotedByUsers
         upvotedByUsers
         edited
+        reference {
+          content
+        }
       }
     }
   }
@@ -88,6 +91,9 @@ export const forumApiAddPostMutation = graphql`
       authorId
       downvotedByUsers
       upvotedByUsers
+      reference {
+        content
+      }
     }
   }
 `;
