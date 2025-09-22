@@ -235,8 +235,8 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
                   padding: 0,
                   alignSelf: "flex-start",
                 }}
-                aria-label="Willkommensnachricht schließen"
-                title="Willkommensnachricht schließen"
+                aria-label="Close welcome message"
+                title="Close welcome message"
               >
                 ×
               </button>
@@ -280,8 +280,8 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
                       padding: 0,
                       alignSelf: "flex-start",
                     }}
-                    aria-label="Empfehlung schließen"
-                    title="Empfehlung schließen"
+                    aria-label="Close recommendations"
+                    title="Close recommendations"
                   >
                     ×
                   </button>
@@ -299,10 +299,10 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
                     cursor: "pointer",
                     fontSize: 16,
                   }}
-                  aria-label="Alle Empfehlungen schließen"
-                  title="Alle Empfehlungen schließen"
+                  aria-label="Close all recommendations"
+                  title="Close all recommendations"
                 >
-                  Alle schließen
+                  Close all
                 </button>
               )}
             </div>
@@ -325,7 +325,7 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
           minWidth: AVATAR_WIDTH,
           maxWidth: AVATAR_WIDTH,
         }}
-        title="Dino Tutor – zum Verschieben oder Öffnen klicken"
+        title="Personal Tutor – Click to open and hold to move"
       >
         <button
           style={{
@@ -344,7 +344,7 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
             alignItems: "center",
             justifyContent: "center",
           }}
-          aria-label={showChat ? "Tutor einklappen" : "Tutor öffnen"}
+          aria-label={showChat ? "Close Tutor" : "Open Tutor"}
         >
           <TutorAvatar />
         </button>

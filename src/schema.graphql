@@ -128,6 +128,11 @@ input AssociationInput {
   right: String!
 }
 
+input AssociationPairInput {
+  left: String!
+  right: String!
+}
+
 type AssociationQuestion implements Question {
   correctAssociations: [SingleAssociation!]!
   hint: JSON
@@ -793,6 +798,34 @@ interface HasGoal {
   userId: UUID!
 }
 
+input HintAssociationInput {
+  pairs: [AssociationPairInput!]!
+  text: String!
+}
+
+input HintClozeInput {
+  blanks: [String!]!
+  text: String!
+}
+
+input HintGenerationInput {
+  association: HintAssociationInput
+  cloze: HintClozeInput
+  multipleChoice: HintMultipleChoiceInput
+  type: HintQuestionType!
+}
+
+input HintMultipleChoiceInput {
+  answers: [String!]!
+  text: String!
+}
+
+enum HintQuestionType {
+  ASSOCIATION
+  CLOZE
+  MULTIPLE_CHOICE
+}
+
 type HintResponse {
   hint: String!
 }
@@ -1043,7 +1076,7 @@ type Mutation {
   equipItem(itemId: UUID!): Inventory
   evaluatePlayerHexadScore(input: PlayerAnswerInput!, userId: UUID!): PlayerHexadScore!
   generateAccessToken(input: GenerateAccessTokenInput!): Boolean!
-  generateHint(courseId: UUID!, questionText: String!): HintResponse!
+  generateHint(courseId: UUID!, questionInput: HintGenerationInput!): HintResponse!
   itemReward(itemId: UUID!): Inventory
   joinCourse(courseId: UUID!): CourseMembership!
   leaveCourse(courseId: UUID!): CourseMembership!
