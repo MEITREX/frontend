@@ -340,3 +340,12 @@ export const forumApiGetIntemsForEveryUserQuery = graphql`
     }
   }
 `;
+
+export const forumApiDeleteThreadMutation = graphql`
+  mutation ForumApiDeleteThreadMutation($threadId: UUID!) {
+    deleteThread(threadId: $threadId) {
+      id
+    }
+  }
+`;
+
