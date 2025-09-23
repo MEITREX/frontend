@@ -115,21 +115,41 @@ export function GenerateQuizModal({
 
   const data = useLazyLoadQuery<GenerateQuizModalMediaQuery>(
     graphql`
-      query GenerateQuizModalMediaQuery {
-        mediaRecords {
-          id
-          name
-          type
-          courseIds
+      query GenerateQuizModalMediaQuery($courseId: UUID!) {
+        contentsByCourseId(courseId: $courseId) {
+          __typename
+          contents{
+            id
+            __typename
+            metadata {
+              name,
+              type,
+              __typename
+            }
+          }
         }
       }
     `,
     { courseId }
   );
 
-  const mediaRecords = data.mediaRecords.filter((item) => {
-    return item.courseIds.includes(courseId);
-  });
+
+
+
+
+  // reduce the arrays of the result into a single array of objects with id and name
+  const mediaRecords = data.contentsByCourseId?.contents.reduce<MediaRecord[]>((acc, item) => {
+    if (item) {
+      acc.push({
+        id: item.id,
+        name: item.metadata?.name || "Unknown",
+        type: item.metadata?.type || "Unknown",
+      });
+    }
+    return acc;
+  }, [] as MediaRecord[]).filter((item) => item.type === "MEDIA");
+
+
 
   const [generate] = useMutation<GenerateQuizModalMutation>(graphql`
     mutation GenerateQuizModalMutation(
@@ -258,3 +278,10 @@ export function GenerateQuizModal({
     </Dialog>
   );
 }
+
+
+export interface MediaRecord {
+    id: string;
+    name: string;
+    type: string;
+  }

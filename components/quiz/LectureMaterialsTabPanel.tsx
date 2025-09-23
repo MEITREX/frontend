@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Form, FormSection } from "../Form";
+import { Add, Delete } from "@mui/icons-material";
 import {
   Alert,
   AlertTitle,
@@ -8,15 +7,15 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import { Add, Delete } from "@mui/icons-material";
-import { GenerateQuizModalMediaQuery$data } from "@/__generated__/GenerateQuizModalMediaQuery.graphql";
-
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Form, FormSection } from "../Form";
+import { MediaRecord } from "../GenerateQuizModal";
 export function LectureMaterialsTabPanel({
   mediaRecords,
   materialIds,
   onChange,
 }: {
-  mediaRecords: GenerateQuizModalMediaQuery$data["mediaRecords"];
+  mediaRecords: MediaRecord[];
   materialIds: string[];
   onChange: (materialIds: string[]) => void;
 }) {
