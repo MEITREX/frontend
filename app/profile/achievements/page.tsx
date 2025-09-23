@@ -4,7 +4,7 @@ import { pagePrivateProfileStudentAchievementsQuery } from "@/__generated__/page
 import { pageUserAchievementsQuery } from "@/__generated__/pageUserAchievementsQuery.graphql";
 import AchievementList from "@/components/profile/AchievementList";
 import { Box, Tab, Tabs, Typography } from "@mui/material";
-import XpOverview from "../XpOverview";
+import XpOverview from "../xpoverview/XpOverview";
 import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";

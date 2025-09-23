@@ -8,7 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
-import XpOverview from "../XpOverview";
+import XpOverview from "../xpoverview/XpOverview";
 
 const tabs = [
   { label: "General", path: "general" },
