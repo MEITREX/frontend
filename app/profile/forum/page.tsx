@@ -3,6 +3,7 @@
 import { pagePrivateProfileStudentForumQuery } from "@/__generated__/pagePrivateProfileStudentForumQuery.graphql";
 import ProfileForumActivity from "@/components/profile/forum/ProfileForumActivity";
 import { Box, Tab, Tabs, Typography } from "@mui/material";
+import XpOverview from "../XpOverview";
 import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
@@ -46,6 +47,7 @@ export default function ForumPage() {
   return (
     <Box sx={{ p: 2 }}>
       <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
+      <XpOverview userId={currentUserInfo.id} />
 
       <Tabs
         value={activeIndex}
