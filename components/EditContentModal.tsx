@@ -30,6 +30,7 @@ import { graphql, useFragment, useMutation, useQueryLoader } from "react-relay";
 import { AddCodeAssignmentModal } from "./AddCodeAssignmentModal";
 import { MediaContentModal } from "./MediaContentModal";
 import { QuizModal } from "./QuizModal";
+import { SubmissionExerciseModal } from "./SubmissionExerciseModal";
 
 export function EditContentModal({
   chapterId,
@@ -55,6 +56,7 @@ export function EditContentModal({
   const [openFlashcardModal, setOpenFlashcardModal] = useState(false);
   const [openAddQuizModal, setOpenAddQuizModal] = useState(false);
   const [openCodeAssignmentModal, setOpenCodeAssignmentModal] = useState(false);
+  const [openSubmissionExerciseModal, setOpenSubmissionExerciseModal] = useState(false);
 
   const [openModal, setOpenModal] = useState(false);
 
@@ -348,6 +350,14 @@ export function EditContentModal({
           >
             Add Code Assignment
           </Button>
+          <Button
+            onClick={() => setOpenSubmissionExerciseModal(true)}
+            variant="text"
+            className="mt-4"
+            startIcon={<Add />}
+          >
+            Add Submission Exercise
+          </Button>
         </DialogContent>
         <DialogActions>
           <LoadingButton loading={loading} onClick={submit}>
@@ -382,6 +392,12 @@ export function EditContentModal({
           allSkillsQueryRef={allSkillsQueryRef}
         />
       )}
+      <SubmissionExerciseModal
+        isOpen={openSubmissionExerciseModal}
+        onClose={() => setOpenSubmissionExerciseModal(false)}
+        chapterId={chapterId}
+        _existingQuiz={null}
+      />
     </>
   );
 }
