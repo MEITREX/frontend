@@ -68,7 +68,7 @@ export default function ForumOverview() {
     <>
       <Box
         sx={{
-          height: "78vh",
+          height: isMediaPage ? "100%" : "78vh",
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",

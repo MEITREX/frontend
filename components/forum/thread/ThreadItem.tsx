@@ -6,8 +6,7 @@ import { ThreadType } from "@/components/forum/types";
 import { Box, Stack, Typography } from "@mui/material";
 import UpvoteDownvote from "../shared/UpvoteDownvote";
 import UserPostInformation from "../shared/UserPostInformation";
-import { useRouter } from "next/navigation";
-import { useCourseData } from "@/components/courses/student/StudentCourseDataContext";
+import { usePathname, useRouter } from "next/navigation";
 
 type Props = {
   thread: ThreadType;
@@ -15,11 +14,19 @@ type Props = {
 
 export default function ThreadItem({ thread }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
 
-  // Get data from context
-  const data = useCourseData();
-  const course = data.coursesByIds[0];
-  const courseId = course.id;
+  /* The navigation depends on where the thread is clicked:
+     1. Forum page
+     2. Course page
+  */
+  const onThreadClick = () => {
+    if(pathname.includes("/forum")) {
+      router.push(`${pathname}/${thread.id}`);
+    } else {
+      router.push(`${pathname}/forum/${thread.id}`);
+    }
+  }
 
   return (
     <Box
@@ -33,6 +40,7 @@ export default function ThreadItem({ thread }: Props) {
         textDecoration: "none",
         color: "inherit",
         transition: "0.2s",
+        overflowX:"hidden",
         "&:hover": {
           backgroundColor: "#f5f5f5",
           cursor: "pointer",
@@ -55,7 +63,7 @@ export default function ThreadItem({ thread }: Props) {
           justifyContent="space-between"
           sx={{ flexGrow: 1, overflow: "hidden", position: "relative" }}
         >
-          <Box onClick={() => router.push(`/courses/${courseId}/forum/${thread.id}`)}>
+          <Box onClick={onThreadClick}>
             <Typography variant="h6" sx={{ color: "#089CDC", fontWeight: 600 }}>
               {thread.title}
             </Typography>

@@ -23,10 +23,11 @@ import PostsContext from "../context/PostsContext";
 import PostList from "../post/PostList";
 import ThreadStatusIcons from "./ThreadStatusIcons";
 import { useParams, usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 export default function ThreadDetail() {
-  const pathname = usePathname();
-  const { threadId } = useParams();
+  const { threadId, courseId } = useParams();
   const router = useRouter();
 
   const data = useLazyLoadQuery<ForumApiThreadDetailQuery>(
@@ -127,6 +128,41 @@ export default function ThreadDetail() {
           position: "relative",
         }}
       >
+
+        {/* Content Reference */}
+        {thread.threadContentReference && (
+          <Link
+            href={`/courses/${courseId}/media/${thread.threadContentReference.contentId}/forum/${thread.id}`}
+            passHref
+            style={{ textDecoration: "none" }}
+          >
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              sx={{
+                color: "success.main",
+                mb: 2,
+                cursor: "pointer",
+                "&:hover": {
+                  textDecoration: "underline",
+                  color: "success.dark",
+                },
+              }}
+            >
+              <InfoOutlinedIcon fontSize="small" />
+              <Typography
+                variant="body2"
+                component="span"
+                sx={{ color: "inherit" }}
+              >
+                This Thread is related to this content:{" "}
+                {thread.threadContentReference.contentId}
+              </Typography>
+            </Stack>
+          </Link>
+        )}
+
         {/*Question/Information Thread*/}
         <Stack
           sx={{ backgroundColor: "#f5f7fa", borderRadius: 2, p: 2 }}
