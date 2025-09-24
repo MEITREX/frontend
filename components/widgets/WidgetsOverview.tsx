@@ -132,7 +132,7 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
     if (!recommendations.length) return [];
     return widgets
       .map((w) => {
-        const recommendation = mockedRecommendations.find(
+        const recommendation = recommendations.find(
           (r) => r.category === w.category
         );
         if (!recommendation) return null;
