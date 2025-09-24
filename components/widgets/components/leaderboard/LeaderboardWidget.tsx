@@ -288,28 +288,28 @@ const LeaderboardWidget: React.FC<Props> = ({
   console.log(userProfilePics, userProfileFrames);
 
   function userCardStyle(
-      userId: string,
-      base: React.CSSProperties = {}
-    ): React.CSSProperties {
-      const col = userColorThemes[userId];
-      const pat = userPatternThemes[userId];
+    userId: string,
+    base: React.CSSProperties = {}
+  ): React.CSSProperties {
+    const col = userColorThemes[userId];
+    const pat = userPatternThemes[userId];
 
-      const style: React.CSSProperties = { ...base };
+    const style: React.CSSProperties = { ...base };
 
-      if (col?.backColor) style.backgroundColor = col.backColor;
+    if (col?.backColor) style.backgroundColor = col.backColor;
 
-      const patUrl = assetSrc(pat);
-      if (patUrl) {
-        style.backgroundImage = `url(${patUrl})`;
-        style.backgroundRepeat = "repeat";
-        style.backgroundSize = "100%";
-      }
-
-      const fg = col?.foreColor ?? pat?.foreColor; // ← wichtig: Pattern-Foreground berücksichtigen
-      if (fg) style.color = fg;
-
-      return style;
+    const patUrl = assetSrc(pat);
+    if (patUrl) {
+      style.backgroundImage = `url(${patUrl})`;
+      style.backgroundRepeat = "repeat";
+      style.backgroundSize = "100%";
     }
+
+    const fg = col?.foreColor ?? pat?.foreColor; // ← wichtig: Pattern-Foreground berücksichtigen
+    if (fg) style.color = fg;
+
+    return style;
+  }
 
   return (
     <WidgetWrapper
@@ -331,7 +331,7 @@ const LeaderboardWidget: React.FC<Props> = ({
             {topThree.map((us, idx) => (
               <div
                 key={us.user?.id ?? idx}
-                style={userCardStyle(us.user?.id ?? "",{
+                style={userCardStyle(us.user?.id ?? "", {
                   display: "flex",
                   alignItems: "center",
                   border:
@@ -381,7 +381,10 @@ const LeaderboardWidget: React.FC<Props> = ({
                   {/* Profilbild */}
                   <img
                     src={
-                      assetSrc(userProfilePics[us.user?.id ?? ""], defaultUserImage.src)!
+                      assetSrc(
+                        userProfilePics[us.user?.id ?? ""],
+                        defaultUserImage.src
+                      )!
                     }
                     alt={us.user?.id}
                     style={{
@@ -438,19 +441,42 @@ const LeaderboardWidget: React.FC<Props> = ({
                 >
                   <span style={{ width: 20, textAlign: "right" }}>{rank}.</span>
                   <div
-                  style={{
-                    position: "relative",
-                    width: 24,
-                    height: 24,
-                    margin: "0 auto 10px",
-                    border: "0px solid #ddd",
-                    objectFit: "cover",
-                    boxShadow: "0 1px 5px #0001",
-                  }}
-                >
-                  {assetSrc(userProfileFrames[us.user?.id ?? ""]) && (
+                    style={{
+                      position: "relative",
+                      width: 24,
+                      height: 24,
+                      margin: "0 auto 10px",
+                      border: "0px solid #ddd",
+                      objectFit: "cover",
+                      boxShadow: "0 1px 5px #0001",
+                    }}
+                  >
+                    {assetSrc(userProfileFrames[us.user?.id ?? ""]) && (
+                      <img
+                        src={assetSrc(userProfileFrames[us.user?.id ?? ""])}
+                        alt={us.user?.id}
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: 10,
+                          objectFit: "cover",
+                          boxShadow: "0 2px 8px #0001",
+                          zIndex: 1,
+                        }}
+                      />
+                    )}
+
+                    {/* Profilbild */}
                     <img
-                      src={assetSrc(userProfileFrames[us.user?.id ?? ""])}
+                      src={
+                        assetSrc(
+                          userProfilePics[us.user?.id ?? ""],
+                          defaultUserImage.src
+                        )!
+                      }
                       alt={us.user?.id}
                       style={{
                         position: "absolute",
@@ -461,30 +487,10 @@ const LeaderboardWidget: React.FC<Props> = ({
                         borderRadius: 10,
                         objectFit: "cover",
                         boxShadow: "0 2px 8px #0001",
-                        zIndex: 1,
+                        zIndex: 0,
                       }}
                     />
-                  )}
-
-                  {/* Profilbild */}
-                  <img
-                    src={
-                      assetSrc(userProfilePics[us.user?.id ?? ""], defaultUserImage.src)!
-                    }
-                    alt={us.user?.id}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      borderRadius: 10,
-                      objectFit: "cover",
-                      boxShadow: "0 2px 8px #0001",
-                      zIndex: 0,
-                    }}
-                  />
-                </div>
+                  </div>
                   <span style={{ flex: 1, textAlign: "left" }}>
                     {userNickname[us.user?.id ?? ""] ??
                       us.user?.name ??
