@@ -31,6 +31,18 @@ const MARK_ONE_READ = graphql`
   }
 `;
 
+const DELETE_ALL = graphql`
+  mutation NotificationPopOver_DeleteAllMutation($userId: UUID!) {
+    deleteAllNotifications(userId: $userId)
+  }
+`;
+
+const DELETE_ONE = graphql`
+  mutation NotificationPopOver_DeleteOneMutation($userId: UUID!, $notificationId: UUID!) {
+    deleteOneNotification(userId: $userId, notificationId: $notificationId)
+  }
+`;
+
 interface NotificationPopOverProps {
   anchorEl: any;
   setAnchorEl: (el: any) => void;
@@ -60,6 +72,9 @@ export default function NotificationPopOver({
 
   const [commitMarkAllRead, allInFlight] = useMutation(MARK_ALL_READ);
   const [commitMarkOneRead, oneInFlight] = useMutation(MARK_ONE_READ);
+  const [commitDeleteAll] = useMutation(DELETE_ALL);
+  const [commitDeleteOne] = useMutation(DELETE_ONE);
+
 
   const list = Array.isArray(notifications) ? notifications : [];
 
@@ -83,9 +98,16 @@ export default function NotificationPopOver({
   const handleDelete = (event: React.MouseEvent, index: number) => {
     event.stopPropagation();
     event.preventDefault();
+
+    const list = Array.isArray(notifications) ? notifications : [];
+    const target = list[index];
     setNotifications((prev: any) =>
       (Array.isArray(prev) ? prev : []).filter((_: any, i: number) => i !== index)
     );
+
+    if (userId && target?.id) {
+      commitDeleteOne({ variables: { userId, notificationId: target.id } });
+    }
   };
 
   const handleOpenLink = (event: React.MouseEvent, index: number, href?: string | null) => {
@@ -201,7 +223,12 @@ export default function NotificationPopOver({
               size="small"
               variant="contained"
               color="error"
-              onClick={() => setNotifications([])}
+              onClick={() => {
+                setNotifications([]);
+                if (userId) {
+                  commitDeleteAll({ variables: { userId } });
+                }
+              }}
               sx={{ borderRadius: 999 }}
             >
               DELETE ALL

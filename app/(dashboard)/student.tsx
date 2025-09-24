@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { studentStudentQuery } from "@/__generated__/studentStudentQuery.graphql";
 import { studentPlayerHexadScoreExistsQuery } from "@/__generated__/studentPlayerHexadScoreExistsQuery.graphql";
 import { CourseCard, yearDivisionToStringShort } from "@/components/CourseCard";
@@ -137,19 +138,30 @@ export default function StudentPage() {
     }
   `;
 
+
   function ExistLoader({ queryRef, userId }: { queryRef: any; userId: any }) {
     const data = usePreloadedQuery<studentPlayerHexadScoreExistsQuery>(
       existingSurveyResults,
       queryRef
     );
 
-    console.log("EXE", data.PlayerHexadScoreExists);
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
 
-    if (data.PlayerHexadScoreExists) {
-      return <div></div>;
-    } else {
+    const [forceOnce, setForceOnce] = useState(false);
+
+    useEffect(() => {
+      if (searchParams.get("resumeSurvey") === "1") {
+        setForceOnce(true);
+        // router.replace(pathname);
+      }
+    }, [searchParams, router, pathname]);
+
+    if (forceOnce || !data.PlayerHexadScoreExists) {
       return <SurveyPopup id={userId} />;
     }
+    return <div></div>;
   }
 
   function GetPlayerHexadScore() {
