@@ -1,6 +1,5 @@
 "use client";
 
-
 import { Box } from "@mui/material";
 import React, { Suspense } from "react";
 import SkeletonThreadDetail from "@/components/forum/skeleton/SkeletonThreadDetail";

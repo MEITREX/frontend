@@ -135,7 +135,14 @@ export default function CourseLayout({ children }: { children: React.ReactNode }
     if (course?.id) {
       studentUserLogin({ variables: { id: course.id } });
     }
-  }, [course?.id, studentUserLogin]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [course?.id]);
+
+  useEffect(() => {
+    console.log("Mounted CourseLayout");
+    return () => console.log("Unmounted CourseLayout");
+  }, []);
+
 
   if (!course) {
     return <PageError message="No course found with given id." />;

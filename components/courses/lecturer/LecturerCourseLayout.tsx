@@ -61,7 +61,6 @@ export default function LecturerCourseLayout({ children }: { children: React.Rea
   const { courseId } = useParams();
   const router = useRouter();
 
-  // GEÄNDERT: Schritt 3 - TypeScript-Typ anpassen
   const data = useLazyLoadQuery<LecturerCourseLayoutCourseIdQuery>(lecturerCourseIdQuery, { courseId });
 
   const course = data.coursesByIds?.[0];

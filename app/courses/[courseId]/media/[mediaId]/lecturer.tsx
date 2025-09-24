@@ -1,5 +1,4 @@
 "use client";
-import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { lecturerDeleteMediaContentMutation } from "@/__generated__/lecturerDeleteMediaContentMutation.graphql";
 import { lecturerMediaQuery } from "@/__generated__/lecturerMediaQuery.graphql";
 import { ContentLink } from "@/components/content-link/ContentLink";
@@ -10,11 +9,8 @@ import { PageError } from "@/components/PageError";
 import { Delete, Edit } from "@mui/icons-material";
 import {
   Alert,
-  Box,
   Button,
   CircularProgress,
-  IconButton,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -22,12 +18,9 @@ import { useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 import { ContentMediaDisplay } from "./ContentMediaDisplay";
 import { DownloadButton } from "./student";
-import ForumOverview from "@/components/forum/ForumOverview";
-import ForumIcon from "@mui/icons-material/Forum";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+
 
 export default function LecturerMediaPage() {
-  const [displayForum, setDisplayForum] = useState<boolean>(false);
   const { mediaId, courseId } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -116,13 +109,6 @@ export default function LecturerMediaPage() {
           {err.message}
         </Alert>
       ))}
-
-      <PanelGroup direction="horizontal" className="w-full h-full flex-grow">
-        <Panel
-          defaultSize={displayForum ? 50 : 100}
-          minSize={0}
-          className="flex flex-col h-full overflow-hidden p-4"
-        >
           <Heading
             title={mainRecord?.name ?? content.metadata.name}
             overline={mainRecord != null ? content.metadata.name : undefined}
@@ -194,84 +180,13 @@ export default function LecturerMediaPage() {
               </div>
             </>
           )}
+
           <MediaContentModal
             isOpen={editOpen}
             onClose={() => setEditOpen(false)}
             _existingMediaContent={media.contentsByIds[0]}
             _mediaRecords={media}
           />
-        </Panel>
-
-        {displayForum && (
-          <>
-            <div className="relative w-1 h-full">
-              <PanelResizeHandle className="w-2 h-full bg-gray-200 hover:bg-gray-400 cursor-ew-resize flex items-center justify-center"></PanelResizeHandle>
-              <Tooltip title={displayForum ? "Close Forum" : "Open Forum"}>
-                <IconButton
-                  onClick={() => setDisplayForum((prev) => !prev)}
-                  color="primary"
-                  aria-label={displayForum ? "Close Forum" : "Open Forum"}
-                  sx={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "-15px",
-                    transform: "translateY(-50%)",
-                    backgroundColor: "primary.main",
-                    color: "white",
-                    boxShadow: 3,
-                    cursor: "pointer",
-                    "&:hover": {
-                      backgroundColor: "primary.dark",
-                    },
-                    width: 36,
-                    height: 36,
-                    zIndex: 50,
-                  }}
-                >
-                  <ArrowForwardIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </div>
-            <Panel
-              defaultSize={displayForum ? 50 : 0}
-              minSize={displayForum ? 50 : 0}
-              className="h-full overflow-hidden"
-            >
-              <ForumOverview></ForumOverview>
-            </Panel>
-          </>
-        )}
-      </PanelGroup>
-
-      <MediaContentModal
-        isOpen={editOpen}
-        onClose={() => setEditOpen(false)}
-        _existingMediaContent={media.contentsByIds[0]}
-        _mediaRecords={media}
-      />
-      {!displayForum && (
-        <Box sx={{ position: "fixed", bottom: 124, right: 34, zIndex: 10 }}>
-          <Tooltip title={displayForum ? "Close Forum" : "Open Forum"}>
-            <IconButton
-              onClick={() => setDisplayForum((prev) => !prev)}
-              color="primary"
-              aria-label={displayForum ? "Close Forum" : "Open Forum"}
-              sx={{
-                backgroundColor: "primary.main",
-                color: "white",
-                boxShadow: 3,
-                "&:hover": {
-                  backgroundColor: "primary.dark",
-                },
-                width: "60",
-                height: "60",
-              }}
-            >
-              <ForumIcon fontSize="large" />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      )}
     </main>
   );
 }
