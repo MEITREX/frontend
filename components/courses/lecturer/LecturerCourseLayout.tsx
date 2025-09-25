@@ -9,9 +9,9 @@ import { EditCourseModal } from "@/components/EditCourseModal";
 import { Heading } from "@/components/Heading";
 import { PageError } from "@/components/PageError";
 import { Add, People, Settings } from "@mui/icons-material";
-import { LecturerDataProvider } from "@/components/courses/lecturer/LecturerCourseDataContext";
 import { LecturerCourseNavigation } from "@/components/courses/lecturer/LecturerCourseNavigation";
 import { LecturerCourseLayoutCourseIdQuery } from "@/__generated__/LecturerCourseLayoutCourseIdQuery.graphql";
+import { CourseDataProvider } from "@/components/courses/context/CourseDataContext";
 
 graphql`
   fragment LecturerCourseLayoutFragment on Course {
@@ -73,7 +73,7 @@ export default function LecturerCourseLayout({ children }: { children: React.Rea
   )!.role;
 
   return (
-    <LecturerDataProvider value={data}>
+    <CourseDataProvider value={data}>
       <main>
         {openModal && (
           <AddChapterModal open _course={course} onClose={() => setOpenModal(false)} />
@@ -105,6 +105,6 @@ export default function LecturerCourseLayout({ children }: { children: React.Rea
           {children}
         </div>
       </main>
-    </LecturerDataProvider>
+    </CourseDataProvider>
   );
 }

@@ -6,7 +6,7 @@ import { ContentTags } from "@/components/ContentTags";
 import { Heading } from "@/components/Heading";
 import { PageError } from "@/components/PageError";
 import { Download, Forum as ForumIcon } from "@mui/icons-material";
-import { Alert, Box, Button } from "@mui/material";
+import { Alert, Box, Button, IconButton } from "@mui/material";
 import "@vidstack/react/player/styles/default/layouts/video.css";
 import "@vidstack/react/player/styles/default/theme.css";
 import dayjs from "dayjs";
@@ -80,7 +80,7 @@ export default function StudentMediaPage() {
   const hasVideos = content.mediaRecords.some((x) => x.type === "VIDEO");
 
   return (
-    <>
+    <Box sx={{position:"relative"}}>
       <SimilarSegments />
       <Heading
         title={content.metadata.name}
@@ -89,15 +89,30 @@ export default function StudentMediaPage() {
       />
       <ContentTags metadata={content.metadata} />
 
-      <Box sx={{ my: 2 }}>
-        <Button
-          variant={isForumActive ? "contained" : "outlined"}
-          startIcon={<ForumIcon />}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 1,
+          right: 1,
+          zIndex: 1000,
+        }}
+      >
+        <IconButton
           onClick={handleToggleForum}
+          size="large"
+          sx={{
+            backgroundColor: !isForumActive ? '#1976d2' : 'white',
+            color: !isForumActive ? 'white' : 'black',
+            border: '1px solid #ddd',
+            '&:hover': {
+              backgroundColor: !isForumActive ? '#1565c0' : '#f0f0f0',
+            },
+          }}
         >
-          {isForumActive ? "Close Forum" : "Open Forum"}
-        </Button>
+          <ForumIcon />
+        </IconButton>
       </Box>
+
 
       {error?.source.errors.map((err: any, i: number) => (
         <Alert
@@ -152,7 +167,7 @@ export default function StudentMediaPage() {
         )}
         {hasDocuments && <DocumentSide setError={setError} _content={content} />}
       </div>
-    </>
+    </Box>
   );
 }
 

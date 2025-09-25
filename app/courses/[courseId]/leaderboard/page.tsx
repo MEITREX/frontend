@@ -2,7 +2,7 @@
 
 import CourseLeaderboards from "@/components/leaderboard/CourseLeaderboard";
 import * as React from "react";
-import { useCourseData } from "@/components/courses/student/StudentCourseDataContext";
+import { useCourseData } from "@/components/courses/context/CourseDataContext";
 
 export default function Leaderboard() {
 

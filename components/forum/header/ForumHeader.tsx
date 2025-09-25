@@ -57,7 +57,7 @@ export default function ForumHeader({
         direction="row"
         spacing={2}
         alignItems="center"
-        sx={{ flexWrap: "wrap", gap: 2 }}
+        sx={{ flexWrap: "wrap", gap: 1 }}
       >
         <ToggleButtonGroup
           value={categoryFilter}

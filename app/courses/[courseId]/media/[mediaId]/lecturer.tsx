@@ -6,14 +6,21 @@ import { ContentTags } from "@/components/ContentTags";
 import { Heading } from "@/components/Heading";
 import { MediaContentModal } from "@/components/MediaContentModal";
 import { PageError } from "@/components/PageError";
-import { Delete, Edit } from "@mui/icons-material";
+import { Delete, Edit, Forum as ForumIcon } from "@mui/icons-material";
 import {
   Alert,
+  Box,
   Button,
   CircularProgress,
+  IconButton,
   Typography,
 } from "@mui/material";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 import { ContentMediaDisplay } from "./ContentMediaDisplay";
@@ -23,6 +30,18 @@ import { DownloadButton } from "./student";
 export default function LecturerMediaPage() {
   const { mediaId, courseId } = useParams();
   const router = useRouter();
+
+  const pathname = usePathname();
+  const isForumActive = pathname.includes("/forum");
+
+  const handleToggleForum = () => {
+    if (isForumActive) {
+      router.push(`/courses/${courseId}/media/${mediaId}`);
+    } else {
+      router.push(`/courses/${courseId}/media/${mediaId}/forum`);
+    }
+  };
+
   const searchParams = useSearchParams();
   const media = useLazyLoadQuery<lecturerMediaQuery>(
     graphql`
@@ -155,7 +174,32 @@ export default function LecturerMediaPage() {
             backButton
           />
 
-          <ContentTags metadata={content.metadata} />
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 1,
+          right: 1,
+          zIndex: 1000,
+        }}
+      >
+        <IconButton
+          onClick={handleToggleForum}
+          size="large"
+          sx={{
+            backgroundColor: !isForumActive ? '#1976d2' : 'white',
+            color: !isForumActive ? 'white' : 'black',
+            border: '1px solid #ddd',
+            '&:hover': {
+              backgroundColor: !isForumActive ? '#1565c0' : '#f0f0f0',
+            },
+          }}
+        >
+          <ForumIcon />
+        </IconButton>
+      </Box>
+
+
+      <ContentTags metadata={content.metadata} />
           <div className="my-8 grow">
             {mainRecord && (
               <ContentMediaDisplay

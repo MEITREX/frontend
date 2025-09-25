@@ -12,7 +12,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import CompetencyProgressbar from "@/components/CompetencyProgressbar";
 import { stringToColor } from "@/components/ChapterHeader";
-import { useCourseData } from "../../../../components/courses/student/StudentCourseDataContext";
+import { useCourseData } from "../../../../components/courses/context/CourseDataContext";
 import { useRouter } from "next/navigation";
 
 export default function LearningProgress() {

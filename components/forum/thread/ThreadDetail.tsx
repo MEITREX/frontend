@@ -165,7 +165,7 @@ export default function ThreadDetail() {
 
         {/*Question/Information Thread*/}
         <Stack
-          sx={{ backgroundColor: "#f5f7fa", borderRadius: 2, p: 2 }}
+          sx={{ backgroundColor: "#f5f7fa", borderRadius: 2, p: 2, overflowX: "hidden" }}
           direction="row"
           spacing={2}
         >

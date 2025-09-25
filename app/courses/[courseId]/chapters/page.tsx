@@ -7,7 +7,7 @@ import { orderBy } from "lodash";
 import * as React from "react";
 import { StudentChapter } from "@/components/StudentChapter";
 import { useRouter } from "next/navigation";
-import { useCourseData } from "@/components/courses/student/StudentCourseDataContext";
+import { useCourseData } from "@/components/courses/context/CourseDataContext";
 
 export default function Chapters() {
   const router = useRouter();

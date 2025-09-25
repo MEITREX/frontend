@@ -26,9 +26,9 @@ export default function MediaForumLayout({
 
   return (
     <main className="flex flex-col h-full">
-      <PanelGroup direction="horizontal" className="w-full h-full flex-grow">
+      <PanelGroup direction="horizontal" className="w-full h-full flex-grow border border-gray-200 rounded-md">
         <Panel
-          defaultSize={isForumActive ? 60 : 100}
+          defaultSize={isForumActive ? 50 : 100}
           minSize={30}
           className="flex flex-col h-full overflow-hidden p-4"
         >
@@ -56,8 +56,8 @@ export default function MediaForumLayout({
             </div>
 
             <Panel
-              defaultSize={45}
-              minSize={45}
+              defaultSize={50}
+              minSize={30}
               collapsible={true}
               className="h-full overflow-hidden"
             >

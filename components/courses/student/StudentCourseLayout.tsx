@@ -4,7 +4,7 @@ import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 import { useParams, useRouter } from "next/navigation";
 import { PageError } from "@/components/PageError";
 import { useEffect, useState } from "react";
-import { CourseDataProvider } from "@/components/courses/student/StudentCourseDataContext";
+import { CourseDataProvider } from "@/components/courses/context/CourseDataContext";
 import { FormErrors } from "@/components/FormErrors";
 import { Box, Button, Typography } from "@mui/material";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";

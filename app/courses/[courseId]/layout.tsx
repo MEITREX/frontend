@@ -9,6 +9,7 @@ import StudentCourseLayout from "../../../components/courses/student/StudentCour
 import LecturerCourseLayout from "@/components/courses/lecturer/LecturerCourseLayout";
 
 export default function CourseLayout({ children }: { children: React.ReactNode }) {
+  // TODO: If necessary, we should also guard the subroutes, but I don't think it's too important at the moment.
   const { courseId } = useParams();
   const [pageView] = usePageView();
 

@@ -24,7 +24,7 @@ import {
 } from "react-relay";
 import { useEffect, useMemo, useState } from "react";
 import { ForumApiForumIdQuery } from "@/__generated__/ForumApiForumIdQuery.graphql";
-import { useCourseData } from "@/components/courses/student/StudentCourseDataContext";
+import { useCourseData } from "@/components/courses/context/CourseDataContext";
 import {
   forumApiForumIdQuery,
   forumApiPublicUserInfoQuery,
