@@ -1,10 +1,7 @@
 "use client";
-import { QuizModalEditMutation } from "@/__generated__/QuizModalEditMutation.graphql";
 import { QuizModalFragment$key } from "@/__generated__/QuizModalFragment.graphql";
-import {
-  CreateQuizInput,
-  QuizModalMutation
-} from "@/__generated__/QuizModalMutation.graphql";
+import { SubmissionExerciseModalEditMutation } from "@/__generated__/SubmissionExerciseModalEditMutation.graphql";
+import { SubmissionExerciseModallMutation } from "@/__generated__/SubmissionExerciseModallMutation.graphql";
 import { Form } from "@/components/Form";
 import { LoadingButton } from "@mui/lab";
 import {
@@ -45,7 +42,7 @@ export function SubmissionExerciseModal({
 }) {
   const existingQuiz = useFragment(
     graphql`
-      fragment QuizModalFragment on Quiz {
+      fragment SubmissionExerciseModalFragment on Quiz {
         assessmentId
         content {
           id
@@ -74,17 +71,6 @@ export function SubmissionExerciseModal({
 
   const assessment = existingQuiz?.content!;
 
-  const [input, setInput] = useState<CreateQuizInput>(
-    existingQuiz
-      ? {
-          questionPoolingMode: existingQuiz.questionPoolingMode,
-          requiredCorrectAnswers: existingQuiz.requiredCorrectAnswers,
-          numberOfRandomlySelectedQuestions:
-            existingQuiz.numberOfRandomlySelectedQuestions,
-        }
-      : defaultInput
-  );
-
   const [metadata, setMetadata] = useState<ContentMetadataPayload | null>(
     existingQuiz
       ? {
@@ -107,8 +93,8 @@ export function SubmissionExerciseModal({
         : null
     );
 
-  const [mutate, loading] = useMutation<QuizModalMutation>(graphql`
-    mutation QuizModalMutation(
+  const [mutate, loading] = useMutation<SubmissionExerciseModallMutation>(graphql`
+    mutation SubmissionExerciseModallMutation(
       $quizInput: CreateQuizInput!
       $assessmentInput: CreateAssessmentInput!
     ) {
@@ -122,8 +108,8 @@ export function SubmissionExerciseModal({
     }
   `);
 
-  const [edit, editLoading] = useMutation<QuizModalEditMutation>(graphql`
-    mutation QuizModalEditMutation(
+  const [edit, editLoading] = useMutation<SubmissionExerciseModalEditMutation>(graphql`
+    mutation SubmissionExerciseModalEditMutation(
       $contentId: UUID!
       $assessmentId: UUID!
       $assessmentInput: UpdateAssessmentInput!
@@ -164,22 +150,9 @@ export function SubmissionExerciseModal({
 
   const valid =
     metadata &&
-    assessmentMetadata &&
-    input.requiredCorrectAnswers > 0 &&
-    (input.questionPoolingMode !== "RANDOM" ||
-      (input.numberOfRandomlySelectedQuestions ?? 0) > 0);
+    assessmentMetadata
 
   function onClose() {
-    setInput(
-      existingQuiz
-        ? {
-            questionPoolingMode: existingQuiz.questionPoolingMode,
-            requiredCorrectAnswers: existingQuiz.requiredCorrectAnswers,
-            numberOfRandomlySelectedQuestions:
-              existingQuiz.numberOfRandomlySelectedQuestions,
-          }
-        : defaultInput
-    );
     _onClose();
   }
 
@@ -199,10 +172,9 @@ export function SubmissionExerciseModal({
             },
           },
           contentId: assessment!.id!,
-          numberOfRandomlySelectedQuestions:
-            input.numberOfRandomlySelectedQuestions ?? 1,
-          questionPoolingMode: input.questionPoolingMode!,
-          requiredCorrectAnswers: input.requiredCorrectAnswers!,
+          numberOfRandomlySelectedQuestions: 1,
+          questionPoolingMode: "RANDOM",
+          requiredCorrectAnswers: 1,
         },
         onCompleted() {
           onClose();
@@ -217,11 +189,9 @@ export function SubmissionExerciseModal({
       mutate({
         variables: {
           quizInput: {
-            ...input,
-            numberOfRandomlySelectedQuestions:
-              input.questionPoolingMode === "ORDERED"
-                ? null
-                : input.numberOfRandomlySelectedQuestions,
+            numberOfRandomlySelectedQuestions: 1,
+            questionPoolingMode: "%future added value",
+            requiredCorrectAnswers: 1
           },
           assessmentInput: {
             metadata: { ...metadata!, type: "QUIZ", chapterId },
