@@ -44,12 +44,12 @@ export default function ForumActivity({
        3. Profile page other user
   */
   const navigate = () => {
-    if(pathname.includes('/courses')) {
-    router.push(`${pathname}/forum/${thread.id}`);
-    } else if (pathname.includes('/profile')) {
+    if (pathname.includes("/courses")) {
+      router.push(`${pathname}/forum/${thread.id}`);
+    } else if (pathname.includes("/profile")) {
       router.push(`/courses/${courseId}/forum/${thread.id}`);
     }
-  }
+  };
 
   return (
     <Box

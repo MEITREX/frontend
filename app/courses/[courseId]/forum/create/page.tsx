@@ -5,10 +5,10 @@ import ThreadForm from "@/components/forum/thread/ThreadForm";
 
 export default function CreateThread() {
   return (
-  <Box sx={{ overflowY: "scroll" }}>
-    <Suspense fallback={<SkeletonThreadForm />}>
-      <ThreadForm/>
-    </Suspense>
-  </Box>
+    <Box sx={{ overflowY: "scroll" }}>
+      <Suspense fallback={<SkeletonThreadForm />}>
+        <ThreadForm />
+      </Suspense>
+    </Box>
   );
 }

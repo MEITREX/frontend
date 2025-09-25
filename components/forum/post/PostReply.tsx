@@ -1,13 +1,12 @@
 import { Box, Stack } from "@mui/material";
-import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight';
+import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
 import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
 
 type Properties = {
-  postToReplyContent: string,
-}
+  postToReplyContent: string;
+};
 
 export default function PostReply({ postToReplyContent }: Properties) {
-
   return (
     <Box
       sx={{
@@ -23,11 +22,13 @@ export default function PostReply({ postToReplyContent }: Properties) {
         <SubdirectoryArrowRightIcon fontSize="small" color="action" />
         <Box
           sx={{
-            height: '1.5em',
-            overflow: 'hidden',
-            maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
-            width: '100%',
+            height: "1.5em",
+            overflow: "hidden",
+            maskImage:
+              "linear-gradient(to bottom, black 50%, transparent 100%)",
+            WebkitMaskImage:
+              "linear-gradient(to bottom, black 50%, transparent 100%)",
+            width: "100%",
           }}
         >
           <ContentViewer htmlContent={postToReplyContent} />

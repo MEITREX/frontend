@@ -2,7 +2,18 @@
 
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { useState } from "react";
-import { Box, Button, IconButton, Stack, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Stack,
+  Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import ModeEditOutlineRoundedIcon from "@mui/icons-material/ModeEditOutlineRounded";
 import TextEditor from "./TextEditor";
@@ -24,7 +35,7 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import { ForumApiDeleteThreadMutation } from "@/__generated__/ForumApiDeleteThreadMutation.graphql";
 import { useRouter } from "next/navigation";
-import ReplyIcon from '@mui/icons-material/Reply';
+import ReplyIcon from "@mui/icons-material/Reply";
 
 type Props = {
   initialContent: string;
@@ -116,10 +127,10 @@ export default function EditableContent({
   const handleDelete = () => {
     if (isPost) {
       handleDeletePost();
-    } else if(isThread) {
+    } else if (isThread) {
       setIsDeleteDialogOpen(true);
     }
-  }
+  };
 
   const handleDeletePost = () => {
     deletePost({
@@ -242,12 +253,11 @@ export default function EditableContent({
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
-          {"Delete Thread?"}
-        </DialogTitle>
+        <DialogTitle id="alert-dialog-title">{"Delete Thread?"}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Are you sure you want to delete this thread? This action cannot be undone.
+            Are you sure you want to delete this thread? This action cannot be
+            undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

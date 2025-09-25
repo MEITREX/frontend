@@ -107,12 +107,19 @@ const studentCourseIdQuery = graphql`
   }
 `;
 
-export default function CourseLayout({ children }: { children: React.ReactNode }) {
+export default function CourseLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { courseId } = useParams();
   const router = useRouter();
   const [error, setError] = useState<any>(null);
 
-  const data = useLazyLoadQuery<StudentCourseLayoutCourseIdQuery>(studentCourseIdQuery, { id: courseId });
+  const data = useLazyLoadQuery<StudentCourseLayoutCourseIdQuery>(
+    studentCourseIdQuery,
+    { id: courseId }
+  );
   const course = data.coursesByIds?.[0];
   const userId = data.currentUserInfo.id;
 
@@ -125,11 +132,12 @@ export default function CourseLayout({ children }: { children: React.ReactNode }
     }
   `);
 
-  const [studentUserLogin] = useMutation<StudentCourseLayoutLoginMutation>(graphql`
-    mutation StudentCourseLayoutLoginMutation($id: UUID!) {
-      loginUser(courseId: $id)
-    }
-  `);
+  const [studentUserLogin] =
+    useMutation<StudentCourseLayoutLoginMutation>(graphql`
+      mutation StudentCourseLayoutLoginMutation($id: UUID!) {
+        loginUser(courseId: $id)
+      }
+    `);
 
   useEffect(() => {
     if (course?.id) {
@@ -142,7 +150,6 @@ export default function CourseLayout({ children }: { children: React.ReactNode }
     console.log("Mounted CourseLayout");
     return () => console.log("Unmounted CourseLayout");
   }, []);
-
 
   if (!course) {
     return <PageError message="No course found with given id." />;
@@ -180,7 +187,9 @@ export default function CourseLayout({ children }: { children: React.ReactNode }
                         userRecord.getLinkedRecords("courseMemberships") || [];
 
                       userRecord.setLinkedRecords(
-                        records.filter((x) => x.getValue("courseId") !== courseId),
+                        records.filter(
+                          (x) => x.getValue("courseId") !== courseId
+                        ),
                         "courseMemberships"
                       );
                     },
@@ -213,11 +222,8 @@ export default function CourseLayout({ children }: { children: React.ReactNode }
         <StudentCourseNavigation courseId={courseId as string} />
 
         {/* Navbar-Content */}
-        <div className="mt-4">
-          {children}
-        </div>
+        <div className="mt-4">{children}</div>
       </main>
     </CourseDataProvider>
   );
-
 }

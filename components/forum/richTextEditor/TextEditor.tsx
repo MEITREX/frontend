@@ -15,7 +15,7 @@ import {
   Code,
 } from "@mui/icons-material";
 import { createMentionExtension } from "@/components/forum/richTextEditor/MentionSuggestion";
-import 'tippy.js/dist/tippy.css';
+import "tippy.js/dist/tippy.css";
 import {
   fetchQuery,
   graphql,
@@ -31,13 +31,12 @@ import {
 } from "@/components/forum/api/ForumApi";
 import { ForumApiPublicUserInfoQuery } from "@/__generated__/ForumApiPublicUserInfoQuery.graphql";
 
-type User = { id: string; name: string; };
+type User = { id: string; name: string };
 
 type Props = {
   onContentChange?: (html: string) => void;
   initialContent?: string;
 };
-
 
 const TextEditor = ({ onContentChange, initialContent }: Props) => {
   // Get data from context
@@ -75,7 +74,7 @@ const TextEditor = ({ onContentChange, initialContent }: Props) => {
         }
 
         // 1. Map the data
-        const formattedUsers = users.map(user => ({
+        const formattedUsers = users.map((user) => ({
           id: user?.id,
           name: user?.nickname,
         }));
@@ -87,35 +86,36 @@ const TextEditor = ({ onContentChange, initialContent }: Props) => {
 
         setMentionableUsers(validUsers);
       },
-      error: (error:any) => {
+      error: (error: any) => {
         console.error("Error loading Users", error);
-      }
+      },
     });
-
   }, [forumData, relayEnvironment]);
 
   // Load extension
-  const extensions = useMemo(() => [
-    StarterKit,
-    Underline,
-    createMentionExtension(mentionableUsers),
-  ], [mentionableUsers]);
+  const extensions = useMemo(
+    () => [StarterKit, Underline, createMentionExtension(mentionableUsers)],
+    [mentionableUsers]
+  );
 
   // Editor
-  const editor = useEditor({
-    extensions,
-    content: initialContent || "<p></p>",
-    editorProps: {
-      attributes: {
-        class:
-          "min-h-[200px] max-h-[600px] outline-none focus:outline-none text-base leading-6",
+  const editor = useEditor(
+    {
+      extensions,
+      content: initialContent || "<p></p>",
+      editorProps: {
+        attributes: {
+          class:
+            "min-h-[200px] max-h-[600px] outline-none focus:outline-none text-base leading-6",
+        },
+      },
+      onUpdate({ editor }) {
+        const html = editor.getHTML();
+        onContentChange?.(html);
       },
     },
-    onUpdate({ editor }) {
-      const html = editor.getHTML();
-      onContentChange?.(html);
-    },
-  },[extensions]);
+    [extensions]
+  );
 
   if (!editor) return null;
 
@@ -130,10 +130,7 @@ const TextEditor = ({ onContentChange, initialContent }: Props) => {
         flexWrap="wrap"
         gap={0.5}
         mb={2}
-        sx={{ borderBottom: 1,
-          borderColor: "divider",
-          pb: 1,
-        }}
+        sx={{ borderBottom: 1, borderColor: "divider", pb: 1 }}
       >
         <Tooltip title="Bold">
           <IconButton
@@ -231,11 +228,11 @@ const TextEditor = ({ onContentChange, initialContent }: Props) => {
             borderColor: "primary.main",
           },
           "& .mention": {
-            backgroundColor: '#e3f2fd',
-            color: '#0d47a1',
-            padding: '1px 4px',
-            borderRadius: '4px',
-            fontWeight: 'bold',
+            backgroundColor: "#e3f2fd",
+            color: "#0d47a1",
+            padding: "1px 4px",
+            borderRadius: "4px",
+            fontWeight: "bold",
           },
           // List
           "& ul, & ol": {

@@ -26,7 +26,6 @@ import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 import { ContentMediaDisplay } from "./ContentMediaDisplay";
 import { DownloadButton } from "./student";
 
-
 export default function LecturerMediaPage() {
   const { mediaId, courseId } = useParams();
   const router = useRouter();
@@ -128,55 +127,53 @@ export default function LecturerMediaPage() {
           {err.message}
         </Alert>
       ))}
-          <Heading
-            title={mainRecord?.name ?? content.metadata.name}
-            overline={mainRecord != null ? content.metadata.name : undefined}
-            action={
-              <div className="flex gap-2">
-                {mainRecord && <DownloadButton _record={mainRecord} />}{" "}
-                <Button
-                  sx={{ color: "text.secondary" }}
-                  startIcon={
-                    deleting ? <CircularProgress size={16} /> : <Delete />
-                  }
-                  onClick={() => {
-                    if (
-                      confirm(
-                        "Do you really want to delete this content? This can't be undone."
-                      )
-                    ) {
-                      del({
-                        variables: { id: content.id },
-                        onCompleted() {
-                          router.push(`/courses/${courseId}`);
-                        },
-                        onError(error) {
-                          setError(error);
-                        },
-                        updater(store) {
-                          store.get(content.id)?.invalidateRecord();
-                        },
-                      });
-                    }
-                  }}
-                >
-                  Delete
-                </Button>
-                <Button
-                  sx={{ color: "text.secondary" }}
-                  startIcon={<Edit />}
-                  onClick={() => setEditOpen(true)}
-                >
-                  Edit
-                </Button>
-              </div>
-            }
-            backButton
-          />
+      <Heading
+        title={mainRecord?.name ?? content.metadata.name}
+        overline={mainRecord != null ? content.metadata.name : undefined}
+        action={
+          <div className="flex gap-2">
+            {mainRecord && <DownloadButton _record={mainRecord} />}{" "}
+            <Button
+              sx={{ color: "text.secondary" }}
+              startIcon={deleting ? <CircularProgress size={16} /> : <Delete />}
+              onClick={() => {
+                if (
+                  confirm(
+                    "Do you really want to delete this content? This can't be undone."
+                  )
+                ) {
+                  del({
+                    variables: { id: content.id },
+                    onCompleted() {
+                      router.push(`/courses/${courseId}`);
+                    },
+                    onError(error) {
+                      setError(error);
+                    },
+                    updater(store) {
+                      store.get(content.id)?.invalidateRecord();
+                    },
+                  });
+                }
+              }}
+            >
+              Delete
+            </Button>
+            <Button
+              sx={{ color: "text.secondary" }}
+              startIcon={<Edit />}
+              onClick={() => setEditOpen(true)}
+            >
+              Edit
+            </Button>
+          </div>
+        }
+        backButton
+      />
 
       <Box
         sx={{
-          position: 'absolute',
+          position: "absolute",
           top: 1,
           right: 1,
           zIndex: 1000,
@@ -186,11 +183,11 @@ export default function LecturerMediaPage() {
           onClick={handleToggleForum}
           size="large"
           sx={{
-            backgroundColor: !isForumActive ? '#1976d2' : 'white',
-            color: !isForumActive ? 'white' : 'black',
-            border: '1px solid #ddd',
-            '&:hover': {
-              backgroundColor: !isForumActive ? '#1565c0' : '#f0f0f0',
+            backgroundColor: !isForumActive ? "#1976d2" : "white",
+            color: !isForumActive ? "white" : "black",
+            border: "1px solid #ddd",
+            "&:hover": {
+              backgroundColor: !isForumActive ? "#1565c0" : "#f0f0f0",
             },
           }}
         >
@@ -198,39 +195,38 @@ export default function LecturerMediaPage() {
         </IconButton>
       </Box>
 
-
       <ContentTags metadata={content.metadata} />
-          <div className="my-8 grow">
-            {mainRecord && (
-              <ContentMediaDisplay
-                onProgressChange={() => {}}
-                _record={mainRecord}
-              />
-            )}
-          </div>
-          {relatedRecords.length > 0 && (
-            <>
-              <Typography variant="h2" sx={{ mt: 4 }}>
-                Related media
-              </Typography>
-              <div className="mt-4 flex flex-col gap-2">
-                {relatedRecords.map((record) => (
-                  <ContentLink
-                    courseId={courseId}
-                    key={record.id}
-                    _content={content}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-
-          <MediaContentModal
-            isOpen={editOpen}
-            onClose={() => setEditOpen(false)}
-            _existingMediaContent={media.contentsByIds[0]}
-            _mediaRecords={media}
+      <div className="my-8 grow">
+        {mainRecord && (
+          <ContentMediaDisplay
+            onProgressChange={() => {}}
+            _record={mainRecord}
           />
+        )}
+      </div>
+      {relatedRecords.length > 0 && (
+        <>
+          <Typography variant="h2" sx={{ mt: 4 }}>
+            Related media
+          </Typography>
+          <div className="mt-4 flex flex-col gap-2">
+            {relatedRecords.map((record) => (
+              <ContentLink
+                courseId={courseId}
+                key={record.id}
+                _content={content}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      <MediaContentModal
+        isOpen={editOpen}
+        onClose={() => setEditOpen(false)}
+        _existingMediaContent={media.contentsByIds[0]}
+        _mediaRecords={media}
+      />
     </main>
   );
 }

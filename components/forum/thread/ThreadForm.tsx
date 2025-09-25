@@ -142,7 +142,7 @@ export default function ThreadForm() {
   return (
     <>
       <Button
-        onClick={()=> router.back()}
+        onClick={() => router.back()}
         component="a"
         variant="text"
         startIcon={<ArrowBackIcon />}

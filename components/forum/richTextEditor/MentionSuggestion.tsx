@@ -1,14 +1,19 @@
-import React, { useState, forwardRef, useImperativeHandle, useEffect } from 'react';
-import { Paper, List, ListItem, ListItemText } from '@mui/material';
-import { ReactRenderer } from '@tiptap/react';
-import type { SuggestionProps } from '@tiptap/suggestion';
-import Mention from '@tiptap/extension-mention';
-import tippy, { Instance as TippyInstance } from 'tippy.js';
-import 'tippy.js/themes/light-border.css';
+import React, {
+  useState,
+  forwardRef,
+  useImperativeHandle,
+  useEffect,
+} from "react";
+import { Paper, List, ListItem, ListItemText } from "@mui/material";
+import { ReactRenderer } from "@tiptap/react";
+import type { SuggestionProps } from "@tiptap/suggestion";
+import Mention from "@tiptap/extension-mention";
+import tippy, { Instance as TippyInstance } from "tippy.js";
+import "tippy.js/themes/light-border.css";
 
-type User = { id: string; name: string; };
+type User = { id: string; name: string };
 
-type MentionListProps = Pick<SuggestionProps<User>, 'items' | 'command'>;
+type MentionListProps = Pick<SuggestionProps<User>, "items" | "command">;
 
 // Renders the list of suggestions
 const MentionList = forwardRef<any, MentionListProps>((props, ref) => {
@@ -29,15 +34,17 @@ const MentionList = forwardRef<any, MentionListProps>((props, ref) => {
   // This allows Tiptap to forward keyboard events to this component
   useImperativeHandle(ref, () => ({
     onKeyDown: ({ event }: { event: KeyboardEvent }) => {
-      if (event.key === 'ArrowUp') {
-        setSelectedIndex((selectedIndex + props.items.length - 1) % props.items.length);
+      if (event.key === "ArrowUp") {
+        setSelectedIndex(
+          (selectedIndex + props.items.length - 1) % props.items.length
+        );
         return true;
       }
-      if (event.key === 'ArrowDown') {
+      if (event.key === "ArrowDown") {
         setSelectedIndex((selectedIndex + 1) % props.items.length);
         return true;
       }
-      if (event.key === 'Enter') {
+      if (event.key === "Enter") {
         selectItem(selectedIndex);
         return true;
       }
@@ -48,21 +55,30 @@ const MentionList = forwardRef<any, MentionListProps>((props, ref) => {
   return (
     <Paper elevation={3}>
       <List dense>
-        {props.items.length > 0 ? props.items.map((item, index) => (
-          <ListItem
-            key={item.id}
-            button
-            onClick={() => selectItem(index)}
-            sx={{ backgroundColor: index === selectedIndex ? 'action.hover' : 'transparent' }}
-          >
-            <ListItemText primary={item.name} />
+        {props.items.length > 0 ? (
+          props.items.map((item, index) => (
+            <ListItem
+              key={item.id}
+              button
+              onClick={() => selectItem(index)}
+              sx={{
+                backgroundColor:
+                  index === selectedIndex ? "action.hover" : "transparent",
+              }}
+            >
+              <ListItemText primary={item.name} />
+            </ListItem>
+          ))
+        ) : (
+          <ListItem>
+            <ListItemText primary="No Results" />
           </ListItem>
-        )) : <ListItem><ListItemText primary="No Results" /></ListItem>}
+        )}
       </List>
     </Paper>
   );
 });
-MentionList.displayName = 'MentionList';
+MentionList.displayName = "MentionList";
 
 export const createMentionExtension = (users: User[]) => {
   // Config for Tiptap with Tippy.js
@@ -130,7 +146,7 @@ export const createMentionExtension = (users: User[]) => {
   };
 
   return Mention.configure({
-    HTMLAttributes: { class: 'mention' },
+    HTMLAttributes: { class: "mention" },
     suggestion: suggestionConfig,
   });
-}
+};

@@ -53,7 +53,6 @@ export default function LearningProgress() {
     return getTotalProgress(b) - getTotalProgress(a);
   });
 
-
   const totalPages = Math.ceil(
     sortedSkillCategories.length / categoriesPerPage
   );
@@ -75,149 +74,132 @@ export default function LearningProgress() {
     }
   };
   return (
-      <div className="flex flex-col gap-12">
-        <div className="grid grid-cols-2 items-start gap-4">
-          <div className="object-cover flex flex-col gap-2">
-            <div className="p-4 border-4 border-slate-200 rounded-3xl">
-              <RewardScores
-                _scores={course.rewardScores}
-                courseId={course.id}
-              />
-            </div>
-            <div className="mx-4 flex items-center gap-8">
-              <RewardScoresHelpButton />
-              <Button
-                endIcon={<NavigateNextIcon />}
-                onClick={() => router.push(`/courses/${id}/statistics`)}
-              >
-                Full history
-              </Button>
-            </div>
+    <div className="flex flex-col gap-12">
+      <div className="grid grid-cols-2 items-start gap-4">
+        <div className="object-cover flex flex-col gap-2">
+          <div className="p-4 border-4 border-slate-200 rounded-3xl">
+            <RewardScores _scores={course.rewardScores} courseId={course.id} />
           </div>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-4">
-            <Typography variant="h2">Skill progress</Typography>
-
-            <LightTooltip
-              title={
-                <>
-                  <p className="text-slate-600 mb-1">
-                    Information Skillprogress
-                  </p>
-                  <p>
-                    {
-                      "Here you can see your personal progress for this course, splitted up in every skill category that is assigned to this course. Every skill category consists of unique skills. These skills are assigned to the different exercises. If you complete an exercise your skill progress will increase."
-                    }
-                  </p>
-                </>
-              }
+          <div className="mx-4 flex items-center gap-8">
+            <RewardScoresHelpButton />
+            <Button
+              endIcon={<NavigateNextIcon />}
+              onClick={() => router.push(`/courses/${id}/statistics`)}
             >
-              <IconButton>
-                <Info />
-              </IconButton>
-            </LightTooltip>
-
-            {totalPages > 1 && (
-              <div className="flex gap-2 items-center ml-12">
-                <IconButton
-                  onClick={handlePrevPage}
-                  disabled={currentPage === 0}
-                >
-                  <ArrowBackIosNewIcon />
-                </IconButton>
-                <span>
-                      {currentPage + 1} / {totalPages}
-                    </span>
-                <IconButton
-                  onClick={handleNextPage}
-                  disabled={currentPage >= totalPages - 1}
-                >
-                  <ArrowForwardIosIcon />
-                </IconButton>
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {currentCategorySlice.map((uniqueSkill) => {
-              const skillsInCategory = course.skills.filter(
-                (skill) => skill.skillCategory === uniqueSkill.skillCategory
-              );
-              const uniqueSkillsInCategory = Array.from(
-                new Map(
-                  skillsInCategory.map((skill) => [skill.skillName, skill])
-                ).values()
-              );
-
-              const totalCategoryProgress = uniqueSkillsInCategory.reduce(
-                (acc, skill) =>
-                  acc +
-                  Object.values(skill.skillLevels || {}).reduce(
-                    (sum, level) => sum + (level?.value || 0),
-                    0
-                  ),
-                0
-              );
-              const categoryProgressValue = Math.floor(
-                Math.min(
-                  (totalCategoryProgress * 100) /
-                  uniqueSkillsInCategory.length,
-                  100
-                )
-              );
-
-              return (
-                <div
-                  key={uniqueSkill.skillCategory}
-                  className="mb-4 w-full"
-                >
-                  <div className="flex items-center gap-2 w-full mb-2">
-                    <CompetencyProgressbar
-                      competencyName={`${
-                        uniqueSkill.skillCategory
-                      } - ${Math.floor(categoryProgressValue)}%`}
-                      heightValue={15}
-                      progressValue={categoryProgressValue}
-                      color={stringToColor(uniqueSkill.skillCategory)}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {uniqueSkillsInCategory.map((skill) => {
-                      const rawValue = Object.values(
-                        skill?.skillLevels || {}
-                      ).reduce(
-                        (sum, level) => sum + (level?.value || 0),
-                        0
-                      );
-                      const clamped = Math.min(rawValue, 1);
-                      const skillProgressPercent = Math.floor(
-                        clamped * 100
-                      );
-
-                      return (
-                        <div key={skill.skillName} className="pl-8 w-full">
-                          <CompetencyProgressbar
-                            competencyName={
-                              skill.skillName +
-                              " - " +
-                              Math.floor(skillProgressPercent) +
-                              "%"
-                            }
-                            heightValue={10}
-                            progressValue={skillProgressPercent}
-                            color={stringToColor(uniqueSkill.skillCategory)}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
+              Full history
+            </Button>
           </div>
         </div>
       </div>
+
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-4">
+          <Typography variant="h2">Skill progress</Typography>
+
+          <LightTooltip
+            title={
+              <>
+                <p className="text-slate-600 mb-1">Information Skillprogress</p>
+                <p>
+                  {
+                    "Here you can see your personal progress for this course, splitted up in every skill category that is assigned to this course. Every skill category consists of unique skills. These skills are assigned to the different exercises. If you complete an exercise your skill progress will increase."
+                  }
+                </p>
+              </>
+            }
+          >
+            <IconButton>
+              <Info />
+            </IconButton>
+          </LightTooltip>
+
+          {totalPages > 1 && (
+            <div className="flex gap-2 items-center ml-12">
+              <IconButton onClick={handlePrevPage} disabled={currentPage === 0}>
+                <ArrowBackIosNewIcon />
+              </IconButton>
+              <span>
+                {currentPage + 1} / {totalPages}
+              </span>
+              <IconButton
+                onClick={handleNextPage}
+                disabled={currentPage >= totalPages - 1}
+              >
+                <ArrowForwardIosIcon />
+              </IconButton>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {currentCategorySlice.map((uniqueSkill) => {
+            const skillsInCategory = course.skills.filter(
+              (skill) => skill.skillCategory === uniqueSkill.skillCategory
+            );
+            const uniqueSkillsInCategory = Array.from(
+              new Map(
+                skillsInCategory.map((skill) => [skill.skillName, skill])
+              ).values()
+            );
+
+            const totalCategoryProgress = uniqueSkillsInCategory.reduce(
+              (acc, skill) =>
+                acc +
+                Object.values(skill.skillLevels || {}).reduce(
+                  (sum, level) => sum + (level?.value || 0),
+                  0
+                ),
+              0
+            );
+            const categoryProgressValue = Math.floor(
+              Math.min(
+                (totalCategoryProgress * 100) / uniqueSkillsInCategory.length,
+                100
+              )
+            );
+
+            return (
+              <div key={uniqueSkill.skillCategory} className="mb-4 w-full">
+                <div className="flex items-center gap-2 w-full mb-2">
+                  <CompetencyProgressbar
+                    competencyName={`${
+                      uniqueSkill.skillCategory
+                    } - ${Math.floor(categoryProgressValue)}%`}
+                    heightValue={15}
+                    progressValue={categoryProgressValue}
+                    color={stringToColor(uniqueSkill.skillCategory)}
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  {uniqueSkillsInCategory.map((skill) => {
+                    const rawValue = Object.values(
+                      skill?.skillLevels || {}
+                    ).reduce((sum, level) => sum + (level?.value || 0), 0);
+                    const clamped = Math.min(rawValue, 1);
+                    const skillProgressPercent = Math.floor(clamped * 100);
+
+                    return (
+                      <div key={skill.skillName} className="pl-8 w-full">
+                        <CompetencyProgressbar
+                          competencyName={
+                            skill.skillName +
+                            " - " +
+                            Math.floor(skillProgressPercent) +
+                            "%"
+                          }
+                          heightValue={10}
+                          progressValue={skillProgressPercent}
+                          color={stringToColor(uniqueSkill.skillCategory)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }

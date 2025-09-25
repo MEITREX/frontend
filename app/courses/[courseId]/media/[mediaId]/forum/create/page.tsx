@@ -7,7 +7,7 @@ export default function CreateThread() {
   return (
     <Box sx={{ overflowY: "auto" }}>
       <Suspense fallback={<SkeletonThreadForm />}>
-        <ThreadForm/>
+        <ThreadForm />
       </Suspense>
     </Box>
   );

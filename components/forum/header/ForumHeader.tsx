@@ -94,7 +94,11 @@ export default function ForumHeader({
         </Stack>
       </Stack>
 
-      <Button variant="contained" color="primary" onClick={() => router.push(`${pathname}/create`)}>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => router.push(`${pathname}/create`)}
+      >
         <AddIcon />
       </Button>
     </Box>

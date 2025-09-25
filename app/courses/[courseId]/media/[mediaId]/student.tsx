@@ -70,17 +70,24 @@ export default function StudentMediaPage() {
     return <PageError message="No content found." />;
   }
   if (content.metadata.type !== "MEDIA") {
-    return <PageError title={content.metadata.name} message="Wrong content type." />;
+    return (
+      <PageError title={content.metadata.name} message="Wrong content type." />
+    );
   }
   if (!content.mediaRecords?.length) {
-    return <PageError title={content.metadata.name} message="Content has no media records." />;
+    return (
+      <PageError
+        title={content.metadata.name}
+        message="Content has no media records."
+      />
+    );
   }
 
   const hasDocuments = content.mediaRecords.some((x) => x.type !== "VIDEO");
   const hasVideos = content.mediaRecords.some((x) => x.type === "VIDEO");
 
   return (
-    <Box sx={{position:"relative"}}>
+    <Box sx={{ position: "relative" }}>
       <SimilarSegments />
       <Heading
         title={content.metadata.name}
@@ -91,7 +98,7 @@ export default function StudentMediaPage() {
 
       <Box
         sx={{
-          position: 'absolute',
+          position: "absolute",
           top: 1,
           right: 1,
           zIndex: 1000,
@@ -101,18 +108,17 @@ export default function StudentMediaPage() {
           onClick={handleToggleForum}
           size="large"
           sx={{
-            backgroundColor: !isForumActive ? '#1976d2' : 'white',
-            color: !isForumActive ? 'white' : 'black',
-            border: '1px solid #ddd',
-            '&:hover': {
-              backgroundColor: !isForumActive ? '#1565c0' : '#f0f0f0',
+            backgroundColor: !isForumActive ? "#1976d2" : "white",
+            color: !isForumActive ? "white" : "black",
+            border: "1px solid #ddd",
+            "&:hover": {
+              backgroundColor: !isForumActive ? "#1565c0" : "#f0f0f0",
             },
           }}
         >
           <ForumIcon />
         </IconButton>
       </Box>
-
 
       {error?.source.errors.map((err: any, i: number) => (
         <Alert
@@ -131,10 +137,10 @@ export default function StudentMediaPage() {
         style={
           hasVideos && hasDocuments
             ? {
-              gridTemplateColumns: `calc(${splitPercentage}% - 10px) 20px calc(${
-                100 - splitPercentage
-              }% - 10px)`,
-            }
+                gridTemplateColumns: `calc(${splitPercentage}% - 10px) 20px calc(${
+                  100 - splitPercentage
+                }% - 10px)`,
+              }
             : { gridTemplateColumns: `100%` }
         }
       >
@@ -165,15 +171,17 @@ export default function StudentMediaPage() {
             </div>
           </div>
         )}
-        {hasDocuments && <DocumentSide setError={setError} _content={content} />}
+        {hasDocuments && (
+          <DocumentSide setError={setError} _content={content} />
+        )}
       </div>
     </Box>
   );
 }
 
 export function DownloadButton({
-                                 _record,
-                               }: {
+  _record,
+}: {
   _record: studentContentDownloadButtonFragment$key;
 }) {
   const mediaRecord = useFragment(

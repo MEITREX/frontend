@@ -21,12 +21,12 @@ export default function ThreadItem({ thread }: Props) {
      2. Course page
   */
   const onThreadClick = () => {
-    if(pathname.includes("/forum")) {
+    if (pathname.includes("/forum")) {
       router.push(`${pathname}/${thread.id}`);
     } else {
       router.push(`${pathname}/forum/${thread.id}`);
     }
-  }
+  };
 
   return (
     <Box
@@ -40,7 +40,7 @@ export default function ThreadItem({ thread }: Props) {
         textDecoration: "none",
         color: "inherit",
         transition: "0.2s",
-        overflowX:"hidden",
+        overflowX: "hidden",
         "&:hover": {
           backgroundColor: "#f5f5f5",
           cursor: "pointer",

@@ -21,7 +21,6 @@ export default function ForumOverview() {
 
   const isMediaPage = pathname.includes("/media/");
 
-
   const data = useLazyLoadQuery<ForumApiThreadsCombinedQuery>(
     forumApiThreadByMediaRecordQuery,
     {
@@ -94,9 +93,7 @@ export default function ForumOverview() {
             </Typography>
           )}
           <Suspense fallback={<SkeletonThreadList />}>
-            <ThreadList
-              threads={filteredAndSortedThreads}
-            />
+            <ThreadList threads={filteredAndSortedThreads} />
           </Suspense>
         </>
       </Box>

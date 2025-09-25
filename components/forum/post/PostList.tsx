@@ -18,7 +18,7 @@ export default function PostList({
   posts,
   threadCreatorId,
   bestAnswerId,
-  markPostAnswerId
+  markPostAnswerId,
 }: Props) {
   const [selectBestAnswer] = useMutation<ForumApiSelectBestAnswerMutation>(
     forumApiSelectBestAnswerMutation
@@ -28,23 +28,25 @@ export default function PostList({
   );
 
   if (posts.length === 0) {
-    return (<Typography
-      variant="caption"
-      sx={{
-        p: 2,
-        fontStyle: "italic",
-        color: "text.secondary",
-      }}
-    >
-      There are currently no Answers
-    </Typography>);
+    return (
+      <Typography
+        variant="caption"
+        sx={{
+          p: 2,
+          fontStyle: "italic",
+          color: "text.secondary",
+        }}
+      >
+        There are currently no Answers
+      </Typography>
+    );
   }
 
   const handleMarkAsBest = (id: string) => {
     selectBestAnswer({
       variables: { postId: id },
       onCompleted() {
-        setBestAnswerLocalId(prevId => (prevId === id ? null : id));
+        setBestAnswerLocalId((prevId) => (prevId === id ? null : id));
         console.log("Best Answer Selected!");
       },
       onError(error: Error) {
@@ -57,9 +59,9 @@ export default function PostList({
     <Box>
       {posts.map((post) => (
         <>
-          {post.reference && (<PostReply
-            postToReplyContent={post.reference.content}
-          />)}
+          {post.reference && (
+            <PostReply postToReplyContent={post.reference.content} />
+          )}
           <PostItem
             key={post.id}
             onMarkAsBest={() => handleMarkAsBest(post.id)}

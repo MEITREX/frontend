@@ -20,7 +20,7 @@ export default function PostItem({
   threadCreatorId,
   bestAnswerId,
   onMarkAsBest,
-  markPostAnswerId
+  markPostAnswerId,
 }: Props) {
   const loggedInUser = useLazyLoadQuery<ForumApiUserInfoQuery>(
     forumApiUserInfoQuery,
@@ -38,16 +38,16 @@ export default function PostItem({
         borderColor: isBestAnswer
           ? "#00c853"
           : isPostAnswer
-            ? "#FFA500"
-            : "#e0e0e0",
+          ? "#FFA500"
+          : "#e0e0e0",
         borderRadius: 2,
         p: 2,
         mb: 2,
         backgroundColor: isBestAnswer
           ? "#e8f5e9"
           : isPostAnswer
-            ? "#e3f2fd"
-            : "#fafafa",
+          ? "#e3f2fd"
+          : "#fafafa",
         position: "relative",
       }}
     >

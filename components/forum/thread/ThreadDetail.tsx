@@ -92,11 +92,10 @@ export default function ThreadDetail() {
     setReplyText("");
   };
 
-
   const handleCancel = () => {
     setDisplayTextEditor(!displayTextEditor);
     setReplyingToPostId(null);
-  }
+  };
 
   if (!thread) {
     return <PageError message={`No Thread with ID: ${threadId}.`} />;
@@ -110,7 +109,7 @@ export default function ThreadDetail() {
       }}
     >
       <Button
-        onClick={()=> router.push(`../forum`)}
+        onClick={() => router.push(`../forum`)}
         variant="text"
         startIcon={<ArrowBackIcon />}
         sx={{ mb: 2 }}
@@ -128,7 +127,6 @@ export default function ThreadDetail() {
           position: "relative",
         }}
       >
-
         {/* Content Reference */}
         {thread.threadContentReference && (
           <Link
@@ -165,7 +163,12 @@ export default function ThreadDetail() {
 
         {/*Question/Information Thread*/}
         <Stack
-          sx={{ backgroundColor: "#f5f7fa", borderRadius: 2, p: 2, overflowX: "hidden" }}
+          sx={{
+            backgroundColor: "#f5f7fa",
+            borderRadius: 2,
+            p: 2,
+            overflowX: "hidden",
+          }}
           direction="row"
           spacing={2}
         >
@@ -245,14 +248,14 @@ export default function ThreadDetail() {
               {replyingToPostId && (
                 <Box
                   sx={{
-                    backgroundColor: '#f2f3f5',
-                    borderLeft: '4px solid #5865f2',
-                    padding: '8px 12px',
-                    marginBottom: '8px',
-                    borderRadius: '4px',
+                    backgroundColor: "#f2f3f5",
+                    borderLeft: "4px solid #5865f2",
+                    padding: "8px 12px",
+                    marginBottom: "8px",
+                    borderRadius: "4px",
                   }}
                 >
-                  <Typography variant="body2" sx={{ color: '#4f5660' }}>
+                  <Typography variant="body2" sx={{ color: "#4f5660" }}>
                     Replying to post
                   </Typography>
                 </Box>

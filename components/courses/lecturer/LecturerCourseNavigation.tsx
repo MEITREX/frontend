@@ -12,7 +12,7 @@ const tabs = [
 export function LecturerCourseNavigation({ courseId }: { courseId: string }) {
   const pathname = usePathname();
   const currentTabPath = pathname.replace(`/courses/${courseId}`, "") || "";
-  const activeTabIndex = tabs.findIndex(tab => tab.path === currentTabPath);
+  const activeTabIndex = tabs.findIndex((tab) => tab.path === currentTabPath);
 
   return (
     <Box sx={{ borderBottom: 1, borderColor: "divider" }}>

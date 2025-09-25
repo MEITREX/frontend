@@ -27,10 +27,7 @@ export default function ThreadList({ threads }: Props) {
   return (
     <Box sx={{ overflowY: "auto", p: 1 }}>
       {threads.map((thread: any) => (
-        <ThreadItem
-          key={thread.id}
-          thread={thread}
-        />
+        <ThreadItem key={thread.id} thread={thread} />
       ))}
     </Box>
   );

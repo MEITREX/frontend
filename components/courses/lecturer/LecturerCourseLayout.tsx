@@ -37,31 +37,39 @@ graphql`
   }
 `;
 
-
 const lecturerCourseIdQuery = graphql`
-    query LecturerCourseLayoutCourseIdQuery($courseId: UUID!) {
-        ...MediaRecordSelector
-        currentUserInfo {
-            realmRoles
-            courseMemberships {
-                role
-                course { id }
-            }
+  query LecturerCourseLayoutCourseIdQuery($courseId: UUID!) {
+    ...MediaRecordSelector
+    currentUserInfo {
+      realmRoles
+      courseMemberships {
+        role
+        course {
+          id
         }
-        coursesByIds(ids: [$courseId]) {
-            ...LecturerCourseLayoutFragment @relay(mask: false)
-        }
+      }
     }
+    coursesByIds(ids: [$courseId]) {
+      ...LecturerCourseLayoutFragment @relay(mask: false)
+    }
+  }
 `;
 
-export default function LecturerCourseLayout({ children }: { children: React.ReactNode }) {
+export default function LecturerCourseLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [openModal, setOpenModal] = useState(false);
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
 
   const { courseId } = useParams();
   const router = useRouter();
 
-  const data = useLazyLoadQuery<LecturerCourseLayoutCourseIdQuery>(lecturerCourseIdQuery, { courseId });
+  const data = useLazyLoadQuery<LecturerCourseLayoutCourseIdQuery>(
+    lecturerCourseIdQuery,
+    { courseId }
+  );
 
   const course = data.coursesByIds?.[0];
   if (!course) {
@@ -76,7 +84,11 @@ export default function LecturerCourseLayout({ children }: { children: React.Rea
     <CourseDataProvider value={data}>
       <main>
         {openModal && (
-          <AddChapterModal open _course={course} onClose={() => setOpenModal(false)} />
+          <AddChapterModal
+            open
+            _course={course}
+            onClose={() => setOpenModal(false)}
+          />
         )}
         <Heading
           title={course.title}
@@ -86,7 +98,10 @@ export default function LecturerCourseLayout({ children }: { children: React.Rea
                 Add chapter
               </Button>
               {role === "ADMINISTRATOR" && (
-                <Button startIcon={<People />} onClick={() => router.push(`/courses/${courseId}/members`)}>
+                <Button
+                  startIcon={<People />}
+                  onClick={() => router.push(`/courses/${courseId}/members`)}
+                >
                   Members
                 </Button>
               )}
@@ -96,14 +111,16 @@ export default function LecturerCourseLayout({ children }: { children: React.Rea
             </div>
           }
         />
-        <EditCourseModal _course={course} open={infoDialogOpen} onClose={() => setInfoDialogOpen(false)} />
+        <EditCourseModal
+          _course={course}
+          open={infoDialogOpen}
+          onClose={() => setInfoDialogOpen(false)}
+        />
         <Typography variant="body2" className="!mt-8 !mb-10">
           {course.description}
         </Typography>
         <LecturerCourseNavigation courseId={courseId as string} />
-        <div className="mt-4">
-          {children}
-        </div>
+        <div className="mt-4">{children}</div>
       </main>
     </CourseDataProvider>
   );
