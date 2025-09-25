@@ -226,13 +226,13 @@ export default function InventoryListItem({
                       : "#000000d3" // grey for locked
                   }33`, // small glow
                   backgroundColor: colors.bg,
-                  cursor: item.unlocked ? "pointer" : "default",
-                  transition: item.unlocked
-                    ? "transform .15s ease, box-shadow .15s ease"
-                    : "none",
-                  ...(item.unlocked && {
+                  cursor: "pointer",
+                  transition:
+                     "transform .15s ease, box-shadow .15s ease",
+
+
                     "&:hover": { transform: "translateY(-2px)" },
-                  }),
+
                 }}
               >
                 {/* Display picture for item in list */}
@@ -261,7 +261,6 @@ export default function InventoryListItem({
                     gap: 1,
                   }}
                 >
-                  <Typography variant="body2">Rarity:</Typography>
                   <Chip
                     label={rarityLabel.replace("_", " ").toUpperCase()}
                     size="small"

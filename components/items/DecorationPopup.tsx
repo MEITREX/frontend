@@ -256,7 +256,7 @@ const DecorationPopup: React.FC<Props> = ({
                     alignItems: "center",
                   }}
                 >
-                  <strong>Price:</strong> {equipped}
+                  {equipped}
                 </Typography>
                 <Image
                   src={coins}
@@ -279,7 +279,6 @@ const DecorationPopup: React.FC<Props> = ({
                 gap: 1,
               }}
             >
-              <Typography variant="body2">Rarity:</Typography>
               <Chip
                 label={rarityLabel.replace("_", " ").toUpperCase()}
                 size="small"

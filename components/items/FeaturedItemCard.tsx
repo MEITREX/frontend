@@ -1,4 +1,4 @@
-import { Box, Chip, Typography } from "@mui/material";
+import { Box, Chip } from "@mui/material";
 import ItemInventoryPictureBackgrounds from "./ItemInventoryPictureBackgrounds";
 import ItemInventoryPictureOnly from "./ItemInventoryPictureOnly";
 import { DecorationItem, Rarity, rarityMap } from "./types/Types";
@@ -57,7 +57,6 @@ export default function FeaturedItemCard({
           gap: 1,
         }}
       >
-        <Typography variant="body2">Rarity:</Typography>
         <Chip
           label={rarityLabel.replace("_", " ").toUpperCase()}
           size="small"

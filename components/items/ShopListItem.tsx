@@ -153,7 +153,7 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
                         alignItems: "center",
                       }}
                     >
-                      <strong>Price:</strong> {price}
+                      {price}
                     </Typography>
                     <Image
                       src={coins}
@@ -174,7 +174,6 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
                     gap: 1,
                   }}
                 >
-                  <Typography variant="body2">Rarity:</Typography>
                   <Chip
                     label={rarityLabel.replace("_", " ").toUpperCase()}
                     size="small"
