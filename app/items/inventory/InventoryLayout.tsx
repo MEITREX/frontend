@@ -125,7 +125,7 @@ export default function InventoryLayout({
                 color="primary"
               />
             }
-            label="Locked items anzeigen"
+            label="Show locked items"
           />
         </Box>
       </Box>

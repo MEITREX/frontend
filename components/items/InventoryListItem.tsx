@@ -4,7 +4,7 @@ import { ItemsApiEquipItemMutation } from "@/__generated__/ItemsApiEquipItemMuta
 import { ItemsApiInventoryForUserQuery } from "@/__generated__/ItemsApiInventoryForUserQuery.graphql";
 import { ItemsApiUnequipItemMutation } from "@/__generated__/ItemsApiUnequipItemMutation.graphql";
 import { useSort } from "@/app/contexts/SortContext";
-import { Box, Typography } from "@mui/material";
+import { Box, Chip, Typography } from "@mui/material";
 import { useMemo, useRef, useState } from "react";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import {
@@ -164,6 +164,7 @@ export default function InventoryListItem({
         )}
 
         {itemStringType !== "tutors" &&
+          itemStringType !== "profilePics" &&
           publicProfile === false &&
           equipedItem && <UnequipCard equippedItem={equipedItem} />}
       </Box>
@@ -225,13 +226,10 @@ export default function InventoryListItem({
                       : "#000000d3" // grey for locked
                   }33`, // small glow
                   backgroundColor: colors.bg,
-                  cursor: item.unlocked ? "pointer" : "default",
-                  transition: item.unlocked
-                    ? "transform .15s ease, box-shadow .15s ease"
-                    : "none",
-                  ...(item.unlocked && {
-                    "&:hover": { transform: "translateY(-2px)" },
-                  }),
+                  cursor: "pointer",
+                  transition: "transform .15s ease, box-shadow .15s ease",
+
+                  "&:hover": { transform: "translateY(-2px)" },
                 }}
               >
                 {/* Display picture for item in list */}
@@ -250,10 +248,34 @@ export default function InventoryListItem({
                 )}
 
                 {/* Informations about item */}
-                <Box sx={{ px: 2, pb: 2, pt: 1 }}>
-                  <Typography variant="body2">
-                    <strong>Rarity:</strong> {rarityLabel || "Common"}
-                  </Typography>
+                <Box
+                  sx={{
+                    px: 2,
+                    pb: 2,
+                    pt: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <Chip
+                    label={rarityLabel.replace("_", " ").toUpperCase()}
+                    size="small"
+                    sx={{
+                      bgcolor:
+                        rarityMap[rarityKey as Rarity].border ??
+                        rarityMap.common,
+                      color: "white",
+                      fontSize: "0.75rem",
+                      fontWeight: "bold",
+                      borderRadius: 1,
+                      height: 20, // etwas kompakter
+                      "& .MuiChip-label": {
+                        px: 1.2, // horizontal padding im Label
+                        py: 0, // vertikal ausgleichen
+                      },
+                    }}
+                  />
                 </Box>
 
                 {/* Obtained-Overlay: Covers item when locked */}
@@ -281,7 +303,7 @@ export default function InventoryListItem({
           })}
       </Box>
       {/* PopUp when unlocked card is single clicked */}
-      {selectedItem && selectedItem.unlocked && (
+      {selectedItem && (
         <DecorationPopup
           open={true}
           onClose={() => setSelectedItem(null)}
@@ -302,6 +324,8 @@ export default function InventoryListItem({
           }
           category={itemStringType}
           publicProfil={publicProfile}
+          unlocked={selectedItem.unlocked}
+          obtainableInShop={selectedItem.obtainableInShop ?? false}
         />
       )}
     </>
