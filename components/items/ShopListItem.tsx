@@ -153,7 +153,7 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
                         alignItems: "center",
                       }}
                     >
-                      {price}
+                      <strong>{price}</strong>
                     </Typography>
                     <Image
                       src={coins}

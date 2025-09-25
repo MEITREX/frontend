@@ -238,38 +238,17 @@ const DecorationPopup: React.FC<Props> = ({
             </Typography>
           )}
 
-          <Box sx={{ mt: 2 }}>
+          <Box
+            sx={{
+              mt: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center", // <- zentriert horizontal
+              width: "100%",
+            }}
+          >
             {/* Show the price if we are in the shop */}
-            {isBuyMode && (
-              <Box
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  marginBottom: 1,
-                }}
-              >
-                <Typography
-                  variant="body2"
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                  }}
-                >
-                  {equipped}
-                </Typography>
-                <Image
-                  src={coins}
-                  alt="Coins"
-                  width={18}
-                  height={18}
-                  style={{
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                  }}
-                />
-              </Box>
-            )}
+
             {/* Show rarity of the item */}
             {/* Informations about item */}
             <Box
