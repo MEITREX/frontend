@@ -227,12 +227,9 @@ export default function InventoryListItem({
                   }33`, // small glow
                   backgroundColor: colors.bg,
                   cursor: "pointer",
-                  transition:
-                     "transform .15s ease, box-shadow .15s ease",
+                  transition: "transform .15s ease, box-shadow .15s ease",
 
-
-                    "&:hover": { transform: "translateY(-2px)" },
-
+                  "&:hover": { transform: "translateY(-2px)" },
                 }}
               >
                 {/* Display picture for item in list */}
