@@ -14,12 +14,13 @@ import CompetencyProgressbar from "@/components/CompetencyProgressbar";
 import { stringToColor } from "@/components/ChapterHeader";
 import { useCourseData } from "../../../../components/courses/context/CourseDataContext";
 import { useRouter } from "next/navigation";
+import { StudentCourseLayoutCourseIdQuery$data } from "@/__generated__/StudentCourseLayoutCourseIdQuery.graphql";
 
 export default function LearningProgress() {
   const router = useRouter();
 
   // Get data from context
-  const data = useCourseData();
+  const data = useCourseData() as StudentCourseLayoutCourseIdQuery$data;
   const course = data.coursesByIds[0];
   const id = course.id;
 

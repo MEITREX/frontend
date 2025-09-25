@@ -8,12 +8,13 @@ import * as React from "react";
 import { StudentChapter } from "@/components/StudentChapter";
 import { useRouter } from "next/navigation";
 import { useCourseData } from "@/components/courses/context/CourseDataContext";
+import { StudentCourseLayoutCourseIdQuery$data } from "@/__generated__/StudentCourseLayoutCourseIdQuery.graphql";
 
 export default function Chapters() {
   const router = useRouter();
 
   // Get data from context
-  const data = useCourseData();
+  const data = useCourseData() as StudentCourseLayoutCourseIdQuery$data;
   const course = data.coursesByIds[0];
   const id = course.id;
 

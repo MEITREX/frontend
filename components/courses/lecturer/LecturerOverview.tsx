@@ -4,7 +4,6 @@ import { orderBy } from "lodash";
 import React from "react";
 import { Divider } from "@mui/material";
 import { LecturerChapter } from "@/components/courses/lecturer/common/LecturerChapter";
-import { useLecturerCourseData } from "@/components/courses/lecturer/LecturerCourseDataContext";
 import { useCourseData } from "@/components/courses/context/CourseDataContext";
 import { LecturerCourseLayoutCourseIdQuery$data } from "@/__generated__/LecturerCourseLayoutCourseIdQuery.graphql";
 
