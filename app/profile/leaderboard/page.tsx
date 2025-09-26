@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
+import XpOverview from "../xpoverview/XpOverview";
 
 const tabs = [
   { label: "General", path: "general" },
@@ -126,6 +127,7 @@ export default function LeaderboardPage() {
         Here you can see your leaderboard positions across your courses.
       </Typography>
       <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
+      <XpOverview userId={currentUserInfo.id} />
 
       <Tabs
         value={activeIndex}
