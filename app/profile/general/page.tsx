@@ -1,11 +1,7 @@
 "use client";
 
 import { pagePrivateProfileStudentGeneralQuery } from "@/__generated__/pagePrivateProfileStudentGeneralQuery.graphql";
-import {
-  Box,
-  Tab,
-  Tabs,
-} from "@mui/material";
+import { Box, Tab, Tabs } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";

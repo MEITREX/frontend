@@ -162,7 +162,9 @@ export default function XpOverview({ userId }: Props) {
         />
         <Typography variant="body2" color="text.secondary">
           {levelInfo
-            ? `Level ${level} · ${fmtInt(xpInLevel)} / ${fmtInt(xpTotalThisLevel)} XP`
+            ? `Level ${level} · ${fmtInt(xpInLevel)} / ${fmtInt(
+                xpTotalThisLevel
+              )} XP`
             : "Loading XP…"}
         </Typography>
       </Stack>
