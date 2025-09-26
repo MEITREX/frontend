@@ -3,7 +3,7 @@ import { graphql } from "relay-runtime";
 import { useLazyLoadQuery } from "react-relay";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRelayEnvironment, fetchQuery } from "react-relay";
-import { pagePrivateProfileStudentGeneral_GetUserXPQuery } from "@/__generated__/pagePrivateProfileStudentGeneral_GetUserXPQuery.graphql";
+//import { pagePrivateProfileStudentGeneral_GetUserXPQuery } from "@/__generated__/pagePrivateProfileStudentGeneral_GetUserXPQuery.graphql";
 
 const getUserXPQuery = graphql`
   query XpOverview_GetUserXPQuery($userID: ID!) {
