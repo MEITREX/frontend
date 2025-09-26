@@ -1,47 +1,25 @@
 "use client";
 
 import { pagePrivateProfileStudentGeneralQuery } from "@/__generated__/pagePrivateProfileStudentGeneralQuery.graphql";
-import { pagePrivateProfileStudentGeneral_GetUserXPQuery } from "@/__generated__/pagePrivateProfileStudentGeneral_GetUserXPQuery.graphql";
 import {
   Box,
   Tab,
   Tabs,
-  Typography,
-  LinearProgress,
-  Stack,
 } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
-import { useMemo } from "react";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import GeneralPage from "../GeneralPage";
 import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
-
-type UserLevelInfo = {
-  level: number;
-  requiredXP: number;
-  exceedingXP: number; // XP gathered within current level
-};
+import XpOverview from "../xpoverview/XpOverview";
 
 const tabs = [
   { label: "General", path: "general" },
   { label: "Achievements", path: "achievements" },
   { label: "Forum", path: "forum" },
   { label: "Badges", path: "badges" },
-  { label: "Leaderboards", path: "leaderboard" }, // Added new tab
+  { label: "Leaderboards", path: "leaderboard" },
 ];
-
-const getUserXPQuery = graphql`
-  query pagePrivateProfileStudentGeneral_GetUserXPQuery($userID: ID!) {
-    getUser(userID: $userID) {
-      id
-      xpValue
-      requiredXP
-      exceedingXP
-      level
-    }
-  }
-`;
 
 export default function GeneralPageWrapper() {
   const router = useRouter();
@@ -53,7 +31,6 @@ export default function GeneralPageWrapper() {
     router.push(`/profile/${tabs[newValue].path}`);
   };
 
-  // 1) UserID stabil über Relay
   const { currentUserInfo } =
     useLazyLoadQuery<pagePrivateProfileStudentGeneralQuery>(
       graphql`
@@ -70,65 +47,12 @@ export default function GeneralPageWrapper() {
       {}
     );
 
-  const xpData =
-    useLazyLoadQuery<pagePrivateProfileStudentGeneral_GetUserXPQuery>(
-      getUserXPQuery,
-      { userID: currentUserInfo.id },
-      { fetchPolicy: "network-only" }
-    );
-
-  const levelInfo = useMemo<UserLevelInfo>(() => {
-    const payload: any = xpData?.getUser;
-    const u = Array.isArray(payload) ? payload[0] : payload;
-    return {
-      level: Number(u?.level ?? 0),
-      requiredXP: Math.max(1, Math.round(Number(u?.requiredXP ?? 1))),
-      exceedingXP: Math.max(0, Math.round(Number(u?.exceedingXP ?? 0))),
-    };
-  }, [xpData]);
-
-  const levelIconSrc = useMemo(() => {
-    const lvl = Math.max(0, Math.min(99, levelInfo.level));
-    return `/levels/level_${String(lvl)}.svg`;
-  }, [levelInfo.level]);
-
-  const progressPct = useMemo(() => {
-    const required = Math.max(1, levelInfo.requiredXP);
-    const have = Math.max(0, levelInfo.exceedingXP);
-    return Math.max(0, Math.min(100, Math.round((have / required) * 100)));
-  }, [levelInfo.requiredXP, levelInfo.exceedingXP]);
-
   return (
     <Box sx={{ p: 2 }}>
       <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
 
-      {/* Level + XP overview */}
-      <Box sx={{ mb: 2 }}>
-        <Stack
-          direction="row"
-          spacing={1.5}
-          alignItems="center"
-          sx={{ mb: 0.5 }}
-        >
-          <img
-            src={levelIconSrc}
-            alt={`Level ${levelInfo.level}`}
-            width={48}
-            height={48}
-            style={{ display: "block" }}
-          />
-          <Typography variant="body2" color="text.secondary">
-            {`Level ${levelInfo.level} · ${Math.round(
-              levelInfo.exceedingXP
-            )} / ${Math.max(1, Math.round(levelInfo.requiredXP))} XP`}
-          </Typography>
-        </Stack>
-        <LinearProgress
-          variant="determinate"
-          value={progressPct}
-          sx={{ height: 10, borderRadius: 999 }}
-        />
-      </Box>
+      {/* XP Overview Component - ersetzt die inline XP-Anzeige */}
+      <XpOverview userId={currentUserInfo.id} />
 
       <Tabs
         value={activeIndex}
