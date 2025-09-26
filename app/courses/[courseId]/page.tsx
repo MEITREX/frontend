@@ -1,24 +1,17 @@
 "use client";
 
 import { PageView, usePageView } from "@/src/currentView";
-import StudentCoursePage from "./student";
-import LecturerCoursePage from "./lecturer";
-import { useParams } from "next/navigation";
-import { isUUID } from "@/src/utils";
-import { PageError } from "@/components/PageError";
+import StudentOverview from "../../../components/courses/student/StudentOverview";
+import LecturerOverview from "@/components/courses/lecturer/LecturerOverview";
 
 export default function CoursePage() {
-  const [pageView, _] = usePageView();
-  const { courseId } = useParams();
-
-  if (!isUUID(courseId)) {
-    return <PageError message="Invalid course id." />;
-  }
+  const [pageView] = usePageView();
 
   switch (pageView) {
     case PageView.Student:
-      return <StudentCoursePage />;
+      return <StudentOverview />;
+
     case PageView.Lecturer:
-      return <LecturerCoursePage />;
+      return <LecturerOverview />;
   }
 }

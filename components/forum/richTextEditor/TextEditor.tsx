@@ -14,6 +14,24 @@ import {
   Redo,
   Code,
 } from "@mui/icons-material";
+import { createMentionExtension } from "@/components/forum/richTextEditor/MentionSuggestion";
+import "tippy.js/dist/tippy.css";
+import {
+  fetchQuery,
+  graphql,
+  useLazyLoadQuery,
+  useRelayEnvironment,
+} from "react-relay";
+import { useEffect, useMemo, useState } from "react";
+import { ForumApiForumIdQuery } from "@/__generated__/ForumApiForumIdQuery.graphql";
+import { useCourseData } from "@/components/courses/context/CourseDataContext";
+import {
+  forumApiForumIdQuery,
+  forumApiPublicUserInfoQuery,
+} from "@/components/forum/api/ForumApi";
+import { ForumApiPublicUserInfoQuery } from "@/__generated__/ForumApiPublicUserInfoQuery.graphql";
+
+type User = { id: string; name: string };
 
 type Props = {
   onContentChange?: (html: string) => void;
@@ -21,20 +39,83 @@ type Props = {
 };
 
 const TextEditor = ({ onContentChange, initialContent }: Props) => {
-  const editor = useEditor({
-    extensions: [StarterKit, Underline],
-    content: initialContent || "<p></p>",
-    editorProps: {
-      attributes: {
-        class:
-          "min-h-[200px] max-h-[600px] outline-none focus:outline-none text-base leading-6",
+  // Get data from context
+  const data = useCourseData();
+  const courseId = data.coursesByIds[0].id;
+
+  // Get Users information for Mention Suggestion
+  const [mentionableUsers, setMentionableUsers] = useState<User[]>([]);
+  const relayEnvironment = useRelayEnvironment();
+
+  // Mention Suggestion: 1. Load all userIds in this course
+  const forumData = useLazyLoadQuery<ForumApiForumIdQuery>(
+    forumApiForumIdQuery,
+    { id: courseId },
+    { fetchPolicy: "store-or-network" }
+  );
+
+  // Mention Suggestion: 2. Load all nicknames for the users in this course
+  useEffect(() => {
+    const userIds = forumData?.forumByCourseId?.userIds;
+
+    if (!userIds || userIds.length === 0) {
+      return;
+    }
+
+    fetchQuery<ForumApiPublicUserInfoQuery>(
+      relayEnvironment,
+      forumApiPublicUserInfoQuery,
+      { ids: userIds }
+    ).subscribe({
+      next: (userInfoData) => {
+        const users = userInfoData?.findPublicUserInfos;
+        if (!users) {
+          return;
+        }
+
+        // 1. Map the data
+        const formattedUsers = users.map((user) => ({
+          id: user?.id,
+          name: user?.nickname,
+        }));
+
+        // 2. Filter out any users with a missing id or name.
+        const validUsers = formattedUsers.filter(
+          (user): user is User => !!user.id && !!user.name
+        );
+
+        setMentionableUsers(validUsers);
+      },
+      error: (error: any) => {
+        console.error("Error loading Users", error);
+      },
+    });
+  }, [forumData, relayEnvironment]);
+
+  // Load extension
+  const extensions = useMemo(
+    () => [StarterKit, Underline, createMentionExtension(mentionableUsers)],
+    [mentionableUsers]
+  );
+
+  // Editor
+  const editor = useEditor(
+    {
+      extensions,
+      content: initialContent || "<p></p>",
+      editorProps: {
+        attributes: {
+          class:
+            "min-h-[200px] max-h-[600px] outline-none focus:outline-none text-base leading-6",
+        },
+      },
+      onUpdate({ editor }) {
+        const html = editor.getHTML();
+        onContentChange?.(html);
       },
     },
-    onUpdate({ editor }) {
-      const html = editor.getHTML();
-      onContentChange?.(html);
-    },
-  });
+    [extensions]
+  );
 
   if (!editor) return null;
 
@@ -145,6 +226,13 @@ const TextEditor = ({ onContentChange, initialContent }: Props) => {
           lineHeight: 1.6,
           "&:focus-within": {
             borderColor: "primary.main",
+          },
+          "& .mention": {
+            backgroundColor: "#e3f2fd",
+            color: "#0d47a1",
+            padding: "1px 4px",
+            borderRadius: "4px",
+            fontWeight: "bold",
           },
           // List
           "& ul, & ol": {

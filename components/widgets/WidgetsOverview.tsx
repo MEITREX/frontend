@@ -127,7 +127,7 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
   }, [currentUserWidgetSettings]);
 
   // Map User preferred categories to Widget-Components
-  // Testing: Use mockedRecommendations
+  // Testing: Use mockedRecommendations instead of 'recommendations'.find
   const selectedWidgets = React.useMemo(() => {
     if (!recommendations.length) return [];
     return widgets

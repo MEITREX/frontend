@@ -58,6 +58,9 @@ export const forumApiThreadDetailQuery = graphql`
         downvotedByUsers
         upvotedByUsers
         edited
+        reference {
+          content
+        }
       }
     }
   }
@@ -67,10 +70,19 @@ export const forumApiForumIdQuery = graphql`
   query ForumApiForumIdQuery($id: UUID!) {
     forumByCourseId(id: $id) {
       id
+      userIds
     }
   }
 `;
 
+export const forumApiPublicUserInfoQuery = graphql`
+  query ForumApiPublicUserInfoQuery($ids: [UUID!]!) {
+    findPublicUserInfos(ids: $ids) {
+      id
+      nickname
+    }
+  }
+`;
 export const forumApiCreateQuestionThreadMutation = graphql`
   mutation ForumApiCreateQuestionThreadMutation($thread: InputQuestionThread!) {
     createQuestionThread(thread: $thread) {
@@ -88,6 +100,9 @@ export const forumApiAddPostMutation = graphql`
       authorId
       downvotedByUsers
       upvotedByUsers
+      reference {
+        content
+      }
     }
   }
 `;
@@ -331,6 +346,14 @@ export const forumApiGetIntemsForEveryUserQuery = graphql`
       }
       unspentPoints
       userId
+    }
+  }
+`;
+
+export const forumApiDeleteThreadMutation = graphql`
+  mutation ForumApiDeleteThreadMutation($threadId: UUID!) {
+    deleteThread(threadId: $threadId) {
+      id
     }
   }
 `;

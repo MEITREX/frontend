@@ -45,7 +45,7 @@ export function AddChapterModal({
         id
         course {
           ...AddChapterModalFragment
-          ...lecturerCourseFragment
+          ...LecturerCourseLayoutFragment
         }
       }
     }

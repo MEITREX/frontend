@@ -637,7 +637,6 @@ type ExternalAssignment {
 
 type ExternalCourse {
   courseTitle: String!
-  organizationName: String!
   url: String!
 }
 
@@ -860,6 +859,7 @@ input InputInfoThread {
 input InputPost {
   content: String!
   id: UUID
+  reference: UUID
   threadId: UUID
 }
 
@@ -1201,6 +1201,7 @@ type Post {
   downvotedByUsers: [UUID]!
   edited: Boolean!
   id: UUID!
+  reference: Post
   upvotedByUsers: [UUID]!
 }
 
@@ -1215,6 +1216,7 @@ type ProgressLogItem {
 
 type PublicUserInfo {
   id: UUID!
+  nickname: String!
   userName: String!
 }
 

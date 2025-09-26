@@ -1,16 +1,33 @@
+"use client";
+
 import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
 import ThreadStatusIcons from "@/components/forum/thread/ThreadStatusIcons";
 import { ThreadType } from "@/components/forum/types";
 import { Box, Stack, Typography } from "@mui/material";
 import UpvoteDownvote from "../shared/UpvoteDownvote";
 import UserPostInformation from "../shared/UserPostInformation";
+import { usePathname, useRouter } from "next/navigation";
 
 type Props = {
   thread: ThreadType;
-  onThreadClick?: (threadId: string) => void;
 };
 
-export default function ThreadItem({ thread, onThreadClick }: Props) {
+export default function ThreadItem({ thread }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  /* The navigation depends on where the thread is clicked:
+     1. Forum page
+     2. Course page
+  */
+  const onThreadClick = () => {
+    if (pathname.includes("/forum")) {
+      router.push(`${pathname}/${thread.id}`);
+    } else {
+      router.push(`${pathname}/forum/${thread.id}`);
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -23,6 +40,7 @@ export default function ThreadItem({ thread, onThreadClick }: Props) {
         textDecoration: "none",
         color: "inherit",
         transition: "0.2s",
+        overflowX: "hidden",
         "&:hover": {
           backgroundColor: "#f5f5f5",
           cursor: "pointer",
@@ -45,7 +63,7 @@ export default function ThreadItem({ thread, onThreadClick }: Props) {
           justifyContent="space-between"
           sx={{ flexGrow: 1, overflow: "hidden", position: "relative" }}
         >
-          <Box onClick={() => onThreadClick?.(thread.id)}>
+          <Box onClick={onThreadClick}>
             <Typography variant="h6" sx={{ color: "#089CDC", fontWeight: 600 }}>
               {thread.title}
             </Typography>
