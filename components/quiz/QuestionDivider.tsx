@@ -1,5 +1,12 @@
 import { QuestionDividerFragment$key } from "@/__generated__/QuestionDividerFragment.graphql";
-import { QuestionDividerGenerateHintMutation } from "@/__generated__/QuestionDividerGenerateHintMutation.graphql";
+import {
+  HintAssociationInput,
+  HintClozeInput,
+  HintGenerationInput,
+  HintMultipleChoiceInput,
+  HintQuestionType,
+  QuestionDividerGenerateHintMutation,
+} from "@/__generated__/QuestionDividerGenerateHintMutation.graphql";
 import { useAITutorStore } from "@/stores/aiTutorStore";
 import { Button, CircularProgress } from "@mui/material";
 import { useParams } from "next/navigation";
@@ -8,10 +15,10 @@ import { Descendant, Text as SlateText } from "slate";
 
 export const generateHintMutation = graphql`
   mutation QuestionDividerGenerateHintMutation(
-    $questionText: String!
+    $questionInput: HintGenerationInput!
     $courseId: UUID!
   ) {
-    generateHint(questionText: $questionText, courseId: $courseId) {
+    generateHint(questionInput: $questionInput, courseId: $courseId) {
       hint
     }
   }
@@ -40,11 +47,14 @@ export function getPlainTextOfSlateJS(value: string | null): string {
 export function QuestionDivider({
   _question,
   onHint,
-  questionText,
+  questionInput,
 }: {
   _question: QuestionDividerFragment$key;
   onHint?: () => void;
-  questionText?: string;
+  questionInput:
+    | HintMultipleChoiceInput
+    | HintAssociationInput
+    | HintClozeInput;
 }) {
   const { courseId } = useParams();
   const showHint = useAITutorStore((state) => state.showHint);
@@ -52,29 +62,54 @@ export function QuestionDivider({
     useMutation<QuestionDividerGenerateHintMutation>(generateHintMutation);
 
   function handleGeneratingHint() {
-    if (!questionText) {
-      showHint("No Hint available");
-      return;
-    }
     generateHint({
       variables: {
         courseId: courseId,
-        questionText: questionText,
+        questionInput: buildQuestionInput(),
       },
       onCompleted(response) {
+        if (onHint) onHint();
         showHint(response.generateHint.hint);
       },
+      onError() {
+        showHint("Something went wrong! Please try again!");
+      },
     });
+  }
+
+  function buildQuestionInput(): HintGenerationInput {
+    let input: HintGenerationInput = {
+      type: question.type as HintQuestionType,
+    };
+    if ("answers" in questionInput) {
+      return {
+        ...input,
+        multipleChoice: questionInput,
+      };
+    }
+    if ("pairs" in questionInput) {
+      return {
+        ...input,
+        association: questionInput,
+      };
+    }
+    if ("blanks" in questionInput) {
+      return { ...input, cloze: questionInput };
+    }
+    return input;
   }
 
   const question = useFragment(
     graphql`
       fragment QuestionDividerFragment on Question {
         hint
+        type
       }
     `,
     _question
   );
+
+  buildQuestionInput();
 
   return (
     <div className="w-full my-2 flex justify-center border-b border-b-gray-300">
@@ -110,9 +145,9 @@ function HintDialogButton({
           if (!plainHintText.trim()) {
             if (generateHint) generateHint();
           } else {
+            if (onHint) onHint();
             showHint(plainHintText);
           }
-          if (onHint) onHint();
         }}
         sx={{ color: "grey" }}
       >

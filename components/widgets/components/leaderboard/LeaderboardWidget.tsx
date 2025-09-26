@@ -185,12 +185,15 @@ const LeaderboardWidget: React.FC<Props> = ({
 
   const env = useRelayEnvironment();
 
-  const idsMemo = React.useMemo(() => {
-    return Array.from(new Set(sorted.map((u) => u.user?.id).filter(Boolean)));
+  const ids = useMemo(() => {
+    const arr = sorted.map((u) => u.user?.id).filter(Boolean) as string[];
+
+    return Array.from(new Set(arr)).sort();
   }, [sorted]);
 
-  React.useEffect(() => {
-    const ids = idsMemo;
+  const idsKey = useMemo(() => ids.join("|"), [ids]);
+
+  useEffect(() => {
     if (ids.length === 0) {
       setUserProfilePics({});
       setUserProfileFrames({});
@@ -201,87 +204,112 @@ const LeaderboardWidget: React.FC<Props> = ({
     }
 
     let cancelled = false;
+
     (async () => {
       try {
-        const results = await Promise.all(
-          ids.map(async (userId) => {
-            const invRes =
-              await fetchQuery<LeaderboardWidgetRowInventoryByUserQuery>(
-                env,
-                InventoryByUserQuery,
-                { userIds: [userId ?? "n.A."] }
-              ).toPromise();
+        // 2) Einmalige batched Requests
+        const [invRes, nickRes] = await Promise.all([
+          fetchQuery<LeaderboardWidgetRowInventoryByUserQuery>(
+            env,
+            InventoryByUserQuery,
+            { userIds: ids }
+          ).toPromise(),
+          fetchQuery<LeaderboardWidgetRowPublicInfoQuery>(
+            env,
+            PublicInfoQuery,
+            { id: ids }
+          ).toPromise(),
+        ]);
 
-            // Public Info Query
-            const dataNick =
-              await fetchQuery<LeaderboardWidgetRowPublicInfoQuery>(
-                env,
-                PublicInfoQuery,
-                { id: [userId ?? "n.A."] }
-              ).toPromise();
+        if (cancelled) return;
 
-            // je nach Schema das erste Element nehmen:
-            const nick = dataNick?.findUserInfos?.[0]?.nickname ?? null;
+        // Maps aufbauen
+        const picsMap: Record<string, Asset | null> = {};
+        const framesMap: Record<string, Asset | null> = {};
+        const colorsMap: Record<string, ColorTheme | null> = {};
+        const patternsMap: Record<string, PatternTheme | null> = {};
+        const nicksMap: Record<string, string | null> = {};
 
-            const items = invRes?.inventoriesForUsers?.[0]?.items ?? [];
+        const invList = invRes?.inventoriesForUsers ?? [];
+        for (const inv of invList) {
+          const uid = inv?.userId ?? "";
+          const items = inv?.items ?? [];
+          const pics = getPublicProfileItemsMergedCustomID(
+            items,
+            "profilePics"
+          );
+          const frames = getPublicProfileItemsMergedCustomID(
+            items,
+            "profilePicFrames"
+          );
+          const colors = getPublicProfileItemsMergedCustomID(
+            items,
+            "colorThemes"
+          );
+          const patterns = getPublicProfileItemsMergedCustomID(
+            items,
+            "patternThemes"
+          );
 
-            const pics = getPublicProfileItemsMergedCustomID(
-              items,
-              "profilePics"
-            );
-            const frames = getPublicProfileItemsMergedCustomID(
-              items,
-              "profilePicFrames"
-            );
-            const colors = getPublicProfileItemsMergedCustomID(
-              items,
-              "colorThemes"
-            );
-            const patterns = getPublicProfileItemsMergedCustomID(
-              items,
-              "patternThemes"
-            );
-
-            const pic = pics.find((it: any) => it.equipped) ?? null;
-            const frame = frames.find((it: any) => it.equipped) ?? null;
-            const color = colors.find((it: any) => it.equipped) ?? null;
-            const pattern = patterns.find((it: any) => it.equipped) ?? null;
-
-            return [userId, pic, frame, color, pattern, nick] as const;
-          })
-        );
-
-        if (!cancelled) {
-          const picsMap: Record<string, Asset | null> = {};
-          const framesMap: Record<string, Asset | null> = {};
-          const colorsMap: Record<string, ColorTheme | null> = {};
-          const patternsMap: Record<string, PatternTheme | null> = {};
-          const nicksMap: Record<string, string | null> = {};
-
-          for (const [id, pic, frame, color, pattern, nick] of results) {
-            picsMap[id ?? "n.A."] = pic;
-            framesMap[id ?? "n.A."] = frame;
-            colorsMap[id ?? "n.A."] = color;
-            patternsMap[id ?? "n.A."] = pattern;
-            nicksMap[id ?? "n.A."] = nick;
-          }
-
-          setUserProfilePics(picsMap);
-          setUserProfileFrames(framesMap);
-          setUserColorThemes(colorsMap);
-          setUserPatternThemes(patternsMap);
-          setUserNickname(nicksMap);
+          picsMap[uid] = pics.find((it: any) => it.equipped) ?? null;
+          framesMap[uid] = frames.find((it: any) => it.equipped) ?? null;
+          colorsMap[uid] = colors.find((it: any) => it.equipped) ?? null;
+          patternsMap[uid] = patterns.find((it: any) => it.equipped) ?? null;
         }
+
+        const infos = nickRes?.findUserInfos ?? [];
+        // Falls findUserInfos nicht in gleicher Reihenfolge zurückkommt:
+        for (let i = 0; i < infos.length; i++) {
+          const info = infos[i];
+          // Du brauchst hier ggf. die ID im Payload.
+          // Wenn sie nicht enthalten ist, musst du via Position/ids[i] mappen:
+          const uid = ids[i] ?? "";
+          nicksMap[uid] = info?.nickname ?? null;
+        }
+
+        // Optional: nur setState, wenn sich wirklich was geändert hat (shallow compare)
+        setUserProfilePics((prev) => (prev === picsMap ? prev : picsMap));
+        setUserProfileFrames((prev) => (prev === framesMap ? prev : framesMap));
+        setUserColorThemes((prev) => (prev === colorsMap ? prev : colorsMap));
+        setUserPatternThemes((prev) =>
+          prev === patternsMap ? prev : patternsMap
+        );
+        setUserNickname((prev) => (prev === nicksMap ? prev : nicksMap));
       } catch (e) {
-        console.warn("[Leaderboard] per-user inventory fetch failed:", e);
+        console.warn("[Leaderboard] batched fetch failed:", e);
       }
     })();
+
     return () => {
       cancelled = true;
     };
-  }, [env, idsMemo]);
+  }, [idsKey, env]); // <— nicht an 'ids' (Array-Ref), sondern an stabilen Schlüssel
 
-  console.log(userNickname);
+  console.log(userProfilePics, userProfileFrames);
+
+  function userCardStyle(
+    userId: string,
+    base: React.CSSProperties = {}
+  ): React.CSSProperties {
+    const col = userColorThemes[userId];
+    const pat = userPatternThemes[userId];
+
+    const style: React.CSSProperties = { ...base };
+
+    if (col?.backColor) style.backgroundColor = col.backColor;
+
+    const patUrl = assetSrc(pat);
+    if (patUrl) {
+      style.backgroundImage = `url(${patUrl})`;
+      style.backgroundRepeat = "repeat";
+      style.backgroundSize = "100%";
+    }
+
+    const fg = col?.foreColor ?? pat?.foreColor; // ← wichtig: Pattern-Foreground berücksichtigen
+    if (fg) style.color = fg;
+
+    return style;
+  }
 
   return (
     <WidgetWrapper
@@ -303,7 +331,7 @@ const LeaderboardWidget: React.FC<Props> = ({
             {topThree.map((us, idx) => (
               <div
                 key={us.user?.id ?? idx}
-                style={{
+                style={userCardStyle(us.user?.id ?? "", {
                   display: "flex",
                   alignItems: "center",
                   border:
@@ -316,24 +344,62 @@ const LeaderboardWidget: React.FC<Props> = ({
                   padding: "6px 8px",
                   marginBottom: 4,
                   height: 36,
-                }}
+                })}
               >
                 <span style={{ marginRight: 8, width: 20, textAlign: "right" }}>
                   {idx + 1}.
                 </span>
-                <img
-                  src={
-                    assetSrc(userProfilePics[us.user?.id ?? ""]) ??
-                    defaultUserImage.src
-                  }
-                  alt={us.user?.name ?? "User avatar"}
+                <div
                   style={{
+                    position: "relative",
                     width: 24,
                     height: 24,
-                    borderRadius: 12,
                     marginRight: 8,
+                    border: "0px solid #ddd",
+                    objectFit: "cover",
+                    boxShadow: "0 1px 5px #0001",
                   }}
-                />
+                >
+                  {assetSrc(userProfileFrames[us.user?.id ?? ""]) && (
+                    <img
+                      src={assetSrc(userProfileFrames[us.user?.id ?? ""])}
+                      alt={us.user?.id}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: 10,
+                        objectFit: "cover",
+                        boxShadow: "0 2px 8px #0001",
+                        zIndex: 1,
+                      }}
+                    />
+                  )}
+
+                  {/* Profilbild */}
+                  <img
+                    src={
+                      assetSrc(
+                        userProfilePics[us.user?.id ?? ""],
+                        defaultUserImage.src
+                      )!
+                    }
+                    alt={us.user?.id}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 10,
+                      objectFit: "cover",
+                      boxShadow: "0 2px 8px #0001",
+                      zIndex: 0,
+                    }}
+                  />
+                </div>
                 <span style={{ fontWeight: 600 }}>
                   {userNickname[us.user?.id ?? ""] ??
                     us.user?.name ??
@@ -368,25 +434,63 @@ const LeaderboardWidget: React.FC<Props> = ({
                     height: 32,
                     background: isCurrent ? "#eef" : "transparent",
                     border: isCurrent ? "2px solid #000" : "none",
-                    borderRadius: 4,
+                    borderRadius: 2,
                     marginBottom: 2,
                     justifyContent: "space-between",
                   }}
                 >
                   <span style={{ width: 20, textAlign: "right" }}>{rank}.</span>
-                  <img
-                    src={
-                      assetSrc(userProfilePics[us.user?.id ?? ""]) ??
-                      defaultUserImage.src
-                    }
-                    alt={us.user?.name ?? "User avatar"}
+                  <div
                     style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: 10,
-                      margin: "0 8px",
+                      position: "relative",
+                      width: 24,
+                      height: 24,
+                      margin: "0 auto 10px",
+                      border: "0px solid #ddd",
+                      objectFit: "cover",
+                      boxShadow: "0 1px 5px #0001",
                     }}
-                  />
+                  >
+                    {assetSrc(userProfileFrames[us.user?.id ?? ""]) && (
+                      <img
+                        src={assetSrc(userProfileFrames[us.user?.id ?? ""])}
+                        alt={us.user?.id}
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: 10,
+                          objectFit: "cover",
+                          boxShadow: "0 2px 8px #0001",
+                          zIndex: 1,
+                        }}
+                      />
+                    )}
+
+                    {/* Profilbild */}
+                    <img
+                      src={
+                        assetSrc(
+                          userProfilePics[us.user?.id ?? ""],
+                          defaultUserImage.src
+                        )!
+                      }
+                      alt={us.user?.id}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: 10,
+                        objectFit: "cover",
+                        boxShadow: "0 2px 8px #0001",
+                        zIndex: 0,
+                      }}
+                    />
+                  </div>
                   <span style={{ flex: 1, textAlign: "left" }}>
                     {userNickname[us.user?.id ?? ""] ??
                       us.user?.name ??
