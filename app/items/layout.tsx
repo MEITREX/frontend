@@ -29,7 +29,7 @@ export default function ShopLayout({
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h4" gutterBottom>
-        Welcome to the Shop
+        Welcome to the Item Hub
       </Typography>
       <Typography variant="body1" color="text.secondary" mb={3}>
         Here you can view your inventory, purchase new items, or try your luck
