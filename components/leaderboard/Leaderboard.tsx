@@ -276,12 +276,17 @@ export default function Leaderboard({
   // Allow optional ?date=YYYY-MM-DD override via URL, otherwise use local date
   const overrideDate = searchParams?.get("date");
   const base = overrideDate ? new Date(overrideDate) : new Date();
-  const normalized =
-    period === "weekly"
-      ? startOfWeekMonday(base)
-      : period === "monthly"
-      ? startOfMonth(base)
-      : startOfLastWeekMonday(base);
+  let normalized;
+  if (period === "weekly") {
+    normalized = startOfWeekMonday(base);
+  } else if (period === "monthly") {
+    normalized = startOfMonth(base);
+  } else if (period === "allTime") {
+    // Für allTime immer den ersten Tag des Monats verwenden
+    normalized = startOfMonth(base);
+  } else {
+    normalized = startOfLastWeekMonday(base);
+  }
   const date = formatLocalISODate(normalized);
 
   // Always call useLazyLoadQuery unconditionally, even if courseID is missing.
@@ -331,7 +336,21 @@ export default function Leaderboard({
   const raw = React.useMemo(() => {
     if (period === "weekly") return data?.weekly ?? [];
     if (period === "monthly") return data?.monthly ?? [];
-    return data?.allTime ?? [];
+    if (period === "allTime") {
+      // Wähle das Leaderboard mit den meisten User-Scores
+      const all = data?.allTime ?? [];
+      if (all.length === 0) return [];
+      return [
+        all.reduce(
+          (best, curr) =>
+            (curr.userScores?.length ?? 0) > (best.userScores?.length ?? 0)
+              ? curr
+              : best,
+          all[0]
+        ),
+      ];
+    }
+    return [];
   }, [data, period]);
 
   const rawScores = React.useMemo(
