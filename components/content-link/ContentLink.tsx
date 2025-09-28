@@ -17,6 +17,7 @@ import {
   Quiz,
   Terminal,
 } from "@mui/icons-material";
+import AssignmentIcon from "@mui/icons-material/Assignment";
 import { Chip, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -33,6 +34,7 @@ export const ContentTypeToColor: Record<string, string> = {
   FlashcardSetAssessment: colors.emerald[200],
   QuizAssessment: colors.rose[200],
   AssignmentAssessment: colors.blue[200],
+  SubmissionAssessment: colors.orange[200],
 };
 
 export type ContentChip = { key: string; label: string; color?: string };
@@ -140,6 +142,8 @@ export function ContentLink({
       ? "Flashcard"
       : content.__typename === "QuizAssessment"
       ? "Quiz"
+      : content.__typename === "SubmissionAssessment"
+      ? "Submission"
       : content.__typename === "AssignmentAssessment" &&
         content.assignment?.assignmentType === "CODE_ASSIGNMENT"
       ? "Code Assignment"
@@ -205,6 +209,13 @@ export function ContentLink({
           color: disabled ? "text.disabled" : "text.secondary",
         }}
       />
+    ) : content.__typename === "SubmissionAssessment" ? (
+      <AssignmentIcon
+        className="!w-[47%] !h-[47%]"
+        sx={{
+          color: disabled ? "text.disabled" : "text.secondary",
+        }}
+      />
     ) : (
       <div>unknown</div>
     );
@@ -212,6 +223,8 @@ export function ContentLink({
   let link =
     content.__typename === "MediaContent"
       ? `/courses/${courseId}/media/${content.id}`
+      : content.__typename === "SubmissionAssessment"
+      ? `/courses/${courseId}/submission/${content.id}`
       : content.__typename === "FlashcardSetAssessment"
       ? `/courses/${courseId}/flashcards/${content.id}`
       : content.__typename === "QuizAssessment"

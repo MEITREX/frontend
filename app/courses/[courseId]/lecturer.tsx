@@ -24,6 +24,7 @@ import { orderBy } from "lodash";
 import { useRouter } from "next/navigation";
 import React, { Suspense, useState } from "react";
 import { LecturerChapter } from "./LecturerChapter";
+import LecturerSubmissionsList from "@/components/submissions/LecturerSubmissionsList";
 
 graphql`
   fragment lecturerCourseFragment on Course {
@@ -181,7 +182,8 @@ export default function LecturerCoursePage() {
           aria-label="Tabs for course student page"
         >
           <Tab label="Course Overview" {...a11yProps(0)} />
-          <Tab label="Forum" {...a11yProps(1)} />
+          <Tab label="Submissions" {...a11yProps(1)} />
+          <Tab label="Forum" {...a11yProps(2)} />
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>
@@ -202,6 +204,9 @@ export default function LecturerCoursePage() {
         </div>
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
+        <LecturerSubmissionsList></LecturerSubmissionsList>
+      </CustomTabPanel>
+      <CustomTabPanel value={value} index={2}>
         <Suspense fallback={<SkeletonThreadList />}>
           <ForumOverview />
         </Suspense>

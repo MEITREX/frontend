@@ -56,7 +56,8 @@ export function EditContentModal({
   const [openFlashcardModal, setOpenFlashcardModal] = useState(false);
   const [openAddQuizModal, setOpenAddQuizModal] = useState(false);
   const [openCodeAssignmentModal, setOpenCodeAssignmentModal] = useState(false);
-  const [openSubmissionExerciseModal, setOpenSubmissionExerciseModal] = useState(false);
+  const [openSubmissionExerciseModal, setOpenSubmissionExerciseModal] =
+    useState(false);
 
   const [openModal, setOpenModal] = useState(false);
 
@@ -180,6 +181,8 @@ export function EditContentModal({
     }
     setOpenCodeAssignmentModal(true);
   };
+
+  console.log(chapter)
   return (
     <>
       <Button startIcon={<EditNote />} onClick={() => setOpenModal(true)}>
@@ -271,6 +274,8 @@ export function EditContentModal({
                           router.push(
                             content.__typename === "FlashcardSetAssessment"
                               ? `/courses/${courseId}/flashcards/${content.id}`
+                              : content.__typename === "SubmissionAssessment"
+                              ? `/courses/${courseId}/submission/${content.id}`
                               : content.__typename === "MediaContent"
                               ? `/courses/${courseId}/media/${content.id}`
                               : content.__typename === "QuizAssessment"

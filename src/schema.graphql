@@ -288,6 +288,7 @@ enum ContentType {
   FLASHCARDS
   MEDIA
   QUIZ
+  SUBMISSION
 }
 
 type Course {
@@ -650,6 +651,13 @@ type ExternalUserIdWithUser {
   userId: UUID!
 }
 
+type File {
+  downloadUrl: String!
+  id: UUID!
+  name: String!
+  uploadUrl: String!
+}
+
 type Flashcard {
   item: Item!
   itemId: UUID!
@@ -871,6 +879,36 @@ input InputQuestionThread {
   title: String!
 }
 
+input InputResult {
+  assessmentId: UUID!
+  courseId: UUID!
+  id: UUID!
+  results: [InputTaskResult!]!
+  status: Status!
+}
+
+input InputSubmissionExercise {
+  endDate: DateTime!
+  name: String!
+  tasks: [InputTask]
+}
+
+input InputSubmissionSolution {
+  courseId: UUID!
+  submissionExerciseId: UUID!
+}
+
+input InputTask {
+  itemId: UUID!
+  maxScore: Int!
+  name: String!
+}
+
+input InputTaskResult {
+  score: Int!
+  taskId: UUID!
+}
+
 input InputThreadContentReference {
   contentId: UUID!
   pageNumber: Int
@@ -1053,6 +1091,7 @@ type Mutation {
   createAssignmentAssessment(assessmentInput: CreateAssessmentInput!, assignmentInput: CreateAssignmentInput!): AssignmentAssessment!
   createChapter(input: CreateChapterInput!): Chapter!
   createCourse(input: CreateCourseInput!): Course!
+  createExerciseFile(assessmentId: UUID!, name: String!): File
   createFlashcardSetAssessment(assessmentInput: CreateAssessmentInput!, flashcardSetInput: CreateFlashcardSetInput!): FlashcardSetAssessment
   createForum(courseId: UUID!): Forum
   createInfoThread(thread: InputInfoThread!): InfoThread
@@ -1062,6 +1101,8 @@ type Mutation {
   createQuestionThread(thread: InputQuestionThread!): QuestionThread
   createQuizAssessment(assessmentInput: CreateAssessmentInput!, quizInput: CreateQuizInput!): QuizAssessment!
   createSection(input: CreateSectionInput!): Section!
+  createSolutionFile(name: String!, solutionId: UUID!): File
+  createSubmissionAssessment(assessmentInput: CreateAssessmentInput!, submissionExerciseInput: InputSubmissionExercise!): SubmissionAssessment!
   currencyReward(points: Int!): Inventory
   defaultSettings(userId: UUID!): Settings!
   deleteChapter(id: UUID!): UUID!
@@ -1091,6 +1132,7 @@ type Mutation {
   mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
   mutateQuiz(assessmentId: UUID!): QuizMutation!
   mutateSection(sectionId: UUID!): SectionMutation!
+  mutateSubmission(assessmentId: UUID!): SubmissionMutation!
   recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
   recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
   saveStudentMappings(courseId: UUID!, studentMappingInputs: [StudentMappingInput!]!): [String]!
@@ -1109,7 +1151,9 @@ type Mutation {
   updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
   updateMembership(input: CourseMembershipInput!): CourseMembership!
   updatePost(post: InputPost!): Post
+  updateResult(result: InputResult!): Result!
   updateSettings(input: SettingsInput!, userId: UUID!): Settings!
+  uploadSolution(solution: InputSubmissionSolution!): SubmissionSolution!
   upvotePost(postId: UUID!): Post
 }
 
@@ -1270,6 +1314,8 @@ type Query {
   PlayerHexadScoreExists(userId: UUID!): Boolean!
   scoreboard(courseId: UUID!): [ScoreboardItem!]!
   semanticSearch(count: Int! = 10, courseWhitelist: [UUID!], queryText: String!): [SemanticSearchResult!]!
+  submissionExerciseByUser(assessmentId: UUID!): SubmissionExercise!
+  submissionExerciseForLecturer(assessmentId: UUID!): SubmissionExercise!
   suggestionsByChapterIds(amount: Int!, chapterIds: [UUID!]!, skillTypes: [SkillType!]! = []): [Suggestion!]!
   thread(id: UUID!): Thread
   threadsByContentId(id: UUID!): [Thread!]!
@@ -1420,6 +1466,12 @@ enum RecommendationUserFeedback {
 directive @resolveTo(requiredSelectionSet: String, sourceName: String, sourceTypeName: String, sourceFieldName: String, sourceSelectionSet: String, sourceArgs: ResolveToSourceArgs, keyField: String, keysArg: String, pubsubTopic: String, filterBy: String, additionalArgs: ResolveToSourceArgs, result: String, resultType: String) on FIELD_DEFINITION
 
 scalar ResolveToSourceArgs
+
+type Result {
+  id: UUID
+  results: [TaskResult!]!
+  status: Status!
+}
 
 enum RewardChangeReason {
   COMPOSITE_VALUE
@@ -1582,6 +1634,12 @@ type Stage {
   requiredContentsProgress: Float!
 }
 
+enum Status {
+  failed
+  passed
+  pending
+}
+
 input StringFilter {
   contains: String
   equals: String
@@ -1616,6 +1674,43 @@ type SubexerciseGrading {
   studentId: UUID!
 }
 
+type SubmissionAssessment implements Assessment & Content {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
+  assessmentMetadata: AssessmentMetadata!
+  id: UUID!
+  isAvailableToBeWorkedOn: Boolean!
+  items: [Item!]!
+  metadata: ContentMetadata!
+  progressDataForUser(userId: UUID!): UserProgressData!
+  required: Boolean!
+  userProgressData: UserProgressData!
+}
+
+type SubmissionExercise {
+  assessmentId: UUID
+  courseId: UUID!
+  endDate: DateTime!
+  files: [File!]!
+  name: String!
+  solutions: [SubmissionSolution!]!
+  tasks: [Task!]!
+}
+
+type SubmissionMutation {
+  addTask(assessmentId: UUID!, item: CreateItemInput!, submissionInput: InputTask!): TaskOutput!
+  assessmentId: UUID!
+  removeTask(itemId: UUID!): SubmissionExercise
+  updateTask(assessmentId: UUID!, item: ItemInput!, submissionInput: InputTask!): TaskOutput!
+}
+
+type SubmissionSolution {
+  files: [File!]!
+  id: UUID
+  result: Result!
+  submissionDate: DateTime!
+  userId: UUID!
+}
+
 type Suggestion {
   content: Content!
   type: SuggestionType!
@@ -1624,6 +1719,24 @@ type Suggestion {
 enum SuggestionType {
   NEW_CONTENT
   REPETITION
+}
+
+type Task {
+  item: Item!
+  itemId: UUID!
+  maxScore: Int!
+  name: String!
+}
+
+type TaskOutput {
+  assessmentId: UUID!
+  modifiedTask: Task!
+  tasks: [Task!]!
+}
+
+type TaskResult {
+  score: Int!
+  taskId: UUID!
 }
 
 interface Thread {

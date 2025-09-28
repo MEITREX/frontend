@@ -1,8 +1,7 @@
 "use client";
 import { QuizModalFragment$key } from "@/__generated__/QuizModalFragment.graphql";
-import { SubmissionExerciseModalEditMutation } from "@/__generated__/SubmissionExerciseModalEditMutation.graphql";
-import { SubmissionExerciseModallMutation } from "@/__generated__/SubmissionExerciseModallMutation.graphql";
-import { Form } from "@/components/Form";
+import { SubmissionExerciseModalCreateMutation } from "@/__generated__/SubmissionExerciseModalCreateMutation.graphql";
+import { Form, FormSection } from "@/components/Form";
 import { LoadingButton } from "@mui/lab";
 import {
   Alert,
@@ -10,10 +9,13 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle
+  DialogTitle,
+  TextField,
 } from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers";
+import dayjs, { Dayjs } from "dayjs";
 import { useState } from "react";
-import { graphql, useFragment, useMutation } from "react-relay";
+import { graphql, useMutation } from "react-relay";
 import {
   AssessmentMetadataFormSection,
   AssessmentMetadataPayload,
@@ -40,185 +42,87 @@ export function SubmissionExerciseModal({
   chapterId: string;
   _existingQuiz: QuizModalFragment$key | null;
 }) {
-  const existingQuiz = useFragment(
-    graphql`
-      fragment SubmissionExerciseModalFragment on Quiz {
-        assessmentId
-        content {
-          id
-          ... on QuizAssessment {
-            assessmentMetadata {
-              initialLearningInterval
-              skillPoints
-              skillTypes
-            }
-          }
-          metadata {
-            name
-            rewardPoints
-            suggestedDate
-            tagNames
-            chapterId
-          }
-        }
-        requiredCorrectAnswers
-        numberOfRandomlySelectedQuestions
-        questionPoolingMode
-      }
-    `,
-    _existingQuiz
-  );
-
-  const assessment = existingQuiz?.content!;
-
-  const [metadata, setMetadata] = useState<ContentMetadataPayload | null>(
-    existingQuiz
-      ? {
-          name: assessment!.metadata!.name,
-          rewardPoints: assessment!.metadata!.rewardPoints,
-          suggestedDate: assessment!.metadata!.suggestedDate,
-          tagNames: assessment!.metadata!.tagNames,
-        }
-      : null
-  );
+  const [metadata, setMetadata] = useState<ContentMetadataPayload | null>(null);
   const [assessmentMetadata, setAssessmentMetadata] =
-    useState<AssessmentMetadataPayload | null>(
-      existingQuiz
-        ? {
-            skillPoints: assessment!.assessmentMetadata!.skillPoints,
-            skillTypes: assessment!.assessmentMetadata!.skillTypes,
-            initialLearningInterval:
-              assessment!.assessmentMetadata!.initialLearningInterval,
-          }
-        : null
-    );
+    useState<AssessmentMetadataPayload | null>(null);
 
-  const [mutate, loading] = useMutation<SubmissionExerciseModallMutation>(graphql`
-    mutation SubmissionExerciseModallMutation(
-      $quizInput: CreateQuizInput!
-      $assessmentInput: CreateAssessmentInput!
-    ) {
-      createQuizAssessment(
-        assessmentInput: $assessmentInput
-        quizInput: $quizInput
+  const [deadline, setDeadline] = useState<{
+    endDate: string | null;
+  }>({
+    endDate: new Date().toISOString(),
+  });
+
+  const [create, loading] =
+    useMutation<SubmissionExerciseModalCreateMutation>(graphql`
+      mutation SubmissionExerciseModalCreateMutation(
+        $submissionExerciseInput: InputSubmissionExercise!
+        $assessmentInput: CreateAssessmentInput!
       ) {
-        id
-        ...ContentLinkFragment
-      }
-    }
-  `);
-
-  const [edit, editLoading] = useMutation<SubmissionExerciseModalEditMutation>(graphql`
-    mutation SubmissionExerciseModalEditMutation(
-      $contentId: UUID!
-      $assessmentId: UUID!
-      $assessmentInput: UpdateAssessmentInput!
-      $questionPoolingMode: QuestionPoolingMode!
-      $numberOfRandomlySelectedQuestions: Int!
-      $requiredCorrectAnswers: Int!
-    ) {
-      mutateContent(contentId: $contentId) {
-        updateAssessment(input: $assessmentInput) {
+        createSubmissionAssessment(
+          assessmentInput: $assessmentInput
+          submissionExerciseInput: $submissionExerciseInput
+        ) {
+          id
+          __typename
           ...ContentLinkFragment
-          metadata {
-            name
-            rewardPoints
-            suggestedDate
-            tagNames
-          }
         }
       }
-      mutateQuiz(assessmentId: $assessmentId) {
-        setQuestionPoolingMode(questionPoolingMode: $questionPoolingMode) {
-          questionPoolingMode
-        }
-        setNumberOfRandomlySelectedQuestions(
-          numberOfRandomlySelectedQuestions: $numberOfRandomlySelectedQuestions
-        ) {
-          numberOfRandomlySelectedQuestions
-        }
-        setRequiredCorrectAnswers(
-          requiredCorrectAnswers: $requiredCorrectAnswers
-        ) {
-          requiredCorrectAnswers
-        }
-      }
-    }
-  `);
+    `);
 
   const [error, setError] = useState<any>(null);
 
-  const valid =
-    metadata &&
-    assessmentMetadata
+  const valid = Boolean(
+    metadata?.name?.trim() &&
+      assessmentMetadata &&
+      deadline.endDate &&
+      dayjs(deadline.endDate).isValid()
+  );
 
   function onClose() {
     _onClose();
   }
 
   function handleSubmit() {
+    console.log(deadline);
     if (!valid) {
       return;
     }
-    if (existingQuiz) {
-      edit({
-        variables: {
-          assessmentId: assessment!.id!,
-          assessmentInput: {
-            assessmentMetadata,
-            metadata: {
-              ...metadata,
-              chapterId: assessment!.metadata!.chapterId,
-            },
-          },
-          contentId: assessment!.id!,
-          numberOfRandomlySelectedQuestions: 1,
-          questionPoolingMode: "RANDOM",
-          requiredCorrectAnswers: 1,
-        },
-        onCompleted() {
-          onClose();
-        },
-        onError: setError,
 
-        updater(store) {
-          store.get(assessment!.id!)?.invalidateRecord();
+    create({
+      variables: {
+        submissionExerciseInput: {
+          endDate: deadline.endDate!,
+          name: metadata!.name,
+          tasks: [],
         },
-      });
-    } else {
-      mutate({
-        variables: {
-          quizInput: {
-            numberOfRandomlySelectedQuestions: 1,
-            questionPoolingMode: "%future added value",
-            requiredCorrectAnswers: 1
+        assessmentInput: {
+          metadata: {
+            ...metadata!,
+            type: "SUBMISSION",
+            chapterId,
           },
-          assessmentInput: {
-            metadata: { ...metadata!, type: "QUIZ", chapterId },
-            assessmentMetadata: assessmentMetadata!,
-          },
+          assessmentMetadata: assessmentMetadata!,
         },
-        onCompleted() {
-          onClose();
-        },
-        onError: setError,
-        updater(store, data) {
-          // Get record of chapter and of the new assignment
-          const chapterRecord = store.get(chapterId);
-          const newRecord = store.get(data.createQuizAssessment.id);
+      },
+      onCompleted() {
+        onClose();
+      },
+      onError: setError,
+      updater(store, data) {
+        // Get record of chapter and of the new assignment
+        const chapterRecord = store.get(chapterId);
+        const newRecord = store.get(data.createSubmissionAssessment.id);
 
-          if (!chapterRecord || !newRecord) return;
+        if (!chapterRecord || !newRecord) return;
 
-          // Update the linked records of the chapter contents
-          const contentRecords =
-            chapterRecord.getLinkedRecords("contents") ?? [];
-          chapterRecord.setLinkedRecords(
-            [...contentRecords, newRecord],
-            "contents"
-          );
-        },
-      });
-    }
+        // Update the linked records of the chapter contents
+        const contentRecords = chapterRecord.getLinkedRecords("contents") ?? [];
+        chapterRecord.setLinkedRecords(
+          [...contentRecords, newRecord],
+          "contents"
+        );
+      },
+    });
   }
 
   return (
@@ -241,20 +145,46 @@ export function SubmissionExerciseModal({
             metadata={assessmentMetadata}
             onChange={setAssessmentMetadata}
           />
-
-
+          <FormSection title="Deadline">
+            <DatePicker
+              label="Suggested start date"
+              value={deadline.endDate ? dayjs(deadline.endDate) : null}
+              onChange={(newValue: Dayjs | null) => {
+                setDeadline({
+                  endDate: newValue ? newValue.toISOString() : null,
+                });
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  required
+                  error={
+                    deadline.endDate != null &&
+                    !dayjs(deadline.endDate).isValid()
+                  }
+                />
+              )}
+            />
+          </FormSection>
         </Form>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <LoadingButton
-          loading={loading || editLoading}
-          disabled={!valid}
+          loading={loading}
+          disabled={!valid || loading}
           onClick={handleSubmit}
         >
-          {existingQuiz ? "Save" : "Add"}
+          {"Add"}
         </LoadingButton>
       </DialogActions>
+
+      {Array.isArray(error?.source?.errors) &&
+        error.source.errors.map((err: any, i: number) => (
+          <Alert key={i} severity="error" onClose={() => setError(null)}>
+            {err?.message ?? "Unknown error"}
+          </Alert>
+        ))}
     </Dialog>
   );
 }
