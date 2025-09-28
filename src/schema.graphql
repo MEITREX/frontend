@@ -902,6 +902,7 @@ input InputTask {
   itemId: UUID!
   maxScore: Int!
   name: String!
+  number: Int!
 }
 
 input InputTaskResult {
@@ -1735,6 +1736,7 @@ type TaskOutput {
 }
 
 type TaskResult {
+  number: Int!
   score: Int!
   taskId: UUID!
 }

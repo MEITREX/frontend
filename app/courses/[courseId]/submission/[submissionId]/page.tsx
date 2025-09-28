@@ -9,13 +9,13 @@ import StudentSubmission from "./student";
 
 export default function CoursePage() {
   const [pageView, _] = usePageView();
-  const { quizId, courseId } = useParams();
+  const { submissionId, courseId } = useParams();
 
   if (!isUUID(courseId)) {
     return <PageError message="Invalid course id." />;
   }
-  if (!isUUID(quizId)) {
-    return <PageError message="Invalid quiz id." />;
+  if (!isUUID(submissionId)) {
+    return <PageError message="Invalid submission id." />;
   }
 
   switch (pageView) {
