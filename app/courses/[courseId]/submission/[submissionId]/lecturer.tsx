@@ -12,7 +12,6 @@ const RootQuery = graphql`
     ...MediaRecordSelector
 
     contentsByIds(ids: [$id]) {
-
       id
       metadata {
         name

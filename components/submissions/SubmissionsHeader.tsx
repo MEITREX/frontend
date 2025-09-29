@@ -3,16 +3,23 @@ import { Button, CircularProgress } from "@mui/material";
 import { Heading } from "../Heading";
 
 export default function SubmissionsHeader(content: any, openEditQuizModal: any){
+
+    console.log(content.content)
+
+
+
+
+
     return(
 <>
       <Heading
-        title={"metadata.name"}
+        title={content.content.metadata.name}
         action={
           <div className="flex gap-2">
             <Button
               sx={{ color: "text.secondary" }}
               startIcon={<Edit />}
-              onClick={() => console.log("openEditQuizModal")}
+              onClick={openEditQuizModal}
             >
               Edit Submission
             </Button>
