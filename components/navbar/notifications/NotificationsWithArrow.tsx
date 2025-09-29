@@ -10,11 +10,11 @@ type Props = {
 };
 
 export default function NotificationsWithArrow({
-                                                 anchorEl,
-                                                 setAnchorEl,
-                                                 notifications,
-                                                 setNotifications,
-                                               }: Props) {
+  anchorEl,
+  setAnchorEl,
+  notifications,
+  setNotifications,
+}: Props) {
   const list = Array.isArray(notifications) ? [...notifications] : [];
   return (
     <NotificationPopOver

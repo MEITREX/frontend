@@ -44,9 +44,20 @@ import {
 import dayjs from "dayjs";
 import { chain, debounce } from "lodash";
 import { usePathname, useRouter } from "next/navigation";
-import React, { ReactElement, useEffect, useCallback, useState, useTransition } from "react";
+import React, {
+  ReactElement,
+  useEffect,
+  useCallback,
+  useState,
+  useTransition,
+} from "react";
 import { useAuth } from "react-oidc-context";
-import { graphql, useFragment, useLazyLoadQuery, useSubscription } from "react-relay";
+import {
+  graphql,
+  useFragment,
+  useLazyLoadQuery,
+  useSubscription,
+} from "react-relay";
 import NotificationsWithArrow from "./navbar/notifications/NotificationsWithArrow";
 import { NavbarNotificationsQuery } from "@/__generated__/NavbarNotificationsQuery.graphql";
 
@@ -93,11 +104,15 @@ function useIsTutor(_frag: NavbarIsTutor$key) {
     _frag
   );
   const realmRoles = Array.isArray(data?.realmRoles) ? data.realmRoles : [];
-  const courseMemberships = Array.isArray(data?.courseMemberships) ? data.courseMemberships : [];
+  const courseMemberships = Array.isArray(data?.courseMemberships)
+    ? data.courseMemberships
+    : [];
   return (
     realmRoles.includes("SUPER_USER") ||
     realmRoles.includes("COURSE_CREATOR") ||
-    courseMemberships.some((x) => x && (x.role === "TUTOR" || x.role === "ADMINISTRATOR"))
+    courseMemberships.some(
+      (x) => x && (x.role === "TUTOR" || x.role === "ADMINISTRATOR")
+    )
   );
 }
 
@@ -109,10 +124,10 @@ type SearchResultType = {
 };
 
 function NavbarBase({
-                      children,
-                      tutor,
-                      userId,
-                    }: {
+  children,
+  tutor,
+  userId,
+}: {
   children: React.ReactElement;
   tutor: boolean;
   userId: string;
@@ -396,11 +411,11 @@ function NavbarSection({ children, title }: { children: any; title?: string }) {
 }
 
 function NavbarLink({
-                      icon,
-                      title,
-                      href,
-                      exact,
-                    }: {
+  icon,
+  title,
+  href,
+  exact,
+}: {
   icon?: ReactElement;
   title: string;
   href: string;
@@ -451,7 +466,11 @@ function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const notifData = useLazyLoadQuery<NavbarNotificationsQuery>(NAVBAR_NOTIFICATIONS_QUERY, {}, { fetchPolicy: "store-and-network" });
+  const notifData = useLazyLoadQuery<NavbarNotificationsQuery>(
+    NAVBAR_NOTIFICATIONS_QUERY,
+    {},
+    { fetchPolicy: "store-and-network" }
+  );
 
   const [notifications, setNotifications] = useState<any[]>([]);
 
@@ -510,7 +529,7 @@ function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
                 max={99}
                 overlap="circular"
                 sx={{
-                  zIndex: 2
+                  zIndex: 2,
                 }}
               >
                 <Notifications />

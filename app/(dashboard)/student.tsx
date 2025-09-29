@@ -138,7 +138,6 @@ export default function StudentPage() {
     }
   `;
 
-
   function ExistLoader({ queryRef, userId }: { queryRef: any; userId: any }) {
     const data = usePreloadedQuery<studentPlayerHexadScoreExistsQuery>(
       existingSurveyResults,

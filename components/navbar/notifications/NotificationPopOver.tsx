@@ -1,14 +1,7 @@
 "use client";
 import React from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
-import {
-  Box,
-  Button,
-  Link,
-  Popover,
-  Tooltip,
-  Typography
-} from "@mui/material";
+import { Box, Button, Link, Popover, Tooltip, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 
 const USER_ID_QUERY = graphql`
@@ -26,7 +19,10 @@ const MARK_ALL_READ = graphql`
 `;
 
 const MARK_ONE_READ = graphql`
-  mutation NotificationPopOver_MarkOneReadMutation($userId: UUID!, $notificationId: UUID!) {
+  mutation NotificationPopOver_MarkOneReadMutation(
+    $userId: UUID!
+    $notificationId: UUID!
+  ) {
     markOneRead(userId: $userId, notificationId: $notificationId)
   }
 `;
@@ -38,7 +34,10 @@ const DELETE_ALL = graphql`
 `;
 
 const DELETE_ONE = graphql`
-  mutation NotificationPopOver_DeleteOneMutation($userId: UUID!, $notificationId: UUID!) {
+  mutation NotificationPopOver_DeleteOneMutation(
+    $userId: UUID!
+    $notificationId: UUID!
+  ) {
     deleteOneNotification(userId: $userId, notificationId: $notificationId)
   }
 `;
@@ -51,11 +50,11 @@ interface NotificationPopOverProps {
 }
 
 export default function NotificationPopOver({
-                                              anchorEl,
-                                              setAnchorEl,
-                                              setNotifications,
-                                              notifications,
-                                            }: NotificationPopOverProps) {
+  anchorEl,
+  setAnchorEl,
+  setNotifications,
+  notifications,
+}: NotificationPopOverProps) {
   const handleCloseNotifications = () => {
     setAnchorEl(null);
   };
@@ -74,7 +73,6 @@ export default function NotificationPopOver({
   const [commitMarkOneRead, oneInFlight] = useMutation(MARK_ONE_READ);
   const [commitDeleteAll] = useMutation(DELETE_ALL);
   const [commitDeleteOne] = useMutation(DELETE_ONE);
-
 
   const list = Array.isArray(notifications) ? notifications : [];
 
@@ -102,7 +100,9 @@ export default function NotificationPopOver({
     const list = Array.isArray(notifications) ? notifications : [];
     const target = list[index];
     setNotifications((prev: any) =>
-      (Array.isArray(prev) ? prev : []).filter((_: any, i: number) => i !== index)
+      (Array.isArray(prev) ? prev : []).filter(
+        (_: any, i: number) => i !== index
+      )
     );
 
     if (userId && target?.id) {
@@ -110,7 +110,11 @@ export default function NotificationPopOver({
     }
   };
 
-  const handleOpenLink = (event: React.MouseEvent, index: number, href?: string | null) => {
+  const handleOpenLink = (
+    event: React.MouseEvent,
+    index: number,
+    href?: string | null
+  ) => {
     event.preventDefault();
     const target = list[index];
     if (target && !target.read) {
@@ -182,9 +186,9 @@ export default function NotificationPopOver({
             p: 2,
             borderRadius: 3,
             marginLeft: 1,
-            backgroundColor: 'white',
-            boxShadow: 'none',
-            border: "1px solid #009bde"
+            backgroundColor: "white",
+            boxShadow: "none",
+            border: "1px solid #009bde",
           },
         },
       }}
@@ -210,7 +214,10 @@ export default function NotificationPopOver({
                   variables: { userId },
                   onCompleted: () => {
                     setNotifications((prev: any[]) =>
-                      (Array.isArray(prev) ? prev : []).map((n) => ({ ...n, read: true }))
+                      (Array.isArray(prev) ? prev : []).map((n) => ({
+                        ...n,
+                        read: true,
+                      }))
                     );
                   },
                 });
@@ -269,7 +276,11 @@ export default function NotificationPopOver({
                   <Typography variant="subtitle1" fontWeight="bold">
                     {note?.title}
                   </Typography>
-                  <Tooltip title={note?.description ?? ""} placement="top" arrow>
+                  <Tooltip
+                    title={note?.description ?? ""}
+                    placement="top"
+                    arrow
+                  >
                     <Typography
                       variant="body2"
                       color="text.secondary"

@@ -5,11 +5,10 @@ import {
   Network,
   RecordSource,
   Store,
-  Observable
+  Observable,
 } from "relay-runtime";
 import { createClient, Client } from "graphql-ws";
 useAuth;
-
 
 const HTTP_ENDPOINT =
   process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8080/graphql";
@@ -42,7 +41,9 @@ function toError(err: unknown): Error {
   if (err instanceof Error) return err;
   // 原生 WebSocket 关闭事件
   if (typeof CloseEvent !== "undefined" && err instanceof CloseEvent) {
-    return new Error(`WebSocket closed: code=${err.code} reason=${err.reason || "(none)"}`);
+    return new Error(
+      `WebSocket closed: code=${err.code} reason=${err.reason || "(none)"}`
+    );
   }
   if (typeof err === "string") return new Error(err);
   try {
@@ -51,7 +52,6 @@ function toError(err: unknown): Error {
     return new Error(String(err));
   }
 }
-
 
 let wsClient: Client | null = null;
 function getWsClient(token?: string): Client | null {
@@ -64,9 +64,9 @@ function getWsClient(token?: string): Client | null {
     url: WS_ENDPOINT,
     connectionParams: token
       ? {
-        Authorization: `Bearer ${token}`,
-        headers: { Authorization: `Bearer ${token}` },
-      }
+          Authorization: `Bearer ${token}`,
+          headers: { Authorization: `Bearer ${token}` },
+        }
       : undefined,
   });
   return wsClient;

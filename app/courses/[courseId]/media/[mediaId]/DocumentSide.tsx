@@ -25,9 +25,9 @@ import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 
 export function DocumentSide({
-                               _content,
-                               setError,
-                             }: {
+  _content,
+  setError,
+}: {
   _content: DocumentSideFragment$key;
   setError?: (e: Error | null) => void;
 }) {
@@ -76,13 +76,13 @@ export function DocumentSide({
     documents[0];
 
   const [mediaRecordWorkedOn] =
-  useMutation<DocumentSideLogProgressMutation>(graphql`
-    mutation DocumentSideLogProgressMutation($id: UUID!) {
-      logMediaRecordWorkedOn(mediaRecordId: $id) {
-        id
+    useMutation<DocumentSideLogProgressMutation>(graphql`
+      mutation DocumentSideLogProgressMutation($id: UUID!) {
+        logMediaRecordWorkedOn(mediaRecordId: $id) {
+          id
+        }
       }
-    }
-  `);
+    `);
 
   const workedOnToday =
     Math.abs(
@@ -121,7 +121,8 @@ export function DocumentSide({
     const handler = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
       const tag = t?.tagName?.toLowerCase();
-      if (tag === "input" || tag === "textarea" || (e as any).isComposing) return;
+      if (tag === "input" || tag === "textarea" || (e as any).isComposing)
+        return;
       if (e.key === "ArrowLeft") {
         e.preventDefault();
         goPrev();
@@ -191,7 +192,6 @@ export function DocumentSide({
               </button>
             </div>
           </div>
-
 
           <div className="flex w-full overflow-x-auto mt-6 gap-3 p-2">
             {numPages != null &&
