@@ -906,8 +906,8 @@ input InputTask {
 }
 
 input InputTaskResult {
+  itemId: UUID!
   score: Int!
-  taskId: UUID!
 }
 
 input InputThreadContentReference {
@@ -1736,9 +1736,9 @@ type TaskOutput {
 }
 
 type TaskResult {
+  itemId: UUID!
   number: Int!
   score: Int!
-  taskId: UUID!
 }
 
 interface Thread {

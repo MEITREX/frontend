@@ -52,7 +52,9 @@ export function SubmissionExerciseModal({
   const [deadline, setDeadline] = useState<{
     endDate: string | null;
   }>({
-    endDate: _existingSubmission ? _existingSubmission.endDate : new Date().toISOString(),
+    endDate: _existingSubmission
+      ? _existingSubmission.endDate
+      : new Date().toISOString(),
   });
 
   const [create, loading] =

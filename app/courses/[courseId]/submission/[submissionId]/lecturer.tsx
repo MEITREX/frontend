@@ -1,12 +1,17 @@
+"use client";
+
 import { lecturerEditSubmissionQuery } from "@/__generated__/lecturerEditSubmissionQuery.graphql";
 import { lecturerSubmissionExerciseForLecturerQuery } from "@/__generated__/lecturerSubmissionExerciseForLecturerQuery.graphql";
 import { ES2022Error } from "@/components/ErrorContext";
 import { PageError } from "@/components/PageError";
 import { SubmissionExerciseModal } from "@/components/SubmissionExerciseModal";
+import AddTaskDialog from "@/components/submissions/AddTaskDialog";
 import SubmissionsHeader from "@/components/submissions/SubmissionsHeader";
+import { Button } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
+
 
 const RootQuery = graphql`
   query lecturerEditSubmissionQuery($id: UUID!, $courseId: UUID!) {
@@ -37,80 +42,85 @@ const RootQuery = graphql`
 `;
 
 const GetSubmission = graphql`
-query lecturerSubmissionExerciseForLecturerQuery($assessmentId: UUID!){
-  submissionExerciseForLecturer(assessmentId: $assessmentId){
-    assessmentId
-    courseId
-    endDate
-    files {
-      downloadUrl
-      id
-      name
-      uploadUrl
-    }
-    name
-    solutions {
+  query lecturerSubmissionExerciseForLecturerQuery($assessmentId: UUID!) {
+    submissionExerciseForLecturer(assessmentId: $assessmentId) {
+      assessmentId
+      courseId
+      endDate
       files {
         downloadUrl
         id
         name
         uploadUrl
       }
-      id
-      result {
-        id
-        results {
-          number
-          score
-          taskId
-        }
-        status
-      }
-      submissionDate
-      userId
-    }
-    tasks {
-      item {
-        associatedBloomLevels
-        associatedSkills {
-          id
-          isCustomSkill
-          skillCategory
-          skillLevels{
-            analyze {
-              value
-            }
-            apply {
-              value
-            }
-            create {
-              value
-            }
-            evaluate {
-              value
-            }
-            remember {
-              value
-            }
-            understand {
-              value
-            }
-          }
-          skillName
-        }
-        id
-      }
-      itemId
-      maxScore
       name
+      solutions {
+        files {
+          downloadUrl
+          id
+          name
+          uploadUrl
+        }
+        id
+        result {
+          id
+          results {
+            number
+            score
+            itemId
+          }
+          status
+        }
+        submissionDate
+        userId
+      }
+      tasks {
+        item {
+          associatedBloomLevels
+          associatedSkills {
+            id
+            isCustomSkill
+            skillCategory
+            skillLevels {
+              analyze {
+                value
+              }
+              apply {
+                value
+              }
+              create {
+                value
+              }
+              evaluate {
+                value
+              }
+              remember {
+                value
+              }
+              understand {
+                value
+              }
+            }
+            skillName
+          }
+          id
+        }
+        itemId
+        maxScore
+        name
+      }
     }
   }
-}`;
+`;
+
+
 
 export default function LecturerSubmission() {
   const { submissionId, courseId } = useParams();
   const [error, setError] = useState<ES2022Error | null>(null);
   const errorContext = useMemo(() => ({ error, setError }), [error, setError]);
+
+  const [isAddOpen, setIsAddOpen] = useState(false);
 
   const [isEditSetModalOpen, setEditSetModalOpen] = useState(false);
 
@@ -131,12 +141,15 @@ export default function LecturerSubmission() {
   const content = contentsByIds[0];
 
   console.log(content, "CONTENT");
-  console.log(submissionExerciseForLecturer, "SSSSSSSSSUUUUUUUUUUUUUUUUBBBBBBBBBB")
+  console.log(
+    submissionExerciseForLecturer,
+    "SSSSSSSSSUUUUUUUUUUUUUUUUBBBBBBBBBB"
+  );
 
   const extendedContent = {
     ...content,
-    endDate: submissionExerciseForLecturer.endDate
-  }
+    endDate: submissionExerciseForLecturer.endDate,
+  };
 
   if (!(content.metadata.type === "SUBMISSION")) {
     return (
@@ -147,6 +160,8 @@ export default function LecturerSubmission() {
     );
   }
 
+
+
   return (
     <>
       <SubmissionsHeader
@@ -154,11 +169,22 @@ export default function LecturerSubmission() {
         content={extendedContent}
       />
 
+      <Button variant="outlined" onClick={() => setIsAddOpen(true)}>
+        Task hinzufügen
+      </Button>
+
       <SubmissionExerciseModal
         onClose={() => setEditSetModalOpen(false)}
         isOpen={isEditSetModalOpen}
         _existingSubmission={extendedContent}
         chapterId={content.metadata.chapterId}
+      />
+
+      <AddTaskDialog
+        open={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        submissionId={submissionId}
+        setIsAddOpen={setIsAddOpen}
       />
     </>
   );

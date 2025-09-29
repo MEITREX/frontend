@@ -7,10 +7,10 @@ type Props = {
   openEditSubmissionModal: () => void;
 };
 
-export default function SubmissionsHeader(
-  { content,
-  openEditSubmissionModal,}: Props
-) {
+export default function SubmissionsHeader({
+  content,
+  openEditSubmissionModal,
+}: Props) {
   console.log(content.content);
 
   return (
