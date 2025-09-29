@@ -151,7 +151,7 @@ export default function LecturerSubmission() {
     <>
       <SubmissionsHeader
         openEditSubmissionModal={() => setEditSetModalOpen(true)}
-        content={content}
+        content={extendedContent}
       />
 
       <SubmissionExerciseModal
