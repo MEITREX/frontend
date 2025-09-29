@@ -34,7 +34,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import { ForumApiDeleteThreadMutation } from "@/__generated__/ForumApiDeleteThreadMutation.graphql";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import ReplyIcon from "@mui/icons-material/Reply";
 
 type Props = {
@@ -60,6 +60,8 @@ export default function EditableContent({
   );
 
   const router = useRouter();
+
+  const { threadId } = useParams();
 
   const { openReplyEditor, deletePostContext } = usePostsActions();
 
@@ -150,7 +152,7 @@ export default function EditableContent({
   const handleDeleteThread = () => {
     deleteThread({
       variables: {
-        threadId: postId,
+        threadId: threadId,
       },
       onCompleted(data) {
         router.push(`../forum`);

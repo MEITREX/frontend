@@ -51,7 +51,7 @@ export default function PostItem({
         position: "relative",
       }}
     >
-      <Stack direction="row" spacing={2}>
+      <Stack direction="row" spacing={2} sx={{ overflow: "hidden" }}>
         <UpvoteDownvote
           upvotedByUsers={post?.upvotedByUsers}
           downvotedByUsers={post?.downvotedByUsers}
