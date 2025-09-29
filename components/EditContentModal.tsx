@@ -94,6 +94,9 @@ export function EditContentModal({
           ... on QuizAssessment {
             __typename
           }
+          ... on SubmissionAssessment {
+            __typename
+          }
           ... on AssignmentAssessment {
             __typename
             assignment {
@@ -182,7 +185,7 @@ export function EditContentModal({
     setOpenCodeAssignmentModal(true);
   };
 
-  console.log(chapter)
+  console.log(chapter);
   return (
     <>
       <Button startIcon={<EditNote />} onClick={() => setOpenModal(true)}>
@@ -401,7 +404,7 @@ export function EditContentModal({
         isOpen={openSubmissionExerciseModal}
         onClose={() => setOpenSubmissionExerciseModal(false)}
         chapterId={chapterId}
-        _existingQuiz={null}
+        _existingSubmission={null}
       />
     </>
   );

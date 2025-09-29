@@ -2,24 +2,27 @@ import { Delete, Edit } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
 import { Heading } from "../Heading";
 
-export default function SubmissionsHeader(content: any, openEditQuizModal: any){
+type Props = {
+  content: any;
+  openEditSubmissionModal: () => void;
+};
 
-    console.log(content.content)
+export default function SubmissionsHeader(
+  { content,
+  openEditSubmissionModal,}: Props
+) {
+  console.log(content.content);
 
-
-
-
-
-    return(
-<>
+  return (
+    <>
       <Heading
-        title={content.content.metadata.name}
+        title={content.metadata.name}
         action={
           <div className="flex gap-2">
             <Button
               sx={{ color: "text.secondary" }}
               startIcon={<Edit />}
-              onClick={openEditQuizModal}
+              onClick={openEditSubmissionModal}
             >
               Edit Submission
             </Button>
@@ -39,7 +42,7 @@ export default function SubmissionsHeader(content: any, openEditQuizModal: any){
                     "Do you really want to delete this quiz? This can't be undone."
                   )
                 )
-                  console.log("deleteQuiz();")
+                  console.log("deleteQuiz();");
               }}
             >
               Delete Quiz
@@ -53,5 +56,5 @@ export default function SubmissionsHeader(content: any, openEditQuizModal: any){
 
       {/**<FormErrors error={error} onClose={() => setError(null)} />*/}
     </>
-    )
+  );
 }

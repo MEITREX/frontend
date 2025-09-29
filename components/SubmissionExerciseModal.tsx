@@ -1,5 +1,4 @@
 "use client";
-import { QuizModalFragment$key } from "@/__generated__/QuizModalFragment.graphql";
 import { SubmissionExerciseModalCreateMutation } from "@/__generated__/SubmissionExerciseModalCreateMutation.graphql";
 import { Form, FormSection } from "@/components/Form";
 import { LoadingButton } from "@mui/lab";
@@ -35,16 +34,20 @@ export function SubmissionExerciseModal({
   onClose: _onClose,
   chapterId,
   isOpen,
-  _existingQuiz,
+  _existingSubmission,
 }: {
   onClose: () => void;
   isOpen: boolean;
   chapterId: string;
-  _existingQuiz: QuizModalFragment$key | null;
+  _existingSubmission: any;
 }) {
-  const [metadata, setMetadata] = useState<ContentMetadataPayload | null>(null);
+  const [metadata, setMetadata] = useState<ContentMetadataPayload | null>(
+    _existingSubmission ? _existingSubmission.metadata : null
+  );
   const [assessmentMetadata, setAssessmentMetadata] =
-    useState<AssessmentMetadataPayload | null>(null);
+    useState<AssessmentMetadataPayload | null>(
+      _existingSubmission ? _existingSubmission.assessmentMetadata : null
+    );
 
   const [deadline, setDeadline] = useState<{
     endDate: string | null;

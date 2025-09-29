@@ -20,7 +20,7 @@ import {
 import { useState } from "react";
 
 type StudentRow = {
-  rowId: string;           // unique per row
+  rowId: string; // unique per row
   studentId: number;
   studentName: string;
   taskId: number;
@@ -31,7 +31,7 @@ type StudentRow = {
 type Submission = {
   id: number;
   name: string;
-  rows: StudentRow[];      // jedes bearbeitetes Task-Item eines Studenten = 1 Tabellenzeile
+  rows: StudentRow[]; // jedes bearbeitetes Task-Item eines Studenten = 1 Tabellenzeile
 };
 
 // Dummy Data
@@ -40,18 +40,60 @@ const submissions: Submission[] = [
     id: 101,
     name: "Submission 1: Arrays & Loops",
     rows: [
-      { rowId: "101-1-A", studentId: 1, studentName: "Alice Example", taskId: 1, taskName: "Task A", graded: false },
-      { rowId: "101-2-A", studentId: 2, studentName: "Bob Student",   taskId: 1, taskName: "Task A", graded: true  },
-      { rowId: "101-1-B", studentId: 1, studentName: "Alice Example", taskId: 2, taskName: "Task B", graded: false },
-      { rowId: "101-3-A", studentId: 3, studentName: "Charlie Test",  taskId: 1, taskName: "Task A", graded: false },
+      {
+        rowId: "101-1-A",
+        studentId: 1,
+        studentName: "Alice Example",
+        taskId: 1,
+        taskName: "Task A",
+        graded: false,
+      },
+      {
+        rowId: "101-2-A",
+        studentId: 2,
+        studentName: "Bob Student",
+        taskId: 1,
+        taskName: "Task A",
+        graded: true,
+      },
+      {
+        rowId: "101-1-B",
+        studentId: 1,
+        studentName: "Alice Example",
+        taskId: 2,
+        taskName: "Task B",
+        graded: false,
+      },
+      {
+        rowId: "101-3-A",
+        studentId: 3,
+        studentName: "Charlie Test",
+        taskId: 1,
+        taskName: "Task A",
+        graded: false,
+      },
     ],
   },
   {
     id: 102,
     name: "Submission 2: Functions",
     rows: [
-      { rowId: "102-1-A", studentId: 1, studentName: "Alice Example", taskId: 1, taskName: "Task A", graded: false },
-      { rowId: "102-2-B", studentId: 2, studentName: "Bob Student",   taskId: 2, taskName: "Task B", graded: false },
+      {
+        rowId: "102-1-A",
+        studentId: 1,
+        studentName: "Alice Example",
+        taskId: 1,
+        taskName: "Task A",
+        graded: false,
+      },
+      {
+        rowId: "102-2-B",
+        studentId: 2,
+        studentName: "Bob Student",
+        taskId: 2,
+        taskName: "Task B",
+        graded: false,
+      },
     ],
   },
 ];
@@ -64,17 +106,29 @@ export default function LecturerSubmissions() {
   );
 
   const handleDownload = (row: StudentRow) => {
-    console.log("Download", { submissionTask: row.taskName, student: row.studentName, rowId: row.rowId });
+    console.log("Download", {
+      submissionTask: row.taskName,
+      student: row.studentName,
+      rowId: row.rowId,
+    });
     // TODO: Download auslösen
   };
 
   const handleView = (row: StudentRow) => {
-    console.log("View", { submissionTask: row.taskName, student: row.studentName, rowId: row.rowId });
+    console.log("View", {
+      submissionTask: row.taskName,
+      student: row.studentName,
+      rowId: row.rowId,
+    });
     // TODO: Media View öffnen
   };
 
   const handleScore = (row: StudentRow) => {
-    console.log("Score", { submissionTask: row.taskName, student: row.studentName, rowId: row.rowId });
+    console.log("Score", {
+      submissionTask: row.taskName,
+      student: row.studentName,
+      rowId: row.rowId,
+    });
     // TODO: Bewertungs-Dialog öffnen
   };
 
@@ -116,25 +170,43 @@ export default function LecturerSubmissions() {
                       <TableCell>{row.studentName}</TableCell>
 
                       <TableCell align="center">
-                        <Button variant="outlined" size="small" onClick={() => handleDownload(row)}>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => handleDownload(row)}
+                        >
                           Download
                         </Button>
                       </TableCell>
 
                       <TableCell align="center">
-                        <Button variant="outlined" size="small" onClick={() => handleView(row)}>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => handleView(row)}
+                        >
                           View
                         </Button>
                       </TableCell>
 
                       <TableCell align="center">
-                        <Button variant="outlined" size="small" onClick={() => handleScore(row)}>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => handleScore(row)}
+                        >
                           Score
                         </Button>
                       </TableCell>
 
                       <TableCell align="center">
-                        <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}>
+                        <Box
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
                           <Checkbox
                             checked={!!gradedState[row.rowId]}
                             onChange={() => toggleGraded(row.rowId)}
