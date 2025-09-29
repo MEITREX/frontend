@@ -2,6 +2,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import {
   Box,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -30,6 +31,8 @@ type Props = {
   unspentPoints?: number;
   category?: string;
   publicProfil: boolean;
+  unlocked?: Boolean;
+  obtainableInShop?: Boolean;
 };
 
 const DecorationPopup: React.FC<Props> = ({
@@ -47,9 +50,19 @@ const DecorationPopup: React.FC<Props> = ({
   unspentPoints = 0,
   category = null,
   publicProfil,
+  unlocked = false,
+  obtainableInShop = false,
 }) => {
   const isBuyMode = typeof equipped === "number";
   const colors = rarityMap[rarity] ?? rarityMap.common;
+
+  // Define label to dsiplay
+  const rarityLabel =
+    rarity === "ultra_rare"
+      ? "Ultra Rare"
+      : rarity?.charAt(0).toUpperCase() + (rarity?.slice(1) ?? "Common");
+
+  const rarityKey = (rarity || "common").toLowerCase().replace(/\s+/g, "");
 
   return (
     // Dialog to show details for an item in the SHop or Inventory
@@ -194,6 +207,26 @@ const DecorationPopup: React.FC<Props> = ({
               </Box>
             </Box>
           )}
+
+          {!unlocked && !isBuyMode && (
+            <Box
+              sx={{
+                position: "absolute",
+                inset: 0,
+                backgroundColor: "rgba(0,0,0,0.85)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+                fontWeight: "bold",
+                fontSize: "0.95rem",
+                zIndex: 1,
+                pointerEvents: "none",
+              }}
+            >
+              Locked, but obtainable in {obtainableInShop ? "Shop" : "Lottery"}
+            </Box>
+          )}
         </Box>
 
         {/* Display further information */}
@@ -205,43 +238,44 @@ const DecorationPopup: React.FC<Props> = ({
             </Typography>
           )}
 
-          <Box sx={{ mt: 2 }}>
+          <Box
+            sx={{
+              mt: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center", // <- zentriert horizontal
+              width: "100%",
+            }}
+          >
             {/* Show the price if we are in the shop */}
-            {isBuyMode && (
-              <Box
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  marginBottom: 1,
-                }}
-              >
-                <Typography
-                  variant="body2"
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                  }}
-                >
-                  <strong>Price:</strong> {equipped}
-                </Typography>
-                <Image
-                  src={coins}
-                  alt="Coins"
-                  width={18}
-                  height={18}
-                  style={{
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                  }}
-                />
-              </Box>
-            )}
+
             {/* Show rarity of the item */}
-            <Typography variant="body2">
-              <strong>Rarity:</strong>{" "}
-              {rarity.charAt(0).toUpperCase() + rarity.slice(1)}
-            </Typography>
+            {/* Informations about item */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              <Chip
+                label={rarityLabel.replace("_", " ").toUpperCase()}
+                size="small"
+                sx={{
+                  bgcolor:
+                    rarityMap[rarityKey as Rarity].border ?? rarityMap.common,
+                  color: "white",
+                  fontSize: "0.75rem",
+                  fontWeight: "bold",
+                  borderRadius: 1,
+                  height: 20, // etwas kompakter
+                  "& .MuiChip-label": {
+                    px: 1.2, // horizontal padding im Label
+                    py: 0, // vertikal ausgleichen
+                  },
+                }}
+              />
+            </Box>
           </Box>
         </Box>
       </DialogContent>
@@ -254,7 +288,10 @@ const DecorationPopup: React.FC<Props> = ({
             variant="contained"
             disabled={
               (isBuyMode && unspentPoints < equipped) ||
-              (!isBuyMode && category === "tutors" && equipped)
+              (!isBuyMode &&
+                (category === "tutors" || category === "profilePics") &&
+                equipped) ||
+              (!unlocked && !isBuyMode)
             }
           >
             {isBuyMode ? (
@@ -281,8 +318,9 @@ const DecorationPopup: React.FC<Props> = ({
                   />
                 </>
               )
-            ) : category === "tutors" && equipped ? (
-              "Tutor can not be unequipped. Equip other tutor to unequip this one"
+            ) : category === "tutors" ||
+              (category === "profilePics" && equipped) ? (
+              "Tutors and profile pictures can not be unequipped. Equip other items to unequip this one"
             ) : equipped ? (
               "Unequip"
             ) : (
