@@ -7,11 +7,10 @@ import { PageError } from "@/components/PageError";
 import { SubmissionExerciseModal } from "@/components/SubmissionExerciseModal";
 import AddTaskDialog from "@/components/submissions/AddTaskDialog";
 import SubmissionsHeader from "@/components/submissions/SubmissionsHeader";
-import { Button } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { graphql, useLazyLoadQuery } from "react-relay";
-
 
 const RootQuery = graphql`
   query lecturerEditSubmissionQuery($id: UUID!, $courseId: UUID!) {
@@ -53,7 +52,6 @@ const GetSubmission = graphql`
         name
         uploadUrl
       }
-      name
       solutions {
         files {
           downloadUrl
@@ -113,12 +111,11 @@ const GetSubmission = graphql`
   }
 `;
 
-
-
 export default function LecturerSubmission() {
   const { submissionId, courseId } = useParams();
   const [error, setError] = useState<ES2022Error | null>(null);
   const errorContext = useMemo(() => ({ error, setError }), [error, setError]);
+  const [fetchKey, setFetchKey] = useState(0); // neu
 
   const [isAddOpen, setIsAddOpen] = useState(false);
 
@@ -135,6 +132,10 @@ export default function LecturerSubmission() {
       GetSubmission,
       {
         assessmentId: submissionId,
+      },
+      {
+        fetchKey,
+        fetchPolicy: "network-only",
       }
     );
 
@@ -159,8 +160,7 @@ export default function LecturerSubmission() {
       />
     );
   }
-
-
+  console.log(isAddOpen);
 
   return (
     <>
@@ -168,6 +168,35 @@ export default function LecturerSubmission() {
         openEditSubmissionModal={() => setEditSetModalOpen(true)}
         content={extendedContent}
       />
+
+      {submissionExerciseForLecturer?.tasks?.length ? (
+        submissionExerciseForLecturer.tasks.map((taskItem) => (
+          <div key={taskItem.itemId} className="mb-3">
+            <Typography variant="h6">{taskItem.name}</Typography>
+            <Typography variant="body2">
+              Max Score: {taskItem.maxScore}
+            </Typography>
+            <Typography variant="body2">Item ID: {taskItem.itemId}</Typography>
+
+            {/* Beispiel: ein paar Details aus item */}
+            {taskItem.item?.associatedSkills?.length ? (
+              <ul style={{ marginTop: 8 }}>
+                {taskItem.item.associatedSkills.map((s) => (
+                  <li key={s.id}>
+                    <Typography variant="caption">
+                      {s.skillName} ({s.skillCategory})
+                    </Typography>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ))
+      ) : (
+        <Typography variant="body2" color="text.secondary">
+          Keine Tasks gefunden.
+        </Typography>
+      )}
 
       <Button variant="outlined" onClick={() => setIsAddOpen(true)}>
         Task hinzufügen
@@ -180,12 +209,15 @@ export default function LecturerSubmission() {
         chapterId={content.metadata.chapterId}
       />
 
-      <AddTaskDialog
-        open={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-        submissionId={submissionId}
-        setIsAddOpen={setIsAddOpen}
-      />
+      {isAddOpen ? (
+        <AddTaskDialog
+          open={isAddOpen}
+          onClose={() => setIsAddOpen(false)}
+          submissionId={submissionId}
+          setIsAddOpen={setIsAddOpen}
+          onAdded={() => setFetchKey((k) => k + 1)}
+        />
+      ) : null}
     </>
   );
 }

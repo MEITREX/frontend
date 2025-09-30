@@ -1,6 +1,5 @@
 // components/submissions/AddTaskDialog.tsx
 "use client";
-import { BloomLevel } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
 import { AddTaskDialogLecturerAddTaskMutation } from "@/__generated__/AddTaskDialogLecturerAddTaskMutation.graphql";
 import {
   Button,
@@ -14,22 +13,21 @@ import {
 import * as React from "react";
 import { useCallback } from "react";
 import { graphql, useMutation } from "react-relay";
-import { v4 as uuid } from "uuid";
-
 
 type Props = {
   open: boolean;
   onClose: () => void;
   loading?: boolean;
-  submissionId: string
-  setIsAddOpen: any
+  submissionId: string;
+  setIsAddOpen: any;
+  onAdded: () => void;
 };
 
 const LecturerAddTaskMutation = graphql`
   mutation AddTaskDialogLecturerAddTaskMutation(
     $assessmentId: UUID!
     $item: CreateItemInput!
-    $submissionInput: InputTask!
+    $submissionInput: InputTaskWithoutItem!
   ) {
     mutateSubmission(assessmentId: $assessmentId) {
       addTask(
@@ -37,78 +35,14 @@ const LecturerAddTaskMutation = graphql`
         item: $item
         submissionInput: $submissionInput
       ) {
+        assessmentId
         tasks {
           itemId
-          name
           maxScore
-          item {
-            id
-            associatedBloomLevels
-            associatedSkills {
-              id
-              isCustomSkill
-              skillCategory
-              skillName
-              skillLevels {
-                remember {
-                  value
-                }
-                understand {
-                  value
-                }
-                apply {
-                  value
-                }
-                analyze {
-                  value
-                }
-                evaluate {
-                  value
-                }
-                create {
-                  value
-                }
-              }
-            }
-          }
-        }
-        modifiedTask {
-          itemId
-
           name
-          maxScore
-          item {
-            id
-            associatedBloomLevels
-            associatedSkills {
-              id
-              isCustomSkill
-              skillCategory
-              skillName
-              skillLevels {
-                remember {
-                  value
-                }
-                understand {
-                  value
-                }
-                apply {
-                  value
-                }
-                analyze {
-                  value
-                }
-                evaluate {
-                  value
-                }
-                create {
-                  value
-                }
-              }
-            }
-          }
         }
       }
+      assessmentId
     }
   }
 `;
@@ -118,83 +52,81 @@ export default function AddTaskDialog({
   onClose,
   loading,
   submissionId,
-  setIsAddOpen
+  setIsAddOpen,
+  onAdded,
 }: Props) {
-  const [itemName, setItemName] = React.useState("");
   const [taskName, setTaskName] = React.useState("");
   const [maxScore, setMaxScore] = React.useState<number>(10);
-    const [commitAddTask, isAddInFlight] =
-      useMutation<AddTaskDialogLecturerAddTaskMutation>(LecturerAddTaskMutation);
+  const [commitAddTask, isAddInFlight] =
+    useMutation<AddTaskDialogLecturerAddTaskMutation>(LecturerAddTaskMutation);
 
   const onSubmit = useCallback(() => {
     const itemInput = {
+      // NUTZE itemName!
       associatedSkills: [
         {
           isCustomSkill: true,
-          skillCategory: "KNOWLEDGE", // z.B. dein Enum; nutze einen existierenden Wert
+          skillCategory: "KNOWLEDGE",
           skillName: "KNOWLEDGE",
         },
       ],
-      associatedBloomLevels: [
-        "REMEMBER",
-      ] as const satisfies ReadonlyArray<BloomLevel>,
-      // z.B. weitere Pflichtfelder: type, associatedSkills, etc.
+      associatedBloomLevels: ["REMEMBER"] as const,
     };
+
     const submissionInput = {
       name: taskName,
       number: 1,
-      itemId: uuid(), // denselben Wert in item.id UND submissionInput.itemId verwenden
-
-      maxScore,
-      // ggf. weitere Felder, z.B. itemId, description ...
+      maxScore: maxScore,
     };
 
     commitAddTask({
       variables: {
-        assessmentId: String(submissionId), // kommt aus useParams()
+        assessmentId: String(submissionId),
         item: itemInput,
         submissionInput,
       },
-      // (Empfohlen) updater: falls Response nur den neuen Task liefert, hier in die Liste pushen
       updater: (store) => {
-        // Beispiel: hole die aktuelle SubmissionExercise und erweitere tasks
-        // Passe IDs/Keys an deine Relay-IDs an
-        const rootField = store
-          .getRootField("mutateSubmission")
-          ?.getLinkedRecord("addTask");
-        const returnedExercise =
-          rootField?.getLinkedRecord("submissionExercise");
-        if (!returnedExercise) return;
-        const newTasks = returnedExercise.getLinkedRecords("tasks") ?? [];
-        // Optional: an deine vorhandene Record der Query mergen
-        const queryRoot = store.getRoot();
-        // Wenn du die Query record ID kennst, kannst du gezielt setzen.
+        // Payload der Mutation holen
+        const mutateSubmission = store.getRootField("mutateSubmission");
+        const addTask = mutateSubmission?.getLinkedRecord("addTask");
+        if (!addTask) return;
+
+        // die neue Task-Liste aus dem Payload
+        const newTasks = addTask.getLinkedRecords("tasks") ?? [];
+
+        // Das bestehende Query-Resultat finden:
+        // Wichtig: exakt die gleichen Argumente wie in der Query!
+        const root = store.getRoot();
+        const current = root.getLinkedRecord("submissionExerciseForLecturer", {
+          assessmentId: String(submissionId),
+        });
+        if (!current) return;
+
+        // Tasks im bestehenden Record ersetzen (oder alternativ anhängen)
+        current.setLinkedRecords(newTasks, "tasks");
       },
       onCompleted: () => {
-        setIsAddOpen(false);
-        // Falls du kein updater nutzt, kannst du hier einen Refetch deiner Query triggern.
-        // z.B. window.location.reload() als schnelle Lösung (nicht “clean”),
-        // oder bessere: separate useQueryLoader / refetchable Fragment einführen.
+        setIsAddOpen(false); // Add-Dialog schließen
+        onAdded?.(); // falls du noch etwas lokales tun willst (ohne Refetch!)
       },
-      onError: (e) => {
-        console.log(e);
-      },
+      onError: (e) => console.log(e),
     });
-  }, []);
+  }, [
+    commitAddTask,
+    submissionId,
+    taskName, // neu
+    maxScore, // neu
+    setIsAddOpen,
+    onAdded,
+  ]);
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={onClose} keepMounted fullWidth maxWidth="sm">
       <DialogTitle>Neue Aufgabe hinzufügen</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           {/* Beispiel-Felder: mappe sie auf dein CreateItemInput / InputTask */}
-          <TextField
-            label="Item-Name (CreateItemInput.name)"
-            value={itemName}
-            onChange={(e) => setItemName(e.target.value)}
-            fullWidth
-            required
-          />
+
           <TextField
             label="Task-Name (InputTask.name)"
             value={taskName}
@@ -216,7 +148,7 @@ export default function AddTaskDialog({
         <Button onClick={onClose}>Abbrechen</Button>
         <Button
           onClick={onSubmit}
-          disabled={loading || !itemName || !taskName}
+          disabled={loading || !taskName}
           variant="contained"
         >
           Hinzufügen

@@ -652,10 +652,10 @@ type ExternalUserIdWithUser {
 }
 
 type File {
-  downloadUrl: String!
+  downloadUrl: String
   id: UUID!
   name: String!
-  uploadUrl: String!
+  uploadUrl: String
 }
 
 type Flashcard {
@@ -889,7 +889,6 @@ input InputResult {
 
 input InputSubmissionExercise {
   endDate: DateTime!
-  name: String!
   tasks: [InputTask]
 }
 
@@ -908,6 +907,12 @@ input InputTask {
 input InputTaskResult {
   itemId: UUID!
   score: Int!
+}
+
+input InputTaskWithoutItem {
+  maxScore: Int!
+  name: String!
+  number: Int!
 }
 
 input InputThreadContentReference {
@@ -1692,13 +1697,12 @@ type SubmissionExercise {
   courseId: UUID!
   endDate: DateTime!
   files: [File!]!
-  name: String!
   solutions: [SubmissionSolution!]!
   tasks: [Task!]!
 }
 
 type SubmissionMutation {
-  addTask(assessmentId: UUID!, item: CreateItemInput!, submissionInput: InputTask!): TaskOutput!
+  addTask(assessmentId: UUID!, item: CreateItemInput!, submissionInput: InputTaskWithoutItem!): TaskOutput!
   assessmentId: UUID!
   removeTask(itemId: UUID!): SubmissionExercise
   updateTask(assessmentId: UUID!, item: ItemInput!, submissionInput: InputTask!): TaskOutput!
@@ -1708,7 +1712,7 @@ type SubmissionSolution {
   files: [File!]!
   id: UUID
   result: Result!
-  submissionDate: DateTime!
+  submissionDate: DateTime
   userId: UUID!
 }
 

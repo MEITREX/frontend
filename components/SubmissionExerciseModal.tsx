@@ -97,7 +97,6 @@ export function SubmissionExerciseModal({
       variables: {
         submissionExerciseInput: {
           endDate: deadline.endDate!,
-          name: metadata!.name,
           tasks: [],
         },
         assessmentInput: {
