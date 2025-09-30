@@ -6,7 +6,7 @@ import {
   Typography,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useState } from "react";
 import { FormSection } from "./Form";
 
@@ -21,10 +21,12 @@ export function ContentMetadataFormSection({
   onChange,
   metadata,
   suggestedTags,
+  disableName = false,
 }: {
   onChange: (side: ContentMetadataPayload | null) => void;
   metadata?: ContentMetadataPayload | null;
   suggestedTags: string[];
+  disableName?: boolean;
 }) {
   const [name, setName] = useState(metadata?.name ?? "");
   const [suggestedDate, setSuggestedDate] = useState(
@@ -65,19 +67,22 @@ export function ContentMetadataFormSection({
         error={!!metadata && name.trim() == ""}
         onChange={(e) => setName(e.target.value)}
         required
+        disabled={disableName}
       />
       <DatePicker
         label="Suggested start date"
         value={suggestedDate}
-        onChange={setSuggestedDate}
-        slotProps={{
-          textField: {
-            required: true,
-            error:
+        onChange={(newValue: Dayjs | null) => setSuggestedDate(newValue)}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            required
+            error={
               (metadata != null && suggestedDate == null) ||
-              (suggestedDate != null && !suggestedDate.isValid()),
-          },
-        }}
+              (suggestedDate != null && !suggestedDate.isValid())
+            }
+          />
+        )}
       />
 
       <Typography variant="caption" sx={{ marginTop: 1 }}>
@@ -110,15 +115,12 @@ export function ContentMetadataFormSection({
           setTags(newValue);
         }}
         renderTags={(value: readonly string[], getTagProps) =>
-          value.map((option: string, index: number) => (
-            // the key gets set by "getTagProps"
-            // eslint-disable-next-line react/jsx-key
-            <Chip
-              variant="outlined"
-              label={option}
-              {...getTagProps({ index })}
-            />
-          ))
+          value.map((option: string, index: number) => {
+            const { key, ...tagProps } = getTagProps({ index });
+            return (
+              <Chip key={key} variant="outlined" label={option} {...tagProps} />
+            );
+          })
         }
         renderInput={(params) => <TextField {...params} label="Tags" />}
       />

@@ -3,9 +3,12 @@
 import "@/styles/globals.css";
 import React, { useEffect, useMemo } from "react";
 
+import { ClientToaster } from "@/components/ClientToaster";
 import { PageLayout } from "@/components/PageLayout";
+import CurrencyHydrator from "@/components/currency/CurrencyHydrator";
+import TutorWidget from "@/components/tutor/TutorWidget";
 import { initRelayEnvironment } from "@/src/RelayEnvironment";
-import { PageViewProvider } from "@/src/currentView";
+import { PageView, PageViewProvider, usePageView } from "@/src/currentView";
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
@@ -15,6 +18,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
+import { WebStorageStateStore } from "oidc-client-ts";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import {
@@ -24,6 +28,7 @@ import {
   useAuth,
 } from "react-oidc-context";
 import { RelayEnvironmentProvider } from "react-relay";
+import { CurrencyProvider } from "./contexts/CurrencyContext";
 import PageLoading from "./loading";
 
 dayjs.extend(isBetween);
@@ -35,7 +40,7 @@ const oidcConfig: AuthProviderProps = {
   authority:
     process.env.NEXT_PUBLIC_OAUTH_AUTHORITY ??
     "http://localhost:9009/realms/GITS",
-
+  userStore: new WebStorageStateStore({ store: window.localStorage }),
   onSigninCallback() {
     window.history.replaceState({}, document.title, window.location.pathname);
   },
@@ -57,6 +62,19 @@ const theme = createTheme({
   },
 });
 
+function InnerLayout({ children }: { children: React.ReactNode }) {
+  const [pageView] = usePageView();
+  const auth = useAuth();
+  return (
+    <>
+      <PageLayout>{children}</PageLayout>
+      {pageView === PageView.Student && (
+        <TutorWidget isAuthenticated={auth.isAuthenticated} />
+      )}
+    </>
+  );
+}
+
 export default function App({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de" className="h-full overflow-hidden">
@@ -69,7 +87,7 @@ export default function App({ children }: { children: React.ReactNode }) {
             <DndProvider backend={HTML5Backend}>
               <SigninContent>
                 <PageViewProvider>
-                  <PageLayout>{children}</PageLayout>
+                  <InnerLayout>{children}</InnerLayout>
                 </PageViewProvider>
               </SigninContent>
             </DndProvider>
@@ -123,7 +141,13 @@ function SigninContent({ children }: { children: React.ReactNode }) {
   if (auth.isAuthenticated) {
     return (
       <RelayEnvironmentProvider environment={environment}>
-        <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        <ThemeProvider theme={theme}>
+          <CurrencyProvider>
+            <ClientToaster />
+            <CurrencyHydrator />
+            {children}
+          </CurrencyProvider>
+        </ThemeProvider>
       </RelayEnvironmentProvider>
     );
   }

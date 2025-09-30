@@ -2,7 +2,7 @@ import { StudentFlashcardSide$key } from "@/__generated__/StudentFlashcardSide.g
 import { Check, Close, Loop } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { graphql, useFragment } from "react-relay";
 
 export function StudentFlashcardSide({
@@ -26,15 +26,26 @@ export function StudentFlashcardSide({
   const [knew, setKnew] = useState(false);
 
   useEffect(() => {
-    // Notify parent about knew changes
-    onChange(knew);
-  }, [knew]);
-
-  useEffect(() => {
     // Reset when side changes
     setTurned(false);
     setKnew(false);
   }, [side]);
+
+  const markCorrect = useCallback(() => {
+    setKnew((prev) => {
+      const next = true;
+      if (prev !== next) onChange(next);
+      return next;
+    });
+  }, [onChange]);
+
+  const markWrong = useCallback(() => {
+    setKnew((prev) => {
+      const next = false;
+      if (prev !== next) onChange(next);
+      return next;
+    });
+  }, [onChange]);
 
   return (
     <motion.div
@@ -77,7 +88,7 @@ export function StudentFlashcardSide({
             variant="contained"
             color={knew ? "success" : "inherit"}
             disabled={!turned}
-            onClick={(e) => setKnew(true)}
+            onClick={markCorrect}
             startIcon={<Check className="text-white" />}
           >
             <span className="text-white">Correct</span>
@@ -87,7 +98,7 @@ export function StudentFlashcardSide({
             variant="contained"
             color={!knew ? "error" : "inherit"}
             disabled={!turned}
-            onClick={(e) => setKnew(false)}
+            onClick={markWrong}
             startIcon={<Close className="text-white" />}
           >
             <span className="text-white">Wrong</span>

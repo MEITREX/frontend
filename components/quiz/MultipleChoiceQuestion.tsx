@@ -1,13 +1,12 @@
 import { MultipleChoiceQuestionFragment$key } from "@/__generated__/MultipleChoiceQuestionFragment.graphql";
-import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
+import { Checkbox } from "@mui/material";
+import clsx from "clsx";
 import { shuffle } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 import { graphql, useFragment } from "react-relay";
-import { RenderRichText } from "../RichTextEditor";
-import { QuestionDivider } from "./QuestionDivider";
 import colors from "tailwindcss/colors";
-import { CorrectnessIndicator } from "./CorrectnessIndicator";
-import clsx from "clsx";
+import { RenderRichText } from "../RichTextEditor";
+import { getPlainTextOfSlateJS, QuestionDivider } from "./QuestionDivider";
 
 export function MultipleChoiceQuestion({
   _question,
@@ -50,6 +49,16 @@ export function MultipleChoiceQuestion({
     );
   }
 
+  function buildHintInput() {
+    const questionText = getPlainTextOfSlateJS(question.text);
+    const answers = question.answers.map((answer) => {
+      return getPlainTextOfSlateJS(answer.answerText);
+    });
+    return { text: questionText, answers: answers };
+  }
+
+  const hintGenerationInput = buildHintInput();
+
   useEffect(() => {
     // Notify parent about correctness of answer
     onChange(
@@ -71,7 +80,11 @@ export function MultipleChoiceQuestion({
         {<RenderRichText value={question.text} />}
       </div>
 
-      <QuestionDivider _question={question} onHint={onHint} />
+      <QuestionDivider
+        _question={question}
+        onHint={onHint}
+        questionInput={hintGenerationInput}
+      />
 
       {/* Answer options */}
       <div className="flex justify-center">

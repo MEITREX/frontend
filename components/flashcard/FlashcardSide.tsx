@@ -1,4 +1,5 @@
 import { Edit, Help, QuestionAnswer } from "@mui/icons-material";
+import ClearIcon from "@mui/icons-material/Clear";
 import {
   Card,
   CardContent,
@@ -6,7 +7,6 @@ import {
   IconButton,
   Typography,
 } from "@mui/material";
-import { ClearIcon } from "@mui/x-date-pickers";
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { EditSideModal } from "./EditSideModal";
 

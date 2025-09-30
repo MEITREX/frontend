@@ -1,7 +1,7 @@
 import { ChapterOverviewFragment$key } from "@/__generated__/ChapterOverviewFragment.graphql";
 import { useTheme } from "@mui/material/styles";
 import _ from "lodash";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { graphql, useFragment } from "react-relay";
 import { ChapterOverviewItem } from "./ChapterOverviewItem";
 import { StudentChapter } from "./StudentChapter";
@@ -75,6 +75,8 @@ export function ChapterOverview({
     firstIncompleteChapter < 0 ? numberOfChapters - 1 : firstIncompleteChapter;
   const [selectedIndex, setSelectedIndex] = useState<number>(startIndex);
 
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
   if (numberOfChapters === 0) {
     return (
       <div className="text-left text-gray-500">No chapters in this course.</div>
@@ -96,7 +98,7 @@ export function ChapterOverview({
 
   const height = 300;
   const amplitude = 50;
-  const spacing = 180;
+  const spacing = 270;
   const waves = Math.round(numberOfChapters / 4); // Number of sine waves
   const totalWidth = spacing * (numberOfChapters - 1);
 
@@ -130,7 +132,7 @@ export function ChapterOverview({
 
   return (
     <div className="w-full">
-      <div className="w-full overflow-y-hidden overflow-x-auto px-24 pb-10 mb-8">
+      <div className="w-full overflow-y-hidden overflow-x-auto px-32 pb-36 mb-8">
         <div
           style={{
             position: "relative",
@@ -166,6 +168,7 @@ export function ChapterOverview({
           {points.map(({ x, y }, i) => (
             <div
               key={i}
+              ref={(el) => (itemRefs.current[i] = el)}
               style={{
                 position: "absolute",
                 left: x,
@@ -177,6 +180,7 @@ export function ChapterOverview({
                 _chapter={sortedChapters[i]}
                 selected={i === selectedIndex}
                 onClick={() => setSelectedIndex(i)}
+                anyContent={sortedChapters[i].contents.length > 0}
               />
             </div>
           ))}

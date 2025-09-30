@@ -3,9 +3,8 @@
     <#if section = "title">
         ${msg("registerTitle")}
     <#elseif section = "header">
-        <link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet"/>
     <#elseif section = "welcome">
-        <div class="login-left">
+        <div class="register-left">
             <img class="logo" src="${url.resourcesPath}/img/logo.png" alt="Meitrex">
             <p class="application-welcome-text">Welcome to</p>
             <p class="application-name">MEITREX</p>

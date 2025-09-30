@@ -31,6 +31,20 @@ enum AiEntityProcessingState {
   UNKNOWN
 }
 
+input AiGenQuestionContext {
+  description: String!
+  maxAnswersPerQuestion: Int! = 5
+  maxExactQuestions: Int! = 5
+  maxFreeTextQuestions: Int! = 5
+  maxMultipleChoiceQuestions: Int! = 5
+  maxNumericQuestions: Int! = 5
+  mediaRecordIds: [UUID]!
+  minExactQuestions: Int! = 1
+  minFreeTextQuestions: Int! = 1
+  minMultipleChoiceQuestions: Int! = 1
+  minNumericQuestions: Int! = 1
+}
+
 input AnswerInput {
   playerTypes: [PlayerType!]!
   text: String!
@@ -128,7 +142,13 @@ input AssociationInput {
   right: String!
 }
 
+input AssociationPairInput {
+  left: String!
+  right: String!
+}
+
 type AssociationQuestion implements Question {
+  aiGenerated: Boolean!
   correctAssociations: [SingleAssociation!]!
   hint: JSON
   item: Item!
@@ -206,6 +226,7 @@ enum ClozeElementType {
 
 type ClozeQuestion implements Question {
   additionalWrongAnswers: [String!]!
+  aiGenerated: Boolean!
   allBlanks: [String!]!
   clozeElements: [ClozeElement!]!
   hint: JSON
@@ -591,6 +612,7 @@ type DocumentSource implements Source {
 }
 
 type ExactAnswerQuestion implements Question {
+  aiGenerated: Boolean!
   caseSensitive: Boolean!
   correctAnswers: [String!]!
   feedback: JSON
@@ -790,6 +812,34 @@ interface HasGoal {
   trackingEndTime: DateTime
   trackingStartTime: DateTime
   userId: UUID!
+}
+
+input HintAssociationInput {
+  pairs: [AssociationPairInput!]!
+  text: String!
+}
+
+input HintClozeInput {
+  blanks: [String!]!
+  text: String!
+}
+
+input HintGenerationInput {
+  association: HintAssociationInput
+  cloze: HintClozeInput
+  multipleChoice: HintMultipleChoiceInput
+  type: HintQuestionType!
+}
+
+input HintMultipleChoiceInput {
+  answers: [String!]!
+  text: String!
+}
+
+enum HintQuestionType {
+  ASSOCIATION
+  CLOZE
+  MULTIPLE_CHOICE
 }
 
 type HintResponse {
@@ -1000,6 +1050,7 @@ input MultipleChoiceAnswerInput {
 }
 
 type MultipleChoiceQuestion implements Question {
+  aiGenerated: Boolean!
   answers: [MultipleChoiceAnswer!]!
   hint: JSON
   item: Item!
@@ -1044,7 +1095,7 @@ type Mutation {
   equipItem(itemId: UUID!): Inventory
   evaluatePlayerHexadScore(input: PlayerAnswerInput!, userId: UUID!): PlayerHexadScore!
   generateAccessToken(input: GenerateAccessTokenInput!): Boolean!
-  generateHint(courseId: UUID!, questionText: String!): HintResponse!
+  generateHint(courseId: UUID!, questionInput: HintGenerationInput!): HintResponse!
   itemReward(itemId: UUID!): Inventory
   joinCourse(courseId: UUID!): CourseMembership!
   leaveCourse(courseId: UUID!): CourseMembership!
@@ -1111,6 +1162,7 @@ input NotificationInput {
 }
 
 type NumericQuestion implements Question {
+  aiGenerated: Boolean!
   correctAnswer: Float!
   feedback: JSON
   hint: JSON
@@ -1236,6 +1288,7 @@ type Query {
   getSemanticallySimilarEntities(count: Int! = 10, courseWhitelist: [UUID!], excludeEntitiesWithSameParent: Boolean, segmentId: UUID!): [SemanticSearchResult!]!
   getUser(userID: ID!): [User!]
   getWeeklyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
+  inventoriesForUsers(userIds: [UUID!]!): [Inventory!]!
   inventoryForUser: Inventory!
   isAccessTokenAvailable(provider: ExternalServiceProviderDto!): Boolean!
   itemsByUserId(userId: UUID!): [UserItem!]!
@@ -1273,6 +1326,7 @@ type Quest implements HasGoal {
 }
 
 interface Question {
+  aiGenerated: Boolean!
   hint: JSON
   itemId: UUID!
   number: Int!
@@ -1336,6 +1390,10 @@ type Quiz {
   selectedQuestions: [Question!]!
 }
 
+type QuizAIGenAsyncResponse {
+  quiz: Quiz
+}
+
 type QuizAssessment implements Assessment & Content {
   _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   aiProcessingProgress: AiEntityProcessingProgress!
@@ -1369,6 +1427,7 @@ type QuizMutation {
   addMultipleChoiceQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateMultipleChoiceQuestionInputWithoutItem!): QuizOutput!
   addNumericQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateNumericQuestionInputWithoutItem!): QuizOutput!
   addSelfAssessmentQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateSelfAssessmentQuestionInputWithoutItem!): QuizOutput!
+  aiGenerateQuestionAsync(context: AiGenQuestionContext): QuizAIGenAsyncResponse
   assessmentId: UUID!
   removeQuestion(number: Int!): Quiz!
   setNumberOfRandomlySelectedQuestions(numberOfRandomlySelectedQuestions: Int!): Quiz!
@@ -1459,6 +1518,7 @@ type SectionMutation {
 }
 
 type SelfAssessmentQuestion implements Question {
+  aiGenerated: Boolean!
   hint: JSON
   itemId: UUID!
   number: Int!

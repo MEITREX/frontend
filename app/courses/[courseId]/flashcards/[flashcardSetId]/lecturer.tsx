@@ -143,7 +143,7 @@ export default function LecturerFlashcards() {
         ),
       });
     },
-    [data, deleteFlashcard, flashcardSetId]
+    [deleteFlashcard, courseId, flashcardSetId]
   );
 
   function handleUpdateFlashcardSet(

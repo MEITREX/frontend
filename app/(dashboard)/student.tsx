@@ -3,7 +3,10 @@
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { studentStudentQuery } from "@/__generated__/studentStudentQuery.graphql";
 import { studentPlayerHexadScoreExistsQuery } from "@/__generated__/studentPlayerHexadScoreExistsQuery.graphql";
+import { studentStudentQuery } from "@/__generated__/studentStudentQuery.graphql";
 import { CourseCard, yearDivisionToStringShort } from "@/components/CourseCard";
+import SurveyPopup from "@/components/gamification/player-hexad-type-survey/PlayerTypeSurvey";
+import { Settings } from "@/components/settings/types";
 import {
   Box,
   FormControl,
@@ -15,16 +18,13 @@ import {
 import dayjs from "dayjs";
 import { chain } from "lodash";
 import Link from "next/link";
-import React, { Fragment, Suspense, useEffect, useState } from "react";
+import { Fragment, Suspense, useEffect, useState } from "react";
 import {
   useLazyLoadQuery,
   usePreloadedQuery,
   useQueryLoader,
 } from "react-relay";
 import { graphql } from "relay-runtime";
-import SurveyPopup from "@/components/gamification/player-hexad-type-survey/PlayerTypeSurvey";
-import UserSettings from "@/components/settings/UserSettings";
-import { Settings } from "@/components/settings/types";
 export default function StudentPage() {
   const { currentUserInfo } = useLazyLoadQuery<studentStudentQuery>(
     graphql`
@@ -191,7 +191,8 @@ export default function StudentPage() {
     console.log(settings);
   }, [settings]);
 
-  if (!settings) {
+  /**
+   *  if (!settings) {
     return (
       <>
         <UserSettings
@@ -203,6 +204,7 @@ export default function StudentPage() {
       </>
     );
   }
+   */
 
   return (
     <main>

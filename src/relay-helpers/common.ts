@@ -3,9 +3,6 @@ import { FlashcardHeaderDeleteFlashcardSetMutation$data } from "@/__generated__/
 import { QuizHeaderDeleteQuizMutation$data } from "@/__generated__/QuizHeaderDeleteQuizMutation.graphql";
 import { RecordProxy, RecordSourceSelectorProxy } from "relay-runtime";
 
-export const generateRelayStoreDataIdCourseIdSkills = (courseId: string) =>
-  `client:root:coursesByIds(ids:["${courseId}"]):0`;
-
 type ItemPayload =
   AddFlashcardMutation$data["mutateFlashcardSet"]["createFlashcard"]["flashcard"]["item"];
 /**
@@ -21,9 +18,7 @@ export const createItemFromPayload = (
   courseId: string
 ) => {
   // since this is a prefetch query: just to make sure...
-  const courseByIds = store.get(
-    generateRelayStoreDataIdCourseIdSkills(courseId)
-  );
+  const courseByIds = store.get(courseId);
   if (!courseByIds) return;
 
   const allCourseSkills = courseByIds.getLinkedRecords("skills")!;
@@ -50,10 +45,7 @@ export const deleteDanglingItems = (
   courseId: string
 ) => {
   // removing the skills so that they won't appear in the Autocompletes
-  const coursesByIds = assertRecordExists(
-    store.get(generateRelayStoreDataIdCourseIdSkills(courseId)),
-    "coursesByIds"
-  );
+  const coursesByIds = assertRecordExists(store.get(courseId), "coursesByIds");
 
   const knownSkills = new Map(
     coursesByIds

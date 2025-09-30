@@ -2,9 +2,9 @@ import { AssociationQuestionFragment$key } from "@/__generated__/AssociationQues
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { graphql, useFragment } from "react-relay";
 import { RenderRichText } from "../RichTextEditor";
-import { QuestionDivider } from "./QuestionDivider";
-import { FeedbackTooltip } from "./FeedbackTooltip";
 import { CorrectnessIndicator } from "./CorrectnessIndicator";
+import { FeedbackTooltip } from "./FeedbackTooltip";
+import { getPlainTextOfSlateJS, QuestionDivider } from "./QuestionDivider";
 
 export function AssociationQuestion({
   _question,
@@ -38,6 +38,16 @@ export function AssociationQuestion({
   const [associated, setAssociated] = useState<[string, string][]>([]);
   const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
   const [selectedRight, setSelectedRight] = useState<string | null>(null);
+
+  function buildHintInput() {
+    const questionText = getPlainTextOfSlateJS(question.text);
+    const pairs = question.correctAssociations.map((pair) => {
+      return { left: pair.left, right: pair.right };
+    });
+    return { text: questionText, pairs: pairs };
+  }
+
+  const hintGenerationInput = buildHintInput();
 
   const removeAssociation = (index: number) => {
     setAssociated((oldValue) => [
@@ -102,7 +112,11 @@ export function AssociationQuestion({
       <div className="mt-6 text-center text-gray-600">
         <RenderRichText value={question.text} />
       </div>
-      <QuestionDivider _question={question} onHint={onHint} />
+      <QuestionDivider
+        _question={question}
+        onHint={onHint}
+        questionInput={hintGenerationInput}
+      />
       {(associated.length > 0 || feedbackMode) && (
         <div className="flex flex-col items-center gap-2 mb-6">
           {associated.map(([left, right], i) => {

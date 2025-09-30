@@ -1,19 +1,25 @@
 "use client";
+
 import { studentCourseIdQuery } from "@/__generated__/studentCourseIdQuery.graphql";
-import { Button, Divider, IconButton, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Divider,
+  IconButton,
+  Tab,
+  Tabs,
+  Typography,
+} from "@mui/material";
 import { orderBy } from "lodash";
 import { useParams, useRouter } from "next/navigation";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
-import Paper from "@mui/material/Paper";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-
 import { studentCourseLeaveMutation } from "@/__generated__/studentCourseLeaveMutation.graphql";
+import { studentUserLoginMutation } from "@/__generated__/studentUserLoginMutation.graphql";
+
+import { stringToColor } from "@/components/ChapterHeader";
+import { ChapterOverview } from "@/components/ChapterOverview";
+import CompetencyProgressbar from "@/components/CompetencyProgressbar";
 import { FormErrors } from "@/components/FormErrors";
 import { LightTooltip } from "@/components/LightTooltip";
 import { PageError } from "@/components/PageError";
@@ -21,26 +27,28 @@ import { RewardScores } from "@/components/RewardScores";
 import { RewardScoresHelpButton } from "@/components/RewardScoresHelpButton";
 import { StudentChapter } from "@/components/StudentChapter";
 import { Suggestion } from "@/components/Suggestion";
+import WidgetsOverview from "@/components/widgets/WidgetsOverview";
+
+import ForumOverview from "@/components/forum/ForumOverview";
+import SkeletonThreadList from "@/components/forum/skeleton/SkeletonThreadList";
+
 import { Info, Repeat } from "@mui/icons-material";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import Link from "next/link";
-import { useState } from "react";
-import CompetencyProgressbar from "@/components/CompetencyProgressbar";
-import { stringToColor } from "@/components/ChapterHeader";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
-import { ChapterOverview } from "@/components/ChapterOverview";
+import { studentPrivateProfileStudentGeneralQuery } from "@/__generated__/studentPrivateProfileStudentGeneralQuery.graphql";
+import CourseLeaderboards from "@/components/leaderboard/CourseLeaderboard";
 
+import WidgetSkeleton from "@/components/widgets/Skeleton/WidgetSkeleton";
 import * as React from "react";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import Box from "@mui/material/Box";
+import { Suspense, useEffect, useState } from "react";
+import { useAuth } from "react-oidc-context";
+import QuestList from "./quests/QuestItem";
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
-
   return (
     <div
       role="tabpanel"
@@ -89,6 +97,23 @@ export default function StudentCoursePage() {
   const router = useRouter();
   const [error, setError] = useState<any>(null);
 
+  // 1) UserID stabil über Relay
+  const { currentUserInfo } =
+    useLazyLoadQuery<studentPrivateProfileStudentGeneralQuery>(
+      graphql`
+        query studentPrivateProfileStudentGeneralQuery {
+          currentUserInfo {
+            id
+            lastName
+            firstName
+            userName
+            nickname
+          }
+        }
+      `,
+      {}
+    );
+
   // Fetch course data
   const {
     coursesByIds,
@@ -99,6 +124,7 @@ export default function StudentCoursePage() {
       query studentCourseIdQuery($id: UUID!) {
         scoreboard(courseId: $id) {
           user {
+            id
             userName
           }
           powerScore
@@ -106,7 +132,6 @@ export default function StudentCoursePage() {
         currentUserInfo {
           id
         }
-
         coursesByIds(ids: [$id]) {
           ...ChapterOverviewFragment
           suggestions(amount: 4) {
@@ -118,6 +143,25 @@ export default function StudentCoursePage() {
           id
           title
           description
+          dailyQuests {
+            forDay
+            id
+            name
+            quests {
+              completed
+              completedCount
+              courseId
+              description
+              id
+              name
+              requiredCount
+              rewardPoints
+              trackingEndTime
+              trackingStartTime
+              userId
+            }
+            rewardMultiplier
+          }
           rewardScores {
             ...RewardScoresFragment
           }
@@ -133,7 +177,6 @@ export default function StudentCoursePage() {
                   nextLearnDate
                   lastLearnDate
                 }
-
                 id
                 metadata {
                   type
@@ -180,29 +223,46 @@ export default function StudentCoursePage() {
     }
   `);
 
-  // Extract scoreboard
-  const rows: Data[] = scoreboard
-    .slice(0, 3)
-    .map((element) =>
-      createData(element.user?.userName ?? "Unknown", element.powerScore)
-    );
+  const [studentUserLogin] = useMutation<studentUserLoginMutation>(graphql`
+    mutation studentUserLoginMutation($id: UUID!) {
+      loginUser(courseId: $id)
+    }
+  `);
 
   const [currentPage, setCurrentPage] = useState(0);
 
-  // Show 404 error page if id was not found
+  // Extract course (404 if not found)
+  const course = coursesByIds[0];
+
+  useEffect(() => {
+    if (course?.id) {
+      studentUserLogin({
+        variables: { id: course.id },
+        onCompleted: () => {},
+        onError: (e) => {
+          console.error("Login error:", e);
+        },
+      });
+    }
+  }, [course?.id, studentUserLogin]);
+
+  const auth = useAuth();
+
+  const tokenRef = React.useRef<string | undefined>(auth.user?.access_token);
+  useEffect(() => {
+    tokenRef.current = auth.user?.access_token;
+  }, [auth.user?.access_token]);
+
   if (coursesByIds.length == 0) {
     return <PageError message="No course found with given id." />;
   }
-
-  // Extract course
-  const course = coursesByIds[0];
 
   const categoriesPerPage = 3;
   const uniqueSkillCategories = Array.from(
     new Map(course.skills.map((skill) => [skill.skillCategory, skill])).values()
   );
 
-  // Sort the categories by value. Categories with skillValue 0 will be displayed last.
+  // Sort categories by total progress
   const sortedSkillCategories = [...uniqueSkillCategories].sort((a, b) => {
     const getTotalProgress = (category: typeof a) => {
       const skillsInCategory = course.skills.filter(
@@ -273,7 +333,7 @@ export default function StudentCoursePage() {
                   updater(store) {
                     const userRecord = store.get(userId)!;
                     const records =
-                      userRecord.getLinkedRecords("courseMemberships")!;
+                      userRecord.getLinkedRecords("courseMemberships") || [];
 
                     userRecord.setLinkedRecords(
                       records.filter((x) => x.getValue("courseId") !== id),
@@ -297,8 +357,16 @@ export default function StudentCoursePage() {
         )}
       </div>
 
+      {/* Quest */}
+      <Box marginBottom={2} marginTop={2}>
+        <QuestList
+          questsProp={course.dailyQuests.quests}
+          streak={course.dailyQuests.rewardMultiplier}
+        />
+      </Box>
+
       {/* Tabs for Learning Progress and Chapters */}
-      <Box sx={{ width: "100%" }}>
+      <Box sx={{ width: "100%", mt: 2 }}>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <Tabs
             value={value}
@@ -308,11 +376,18 @@ export default function StudentCoursePage() {
             <Tab label="Course Overview" {...a11yProps(0)} />
             <Tab label="Learning Progress" {...a11yProps(1)} />
             <Tab label="Chapters" {...a11yProps(2)} />
+            <Tab label="Forum" {...a11yProps(3)} />
+            <Tab label="leaderboard" {...a11yProps(4)} />
           </Tabs>
         </Box>
+
         <CustomTabPanel value={value} index={0}>
+          <Suspense fallback={<WidgetSkeleton />}>
+            <WidgetsOverview userId={currentUserInfo.id} courseId={course.id} />
+          </Suspense>
           <ChapterOverview _chapters={course} />
         </CustomTabPanel>
+
         <CustomTabPanel value={value} index={1}>
           <div className="flex flex-col gap-12">
             <div className="grid grid-cols-2 items-start gap-4">
@@ -331,45 +406,6 @@ export default function StudentCoursePage() {
                   >
                     Full history
                   </Button>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <TableContainer component={Paper}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Student Name</TableCell>
-                        <TableCell align="right">Power</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {rows.map((row) => (
-                        <TableRow
-                          key={row.name}
-                          sx={{
-                            "&:last-child td, &:last-child th": { border: 0 },
-                          }}
-                        >
-                          <TableCell component="th" scope="row">
-                            {row.name}
-                          </TableCell>
-                          <TableCell align="right">{row.power}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                <div className="flex flex-row gap-8">
-                  <Link href={{ pathname: `${id}/scoreboard` }}>
-                    <Button variant="text" endIcon={<NavigateNextIcon />}>
-                      Full Scoreboard
-                    </Button>
-                  </Link>
-                  <Link href={{ pathname: `${id}/skills` }}>
-                    <Button variant="text" endIcon={<NavigateNextIcon />}>
-                      Knowledge Status
-                    </Button>
-                  </Link>
                 </div>
               </div>
             </div>
@@ -498,11 +534,11 @@ export default function StudentCoursePage() {
             </div>
           </div>
         </CustomTabPanel>
+
         <CustomTabPanel value={value} index={2}>
           <div className="flex flex-col items-end w-full gap-4">
             <div className="flex flex-col gap-8 w-full">
               <div>
-                {" "}
                 {/*Up next*/}
                 <div className="flex justify-between items-center">
                   <Typography variant="h2">Up next</Typography>
@@ -525,7 +561,7 @@ export default function StudentCoursePage() {
               </div>
               <div className="flex flex-col w-full gap-4">
                 <Typography variant="h2">Chapters</Typography>
-                <div className="border border-2 border-gray-300 rounded-3xl w-full overflow-hidden">
+                <div className="border-2 border-gray-300 rounded-3xl w-full overflow-hidden">
                   {orderBy(course.chapters.elements, [
                     (x) => new Date(x.startDate).getTime(),
                     "number",
@@ -543,6 +579,22 @@ export default function StudentCoursePage() {
               </div>
             </div>
           </div>
+        </CustomTabPanel>
+
+        <CustomTabPanel value={value} index={3}>
+          <Suspense fallback={<SkeletonThreadList />}>
+            <ForumOverview />
+          </Suspense>
+        </CustomTabPanel>
+
+        <CustomTabPanel value={value} index={4}>
+          <Suspense fallback={<SkeletonThreadList />}>
+            <CourseLeaderboards
+              courseID={id}
+              currentUserId={userId}
+              currentUserName={"Current User"}
+            />
+          </Suspense>
         </CustomTabPanel>
       </Box>
     </main>
