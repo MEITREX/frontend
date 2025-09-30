@@ -484,7 +484,8 @@ function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
   const auth = useAuth();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
+  const clearChat = useAITutorStore((s) => s.clearChat);
+  const { points } = useCurrency();
   const notifData = useLazyLoadQuery<NavbarNotificationsQuery>(
     NAVBAR_NOTIFICATIONS_QUERY,
     {},
