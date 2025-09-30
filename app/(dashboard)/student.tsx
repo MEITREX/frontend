@@ -3,7 +3,6 @@
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { studentStudentQuery } from "@/__generated__/studentStudentQuery.graphql";
 import { studentPlayerHexadScoreExistsQuery } from "@/__generated__/studentPlayerHexadScoreExistsQuery.graphql";
-import { studentStudentQuery } from "@/__generated__/studentStudentQuery.graphql";
 import { CourseCard, yearDivisionToStringShort } from "@/components/CourseCard";
 import SurveyPopup from "@/components/gamification/player-hexad-type-survey/PlayerTypeSurvey";
 import { Settings } from "@/components/settings/types";
