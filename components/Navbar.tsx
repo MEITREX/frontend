@@ -153,7 +153,7 @@ function NavbarBase({
   tutor,
   userId,
 }: {
-  children: React.ReactElement;
+  children: React.ReactNode;
   tutor: boolean;
   userId: string;
 }) {
