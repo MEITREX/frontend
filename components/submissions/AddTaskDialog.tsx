@@ -196,7 +196,7 @@ export default function AddTaskDialog({
           {/* Beispiel-Felder: mappe sie auf dein CreateItemInput / InputTask */}
 
           <TextField
-            label="Task-Name (InputTask.name)"
+            label="Task name"
             value={taskName}
             onChange={(e) => setTaskName(e.target.value)}
             fullWidth
@@ -212,7 +212,7 @@ export default function AddTaskDialog({
           />
 
           <TextField
-            label="Max Score (InputTask.maxScore)"
+            label="Max Score"
             type="number"
             value={maxScore}
             onChange={(e) => setMaxScore(Number(e.target.value))}
@@ -222,13 +222,13 @@ export default function AddTaskDialog({
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Abbrechen</Button>
+        <Button onClick={onClose}>Cancel</Button>
         <Button
           onClick={onSubmit}
           disabled={loading || !taskName}
           variant="contained"
         >
-          Hinzufügen
+          Add
         </Button>
       </DialogActions>
     </Dialog>

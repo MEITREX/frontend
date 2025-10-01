@@ -195,7 +195,7 @@ export default function AddTaskDialog({
   console.log(taskProp.itemId);
 
   return (
-    <Dialog open={open} onClose={onClose} keepMounted fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={onClose} keepMounted fullWidth maxWidth="md">
       <DialogTitle>Edit Task</DialogTitle>
       <DialogContent>
         <ItemFormSection
@@ -208,7 +208,7 @@ export default function AddTaskDialog({
           {/* Beispiel-Felder: mappe sie auf dein CreateItemInput / InputTask */}
 
           <TextField
-            label="Task-Name (InputTask.name)"
+            label="Task name"
             value={taskName}
             onChange={(e) => setTaskName(e.target.value)}
             fullWidth
@@ -224,7 +224,7 @@ export default function AddTaskDialog({
           />
 
           <TextField
-            label="Max Score (InputTask.maxScore)"
+            label="Max Score"
             type="number"
             value={maxScore}
             onChange={(e) => setMaxScore(Number(e.target.value))}
@@ -234,13 +234,13 @@ export default function AddTaskDialog({
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Abbrechen</Button>
+        <Button onClick={onClose}>Cancel</Button>
         <Button
           onClick={onSubmit}
           disabled={loading || !taskName}
           variant="contained"
         >
-          Hinzufügen
+          Edit
         </Button>
       </DialogActions>
     </Dialog>
