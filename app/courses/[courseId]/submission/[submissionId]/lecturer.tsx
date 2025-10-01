@@ -410,7 +410,7 @@ export default function LecturerSubmission() {
         Add task
       </Button>
 
-      <Typography>{submissionExerciseForLecturer.files[0].name}</Typography>
+      {submissionExerciseForLecturer.files.length > 0 && (<Typography>{submissionExerciseForLecturer.files[0].name}</Typography>)}
 
       <Button variant="outlined" onClick={() => setUploadOpen(true)}>
         Upload file
@@ -421,6 +421,7 @@ export default function LecturerSubmission() {
         isOpen={isEditSetModalOpen}
         _existingSubmission={extendedContent}
         chapterId={content.metadata.chapterId}
+        tasks={submissionExerciseForLecturer.tasks}
       />
 
       {isAddOpen ? (

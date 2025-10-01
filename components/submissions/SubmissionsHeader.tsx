@@ -29,7 +29,7 @@ export default function SubmissionsHeader({
   const { courseId, submissionId } = useParams();
   const router = useRouter();
 
-  const [commitDeleteQuiz, isDeleteCommitInFlight] =
+  const [commitDeleteSubmission, isDeleteCommitInFlight] =
     useMutation<SubmissionsHeaderDeleteSubmissionMutation>(
       deleteSubmissionMutation
     );
@@ -38,15 +38,15 @@ export default function SubmissionsHeader({
 
   const updater = useCallback(() => updaterSetDelete(courseId), [courseId]);
 
-  const deleteQuiz = useCallback(
+  const deleteSubmission = useCallback(
     () =>
-      commitDeleteQuiz({
+      commitDeleteSubmission({
         variables: { id: submissionId },
         onCompleted: () => router.push(`/courses/${courseId}`),
         onError: (error) => setError(error),
         updater: updater(),
       }),
-    [commitDeleteQuiz, courseId, submissionId, router, setError, updater]
+    [commitDeleteSubmission, courseId, submissionId, router, setError, updater]
   );
 
   return (
@@ -75,13 +75,13 @@ export default function SubmissionsHeader({
               onClick={() => {
                 if (
                   confirm(
-                    "Do you really want to delete this quiz? This can't be undone."
+                    "Do you really want to delete this submission? This can't be undone."
                   )
                 )
-                  deleteQuiz();
+                  deleteSubmission();
               }}
             >
-              Delete Quiz
+              Delete Submission
             </Button>
           </div>
         }
