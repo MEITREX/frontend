@@ -12,6 +12,8 @@ import AddTaskDialog from "@/components/submissions/AddTaskDialog";
 import EditTaskDialog from "@/components/submissions/EditTaskDialog";
 import SubmissionsHeader from "@/components/submissions/SubmissionsHeader";
 import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
@@ -19,6 +21,7 @@ import PsychologyIcon from "@mui/icons-material/Psychology";
 import SchoolIcon from "@mui/icons-material/School";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -33,13 +36,14 @@ import {
   Divider,
   Grid,
   IconButton,
+  LinearProgress,
   Paper,
   Stack,
   Tooltip,
   Typography,
 } from "@mui/material";
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
 const RootQuery = graphql`
@@ -205,6 +209,7 @@ function SkillLevelsChips({
   );
 }
 
+// Card for the individual tasks
 function TaskCard({
   task,
   onEdit,
@@ -374,6 +379,7 @@ export default function LecturerSubmission() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const [isEditSetModalOpen, setEditSetModalOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { contentsByIds, ...mediaSelectorQuery } =
     useLazyLoadQuery<lecturerEditSubmissionQuery>(RootQuery, {
@@ -448,6 +454,22 @@ export default function LecturerSubmission() {
     }
     setSelectedFile(f);
   }
+
+  function handleDroppedFile(file: File | null) {
+  setUploadError(null);
+  if (!file) return;
+  if (file.type !== "application/pdf") {
+    setUploadError("Bitte eine PDF-Datei wählen.");
+    setSelectedFile(null);
+    return;
+  }
+  if (file.size > 25 * 1024 * 1024) {
+    setUploadError("Datei ist größer als 25 MB.");
+    setSelectedFile(null);
+    return;
+  }
+  setSelectedFile(file);
+}
 
   // Upload file to upload endpoint
   async function doUpload(assessmentId: string, file: File, uploadUrl: string) {
@@ -631,59 +653,109 @@ export default function LecturerSubmission() {
       {/* Upload file Dialog */}
       {isUploadOpen ? (
         <Dialog
-          open={isUploadOpen}
-          onClose={() => {
-            if (!uploading && !isCreateInFlight) {
-              setUploadOpen(false);
-              setSelectedFile(null);
-              setUploadError(null);
-            }
-          }}
-          fullWidth
-          maxWidth="sm"
-        >
-          <DialogTitle>PDF hochladen</DialogTitle>
-          <DialogContent>
-            <Stack spacing={2}>
-              <input
-                type="file"
-                accept=".pdf,application/pdf"
-                onChange={onFileChange}
-                disabled={isCreateInFlight || uploading}
-              />
-              {selectedFile ? (
-                <Typography variant="body2">
-                  Datei: <strong>{selectedFile.name}</strong> (
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                </Typography>
-              ) : null}
-              {uploadError ? (
-                <Typography variant="body2" color="error">
-                  {uploadError}
-                </Typography>
-              ) : null}
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => {
-                setUploadOpen(false);
-                setSelectedFile(null);
-                setUploadError(null);
-              }}
-              disabled={isCreateInFlight || uploading}
-            >
-              Abbrechen
-            </Button>
-            <Button
-              variant="contained"
-              onClick={onSubmitUpload}
-              disabled={!selectedFile || isCreateInFlight || uploading}
-            >
-              {uploading ? "Lade hoch..." : "Hochladen"}
-            </Button>
-          </DialogActions>
-        </Dialog>
+  open={isUploadOpen}
+  onClose={() => {
+    if (!uploading && !isCreateInFlight) {
+      setUploadOpen(false);
+      setSelectedFile(null);
+      setUploadError(null);
+    }
+  }}
+  fullWidth
+  maxWidth="sm"
+>
+  <DialogTitle>PDF hochladen</DialogTitle>
+  <DialogContent>
+    <Stack spacing={2}>
+      {/* Dropzone */}
+      <Paper
+        variant="outlined"
+        sx={{
+          p: 3,
+          borderStyle: "dashed",
+          borderRadius: 3,
+          textAlign: "center",
+          cursor: uploading || isCreateInFlight ? "not-allowed" : "pointer",
+          opacity: uploading || isCreateInFlight ? 0.7 : 1,
+        }}
+        onClick={() => fileInputRef.current?.click()}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          if (uploading || isCreateInFlight) return;
+          const f = e.dataTransfer.files?.[0] ?? null;
+          handleDroppedFile(f);
+        }}
+      >
+        <Stack spacing={1} alignItems="center">
+          <CloudUploadIcon />
+          <Typography variant="body1">
+            Datei hierher ziehen oder klicken, um auszuwählen
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Nur PDF, max. 25 MB
+          </Typography>
+        </Stack>
+      </Paper>
+
+      {/* Hidden input */}
+      <input
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        type="file"
+        accept=".pdf,application/pdf"
+        onChange={onFileChange}
+        disabled={isCreateInFlight || uploading}
+      />
+
+      {/* Selected file */}
+      {selectedFile ? (
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Typography variant="body2">
+            Datei: <strong>{selectedFile.name}</strong> (
+            {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+          </Typography>
+          <Button
+            size="small"
+            startIcon={<CloseIcon />}
+            onClick={() => setSelectedFile(null)}
+            disabled={isCreateInFlight || uploading}
+          >
+            Entfernen
+          </Button>
+        </Stack>
+      ) : null}
+
+      {uploadError ? (
+        <Alert severity="error" variant="outlined">
+          {uploadError}
+        </Alert>
+      ) : null}
+
+      {uploading ? <LinearProgress /> : null}
+    </Stack>
+  </DialogContent>
+  <DialogActions>
+    <Button
+      onClick={() => {
+        setUploadOpen(false);
+        setSelectedFile(null);
+        setUploadError(null);
+      }}
+      disabled={isCreateInFlight || uploading}
+    >
+      Abbrechen
+    </Button>
+    <Button
+      variant="contained"
+      onClick={onSubmitUpload}
+      disabled={!selectedFile || isCreateInFlight || uploading}
+    >
+      {uploading ? "Lade hoch..." : "Hochladen"}
+    </Button>
+  </DialogActions>
+</Dialog>
+
       ) : null}
     </>
   );
