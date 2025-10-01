@@ -11,12 +11,31 @@ import { SubmissionExerciseModal } from "@/components/SubmissionExerciseModal";
 import AddTaskDialog from "@/components/submissions/AddTaskDialog";
 import EditTaskDialog from "@/components/submissions/EditTaskDialog";
 import SubmissionsHeader from "@/components/submissions/SubmissionsHeader";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
+import PsychologyIcon from "@mui/icons-material/Psychology";
+import SchoolIcon from "@mui/icons-material/School";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
 import {
+  Box,
   Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
+  Grid,
+  IconButton,
+  Paper,
+  Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { useParams } from "next/navigation";
@@ -91,24 +110,12 @@ const GetSubmission = graphql`
             isCustomSkill
             skillCategory
             skillLevels {
-              analyze {
-                value
-              }
-              apply {
-                value
-              }
-              create {
-                value
-              }
-              evaluate {
-                value
-              }
-              remember {
-                value
-              }
-              understand {
-                value
-              }
+              analyze { value }
+              apply { value }
+              create { value }
+              evaluate { value }
+              remember { value }
+              understand { value }
             }
             skillName
           }
@@ -153,15 +160,123 @@ const CreateExerciseFileMutation = graphql`
   }
 `;
 
-type Task = NonNullable<
-  Q["response"]["submissionExerciseForLecturer"]
->["tasks"][number];
+type Task = NonNullable<Q["response"]["submissionExerciseForLecturer"]>["tasks"][number];
+
+function SkillLevelsChips({
+  levels,
+}: {
+  levels: NonNullable<NonNullable<Task["item"]>["associatedSkills"][number]["skillLevels"]>;
+}) {
+  const compact = [
+    { k: "R", v: levels.remember?.value },
+    { k: "U", v: levels.understand?.value },
+    { k: "A", v: levels.apply?.value },
+    { k: "An", v: levels.analyze?.value },
+    { k: "E", v: levels.evaluate?.value },
+    { k: "C", v: levels.create?.value },
+  ];
+  return (
+    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+      {compact.map(({ k, v }) => (
+        <Chip key={k} size="small" label={`${k}:${v ?? 0}`} variant="outlined" />
+      ))}
+    </Stack>
+  );
+}
+
+function TaskCard({ task, onEdit, onDelete }: {
+  task: Task;
+  onEdit: (t: Task) => void;
+  onDelete: (id: string) => void;
+}) {
+  const bloom = task.item?.associatedBloomLevels ?? [];
+  const skills = task.item?.associatedSkills ?? [];
+
+  return (
+    <Card sx={{ borderRadius: 3, boxShadow: 2 }}>
+      <CardHeader
+        title={
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="h6">{task.number}. {task.name}</Typography>
+            <Chip size="small" label={`Max: ${task.maxScore}`} />
+          </Stack>
+        }
+        action={
+          <Stack direction="row" spacing={1}>
+            <Tooltip title="Aufgabe bearbeiten">
+              <IconButton onClick={() => onEdit(task)} aria-label="edit-task">
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Aufgabe löschen">
+              <IconButton onClick={() => onDelete(task.itemId)} aria-label="delete-task">
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        }
+      />
+      <CardContent>
+        <Stack spacing={2}>
+          {/* Bloom Levels */}
+          <Box>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+              <PsychologyIcon fontSize="small" />
+              <Typography variant="subtitle2">Bloom Levels</Typography>
+            </Stack>
+            {bloom.length ? (
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                {bloom.map((b) => (
+                  <Chip key={b} label={b} size="small" variant="outlined" />
+                ))}
+              </Stack>
+            ) : (
+              <Typography variant="body2" color="text.secondary">Keine Bloom Levels hinterlegt.</Typography>
+            )}
+          </Box>
+
+          <Divider />
+
+          {/* Skills */}
+          <Box>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+              <SchoolIcon fontSize="small" />
+              <Typography variant="subtitle2">Skills</Typography>
+            </Stack>
+            {skills.length ? (
+              <Stack spacing={1.5}>
+                {skills.map((s) => (
+                  <Paper key={s.id} variant="outlined" sx={{ p: 1.25, borderRadius: 2 }}>
+                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems={{ sm: "center" }} justifyContent="space-between">
+                      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                        <Chip size="small" label={s.skillName} />
+                        <Chip size="small" variant="outlined" label={s.skillCategory} />
+                        {s.isCustomSkill ? <Chip size="small" variant="outlined" label="Custom" /> : null}
+                      </Stack>
+                      {s.skillLevels ? <SkillLevelsChips levels={s.skillLevels} /> : null}
+                    </Stack>
+                  </Paper>
+                ))}
+              </Stack>
+            ) : (
+              <Typography variant="body2" color="text.secondary">Keine Skills hinterlegt.</Typography>
+            )}
+          </Box>
+        </Stack>
+      </CardContent>
+      <CardActions sx={{ justifyContent: "flex-end" }}>
+        <Button size="small" startIcon={<EditIcon />} onClick={() => onEdit(task)}>Bearbeiten</Button>
+        <Button size="small" color="error" startIcon={<DeleteIcon />} onClick={() => onDelete(task.itemId)}>Löschen</Button>
+      </CardActions>
+    </Card>
+  );
+}
 
 export default function LecturerSubmission() {
   const { submissionId, courseId } = useParams();
   const [error, setError] = useState<ES2022Error | null>(null);
   const errorContext = useMemo(() => ({ error, setError }), [error, setError]);
-  const [fetchKey, setFetchKey] = useState(0); // neu
+  const [fetchKey, setFetchKey] = useState(0);
   const [isUploadOpen, setUploadOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -185,44 +300,27 @@ export default function LecturerSubmission() {
   const { submissionExerciseForLecturer } =
     useLazyLoadQuery<lecturerSubmissionExerciseForLecturerQuery>(
       GetSubmission,
-      {
-        assessmentId: submissionId,
-      },
-      {
-        fetchKey,
-        fetchPolicy: "network-only",
-      }
+      { assessmentId: submissionId },
+      { fetchKey, fetchPolicy: "network-only" }
     );
 
   const content = contentsByIds[0];
 
-  console.log(content, "CONTENT");
-  console.log(
-    submissionExerciseForLecturer,
-    "SSSSSSSSSUUUUUUUUUUUUUUUUBBBBBBBBBB"
-  );
-
   const extendedContent = {
     ...content,
     endDate: submissionExerciseForLecturer.endDate,
-  };
+  } as const;
 
-  const [commitDeleteTask, isDeleteInFlight] =
-    useMutation<lecturerRemoveTaskMutation>(LectruerDeleteTaskMutation);
+  const [commitDeleteTask] = useMutation<lecturerRemoveTaskMutation>(LectruerDeleteTaskMutation);
 
   function deleteTask(itemId: string) {
     const assessmentId = String(submissionId);
 
     if (!assessmentId || !itemId) return;
-    if (
-      !confirm("Do you really want to delete this task? This can't be undone.")
-    )
-      return;
+    if (!confirm("Do you really want to delete this task? This can't be undone.")) return;
 
     commitDeleteTask({
       variables: { assessmentId, itemId },
-
-      // Server-Response in den Store mergen
       updater: (store) => {
         const payload = store.getRootField("mutateSubmission");
         const removed = payload?.getLinkedRecord("removeTask");
@@ -231,23 +329,15 @@ export default function LecturerSubmission() {
         const newTasks = removed.getLinkedRecords("tasks") ?? [];
         const current = store
           .getRoot()
-          .getLinkedRecord("submissionExerciseForLecturer", {
-            assessmentId,
-          });
+          .getLinkedRecord("submissionExerciseForLecturer", { assessmentId });
         if (!current) return;
 
         current.setLinkedRecords(newTasks, "tasks");
       },
-
-      onCompleted: () => {
-        // falls der Updater nicht greift (z.B. andere Store-Pfade), hart refetchen:
-        setFetchKey((k) => k + 1);
-      },
-
+      onCompleted: () => setFetchKey((k) => k + 1),
       onError: (e: any) => {
         console.error("DeleteTask error:", e);
         alert("Deleting the task failed. Please try again.");
-        // optional: bei Fehler den Optimistic-Change rückgängig machen -> via Refetch:
         setFetchKey((k) => k + 1);
       },
     });
@@ -258,12 +348,10 @@ export default function LecturerSubmission() {
     const f = e.target.files?.[0] ?? null;
     if (!f) return setSelectedFile(null);
 
-    // simple guards
     if (f.type !== "application/pdf") {
       setUploadError("Bitte eine PDF-Datei wählen.");
       return setSelectedFile(null);
     }
-    // optional: 25MB Limit
     if (f.size > 25 * 1024 * 1024) {
       setUploadError("Datei ist größer als 25 MB.");
       return setSelectedFile(null);
@@ -272,7 +360,6 @@ export default function LecturerSubmission() {
   }
 
   async function doUpload(assessmentId: string, file: File, uploadUrl: string) {
-    // Viele Presigned-URLs erwarten Content-Type gesetzt
     const res = await fetch(uploadUrl, {
       method: "PUT",
       headers: { "Content-Type": file.type || "application/pdf" },
@@ -322,13 +409,9 @@ export default function LecturerSubmission() {
 
   if (!(content.metadata.type === "SUBMISSION")) {
     return (
-      <PageError
-        title={content.metadata.name}
-        message="Content not of type submission."
-      />
+      <PageError title={content.metadata.name} message="Content not of type submission." />
     );
   }
-  console.log(isAddOpen);
 
   return (
     <>
@@ -337,84 +420,52 @@ export default function LecturerSubmission() {
         content={extendedContent}
       />
 
+      {/* Actions Row */}
+      <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ mb: 2 }}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setIsAddOpen(true)}>
+          Task hinzufügen
+        </Button>
+        <Button variant="outlined" startIcon={<UploadFileIcon />} onClick={() => setUploadOpen(true)}>
+          Datei hochladen
+        </Button>
+      </Stack>
+
+      {/* Files */}
+      {submissionExerciseForLecturer.files.length > 0 ? (
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>Dateien</Typography>
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+            {submissionExerciseForLecturer.files.map((f) => (
+              <Chip
+                key={f.id}
+                icon={<InsertDriveFileIcon />}
+                label={f.name}
+                component="a"
+                href={f.downloadUrl ?? "#"}
+                clickable
+                variant="outlined"
+              />
+            ))}
+          </Stack>
+        </Box>
+      ) : null}
+
+      {/* Tasks Grid */}
       {submissionExerciseForLecturer?.tasks?.length ? (
-        submissionExerciseForLecturer.tasks.map((taskItem) => (
-          <div key={taskItem.itemId} className="mb-3">
-            <Typography variant="h6">{taskItem.name}</Typography>
-            <Typography variant="body2">
-              Max Score: {taskItem.maxScore}
-            </Typography>
-            <Typography>Number: {taskItem.number}</Typography>
-
-            <Typography>
-              <strong>BLOOM LEVELS</strong>
-            </Typography>
-            {/* Beispiel: ein paar Details aus item */}
-            {taskItem.item?.associatedBloomLevels.length ? (
-              <ul>
-                {taskItem.item.associatedBloomLevels.map((s) => (
-                  <li key={s}>
-                    <Typography variant="caption">{s}</Typography>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-
-            <Typography>
-              <strong>SKILLS LEVELS</strong>
-            </Typography>
-            {/* Beispiel: ein paar Details aus item */}
-            {taskItem.item?.associatedSkills.length ? (
-              <ul>
-                {taskItem.item.associatedSkills.map((s) => (
-                  <li key={s.id}>
-                    <Typography variant="caption">{s.skillName}</Typography>
-                    <Typography>
-                      {s.skillCategory}, {s.isCustomSkill}, SKILL LEVELS:{" "}
-                      {s.skillLevels?.analyze?.value},{" "}
-                      {s.skillLevels?.apply?.value},{" "}
-                      {s.skillLevels?.understand?.value},{" "}
-                      {s.skillLevels?.remember?.value}{" "}
-                      {s.skillLevels?.create?.value},
-                    </Typography>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-            <Button
-              variant="outlined"
-              onClick={() => {
-                setIsEditTaskOpen(true);
-                setSelectedTask(taskItem);
-              }}
-            >
-              Edit Task
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={() => {
-                deleteTask(taskItem.itemId);
-              }}
-            >
-              Delete Task
-            </Button>
-          </div>
-        ))
+        <Grid container spacing={2}>
+          {submissionExerciseForLecturer.tasks.map((taskItem) => (
+            <Grid item xs={12} key={taskItem.itemId}>
+              <TaskCard
+                task={taskItem}
+                onEdit={(t) => { setIsEditTaskOpen(true); setSelectedTask(t); }}
+                onDelete={(id) => deleteTask(id)}
+              />
+            </Grid>
+          ))}
+        </Grid>
       ) : (
-        <Typography variant="body2" color="text.secondary">
-          No tasks found.
-        </Typography>
+        <Typography variant="body2" color="text.secondary">No tasks found.</Typography>
       )}
-
-      <Button variant="outlined" onClick={() => setIsAddOpen(true)}>
-        Add task
-      </Button>
-
-      {submissionExerciseForLecturer.files.length > 0 && (<Typography>{submissionExerciseForLecturer.files[0].name}</Typography>)}
-
-      <Button variant="outlined" onClick={() => setUploadOpen(true)}>
-        Upload file
-      </Button>
 
       <SubmissionExerciseModal
         onClose={() => setEditSetModalOpen(false)}
@@ -443,6 +494,7 @@ export default function LecturerSubmission() {
         />
       ) : null}
 
+      {/* Upload Dialog */}
       <Dialog
         open={isUploadOpen}
         onClose={() => {
@@ -457,7 +509,7 @@ export default function LecturerSubmission() {
       >
         <DialogTitle>PDF hochladen</DialogTitle>
         <DialogContent>
-          <div className="flex flex-col gap-3">
+          <Stack spacing={2}>
             <input
               type="file"
               accept=".pdf,application/pdf"
@@ -466,16 +518,13 @@ export default function LecturerSubmission() {
             />
             {selectedFile ? (
               <Typography variant="body2">
-                Datei: <strong>{selectedFile.name}</strong> (
-                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                Datei: <strong>{selectedFile.name}</strong> ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
               </Typography>
             ) : null}
             {uploadError ? (
-              <Typography variant="body2" color="error">
-                {uploadError}
-              </Typography>
+              <Typography variant="body2" color="error">{uploadError}</Typography>
             ) : null}
-          </div>
+          </Stack>
         </DialogContent>
         <DialogActions>
           <Button
