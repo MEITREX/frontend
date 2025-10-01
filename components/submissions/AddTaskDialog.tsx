@@ -92,55 +92,92 @@ export default function AddTaskDialog({
   }, [courseId, loadQuery, queryReference]);
 
   const onSubmit = useCallback(() => {
-    const itemInput = {
-      // NUTZE itemName!
-      associatedSkills: item.associatedSkills,
-      associatedBloomLevels: item.associatedBloomLevels,
-    };
+    // 1) Typen aus der Mutation holen – das schützt dich vor falschen Shapes
+    type Vars = AddTaskDialogLecturerAddTaskMutation["variables"];
+    type CreateSkillVar = Vars["item"]["associatedSkills"][number];
 
-    const submissionInput = {
-      name: taskName,
-      number: number,
-      maxScore: maxScore,
+    // 2) Mapper: Skill aus der UI/Query -> CreateSkillInput (ohne id/skillLevels)
+    const toCreateSkill = (
+      s: any // kommt aus ItemFormSection; kann Skill aus Query sein
+    ): CreateSkillVar => ({
+      skillCategory: s.skillCategory,
+      skillName: s.skillName,
+      // optional: nur setzen, wenn vorhanden
+      ...(typeof s.isCustomSkill === "boolean"
+        ? { isCustomSkill: s.isCustomSkill }
+        : {}),
+    });
+
+    // 3) Validierung/Normalisierung
+    const name = taskName.trim();
+    const num = Math.trunc(Number.isFinite(number as any) ? Number(number) : 0);
+    const max = Math.trunc(
+      Number.isFinite(maxScore as any) ? Number(maxScore) : 0
+    );
+
+    if (!name) {
+      alert("Bitte einen Task-Namen angeben.");
+      return;
+    }
+    if (!item.associatedBloomLevels?.length) {
+      alert("Bitte mindestens ein Bloom Level auswählen.");
+      return;
+    }
+    if (!item.associatedSkills?.length) {
+      alert("Bitte mindestens eine Skill auswählen.");
+      return;
+    }
+
+    const vars: Vars = {
+      assessmentId: String(submissionId),
+      item: {
+        associatedBloomLevels: [...item.associatedBloomLevels],
+        associatedSkills: item.associatedSkills.map(toCreateSkill), // <-- skillLevels & id werden verworfen
+      },
+      submissionInput: {
+        name,
+        number: num,
+        maxScore: max,
+      },
     };
 
     commitAddTask({
-      variables: {
-        assessmentId: String(submissionId),
-        item: itemInput,
-        submissionInput,
-      },
+      variables: vars,
       updater: (store) => {
-        // Payload der Mutation holen
         const mutateSubmission = store.getRootField("mutateSubmission");
         const addTask = mutateSubmission?.getLinkedRecord("addTask");
         if (!addTask) return;
 
-        // die neue Task-Liste aus dem Payload
         const newTasks = addTask.getLinkedRecords("tasks") ?? [];
 
-        // Das bestehende Query-Resultat finden:
-        // Wichtig: exakt die gleichen Argumente wie in der Query!
-        const root = store.getRoot();
-        const current = root.getLinkedRecord("submissionExerciseForLecturer", {
-          assessmentId: String(submissionId),
-        });
+        // exakt mit dem gleichen Argument wie in deiner Query
+        const current = store
+          .getRoot()
+          .getLinkedRecord("submissionExerciseForLecturer", {
+            assessmentId: String(submissionId),
+          });
         if (!current) return;
 
-        // Tasks im bestehenden Record ersetzen (oder alternativ anhängen)
         current.setLinkedRecords(newTasks, "tasks");
       },
       onCompleted: () => {
-        setIsAddOpen(false); // Add-Dialog schließen
-        onAdded?.(); // falls du noch etwas lokales tun willst (ohne Refetch!)
+        setIsAddOpen(false);
+        onAdded?.();
       },
-      onError: (e) => console.log(e),
+      onError: (e) => {
+        console.error("AddTask error:", e);
+        const gqlErrors = (e as any)?.source?.errors ?? (e as any)?.errors;
+        if (gqlErrors) console.error("GraphQL errors:", gqlErrors);
+      },
     });
   }, [
     commitAddTask,
     submissionId,
-    taskName, // neu
-    maxScore, // neu
+    taskName,
+    number,
+    maxScore,
+    item.associatedBloomLevels,
+    item.associatedSkills,
     setIsAddOpen,
     onAdded,
   ]);

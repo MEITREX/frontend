@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { useParams } from "next/navigation";
 import * as React from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { graphql, useMutation, useQueryLoader } from "react-relay";
 import ItemFormSection, {
   CreateItem,
@@ -86,10 +86,16 @@ export default function AddTaskDialog({
     useMutation<EditTaskDialogLecturerEditTaskMutation>(
       LecturerUpdateTaskMutation
     );
-  const [item, setItem] = useState<CreateItem>({
-    associatedSkills: [...taskProp.item.associatedSkills],
+  const [item, setItem] = useState<CreateItem>(() => ({
+    associatedSkills: taskProp.item.associatedSkills.map(
+      ({ skillCategory, skillName, isCustomSkill }) => ({
+        skillCategory,
+        skillName,
+        isCustomSkill,
+      })
+    ),
     associatedBloomLevels: [...taskProp.item.associatedBloomLevels],
-  });
+  }));
 
   const [queryReference, loadQuery] =
     useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
@@ -100,10 +106,16 @@ export default function AddTaskDialog({
     }
   }, [courseId, loadQuery, queryReference]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!taskProp?.item) return;
     setItem({
-      associatedSkills: [...taskProp.item.associatedSkills],
+      associatedSkills: taskProp.item.associatedSkills.map(
+        ({ skillCategory, skillName, isCustomSkill }) => ({
+          skillCategory,
+          skillName,
+          isCustomSkill,
+        })
+      ),
       associatedBloomLevels: [...taskProp.item.associatedBloomLevels],
     });
     setTaskName(taskProp.name);
@@ -111,26 +123,34 @@ export default function AddTaskDialog({
   }, [taskProp]);
 
   const onSubmit = useCallback(() => {
-    const itemInput = {
-      // NUTZE itemName!
-      id: taskProp.item.id,
-      associatedSkills: item.associatedSkills,
-      associatedBloomLevels: item.associatedBloomLevels,
-    };
+    type Vars = EditTaskDialogLecturerEditTaskMutation["variables"];
+    type SkillInputVar = Vars["item"]["associatedSkills"][number];
+    type SkillState = CreateItem["associatedSkills"][number];
 
-    const submissionInput = {
-      itemId: taskProp.itemId,
-      name: taskName,
-      number: number,
-      maxScore: maxScore,
+    const toSkillInput = (s: SkillState): SkillInputVar => ({
+      isCustomSkill: !!s.isCustomSkill,
+      skillCategory: s.skillCategory,
+      skillName: s.skillName,
+    });
+
+    const vars: Vars = {
+      assessmentId: String(submissionId),
+      item: {
+        id: taskProp.item.id,
+        associatedBloomLevels: [...item.associatedBloomLevels],
+        // ⬇️ skillLevels wird hier bewusst NICHT übernommen
+        associatedSkills: item.associatedSkills.map(toSkillInput),
+      },
+      submissionInput: {
+        itemId: taskProp.itemId,
+        name: taskName,
+        number: number,
+        maxScore: maxScore,
+      },
     };
 
     commitAddTask({
-      variables: {
-        assessmentId: String(submissionId),
-        item: itemInput,
-        submissionInput,
-      },
+      variables: vars,
       updater: (store) => {
         // Payload der Mutation holen
         const mutateSubmission = store.getRootField("mutateSubmission");
@@ -162,10 +182,13 @@ export default function AddTaskDialog({
     commitAddTask,
     submissionId,
     item,
-    taskName, // neu
-    maxScore, // neu
+    taskName,
+    number,
+    maxScore,
     setIsAddOpen,
     onAdded,
+    taskProp.item.id,
+    taskProp.itemId,
   ]);
 
   console.log(submissionId);
@@ -193,12 +216,12 @@ export default function AddTaskDialog({
           />
 
           <TextField
-                      label="Task number"
-                      value={number}
-                      onChange={(e) => setNumber(Number(e.target.value))}
-                      fullWidth
-                      required
-                    />
+            label="Task number"
+            value={number}
+            onChange={(e) => setNumber(Number(e.target.value))}
+            fullWidth
+            required
+          />
 
           <TextField
             label="Max Score (InputTask.maxScore)"

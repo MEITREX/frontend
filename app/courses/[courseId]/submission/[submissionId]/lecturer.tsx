@@ -1,5 +1,6 @@
 "use client";
 
+import { lecturerCreateExerciseFileMutation } from "@/__generated__/lecturerCreateExerciseFileMutation.graphql";
 import { lecturerEditSubmissionQuery } from "@/__generated__/lecturerEditSubmissionQuery.graphql";
 import { lecturerRemoveTaskMutation } from "@/__generated__/lecturerRemoveTaskMutation.graphql";
 import type { lecturerSubmissionExerciseForLecturerQuery as Q } from "@/__generated__/lecturerSubmissionExerciseForLecturerQuery.graphql";
@@ -10,7 +11,14 @@ import { SubmissionExerciseModal } from "@/components/SubmissionExerciseModal";
 import AddTaskDialog from "@/components/submissions/AddTaskDialog";
 import EditTaskDialog from "@/components/submissions/EditTaskDialog";
 import SubmissionsHeader from "@/components/submissions/SubmissionsHeader";
-import { Button, Typography } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
+} from "@mui/material";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
@@ -129,7 +137,20 @@ const LectruerDeleteTaskMutation = graphql`
       }
     }
   }
+`;
 
+const CreateExerciseFileMutation = graphql`
+  mutation lecturerCreateExerciseFileMutation(
+    $assessmentId: UUID!
+    $name: String!
+  ) {
+    createExerciseFile(assessmentId: $assessmentId, name: $name) {
+      id
+      name
+      uploadUrl
+      downloadUrl
+    }
+  }
 `;
 
 type Task = NonNullable<
@@ -141,6 +162,13 @@ export default function LecturerSubmission() {
   const [error, setError] = useState<ES2022Error | null>(null);
   const errorContext = useMemo(() => ({ error, setError }), [error, setError]);
   const [fetchKey, setFetchKey] = useState(0); // neu
+  const [isUploadOpen, setUploadOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const [commitCreateFile, isCreateInFlight] =
+    useMutation<lecturerCreateExerciseFileMutation>(CreateExerciseFileMutation);
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditTaskOpen, setIsEditTaskOpen] = useState(false);
@@ -180,45 +208,117 @@ export default function LecturerSubmission() {
   };
 
   const [commitDeleteTask, isDeleteInFlight] =
-  useMutation<lecturerRemoveTaskMutation>(LectruerDeleteTaskMutation);
+    useMutation<lecturerRemoveTaskMutation>(LectruerDeleteTaskMutation);
 
-function deleteTask(itemId: string) {
-  const assessmentId = String(submissionId);
+  function deleteTask(itemId: string) {
+    const assessmentId = String(submissionId);
 
-  if (!assessmentId || !itemId) return;
-  if (!confirm("Do you really want to delete this task? This can't be undone.")) return;
+    if (!assessmentId || !itemId) return;
+    if (
+      !confirm("Do you really want to delete this task? This can't be undone.")
+    )
+      return;
 
-  commitDeleteTask({
-    variables: { assessmentId, itemId },
+    commitDeleteTask({
+      variables: { assessmentId, itemId },
 
-    // Server-Response in den Store mergen
-    updater: (store) => {
-      const payload = store.getRootField("mutateSubmission");
-      const removed = payload?.getLinkedRecord("removeTask");
-      if (!removed) return;
+      // Server-Response in den Store mergen
+      updater: (store) => {
+        const payload = store.getRootField("mutateSubmission");
+        const removed = payload?.getLinkedRecord("removeTask");
+        if (!removed) return;
 
-      const newTasks = removed.getLinkedRecords("tasks") ?? [];
-      const current = store.getRoot().getLinkedRecord("submissionExerciseForLecturer", {
-        assessmentId,
-      });
-      if (!current) return;
+        const newTasks = removed.getLinkedRecords("tasks") ?? [];
+        const current = store
+          .getRoot()
+          .getLinkedRecord("submissionExerciseForLecturer", {
+            assessmentId,
+          });
+        if (!current) return;
 
-      current.setLinkedRecords(newTasks, "tasks");
-    },
+        current.setLinkedRecords(newTasks, "tasks");
+      },
 
-    onCompleted: () => {
-      // falls der Updater nicht greift (z.B. andere Store-Pfade), hart refetchen:
-      setFetchKey((k) => k + 1);
-    },
+      onCompleted: () => {
+        // falls der Updater nicht greift (z.B. andere Store-Pfade), hart refetchen:
+        setFetchKey((k) => k + 1);
+      },
 
-    onError: (e: any) => {
-      console.error("DeleteTask error:", e);
-      alert("Deleting the task failed. Please try again.");
-      // optional: bei Fehler den Optimistic-Change rückgängig machen -> via Refetch:
-      setFetchKey((k) => k + 1);
-    },
-  });
-}
+      onError: (e: any) => {
+        console.error("DeleteTask error:", e);
+        alert("Deleting the task failed. Please try again.");
+        // optional: bei Fehler den Optimistic-Change rückgängig machen -> via Refetch:
+        setFetchKey((k) => k + 1);
+      },
+    });
+  }
+
+  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setUploadError(null);
+    const f = e.target.files?.[0] ?? null;
+    if (!f) return setSelectedFile(null);
+
+    // simple guards
+    if (f.type !== "application/pdf") {
+      setUploadError("Bitte eine PDF-Datei wählen.");
+      return setSelectedFile(null);
+    }
+    // optional: 25MB Limit
+    if (f.size > 25 * 1024 * 1024) {
+      setUploadError("Datei ist größer als 25 MB.");
+      return setSelectedFile(null);
+    }
+    setSelectedFile(f);
+  }
+
+  async function doUpload(assessmentId: string, file: File, uploadUrl: string) {
+    // Viele Presigned-URLs erwarten Content-Type gesetzt
+    const res = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": file.type || "application/pdf" },
+      body: file,
+    });
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      throw new Error(`Upload failed (${res.status}): ${txt}`);
+    }
+  }
+
+  function onSubmitUpload() {
+    setUploadError(null);
+    const assessmentId = String(submissionId);
+    if (!selectedFile) {
+      setUploadError("Bitte zuerst eine PDF-Datei auswählen.");
+      return;
+    }
+
+    commitCreateFile({
+      variables: { assessmentId, name: selectedFile!.name },
+      onCompleted: (payload) => {
+        const file = payload?.createExerciseFile;
+        if (!file?.uploadUrl || !selectedFile) {
+          setUploadError("Upload-URL oder Datei fehlt.");
+          return;
+        }
+        setUploading(true);
+        doUpload(String(submissionId), selectedFile, file.uploadUrl)
+          .then(() => {
+            setUploading(false);
+            setUploadOpen(false);
+            setSelectedFile(null);
+            setFetchKey((k) => k + 1);
+          })
+          .catch((err) => {
+            setUploading(false);
+            setUploadError(err?.message ?? "Upload fehlgeschlagen.");
+          });
+      },
+      onError: (e) => {
+        console.error(e);
+        setUploadError("Erstellen des Datei-Eintrags fehlgeschlagen.");
+      },
+    });
+  }
 
   if (!(content.metadata.type === "SUBMISSION")) {
     return (
@@ -244,7 +344,7 @@ function deleteTask(itemId: string) {
             <Typography variant="body2">
               Max Score: {taskItem.maxScore}
             </Typography>
-            <Typography>Number: </Typography>
+            <Typography>Number: {taskItem.number}</Typography>
 
             <Typography>
               <strong>BLOOM LEVELS</strong>
@@ -290,10 +390,12 @@ function deleteTask(itemId: string) {
             >
               Edit Task
             </Button>
-            <Button variant="outlined" onClick={() => {
-
+            <Button
+              variant="outlined"
+              onClick={() => {
                 deleteTask(taskItem.itemId);
-              }}>
+              }}
+            >
               Delete Task
             </Button>
           </div>
@@ -306,6 +408,12 @@ function deleteTask(itemId: string) {
 
       <Button variant="outlined" onClick={() => setIsAddOpen(true)}>
         Add task
+      </Button>
+
+      <Typography>{submissionExerciseForLecturer.files[0].name}</Typography>
+
+      <Button variant="outlined" onClick={() => setUploadOpen(true)}>
+        Upload file
       </Button>
 
       <SubmissionExerciseModal
@@ -333,6 +441,61 @@ function deleteTask(itemId: string) {
           taskProp={selectedTask}
         />
       ) : null}
+
+      <Dialog
+        open={isUploadOpen}
+        onClose={() => {
+          if (!uploading && !isCreateInFlight) {
+            setUploadOpen(false);
+            setSelectedFile(null);
+            setUploadError(null);
+          }
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>PDF hochladen</DialogTitle>
+        <DialogContent>
+          <div className="flex flex-col gap-3">
+            <input
+              type="file"
+              accept=".pdf,application/pdf"
+              onChange={onFileChange}
+              disabled={isCreateInFlight || uploading}
+            />
+            {selectedFile ? (
+              <Typography variant="body2">
+                Datei: <strong>{selectedFile.name}</strong> (
+                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+              </Typography>
+            ) : null}
+            {uploadError ? (
+              <Typography variant="body2" color="error">
+                {uploadError}
+              </Typography>
+            ) : null}
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setUploadOpen(false);
+              setSelectedFile(null);
+              setUploadError(null);
+            }}
+            disabled={isCreateInFlight || uploading}
+          >
+            Abbrechen
+          </Button>
+          <Button
+            variant="contained"
+            onClick={onSubmitUpload}
+            disabled={!selectedFile || isCreateInFlight || uploading}
+          >
+            {uploading ? "Lade hoch..." : "Hochladen"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
