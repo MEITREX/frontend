@@ -110,12 +110,24 @@ const GetSubmission = graphql`
             isCustomSkill
             skillCategory
             skillLevels {
-              analyze { value }
-              apply { value }
-              create { value }
-              evaluate { value }
-              remember { value }
-              understand { value }
+              analyze {
+                value
+              }
+              apply {
+                value
+              }
+              create {
+                value
+              }
+              evaluate {
+                value
+              }
+              remember {
+                value
+              }
+              understand {
+                value
+              }
             }
             skillName
           }
@@ -160,12 +172,16 @@ const CreateExerciseFileMutation = graphql`
   }
 `;
 
-type Task = NonNullable<Q["response"]["submissionExerciseForLecturer"]>["tasks"][number];
+type Task = NonNullable<
+  Q["response"]["submissionExerciseForLecturer"]
+>["tasks"][number];
 
 function SkillLevelsChips({
   levels,
 }: {
-  levels: NonNullable<NonNullable<Task["item"]>["associatedSkills"][number]["skillLevels"]>;
+  levels: NonNullable<
+    NonNullable<Task["item"]>["associatedSkills"][number]["skillLevels"]
+  >;
 }) {
   const compact = [
     { k: "R", v: levels.remember?.value },
@@ -178,13 +194,22 @@ function SkillLevelsChips({
   return (
     <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
       {compact.map(({ k, v }) => (
-        <Chip key={k} size="small" label={`${k}:${v ?? 0}`} variant="outlined" />
+        <Chip
+          key={k}
+          size="small"
+          label={`${k}:${v ?? 0}`}
+          variant="outlined"
+        />
       ))}
     </Stack>
   );
 }
 
-function TaskCard({ task, onEdit, onDelete }: {
+function TaskCard({
+  task,
+  onEdit,
+  onDelete,
+}: {
   task: Task;
   onEdit: (t: Task) => void;
   onDelete: (id: string) => void;
@@ -197,7 +222,9 @@ function TaskCard({ task, onEdit, onDelete }: {
       <CardHeader
         title={
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="h6">{task.number}. {task.name}</Typography>
+            <Typography variant="h6">
+              {task.number}. {task.name}
+            </Typography>
             <Chip size="small" label={`Max: ${task.maxScore}`} />
           </Stack>
         }
@@ -209,7 +236,10 @@ function TaskCard({ task, onEdit, onDelete }: {
               </IconButton>
             </Tooltip>
             <Tooltip title="Aufgabe löschen">
-              <IconButton onClick={() => onDelete(task.itemId)} aria-label="delete-task">
+              <IconButton
+                onClick={() => onDelete(task.itemId)}
+                aria-label="delete-task"
+              >
                 <DeleteIcon />
               </IconButton>
             </Tooltip>
@@ -220,7 +250,12 @@ function TaskCard({ task, onEdit, onDelete }: {
         <Stack spacing={2}>
           {/* Bloom Levels */}
           <Box>
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              sx={{ mb: 1 }}
+            >
               <PsychologyIcon fontSize="small" />
               <Typography variant="subtitle2">Bloom Levels</Typography>
             </Stack>
@@ -231,7 +266,9 @@ function TaskCard({ task, onEdit, onDelete }: {
                 ))}
               </Stack>
             ) : (
-              <Typography variant="body2" color="text.secondary">Keine Bloom Levels hinterlegt.</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Keine Bloom Levels hinterlegt.
+              </Typography>
             )}
           </Box>
 
@@ -239,34 +276,81 @@ function TaskCard({ task, onEdit, onDelete }: {
 
           {/* Skills */}
           <Box>
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              sx={{ mb: 1 }}
+            >
               <SchoolIcon fontSize="small" />
               <Typography variant="subtitle2">Skills</Typography>
             </Stack>
             {skills.length ? (
               <Stack spacing={1.5}>
                 {skills.map((s) => (
-                  <Paper key={s.id} variant="outlined" sx={{ p: 1.25, borderRadius: 2 }}>
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems={{ sm: "center" }} justifyContent="space-between">
-                      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                  <Paper
+                    key={s.id}
+                    variant="outlined"
+                    sx={{ p: 1.25, borderRadius: 2 }}
+                  >
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      spacing={1.5}
+                      alignItems={{ sm: "center" }}
+                      justifyContent="space-between"
+                    >
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                        flexWrap="wrap"
+                        useFlexGap
+                      >
                         <Chip size="small" label={s.skillName} />
-                        <Chip size="small" variant="outlined" label={s.skillCategory} />
-                        {s.isCustomSkill ? <Chip size="small" variant="outlined" label="Custom" /> : null}
+                        <Chip
+                          size="small"
+                          variant="outlined"
+                          label={s.skillCategory}
+                        />
+                        {s.isCustomSkill ? (
+                          <Chip
+                            size="small"
+                            variant="outlined"
+                            label="Custom"
+                          />
+                        ) : null}
                       </Stack>
-                      {s.skillLevels ? <SkillLevelsChips levels={s.skillLevels} /> : null}
+                      {s.skillLevels ? (
+                        <SkillLevelsChips levels={s.skillLevels} />
+                      ) : null}
                     </Stack>
                   </Paper>
                 ))}
               </Stack>
             ) : (
-              <Typography variant="body2" color="text.secondary">Keine Skills hinterlegt.</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Keine Skills hinterlegt.
+              </Typography>
             )}
           </Box>
         </Stack>
       </CardContent>
       <CardActions sx={{ justifyContent: "flex-end" }}>
-        <Button size="small" startIcon={<EditIcon />} onClick={() => onEdit(task)}>Bearbeiten</Button>
-        <Button size="small" color="error" startIcon={<DeleteIcon />} onClick={() => onDelete(task.itemId)}>Löschen</Button>
+        <Button
+          size="small"
+          startIcon={<EditIcon />}
+          onClick={() => onEdit(task)}
+        >
+          Bearbeiten
+        </Button>
+        <Button
+          size="small"
+          color="error"
+          startIcon={<DeleteIcon />}
+          onClick={() => onDelete(task.itemId)}
+        >
+          Löschen
+        </Button>
       </CardActions>
     </Card>
   );
@@ -311,13 +395,19 @@ export default function LecturerSubmission() {
     endDate: submissionExerciseForLecturer.endDate,
   } as const;
 
-  const [commitDeleteTask] = useMutation<lecturerRemoveTaskMutation>(LectruerDeleteTaskMutation);
+  const [commitDeleteTask] = useMutation<lecturerRemoveTaskMutation>(
+    LectruerDeleteTaskMutation
+  );
 
+  // Function for deleting tasks
   function deleteTask(itemId: string) {
     const assessmentId = String(submissionId);
 
     if (!assessmentId || !itemId) return;
-    if (!confirm("Do you really want to delete this task? This can't be undone.")) return;
+    if (
+      !confirm("Do you really want to delete this task? This can't be undone.")
+    )
+      return;
 
     commitDeleteTask({
       variables: { assessmentId, itemId },
@@ -359,6 +449,7 @@ export default function LecturerSubmission() {
     setSelectedFile(f);
   }
 
+  // Upload file to upload endpoint
   async function doUpload(assessmentId: string, file: File, uploadUrl: string) {
     const res = await fetch(uploadUrl, {
       method: "PUT",
@@ -371,6 +462,7 @@ export default function LecturerSubmission() {
     }
   }
 
+  // File Upload function
   function onSubmitUpload() {
     setUploadError(null);
     const assessmentId = String(submissionId);
@@ -407,9 +499,30 @@ export default function LecturerSubmission() {
     });
   }
 
+  // sort tasks alphabetically / numerically by name
+  const sortedTasks = [...(submissionExerciseForLecturer?.tasks ?? [])].sort(
+    (a, b) => {
+      const extractNum = (str: string) => {
+        const match = str.match(/(\d+)/);
+        return match ? parseInt(match[1], 10) : Infinity;
+      };
+      const nameA = a.name.toLowerCase();
+      const nameB = b.name.toLowerCase();
+      const numA = extractNum(nameA);
+      const numB = extractNum(nameB);
+      if (numA !== Infinity || numB !== Infinity) {
+        return numA - numB;
+      }
+      return nameA.localeCompare(nameB);
+    }
+  );
+
   if (!(content.metadata.type === "SUBMISSION")) {
     return (
-      <PageError title={content.metadata.name} message="Content not of type submission." />
+      <PageError
+        title={content.metadata.name}
+        message="Content not of type submission."
+      />
     );
   }
 
@@ -420,20 +533,34 @@ export default function LecturerSubmission() {
         content={extendedContent}
       />
 
-      {/* Actions Row */}
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ mb: 2 }}>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setIsAddOpen(true)}>
+      {/* Actions Row for buttons */}
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={1.5}
+        sx={{ mb: 2, mt: 2 }}
+      >
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => setIsAddOpen(true)}
+        >
           Task hinzufügen
         </Button>
-        <Button variant="outlined" startIcon={<UploadFileIcon />} onClick={() => setUploadOpen(true)}>
+        <Button
+          variant="outlined"
+          startIcon={<UploadFileIcon />}
+          onClick={() => setUploadOpen(true)}
+        >
           Datei hochladen
         </Button>
       </Stack>
 
-      {/* Files */}
+      {/* Files display */}
       {submissionExerciseForLecturer.files.length > 0 ? (
         <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>Dateien</Typography>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            Dateien
+          </Typography>
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
             {submissionExerciseForLecturer.files.map((f) => (
               <Chip
@@ -451,20 +578,25 @@ export default function LecturerSubmission() {
       ) : null}
 
       {/* Tasks Grid */}
-      {submissionExerciseForLecturer?.tasks?.length ? (
+      {sortedTasks.length ? (
         <Grid container spacing={2}>
-          {submissionExerciseForLecturer.tasks.map((taskItem) => (
+          {sortedTasks.map((taskItem) => (
             <Grid item xs={12} key={taskItem.itemId}>
               <TaskCard
                 task={taskItem}
-                onEdit={(t) => { setIsEditTaskOpen(true); setSelectedTask(t); }}
+                onEdit={(t) => {
+                  setIsEditTaskOpen(true);
+                  setSelectedTask(t);
+                }}
                 onDelete={(id) => deleteTask(id)}
               />
             </Grid>
           ))}
         </Grid>
       ) : (
-        <Typography variant="body2" color="text.secondary">No tasks found.</Typography>
+        <Typography variant="body2" color="text.secondary">
+          No tasks found.
+        </Typography>
       )}
 
       <SubmissionExerciseModal
@@ -475,6 +607,7 @@ export default function LecturerSubmission() {
         tasks={submissionExerciseForLecturer.tasks}
       />
 
+      {/* Dialog for adding Tasks */}
       {isAddOpen ? (
         <AddTaskDialog
           open={isAddOpen}
@@ -484,6 +617,7 @@ export default function LecturerSubmission() {
         />
       ) : null}
 
+      {/* Edit singular Tasks */}
       {isEditTaskOpen && selectedTask ? (
         <EditTaskDialog
           open={isEditTaskOpen}
@@ -494,58 +628,63 @@ export default function LecturerSubmission() {
         />
       ) : null}
 
-      {/* Upload Dialog */}
-      <Dialog
-        open={isUploadOpen}
-        onClose={() => {
-          if (!uploading && !isCreateInFlight) {
-            setUploadOpen(false);
-            setSelectedFile(null);
-            setUploadError(null);
-          }
-        }}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>PDF hochladen</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2}>
-            <input
-              type="file"
-              accept=".pdf,application/pdf"
-              onChange={onFileChange}
-              disabled={isCreateInFlight || uploading}
-            />
-            {selectedFile ? (
-              <Typography variant="body2">
-                Datei: <strong>{selectedFile.name}</strong> ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-              </Typography>
-            ) : null}
-            {uploadError ? (
-              <Typography variant="body2" color="error">{uploadError}</Typography>
-            ) : null}
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
+      {/* Upload file Dialog */}
+      {isUploadOpen ? (
+        <Dialog
+          open={isUploadOpen}
+          onClose={() => {
+            if (!uploading && !isCreateInFlight) {
               setUploadOpen(false);
               setSelectedFile(null);
               setUploadError(null);
-            }}
-            disabled={isCreateInFlight || uploading}
-          >
-            Abbrechen
-          </Button>
-          <Button
-            variant="contained"
-            onClick={onSubmitUpload}
-            disabled={!selectedFile || isCreateInFlight || uploading}
-          >
-            {uploading ? "Lade hoch..." : "Hochladen"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+            }
+          }}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>PDF hochladen</DialogTitle>
+          <DialogContent>
+            <Stack spacing={2}>
+              <input
+                type="file"
+                accept=".pdf,application/pdf"
+                onChange={onFileChange}
+                disabled={isCreateInFlight || uploading}
+              />
+              {selectedFile ? (
+                <Typography variant="body2">
+                  Datei: <strong>{selectedFile.name}</strong> (
+                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                </Typography>
+              ) : null}
+              {uploadError ? (
+                <Typography variant="body2" color="error">
+                  {uploadError}
+                </Typography>
+              ) : null}
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => {
+                setUploadOpen(false);
+                setSelectedFile(null);
+                setUploadError(null);
+              }}
+              disabled={isCreateInFlight || uploading}
+            >
+              Abbrechen
+            </Button>
+            <Button
+              variant="contained"
+              onClick={onSubmitUpload}
+              disabled={!selectedFile || isCreateInFlight || uploading}
+            >
+              {uploading ? "Lade hoch..." : "Hochladen"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      ) : null}
     </>
   );
 }

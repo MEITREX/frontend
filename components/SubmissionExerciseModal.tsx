@@ -36,13 +36,13 @@ export function SubmissionExerciseModal({
   chapterId,
   isOpen,
   _existingSubmission,
-  tasks
+  tasks,
 }: {
   onClose: () => void;
   isOpen: boolean;
   chapterId: string;
   _existingSubmission: any;
-  tasks: any
+  tasks: any;
 }) {
   const [metadata, setMetadata] = useState<ContentMetadataPayload | null>(
     _existingSubmission ? _existingSubmission.metadata : null
@@ -83,8 +83,6 @@ export function SubmissionExerciseModal({
         $assessmentId: UUID!
         $input: InputSubmissionExercise!
       ) {
-
-
         mutateSubmission(assessmentId: $assessmentId) {
           mutateSubmission(assessmentId: $assessmentId, input: $input) {
             assessmentId
@@ -193,14 +191,14 @@ export function SubmissionExerciseModal({
         // items weglassen (optional)
       };
 
-      console.log(_existingSubmission.tasks, "TASKS")
+      console.log(_existingSubmission.tasks, "TASKS");
 
       edit({
         variables: {
           assessmentId: _existingSubmission!.id!,
           input: {
-            endDate: deadline.endDate ?? Date()
-          }
+            endDate: deadline.endDate ?? Date(),
+          },
         },
         onCompleted: () => {
           _onClose();
