@@ -8,15 +8,15 @@ import {
 import WidgetSettings from "@/components/widgets/common/WidgetSettings";
 import ForumActivityWidget from "@/components/widgets/components/forum/ForumActivityWidget";
 import ItemWidget from "@/components/widgets/components/item/ItemWidget";
+import LeaderboardWidget from "@/components/widgets/components/leaderboard/LeaderboardWidget";
 import LotteryWidget from "@/components/widgets/components/lottery/LotteryWidget";
 import OpenQuestionWidget from "@/components/widgets/components/question/OpenQuestionWidget";
 import TutorWidget from "@/components/widgets/components/tutor/TutorWidget";
+import XPWidget from "@/components/widgets/components/xpsystem/XPWidget";
 import { Box } from "@mui/material";
 import * as React from "react";
 import { useLazyLoadQuery } from "react-relay";
 import AchievementWidgetOverview from "./components/achievement/AchievementWidgetOverview";
-import XPWidget from "@/components/widgets/components/xpsystem/XPWidget";
-import LeaderboardWidget from "@/components/widgets/components/leaderboard/LeaderboardWidget";
 
 type Properties = {
   userId: string;
@@ -35,11 +35,11 @@ const mockedRecommendations: MockedRecommendation[] = [
     requestFeedback: false,
   },
   {
-    category: "CUSTOMIZATION",
+    category: "SOCIALIZATION",
     requestFeedback: false,
   },
   {
-    category: "RISK_REWARD",
+    category: "SOCIALIZATION",
     requestFeedback: false,
   },
   {
