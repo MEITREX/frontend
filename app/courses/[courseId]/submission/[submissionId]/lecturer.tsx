@@ -1,16 +1,19 @@
 "use client";
 
 import { lecturerEditSubmissionQuery } from "@/__generated__/lecturerEditSubmissionQuery.graphql";
+import { lecturerRemoveTaskMutation } from "@/__generated__/lecturerRemoveTaskMutation.graphql";
+import type { lecturerSubmissionExerciseForLecturerQuery as Q } from "@/__generated__/lecturerSubmissionExerciseForLecturerQuery.graphql";
 import { lecturerSubmissionExerciseForLecturerQuery } from "@/__generated__/lecturerSubmissionExerciseForLecturerQuery.graphql";
 import { ES2022Error } from "@/components/ErrorContext";
 import { PageError } from "@/components/PageError";
 import { SubmissionExerciseModal } from "@/components/SubmissionExerciseModal";
 import AddTaskDialog from "@/components/submissions/AddTaskDialog";
+import EditTaskDialog from "@/components/submissions/EditTaskDialog";
 import SubmissionsHeader from "@/components/submissions/SubmissionsHeader";
 import { Button, Typography } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { graphql, useLazyLoadQuery } from "react-relay";
+import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
 const RootQuery = graphql`
   query lecturerEditSubmissionQuery($id: UUID!, $courseId: UUID!) {
@@ -106,10 +109,32 @@ const GetSubmission = graphql`
         itemId
         maxScore
         name
+        number
       }
     }
   }
 `;
+
+const LectruerDeleteTaskMutation = graphql`
+  mutation lecturerRemoveTaskMutation($assessmentId: UUID!, $itemId: UUID!) {
+    mutateSubmission(assessmentId: $assessmentId) {
+      removeTask(itemId: $itemId) {
+        assessmentId
+        tasks {
+          itemId
+          name
+          number
+          maxScore
+        }
+      }
+    }
+  }
+
+`;
+
+type Task = NonNullable<
+  Q["response"]["submissionExerciseForLecturer"]
+>["tasks"][number];
 
 export default function LecturerSubmission() {
   const { submissionId, courseId } = useParams();
@@ -118,6 +143,8 @@ export default function LecturerSubmission() {
   const [fetchKey, setFetchKey] = useState(0); // neu
 
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditTaskOpen, setIsEditTaskOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const [isEditSetModalOpen, setEditSetModalOpen] = useState(false);
 
@@ -152,6 +179,47 @@ export default function LecturerSubmission() {
     endDate: submissionExerciseForLecturer.endDate,
   };
 
+  const [commitDeleteTask, isDeleteInFlight] =
+  useMutation<lecturerRemoveTaskMutation>(LectruerDeleteTaskMutation);
+
+function deleteTask(itemId: string) {
+  const assessmentId = String(submissionId);
+
+  if (!assessmentId || !itemId) return;
+  if (!confirm("Do you really want to delete this task? This can't be undone.")) return;
+
+  commitDeleteTask({
+    variables: { assessmentId, itemId },
+
+    // Server-Response in den Store mergen
+    updater: (store) => {
+      const payload = store.getRootField("mutateSubmission");
+      const removed = payload?.getLinkedRecord("removeTask");
+      if (!removed) return;
+
+      const newTasks = removed.getLinkedRecords("tasks") ?? [];
+      const current = store.getRoot().getLinkedRecord("submissionExerciseForLecturer", {
+        assessmentId,
+      });
+      if (!current) return;
+
+      current.setLinkedRecords(newTasks, "tasks");
+    },
+
+    onCompleted: () => {
+      // falls der Updater nicht greift (z.B. andere Store-Pfade), hart refetchen:
+      setFetchKey((k) => k + 1);
+    },
+
+    onError: (e: any) => {
+      console.error("DeleteTask error:", e);
+      alert("Deleting the task failed. Please try again.");
+      // optional: bei Fehler den Optimistic-Change rückgängig machen -> via Refetch:
+      setFetchKey((k) => k + 1);
+    },
+  });
+}
+
   if (!(content.metadata.type === "SUBMISSION")) {
     return (
       <PageError
@@ -176,30 +244,68 @@ export default function LecturerSubmission() {
             <Typography variant="body2">
               Max Score: {taskItem.maxScore}
             </Typography>
-            <Typography variant="body2">Item ID: {taskItem.itemId}</Typography>
+            <Typography>Number: </Typography>
 
+            <Typography>
+              <strong>BLOOM LEVELS</strong>
+            </Typography>
             {/* Beispiel: ein paar Details aus item */}
-            {taskItem.item?.associatedSkills?.length ? (
-              <ul style={{ marginTop: 8 }}>
+            {taskItem.item?.associatedBloomLevels.length ? (
+              <ul>
+                {taskItem.item.associatedBloomLevels.map((s) => (
+                  <li key={s}>
+                    <Typography variant="caption">{s}</Typography>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+
+            <Typography>
+              <strong>SKILLS LEVELS</strong>
+            </Typography>
+            {/* Beispiel: ein paar Details aus item */}
+            {taskItem.item?.associatedSkills.length ? (
+              <ul>
                 {taskItem.item.associatedSkills.map((s) => (
                   <li key={s.id}>
-                    <Typography variant="caption">
-                      {s.skillName} ({s.skillCategory})
+                    <Typography variant="caption">{s.skillName}</Typography>
+                    <Typography>
+                      {s.skillCategory}, {s.isCustomSkill}, SKILL LEVELS:{" "}
+                      {s.skillLevels?.analyze?.value},{" "}
+                      {s.skillLevels?.apply?.value},{" "}
+                      {s.skillLevels?.understand?.value},{" "}
+                      {s.skillLevels?.remember?.value}{" "}
+                      {s.skillLevels?.create?.value},
                     </Typography>
                   </li>
                 ))}
               </ul>
             ) : null}
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setIsEditTaskOpen(true);
+                setSelectedTask(taskItem);
+              }}
+            >
+              Edit Task
+            </Button>
+            <Button variant="outlined" onClick={() => {
+
+                deleteTask(taskItem.itemId);
+              }}>
+              Delete Task
+            </Button>
           </div>
         ))
       ) : (
         <Typography variant="body2" color="text.secondary">
-          Keine Tasks gefunden.
+          No tasks found.
         </Typography>
       )}
 
       <Button variant="outlined" onClick={() => setIsAddOpen(true)}>
-        Task hinzufügen
+        Add task
       </Button>
 
       <SubmissionExerciseModal
@@ -213,9 +319,18 @@ export default function LecturerSubmission() {
         <AddTaskDialog
           open={isAddOpen}
           onClose={() => setIsAddOpen(false)}
-          submissionId={submissionId}
           setIsAddOpen={setIsAddOpen}
           onAdded={() => setFetchKey((k) => k + 1)}
+        />
+      ) : null}
+
+      {isEditTaskOpen && selectedTask ? (
+        <EditTaskDialog
+          open={isEditTaskOpen}
+          onClose={() => setIsEditTaskOpen(false)}
+          setIsAddOpen={setIsEditTaskOpen}
+          onAdded={() => setFetchKey((k) => k + 1)}
+          taskProp={selectedTask}
         />
       ) : null}
     </>

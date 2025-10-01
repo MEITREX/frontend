@@ -868,6 +868,7 @@ input InputInfoThread {
 input InputPost {
   content: String!
   id: UUID
+  reference: UUID
   threadId: UUID
 }
 
@@ -1107,7 +1108,7 @@ type Mutation {
   createQuestionThread(thread: InputQuestionThread!): QuestionThread
   createQuizAssessment(assessmentInput: CreateAssessmentInput!, quizInput: CreateQuizInput!): QuizAssessment!
   createSection(input: CreateSectionInput!): Section!
-  createSolutionFile(name: String!, solutionId: UUID!): File
+  createSolutionFile(assessmentId: UUID!, name: String!, solutionId: UUID!): File
   createSubmissionAssessment(assessmentInput: CreateAssessmentInput!, submissionExerciseInput: InputSubmissionExercise!): SubmissionAssessment!
   currencyReward(points: Int!): Inventory
   defaultSettings(userId: UUID!): Settings!
@@ -1251,6 +1252,7 @@ type Post {
   downvotedByUsers: [UUID]!
   edited: Boolean!
   id: UUID!
+  reference: Post
   upvotedByUsers: [UUID]!
 }
 
@@ -1704,6 +1706,7 @@ type SubmissionExercise {
 type SubmissionMutation {
   addTask(assessmentId: UUID!, item: CreateItemInput!, submissionInput: InputTaskWithoutItem!): TaskOutput!
   assessmentId: UUID!
+  mutateSubmission(assessmentId: UUID!, input: InputSubmissionExercise!): SubmissionExercise
   removeTask(itemId: UUID!): SubmissionExercise
   updateTask(assessmentId: UUID!, item: ItemInput!, submissionInput: InputTask!): TaskOutput!
 }
@@ -1731,6 +1734,7 @@ type Task {
   itemId: UUID!
   maxScore: Int!
   name: String!
+  number: Int!
 }
 
 type TaskOutput {

@@ -1,6 +1,20 @@
+import { SubmissionsHeaderDeleteSubmissionMutation } from "@/__generated__/SubmissionsHeaderDeleteSubmissionMutation.graphql";
+import { updaterSetDelete } from "@/src/relay-helpers/common";
 import { Delete, Edit } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback } from "react";
+import { graphql, useMutation } from "react-relay";
+import { useError } from "../ErrorContext";
 import { Heading } from "../Heading";
+
+const deleteSubmissionMutation = graphql`
+  mutation SubmissionsHeaderDeleteSubmissionMutation($id: UUID!) {
+    mutateContent(contentId: $id) {
+      deleteContent
+    }
+  }
+`;
 
 type Props = {
   content: any;
@@ -12,6 +26,28 @@ export default function SubmissionsHeader({
   openEditSubmissionModal,
 }: Props) {
   console.log(content.content);
+  const { courseId, submissionId } = useParams();
+  const router = useRouter();
+
+  const [commitDeleteQuiz, isDeleteCommitInFlight] =
+    useMutation<SubmissionsHeaderDeleteSubmissionMutation>(
+      deleteSubmissionMutation
+    );
+
+  const { error, setError } = useError();
+
+  const updater = useCallback(() => updaterSetDelete(courseId), [courseId]);
+
+  const deleteQuiz = useCallback(
+    () =>
+      commitDeleteQuiz({
+        variables: { id: submissionId },
+        onCompleted: () => router.push(`/courses/${courseId}`),
+        onError: (error) => setError(error),
+        updater: updater(),
+      }),
+    [commitDeleteQuiz, courseId, submissionId, router, setError, updater]
+  );
 
   return (
     <>
@@ -30,7 +66,7 @@ export default function SubmissionsHeader({
             <Button
               sx={{ color: "text.secondary" }}
               startIcon={
-                "isDeleteCommitInFlight".isWellFormed() ? (
+                isDeleteCommitInFlight ? (
                   <CircularProgress size={16} />
                 ) : (
                   <Delete />
@@ -42,7 +78,7 @@ export default function SubmissionsHeader({
                     "Do you really want to delete this quiz? This can't be undone."
                   )
                 )
-                  console.log("deleteQuiz();");
+                  deleteQuiz();
               }}
             >
               Delete Quiz

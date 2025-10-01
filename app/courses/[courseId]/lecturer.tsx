@@ -16,6 +16,7 @@ import {
   codeAssessmentProvider,
   providerConfig,
 } from "@/components/ProviderConfig";
+import LecturerSubmissionsList from "@/components/submissions/LecturerSubmissionsList";
 import { Add, People, Settings } from "@mui/icons-material";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
@@ -24,7 +25,6 @@ import { orderBy } from "lodash";
 import { useRouter } from "next/navigation";
 import React, { Suspense, useState } from "react";
 import { LecturerChapter } from "./LecturerChapter";
-import LecturerSubmissionsList from "@/components/submissions/LecturerSubmissionsList";
 
 graphql`
   fragment lecturerCourseFragment on Course {

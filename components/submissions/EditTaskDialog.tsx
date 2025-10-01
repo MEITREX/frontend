@@ -1,7 +1,8 @@
 // components/submissions/AddTaskDialog.tsx
 "use client";
-import { AddTaskDialogLecturerAddTaskMutation } from "@/__generated__/AddTaskDialogLecturerAddTaskMutation.graphql";
+import { EditTaskDialogLecturerEditTaskMutation } from "@/__generated__/EditTaskDialogLecturerEditTaskMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
+import type { lecturerSubmissionExerciseForLecturerQuery as Q } from "@/__generated__/lecturerSubmissionExerciseForLecturerQuery.graphql";
 import { SkillType } from "@/__generated__/SubmissionExerciseModalCreateMutation.graphql";
 import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import {
@@ -15,11 +16,15 @@ import {
 } from "@mui/material";
 import { useParams } from "next/navigation";
 import * as React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { graphql, useMutation, useQueryLoader } from "react-relay";
 import ItemFormSection, {
   CreateItem,
 } from "../form-sections/item/ItemFormSection";
+
+type Task = NonNullable<
+  Q["response"]["submissionExerciseForLecturer"]
+>["tasks"][number];
 
 type Props = {
   open: boolean;
@@ -27,16 +32,17 @@ type Props = {
   loading?: boolean;
   setIsAddOpen: any;
   onAdded: () => void;
+  taskProp: Task;
 };
 
-const LecturerAddTaskMutation = graphql`
-  mutation AddTaskDialogLecturerAddTaskMutation(
+const LecturerUpdateTaskMutation = graphql`
+  mutation EditTaskDialogLecturerEditTaskMutation(
     $assessmentId: UUID!
-    $item: CreateItemInput!
-    $submissionInput: InputTaskWithoutItem!
+    $item: ItemInput!
+    $submissionInput: InputTask!
   ) {
     mutateSubmission(assessmentId: $assessmentId) {
-      addTask(
+      updateTask(
         assessmentId: $assessmentId
         item: $item
         submissionInput: $submissionInput
@@ -70,35 +76,50 @@ export default function AddTaskDialog({
   loading,
   setIsAddOpen,
   onAdded,
+  taskProp,
 }: Props) {
   const { submissionId, courseId } = useParams();
-  const [taskName, setTaskName] = React.useState("");
-  const [maxScore, setMaxScore] = React.useState<number>(10);
-  const [number, setNumber] = React.useState<number>(1);
+  const [taskName, setTaskName] = React.useState(taskProp.name);
+  const [maxScore, setMaxScore] = React.useState<number>(taskProp.maxScore);
+  const [number, setNumber] = React.useState<number>(taskProp.number);
   const [commitAddTask, isAddInFlight] =
-    useMutation<AddTaskDialogLecturerAddTaskMutation>(LecturerAddTaskMutation);
+    useMutation<EditTaskDialogLecturerEditTaskMutation>(
+      LecturerUpdateTaskMutation
+    );
   const [item, setItem] = useState<CreateItem>({
-    associatedSkills: [],
-    associatedBloomLevels: [],
+    associatedSkills: [...taskProp.item.associatedSkills],
+    associatedBloomLevels: [...taskProp.item.associatedBloomLevels],
   });
 
   const [queryReference, loadQuery] =
     useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!queryReference) {
       loadQuery({ courseId });
     }
   }, [courseId, loadQuery, queryReference]);
 
+  React.useEffect(() => {
+    if (!taskProp?.item) return;
+    setItem({
+      associatedSkills: [...taskProp.item.associatedSkills],
+      associatedBloomLevels: [...taskProp.item.associatedBloomLevels],
+    });
+    setTaskName(taskProp.name);
+    setMaxScore(taskProp.maxScore);
+  }, [taskProp]);
+
   const onSubmit = useCallback(() => {
     const itemInput = {
       // NUTZE itemName!
+      id: taskProp.item.id,
       associatedSkills: item.associatedSkills,
       associatedBloomLevels: item.associatedBloomLevels,
     };
 
     const submissionInput = {
+      itemId: taskProp.itemId,
       name: taskName,
       number: number,
       maxScore: maxScore,
@@ -113,11 +134,11 @@ export default function AddTaskDialog({
       updater: (store) => {
         // Payload der Mutation holen
         const mutateSubmission = store.getRootField("mutateSubmission");
-        const addTask = mutateSubmission?.getLinkedRecord("addTask");
-        if (!addTask) return;
+        const updateTask = mutateSubmission?.getLinkedRecord("updateTask");
+        if (!updateTask) return;
 
         // die neue Task-Liste aus dem Payload
-        const newTasks = addTask.getLinkedRecords("tasks") ?? [];
+        const newTasks = updateTask.getLinkedRecords("tasks") ?? [];
 
         // Das bestehende Query-Resultat finden:
         // Wichtig: exakt die gleichen Argumente wie in der Query!
@@ -131,6 +152,7 @@ export default function AddTaskDialog({
         current.setLinkedRecords(newTasks, "tasks");
       },
       onCompleted: () => {
+        console.log(item.associatedBloomLevels);
         setIsAddOpen(false); // Add-Dialog schließen
         onAdded?.(); // falls du noch etwas lokales tun willst (ohne Refetch!)
       },
@@ -139,15 +161,19 @@ export default function AddTaskDialog({
   }, [
     commitAddTask,
     submissionId,
+    item,
     taskName, // neu
     maxScore, // neu
     setIsAddOpen,
     onAdded,
   ]);
 
+  console.log(submissionId);
+  console.log(taskProp.itemId);
+
   return (
     <Dialog open={open} onClose={onClose} keepMounted fullWidth maxWidth="sm">
-      <DialogTitle>Add new tasks</DialogTitle>
+      <DialogTitle>Edit Task</DialogTitle>
       <DialogContent>
         <ItemFormSection
           operation="edit"
@@ -167,12 +193,12 @@ export default function AddTaskDialog({
           />
 
           <TextField
-            label="Task number"
-            value={number}
-            onChange={(e) => setNumber(Number(e.target.value))}
-            fullWidth
-            required
-          />
+                      label="Task number"
+                      value={number}
+                      onChange={(e) => setNumber(Number(e.target.value))}
+                      fullWidth
+                      required
+                    />
 
           <TextField
             label="Max Score (InputTask.maxScore)"
