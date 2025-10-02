@@ -130,7 +130,7 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
             },
           }}
           className="min-w-[16rem] "
-          label="Bloom Level"
+          label="Levels of Blooms Taxonomy"
           labelId="assessmentBloomLevelsLabel"
           value={item.associatedBloomLevels}
           onChange={({ target: { value } }) =>
