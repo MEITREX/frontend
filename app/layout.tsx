@@ -40,7 +40,10 @@ const oidcConfig: AuthProviderProps = {
   authority:
     process.env.NEXT_PUBLIC_OAUTH_AUTHORITY ??
     "http://localhost:9009/realms/GITS",
-  userStore: new WebStorageStateStore({ store: window.localStorage }),
+  userStore:
+    typeof window !== "undefined"
+      ? new WebStorageStateStore({ store: window.localStorage })
+      : undefined,
   onSigninCallback() {
     window.history.replaceState({}, document.title, window.location.pathname);
   },

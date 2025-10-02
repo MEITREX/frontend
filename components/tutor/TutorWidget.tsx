@@ -1,3 +1,5 @@
+"use client";
+
 import { useAITutorStore } from "@/stores/aiTutorStore";
 import React, { useEffect, useRef, useState } from "react";
 import TutorAvatar from "./TutorAvatar";
