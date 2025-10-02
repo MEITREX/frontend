@@ -16,6 +16,7 @@ import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import GeneralPage from "../GeneralPage";
 import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 
 type UserLevelInfo = {
   level: number;
@@ -100,7 +101,9 @@ export default function GeneralPageWrapper() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
+      <GamificationGuard>
+        <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
+      </GamificationGuard>
 
       {/* Level + XP overview */}
       <Box sx={{ mb: 2 }}>

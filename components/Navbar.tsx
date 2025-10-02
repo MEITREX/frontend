@@ -350,7 +350,9 @@ function NavbarBase({
           href="/courses"
           exact
         />
-        <NavbarLink title="Items" icon={<StoreIcon />} href="/items" exact />
+        <GamificationGuard>
+          <NavbarLink title="Items" icon={<StoreIcon />} href="/items" exact />
+        </GamificationGuard>
       </NavbarSection>
 
       {children}
@@ -616,16 +618,20 @@ function UserInfo({
             </Tooltip>
           }
         >
-          <ListItemAvatar>
-            <Link href={"/profile"}>
-              <ProfilePicAndBorder
-                height={50}
-                profilePicFrame={profilePicFrame}
-                profilePic={profilePic}
-              />
-            </Link>
-          </ListItemAvatar>
-          <ListItemText primary={auth.user?.profile?.name} />
+          <GamificationGuard>
+            <ListItemAvatar>
+              <Link href={"/profile"}>
+                <ProfilePicAndBorder
+                  height={50}
+                  profilePicFrame={profilePicFrame}
+                  profilePic={profilePic}
+                />
+              </Link>
+            </ListItemAvatar>
+          </GamificationGuard>
+          <Link href={"/profile"}>
+            <ListItemText primary={auth.user?.profile?.name} />
+          </Link>
           <Tooltip title="Settings" placement="left">
             <Link href="/settings/gamification">
               <IconButton>
@@ -638,85 +644,86 @@ function UserInfo({
         <Divider />
 
         {/* XP/Level + Currency row */}
-        <Box
-          sx={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            gap: 1.25,
-            pt: 0.75,
-            pb: 0.75,
-            px: 2,
-          }}
-        >
-          {/* Level Icon */}
-          <img
-            src={levelIconSrc}
-            alt={`Level ${level} icon`}
-            width={50}
-            height={50}
-            style={{ display: "block" }}
-            onError={(e) => {
-              const el = e.currentTarget as HTMLImageElement;
-              // fallback chain to ensure an icon displays
-              if (!levelIconSrc.endsWith("level_0.svg")) {
-                setLevelIconSrc("/levels/level_0.svg");
-                return;
-              }
-              if (!levelIconSrc.endsWith("level_1.svg")) {
-                setLevelIconSrc("/levels/level_1.svg");
-                return;
-              }
-              el.style.display = "none";
-            }}
-          />
-
-          {/* Progress + text + coin chip (vertical stack) */}
+        <GamificationGuard>
           <Box
             sx={{
-              flexGrow: 1,
-              mx: 1,
-              minWidth: 160,
+              width: "100%",
+              height: "100%",
               display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
               alignItems: "center",
+              gap: 1.25,
+              pt: 0.75,
+              pb: 0.75,
+              px: 2,
             }}
           >
-            <LinearProgress
-              variant="determinate"
-              value={percent}
-              sx={{ height: 8, borderRadius: 999, width: "100%" }}
-            />
-            <Typography variant="caption" sx={{ mt: 0.25, display: "block" }}>
-              {levelInfo
-                ? `${fmtInt(xpInLevel)} / ${fmtInt(xpTotalThisLevel)} XP`
-                : "Loading XP…"}
-            </Typography>
-            <Box sx={{ mt: 1, display: "flex", justifyContent: "center" }}>
-              <Chip
-                size="small"
-                color="secondary"
-                label={
-                  <Box
-                    sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 0.5,
-                    }}
-                  >
-                    {compactPoints}
-                    <Image src={coins} alt="Coins" width={18} height={18} />
-                  </Box>
+            {/* Level Icon */}
+            <img
+              src={levelIconSrc}
+              alt={`Level ${level} icon`}
+              width={50}
+              height={50}
+              style={{ display: "block" }}
+              onError={(e) => {
+                const el = e.currentTarget as HTMLImageElement;
+                // fallback chain to ensure an icon displays
+                if (!levelIconSrc.endsWith("level_0.svg")) {
+                  setLevelIconSrc("/levels/level_0.svg");
+                  return;
                 }
-                sx={{ fontWeight: "bold" }}
+                if (!levelIconSrc.endsWith("level_1.svg")) {
+                  setLevelIconSrc("/levels/level_1.svg");
+                  return;
+                }
+                el.style.display = "none";
+              }}
+            />
+
+            {/* Progress + text + coin chip (vertical stack) */}
+            <Box
+              sx={{
+                flexGrow: 1,
+                mx: 1,
+                minWidth: 160,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <LinearProgress
+                variant="determinate"
+                value={percent}
+                sx={{ height: 8, borderRadius: 999, width: "100%" }}
               />
+              <Typography variant="caption" sx={{ mt: 0.25, display: "block" }}>
+                {levelInfo
+                  ? `${fmtInt(xpInLevel)} / ${fmtInt(xpTotalThisLevel)} XP`
+                  : "Loading XP…"}
+              </Typography>
+              <Box sx={{ mt: 1, display: "flex", justifyContent: "center" }}>
+                <Chip
+                  size="small"
+                  color="secondary"
+                  label={
+                    <Box
+                      sx={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                      }}
+                    >
+                      {compactPoints}
+                      <Image src={coins} alt="Coins" width={18} height={18} />
+                    </Box>
+                  }
+                  sx={{ fontWeight: "bold" }}
+                />
+              </Box>
             </Box>
           </Box>
-        </Box>
-
-        {tutor && (
+        </GamificationGuard>
+          {tutor && (
           <>
             <Divider />
             <SwitchPageViewButton />

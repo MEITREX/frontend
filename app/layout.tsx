@@ -5,6 +5,7 @@ import React, { useEffect, useMemo } from "react";
 
 import { ClientToaster } from "@/components/ClientToaster";
 import { PageLayout } from "@/components/PageLayout";
+import { GamificationRouteGuard } from "@/components/gamification-guard/GamificationRouteGuard"
 import CurrencyHydrator from "@/components/currency/CurrencyHydrator";
 import TutorWidget from "@/components/tutor/TutorWidget";
 import { initRelayEnvironment } from "@/src/RelayEnvironment";
@@ -87,7 +88,9 @@ export default function App({ children }: { children: React.ReactNode }) {
             <DndProvider backend={HTML5Backend}>
               <SigninContent>
                 <PageViewProvider>
-                  <InnerLayout>{children}</InnerLayout>
+                  <GamificationRouteGuard>
+                    <InnerLayout>{children}</InnerLayout>
+                  </GamificationRouteGuard>
                 </PageViewProvider>
               </SigninContent>
             </DndProvider>
