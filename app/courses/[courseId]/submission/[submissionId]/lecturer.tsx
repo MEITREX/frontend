@@ -35,11 +35,10 @@ import {
   DialogTitle,
   Divider,
   Grid,
-  IconButton,
   LinearProgress,
   Paper,
   Stack,
-  Typography,
+  Typography
 } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
@@ -241,7 +240,10 @@ function TaskCard({
             <Typography variant="h6">
               {task.number}. {task.name}
             </Typography>
-            <Chip size="small" label={`Maximum number of points: ${task.maxScore}`} />
+            <Chip
+              size="small"
+              label={`Maximum number of points: ${task.maxScore}`}
+            />
           </Stack>
         }
         action={
@@ -597,6 +599,8 @@ export default function LecturerSubmission() {
     );
   }
 
+  console.log(submissionExerciseForLecturer.files[0]);
+
   return (
     <>
       <SubmissionsHeader
@@ -627,50 +631,40 @@ export default function LecturerSubmission() {
       </Stack>
 
       {/* Files display */}
-      <Stack
-        direction="row"
-        spacing={2}
-        flexWrap="wrap"
-        useFlexGap
-        sx={{ mb: 2 }}
-      >
-        {submissionExerciseForLecturer.files.map((f) => (
-          <Paper
-            key={f.id}
-            variant="outlined"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              borderRadius: 2,
-              px: 1,
-              py: 0.5,
-              boxShadow: 1, // hebt das Set leicht an
-            }}
-          >
-            <Chip
-              icon={<InsertDriveFileIcon />}
-              label={f.name}
-              clickable
-              onClick={() => window.open(f.downloadUrl ?? "#", "_blank")}
-              variant="outlined"
-              sx={{
-                "& .MuiChip-icon": { mr: 0.5 },
-              }}
-            />
-            <IconButton
-              aria-label="Delete file"
-              size="small"
-              onClick={() => deleteFile(f.id)}
-              color="error"
-              sx={{
-                ml: 0.5,
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Paper>
-        ))}
-      </Stack>
+      {/* Files display */}
+<Stack
+  direction="row"
+  spacing={2}
+  flexWrap="wrap"
+  useFlexGap
+  sx={{ mb: 2 }}
+>
+  {submissionExerciseForLecturer.files.map((f) => (
+    <Chip
+      key={f.id}
+      icon={<InsertDriveFileIcon />}
+      label={f.name}
+      clickable
+      variant="outlined"
+      onClick={() => window.open(f.downloadUrl ?? "#", "_blank")}
+      onDelete={(e) => {
+        e.stopPropagation();
+        deleteFile(f.id);
+      }}
+      deleteIcon={
+        <DeleteIcon
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+        />
+      }
+      sx={{
+        borderRadius: 2,
+        '& .MuiChip-label': { fontWeight: 500 },
+      }}
+    />
+  ))}
+</Stack>
+
 
       {/* Tasks Grid */}
       {sortedTasks.length ? (

@@ -1,8 +1,6 @@
-// components/submissions/AddTaskDialog.tsx
 "use client";
 import { AddTaskDialogLecturerAddTaskMutation } from "@/__generated__/AddTaskDialogLecturerAddTaskMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
-import { SkillType } from "@/__generated__/SubmissionExerciseModalCreateMutation.graphql";
 import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import {
   Button,
@@ -54,16 +52,6 @@ const LecturerAddTaskMutation = graphql`
   }
 `;
 
-const skillTypeLabel: Record<SkillType, string> = {
-  EVALUATE: "Evaluate",
-  CREATE: "Create",
-  ANALYZE: "Analyze",
-  APPLY: "Apply",
-  REMEMBER: "Remember",
-  UNDERSTAND: "Understand",
-  "%future added value": "Unknown",
-};
-
 export default function AddTaskDialog({
   open,
   onClose,
@@ -92,23 +80,17 @@ export default function AddTaskDialog({
   }, [courseId, loadQuery, queryReference]);
 
   const onSubmit = useCallback(() => {
-    // 1) Typen aus der Mutation holen – das schützt dich vor falschen Shapes
     type Vars = AddTaskDialogLecturerAddTaskMutation["variables"];
     type CreateSkillVar = Vars["item"]["associatedSkills"][number];
 
-    // 2) Mapper: Skill aus der UI/Query -> CreateSkillInput (ohne id/skillLevels)
-    const toCreateSkill = (
-      s: any // kommt aus ItemFormSection; kann Skill aus Query sein
-    ): CreateSkillVar => ({
+    const toCreateSkill = (s: any): CreateSkillVar => ({
       skillCategory: s.skillCategory,
       skillName: s.skillName,
-      // optional: nur setzen, wenn vorhanden
       ...(typeof s.isCustomSkill === "boolean"
         ? { isCustomSkill: s.isCustomSkill }
         : {}),
     });
 
-    // 3) Validierung/Normalisierung
     const name = taskName.trim();
     const num = Math.trunc(Number.isFinite(number as any) ? Number(number) : 0);
     const max = Math.trunc(
@@ -116,15 +98,15 @@ export default function AddTaskDialog({
     );
 
     if (!name) {
-      alert("Bitte einen Task-Namen angeben.");
+      alert("Please give a task name.");
       return;
     }
     if (!item.associatedBloomLevels?.length) {
-      alert("Bitte mindestens ein Bloom Level auswählen.");
+      alert("Select at least one Bloom Level.");
       return;
     }
     if (!item.associatedSkills?.length) {
-      alert("Bitte mindestens eine Skill auswählen.");
+      alert("Select at least one skill.");
       return;
     }
 
@@ -132,7 +114,7 @@ export default function AddTaskDialog({
       assessmentId: String(submissionId),
       item: {
         associatedBloomLevels: [...item.associatedBloomLevels],
-        associatedSkills: item.associatedSkills.map(toCreateSkill), // <-- skillLevels & id werden verworfen
+        associatedSkills: item.associatedSkills.map(toCreateSkill),
       },
       submissionInput: {
         name,
@@ -150,7 +132,6 @@ export default function AddTaskDialog({
 
         const newTasks = addTask.getLinkedRecords("tasks") ?? [];
 
-        // exakt mit dem gleichen Argument wie in deiner Query
         const current = store
           .getRoot()
           .getLinkedRecord("submissionExerciseForLecturer", {
@@ -193,8 +174,6 @@ export default function AddTaskDialog({
           allSkillsQueryRef={queryReference}
         />
         <Stack spacing={2} sx={{ mt: 1 }}>
-          {/* Beispiel-Felder: mappe sie auf dein CreateItemInput / InputTask */}
-
           <TextField
             label="Task name"
             value={taskName}

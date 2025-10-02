@@ -1,9 +1,7 @@
-// components/submissions/AddTaskDialog.tsx
 "use client";
 import { EditTaskDialogLecturerEditTaskMutation } from "@/__generated__/EditTaskDialogLecturerEditTaskMutation.graphql";
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import type { lecturerSubmissionExerciseForLecturerQuery as Q } from "@/__generated__/lecturerSubmissionExerciseForLecturerQuery.graphql";
-import { SkillType } from "@/__generated__/SubmissionExerciseModalCreateMutation.graphql";
 import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import {
   Button,
@@ -59,16 +57,6 @@ const LecturerUpdateTaskMutation = graphql`
     }
   }
 `;
-
-const skillTypeLabel: Record<SkillType, string> = {
-  EVALUATE: "Evaluate",
-  CREATE: "Create",
-  ANALYZE: "Analyze",
-  APPLY: "Apply",
-  REMEMBER: "Remember",
-  UNDERSTAND: "Understand",
-  "%future added value": "Unknown",
-};
 
 export default function AddTaskDialog({
   open,
@@ -138,7 +126,6 @@ export default function AddTaskDialog({
       item: {
         id: taskProp.item.id,
         associatedBloomLevels: [...item.associatedBloomLevels],
-        // ⬇️ skillLevels wird hier bewusst NICHT übernommen
         associatedSkills: item.associatedSkills.map(toSkillInput),
       },
       submissionInput: {
@@ -152,29 +139,28 @@ export default function AddTaskDialog({
     commitAddTask({
       variables: vars,
       updater: (store) => {
-        // Payload der Mutation holen
+        // Payload of mutation
         const mutateSubmission = store.getRootField("mutateSubmission");
         const updateTask = mutateSubmission?.getLinkedRecord("updateTask");
         if (!updateTask) return;
 
-        // die neue Task-Liste aus dem Payload
+        // task list from payload
         const newTasks = updateTask.getLinkedRecords("tasks") ?? [];
 
-        // Das bestehende Query-Resultat finden:
-        // Wichtig: exakt die gleichen Argumente wie in der Query!
+        // Get existing query results using same arguments
         const root = store.getRoot();
         const current = root.getLinkedRecord("submissionExerciseForLecturer", {
           assessmentId: String(submissionId),
         });
         if (!current) return;
 
-        // Tasks im bestehenden Record ersetzen (oder alternativ anhängen)
+        // Replace tasks in record
         current.setLinkedRecords(newTasks, "tasks");
       },
       onCompleted: () => {
         console.log(item.associatedBloomLevels);
-        setIsAddOpen(false); // Add-Dialog schließen
-        onAdded?.(); // falls du noch etwas lokales tun willst (ohne Refetch!)
+        setIsAddOpen(false);
+        onAdded?.();
       },
       onError: (e) => console.log(e),
     });
@@ -191,9 +177,6 @@ export default function AddTaskDialog({
     taskProp.itemId,
   ]);
 
-  console.log(submissionId);
-  console.log(taskProp.itemId);
-
   return (
     <Dialog open={open} onClose={onClose} keepMounted fullWidth maxWidth="md">
       <DialogTitle>Edit Task</DialogTitle>
@@ -205,8 +188,6 @@ export default function AddTaskDialog({
           allSkillsQueryRef={queryReference}
         />
         <Stack spacing={2} sx={{ mt: 1 }}>
-          {/* Beispiel-Felder: mappe sie auf dein CreateItemInput / InputTask */}
-
           <TextField
             label="Task name"
             value={taskName}
