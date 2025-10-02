@@ -5,10 +5,43 @@ import React from "react";
 import { Divider } from "@mui/material";
 import { LecturerChapter } from "@/components/courses/lecturer/common/LecturerChapter";
 import { useCourseData } from "@/components/courses/context/CourseDataContext";
-import { LecturerCourseLayoutCourseIdQuery$data } from "@/__generated__/LecturerCourseLayoutCourseIdQuery.graphql";
+import {
+  LecturerCourseLayoutCourseIdQuery,
+  LecturerCourseLayoutCourseIdQuery$data,
+} from "@/__generated__/LecturerCourseLayoutCourseIdQuery.graphql";
+import { graphql, useLazyLoadQuery } from "react-relay";
+import { useParams } from "next/navigation";
+
+const lecturerCourseIdQuery = graphql`
+  query LecturerCourseLayoutCourseIdQuery($courseId: UUID!) {
+    ...MediaRecordSelector
+    currentUserInfo {
+      realmRoles
+      courseMemberships {
+        role
+        course {
+          id
+        }
+      }
+    }
+    coursesByIds(ids: [$courseId]) {
+      ...LecturerCourseLayoutFragment @relay(mask: false)
+    }
+  }
+`;
 
 export default function LecturerOverview() {
-  const data = useCourseData() as LecturerCourseLayoutCourseIdQuery$data;
+  // We cant use context here -> when navigating to Members and then back an error appreas. Idk why?
+  // Therefore refetch...
+  /*const data = useCourseData() as LecturerCourseLayoutCourseIdQuery$data;
+  const course = data.coursesByIds[0];*/
+  const { courseId } = useParams();
+
+  const data = useLazyLoadQuery<LecturerCourseLayoutCourseIdQuery>(
+    lecturerCourseIdQuery,
+    { courseId }
+  );
+
   const course = data.coursesByIds[0];
 
   return (
