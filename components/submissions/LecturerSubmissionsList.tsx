@@ -49,6 +49,9 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
             id
             userId
             submissionDate
+            userName
+            firstName
+            lastName
             files {
               id
               name

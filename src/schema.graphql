@@ -31,32 +31,20 @@ enum AiEntityProcessingState {
   UNKNOWN
 }
 
-input AiGenQuestionContext {
-  description: String!
-  maxAnswersPerQuestion: Int! = 5
-  maxExactQuestions: Int! = 5
-  maxFreeTextQuestions: Int! = 5
-  maxMultipleChoiceQuestions: Int! = 5
-  maxNumericQuestions: Int! = 5
-  mediaRecordIds: [UUID]!
-  minExactQuestions: Int! = 1
-  minFreeTextQuestions: Int! = 1
-  minMultipleChoiceQuestions: Int! = 1
-  minNumericQuestions: Int! = 1
-}
-
 input AnswerInput {
   playerTypes: [PlayerType!]!
   text: String!
 }
 
 interface Assessment {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   assessmentMetadata: AssessmentMetadata!
   id: UUID!
   isAvailableToBeWorkedOn: Boolean!
   items: [Item!]!
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
+  required: Boolean!
   userProgressData: UserProgressData!
 }
 
@@ -66,6 +54,7 @@ type AssessmentContentReference {
 
 type AssessmentMetadata {
   initialLearningInterval: Int
+  required: Boolean!
   skillPoints: Int!
   skillTypes: [SkillType!]!
 }
@@ -97,6 +86,7 @@ type Assignment {
 }
 
 type AssignmentAssessment implements Assessment & Content {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   aiProcessingProgress: AiEntityProcessingProgress!
   assessmentMetadata: AssessmentMetadata!
   assignment: Assignment
@@ -105,6 +95,7 @@ type AssignmentAssessment implements Assessment & Content {
   items: [Item!]!
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
+  required: Boolean!
   suggestedTags: [String!]!
   userProgressData: UserProgressData!
 }
@@ -143,7 +134,6 @@ input AssociationPairInput {
 }
 
 type AssociationQuestion implements Question {
-  aiGenerated: Boolean!
   correctAssociations: [SingleAssociation!]!
   hint: JSON
   item: Item!
@@ -221,7 +211,6 @@ enum ClozeElementType {
 
 type ClozeQuestion implements Question {
   additionalWrongAnswers: [String!]!
-  aiGenerated: Boolean!
   allBlanks: [String!]!
   clozeElements: [ClozeElement!]!
   hint: JSON
@@ -259,10 +248,12 @@ directive @ContainerNotEmpty(message: String = "graphql.validation.ContainerNotE
 directive @ContainerSize(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.ContainerSize.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 interface Content {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   id: UUID!
   isAvailableToBeWorkedOn: Boolean!
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
+  required: Boolean!
   userProgressData: UserProgressData!
 }
 
@@ -606,7 +597,6 @@ type DocumentSource implements Source {
 }
 
 type ExactAnswerQuestion implements Question {
-  aiGenerated: Boolean!
   caseSensitive: Boolean!
   correctAnswers: [String!]!
   feedback: JSON
@@ -648,6 +638,7 @@ type ExternalAssignment {
 
 type ExternalCourse {
   courseTitle: String!
+  organizationName: String!
   url: String!
 }
 
@@ -704,6 +695,7 @@ type FlashcardSet {
 }
 
 type FlashcardSetAssessment implements Assessment & Content {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   aiProcessingProgress: AiEntityProcessingProgress!
   assessmentMetadata: AssessmentMetadata!
   flashcardSet: FlashcardSet
@@ -712,6 +704,7 @@ type FlashcardSetAssessment implements Assessment & Content {
   items: [Item!]!
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
+  required: Boolean!
   suggestedTags: [String!]!
   userProgressData: UserProgressData!
 }
@@ -1007,12 +1000,14 @@ type ManualMappingInstance {
 directive @Max(value: Int! = 2147483647, message: String = "graphql.validation.Max.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 type MediaContent implements Content {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   aiProcessingProgress: AiEntityProcessingProgress!
   id: UUID!
   isAvailableToBeWorkedOn: Boolean!
   mediaRecords: [MediaRecord!]!
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
+  required: Boolean!
   segmentLinks: [MediaRecordSegmentLink!]!
   userProgressData: UserProgressData!
 }
@@ -1084,7 +1079,6 @@ input MultipleChoiceAnswerInput {
 }
 
 type MultipleChoiceQuestion implements Question {
-  aiGenerated: Boolean!
   answers: [MultipleChoiceAnswer!]!
   hint: JSON
   item: Item!
@@ -1120,11 +1114,13 @@ type Mutation {
   defaultSettings(userId: UUID!): Settings!
   deleteChapter(id: UUID!): UUID!
   deleteCourse(id: UUID!): UUID!
+  deleteExerciseFile(assessmentId: UUID!, fileId: UUID!): File
   deleteFlashcardSet(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the flashcard set and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
   deleteMediaRecord(id: UUID!): UUID!
   deleteMembership(input: CourseMembershipInput!): CourseMembership!
   deletePost(postId: UUID!): Post
   deleteQuiz(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the quiz and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
+  deleteSolutionFile(fileId: UUID!, solutionId: UUID!): File
   deleteThread(threadId: UUID!): Thread
   downvotePost(postId: UUID!): Post
   equipItem(itemId: UUID!): Inventory
@@ -1189,7 +1185,6 @@ input NotificationInput {
 }
 
 type NumericQuestion implements Question {
-  aiGenerated: Boolean!
   correctAnswer: Float!
   feedback: JSON
   hint: JSON
@@ -1354,7 +1349,6 @@ type Quest implements HasGoal {
 }
 
 interface Question {
-  aiGenerated: Boolean!
   hint: JSON
   itemId: UUID!
   number: Int!
@@ -1418,11 +1412,8 @@ type Quiz {
   selectedQuestions: [Question!]!
 }
 
-type QuizAIGenAsyncResponse {
-  quiz: Quiz
-}
-
 type QuizAssessment implements Assessment & Content {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   aiProcessingProgress: AiEntityProcessingProgress!
   assessmentMetadata: AssessmentMetadata!
   id: UUID!
@@ -1431,6 +1422,7 @@ type QuizAssessment implements Assessment & Content {
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
   quiz: Quiz
+  required: Boolean!
   suggestedTags: [String!]!
   userProgressData: UserProgressData!
 }
@@ -1453,7 +1445,6 @@ type QuizMutation {
   addMultipleChoiceQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateMultipleChoiceQuestionInputWithoutItem!): QuizOutput!
   addNumericQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateNumericQuestionInputWithoutItem!): QuizOutput!
   addSelfAssessmentQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateSelfAssessmentQuestionInputWithoutItem!): QuizOutput!
-  aiGenerateQuestionAsync(context: AiGenQuestionContext): QuizAIGenAsyncResponse
   assessmentId: UUID!
   removeQuestion(number: Int!): Quiz!
   setNumberOfRandomlySelectedQuestions(numberOfRandomlySelectedQuestions: Int!): Quiz!
@@ -1550,7 +1541,6 @@ type SectionMutation {
 }
 
 type SelfAssessmentQuestion implements Question {
-  aiGenerated: Boolean!
   hint: JSON
   itemId: UUID!
   number: Int!
@@ -1642,6 +1632,9 @@ interface Source {
 directive @specifiedBy(url: String!) on SCALAR
 
 type Stage {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
+  _internal_noauth_optionalContentsProgressForUser(userId: UUID!): Float!
+  _internal_noauth_requiredContentsProgressForUser(userId: UUID!): Float!
   id: UUID!
   isAvailableToBeWorkedOn: Boolean!
   optionalContents: [Content!]!
@@ -1722,10 +1715,13 @@ type SubmissionMutation {
 
 type SubmissionSolution {
   files: [File!]!
+  firstName: String!
   id: UUID
+  lastName: String!
   result: Result!
   submissionDate: DateTime
   userId: UUID!
+  userName: String!
 }
 
 type Suggestion {
