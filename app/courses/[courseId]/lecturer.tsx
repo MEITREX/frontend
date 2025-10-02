@@ -158,9 +158,8 @@ export default function LecturerCoursePage() {
   // Extract course
   const course = coursesByIds[0];
 
-const submissionAssessments =
-  course.chapters.elements
-    .flatMap(ch => [
+  const submissionAssessments = course.chapters.elements
+    .flatMap((ch) => [
       ...(ch.contents ?? []),
       ...(ch.contentsWithNoSection ?? []),
     ])
