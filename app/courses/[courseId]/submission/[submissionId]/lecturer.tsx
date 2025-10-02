@@ -1,6 +1,7 @@
 "use client";
 
 import { lecturerCreateExerciseFileMutation } from "@/__generated__/lecturerCreateExerciseFileMutation.graphql";
+import { lecturerDeleteExerciseFileMutation } from "@/__generated__/lecturerDeleteExerciseFileMutation.graphql";
 import { lecturerEditSubmissionQuery } from "@/__generated__/lecturerEditSubmissionQuery.graphql";
 import { lecturerRemoveTaskMutation } from "@/__generated__/lecturerRemoveTaskMutation.graphql";
 import type { lecturerSubmissionExerciseForLecturerQuery as Q } from "@/__generated__/lecturerSubmissionExerciseForLecturerQuery.graphql";
@@ -34,6 +35,7 @@ import {
   DialogTitle,
   Divider,
   Grid,
+  IconButton,
   LinearProgress,
   Paper,
   Stack,
@@ -173,6 +175,18 @@ const CreateExerciseFileMutation = graphql`
   }
 `;
 
+// unter deine anderen graphql-Mutationen:
+const DeleteExerciseFileMutation = graphql`
+  mutation lecturerDeleteExerciseFileMutation(
+    $assessmentId: UUID!
+    $fileId: UUID!
+  ) {
+    deleteExerciseFile(assessmentId: $assessmentId, fileId: $fileId) {
+      id
+    }
+  }
+`;
+
 type Task = NonNullable<
   Q["response"]["submissionExerciseForLecturer"]
 >["tasks"][number];
@@ -227,7 +241,7 @@ function TaskCard({
             <Typography variant="h6">
               {task.number}. {task.name}
             </Typography>
-            <Chip size="small" label={`Max: ${task.maxScore}`} />
+            <Chip size="small" label={`Maximum number of points: ${task.maxScore}`} />
           </Stack>
         }
         action={
@@ -421,6 +435,59 @@ export default function LecturerSubmission() {
     });
   }
 
+  // in deiner Komponente LecturerSubmission, bei den anderen useMutation Hooks:
+  const [commitDeleteFile, isDeleteFileInFlight] =
+    useMutation<lecturerDeleteExerciseFileMutation>(DeleteExerciseFileMutation);
+
+  function deleteFile(fileId: string) {
+    const assessmentId = String(submissionId);
+    if (!assessmentId || !fileId) return;
+
+    if (
+      !confirm("Do you really want to delete this file? This can't be undone.")
+    ) {
+      return;
+    }
+
+    commitDeleteFile({
+      variables: { assessmentId, fileId },
+
+      // optimistisch sofort aus UI entfernen
+      optimisticUpdater: (store) => {
+        const current = store
+          .getRoot()
+          .getLinkedRecord("submissionExerciseForLecturer", { assessmentId });
+        if (!current) return;
+        const files = current.getLinkedRecords("files") ?? [];
+        const next = files.filter(
+          (r) => (r.getValue("id") as string) !== fileId
+        );
+        current.setLinkedRecords(next, "files");
+      },
+
+      // nach Server-OK Store aufräumen (falls nötig)
+      updater: (store) => {
+        const deleted = store.getRootField("deleteExerciseFile");
+        const deletedId = (deleted?.getValue("id") as string) || fileId;
+        const current = store
+          .getRoot()
+          .getLinkedRecord("submissionExerciseForLecturer", { assessmentId });
+        if (!current) return;
+        const files = current.getLinkedRecords("files") ?? [];
+        const next = files.filter(
+          (r) => (r.getValue("id") as string) !== deletedId
+        );
+        current.setLinkedRecords(next, "files");
+      },
+
+      onError: (e) => {
+        console.error("Delete file failed:", e);
+        alert("Deleting the file failed. Reloading the list.");
+        setFetchKey((k) => k + 1); // fallback: refetch
+      },
+    });
+  }
+
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     setUploadError(null);
     const f = e.target.files?.[0] ?? null;
@@ -560,26 +627,50 @@ export default function LecturerSubmission() {
       </Stack>
 
       {/* Files display */}
-      {submissionExerciseForLecturer.files.length > 0 ? (
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Files
-          </Typography>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            {submissionExerciseForLecturer.files.map((f) => (
-              <Chip
-                key={f.id}
-                icon={<InsertDriveFileIcon />}
-                label={f.name}
-                component="a"
-                href={f.downloadUrl ?? "#"}
-                clickable
-                variant="outlined"
-              />
-            ))}
-          </Stack>
-        </Box>
-      ) : null}
+      <Stack
+        direction="row"
+        spacing={2}
+        flexWrap="wrap"
+        useFlexGap
+        sx={{ mb: 2 }}
+      >
+        {submissionExerciseForLecturer.files.map((f) => (
+          <Paper
+            key={f.id}
+            variant="outlined"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              borderRadius: 2,
+              px: 1,
+              py: 0.5,
+              boxShadow: 1, // hebt das Set leicht an
+            }}
+          >
+            <Chip
+              icon={<InsertDriveFileIcon />}
+              label={f.name}
+              clickable
+              onClick={() => window.open(f.downloadUrl ?? "#", "_blank")}
+              variant="outlined"
+              sx={{
+                "& .MuiChip-icon": { mr: 0.5 },
+              }}
+            />
+            <IconButton
+              aria-label="Delete file"
+              size="small"
+              onClick={() => deleteFile(f.id)}
+              color="error"
+              sx={{
+                ml: 0.5,
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Paper>
+        ))}
+      </Stack>
 
       {/* Tasks Grid */}
       {sortedTasks.length ? (

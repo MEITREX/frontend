@@ -97,6 +97,7 @@ export default function LecturerCoursePage() {
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
 
   // Fetch course data
+  // Parent (deine LecturerCoursePage.tsx) – nur Queryteil relevant
   const { coursesByIds, currentUserInfo, ...query } =
     useLazyLoadQuery<lecturerLecturerCourseIdQuery>(
       graphql`
@@ -114,6 +115,33 @@ export default function LecturerCoursePage() {
 
           coursesByIds(ids: [$courseId]) {
             ...lecturerCourseFragment @relay(mask: false)
+
+            # ⬇️ Hol' alle Contents über Kapitel (keine [[Content]] mehr!)
+            chapters {
+              elements {
+                id
+                contents {
+                  __typename
+                  ... on SubmissionAssessment {
+                    id
+                    metadata {
+                      name
+                      type
+                    }
+                  }
+                }
+                contentsWithNoSection {
+                  __typename
+                  ... on SubmissionAssessment {
+                    id
+                    metadata {
+                      name
+                      type
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       `,
@@ -129,6 +157,17 @@ export default function LecturerCoursePage() {
 
   // Extract course
   const course = coursesByIds[0];
+
+  const submissionAssessments = course.chapters.elements
+    .flatMap((ch) => [
+      ...(ch.contents ?? []),
+      ...(ch.contentsWithNoSection ?? []),
+    ])
+    .filter((c: any) => c?.__typename === "SubmissionAssessment")
+    .map((c: any) => ({
+      assessmentId: c.id,
+      name: c.metadata?.name ?? "Submission",
+    }));
   const role = currentUserInfo.courseMemberships.find(
     (x) => x.course.id === courseId
   )!.role;
@@ -204,7 +243,10 @@ export default function LecturerCoursePage() {
         </div>
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
-        <LecturerSubmissionsList></LecturerSubmissionsList>
+        <LecturerSubmissionsList
+          courseId={course.id}
+          submissions={submissionAssessments}
+        ></LecturerSubmissionsList>
       </CustomTabPanel>
       <CustomTabPanel value={value} index={2}>
         <Suspense fallback={<SkeletonThreadList />}>
