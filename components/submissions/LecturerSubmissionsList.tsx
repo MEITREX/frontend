@@ -1,4 +1,3 @@
-// components/submissions/LecturerSubmissionsList.tsx
 "use client";
 
 import { LecturerSubmissionsListGroupQuery } from "@/__generated__/LecturerSubmissionsListGroupQuery.graphql";
@@ -9,6 +8,10 @@ import {
   AccordionSummary,
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   InputLabel,
   MenuItem,
@@ -25,20 +28,163 @@ import {
   Typography,
 } from "@mui/material";
 import { useMemo, useState } from "react";
-import { graphql, useLazyLoadQuery } from "react-relay";
+import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
+// ---------- Types ----------
 type SubmissionInfo = { assessmentId: string; name: string };
 type Props = {
   courseId: string;
   submissions: SubmissionInfo[];
 };
 
-// Einzelne Submission-Gruppe lädt ihre Details selbst
+type TaskRow = {
+  itemId: string;
+  name: string | null;
+  number: number | null;
+  maxScore: number | null;
+};
+
+type ResultRow = {
+  id?: string | null;
+  status?: string | null;
+  results?: { itemId: string; score: number }[] | null; // score: number (nicht null)
+};
+
+// ---------- Mutation (❗️passe Feld-/Typnamen an dein Backend an) ----------
+const UpdateResultMutation = graphql`
+  mutation LecturerSubmissionsListUpdateResultMutation($result: InputResult!) {
+    updateResult(result: $result) {
+      id
+      status
+      results {
+        itemId
+        score
+        number
+      }
+    }
+  }
+`;
+
+// ---------- Dialog zum Bearbeiten ----------
+function GradingDialog({
+  open,
+  onClose,
+  tasks,
+  initial,
+  onSave,
+}: {
+  open: boolean;
+  onClose: () => void;
+  tasks: TaskRow[];
+  initial: ResultRow | undefined | null;
+  onSave: (payload: {
+    status: string | null;
+    results: { itemId: string; score: number | null }[];
+  }) => void;
+}) {
+  // Map initial scores by itemId
+  const initialMap = useMemo(() => {
+    const m = new Map<string, number | null>();
+    initial?.results?.forEach((r) => m.set(r.itemId, r.score ?? 0));
+    return m;
+  }, [initial]);
+
+  const [status, setStatus] = useState<string>(initial?.status ?? "pending");
+  const [scores, setScores] = useState<Record<string, string>>(() => {
+    const obj: Record<string, string> = {};
+    tasks.forEach((t) => {
+      const val = initialMap.get(t.itemId);
+      obj[t.itemId] = (val ?? 0).toString();
+    });
+    return obj;
+  });
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Edit grading</DialogTitle>
+      <DialogContent dividers>
+        <Box sx={{ display: "grid", gap: 2 }}>
+          <FormControl fullWidth>
+            <InputLabel id="grading-status-label">Status</InputLabel>
+            <Select
+              labelId="grading-status-label"
+              label="Status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <MenuItem value="pending">pending</MenuItem>
+              <MenuItem value="passed">passed</MenuItem>
+              <MenuItem value="failed">failed</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Box sx={{ display: "grid", gap: 1 }}>
+            <Typography variant="subtitle2">Scores per task</Typography>
+            {tasks.map((t) => (
+              <Box
+                key={t.itemId}
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr auto",
+                  gap: 1,
+                  alignItems: "center",
+                }}
+              >
+                <Typography variant="body2">
+                  {t.number != null ? `${t.number}. ` : ""}
+                  {t.name ?? t.itemId}
+                </Typography>
+                <TextField
+                  size="small"
+                  type="number"
+                  inputProps={{ min: 0, step: 1, max: t.maxScore ?? undefined }}
+                  value={scores[t.itemId] ?? ""}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setScores((s) => ({ ...s, [t.itemId]: v }));
+                  }}
+                  helperText={
+                    t.maxScore != null ? `max ${t.maxScore}` : undefined
+                  }
+                />
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="inherit">
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={() =>
+            onSave({
+              status,
+              results: tasks.map((t) => ({
+                itemId: t.itemId,
+                score:
+                  scores[t.itemId] === ""
+                    ? null
+                    : Math.max(0, Math.floor(Number(scores[t.itemId]))),
+              })),
+            })
+          }
+        >
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+// ---------- Einzelne Submission-Gruppe lädt ihre Details selbst ----------
 function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
   const data = useLazyLoadQuery<LecturerSubmissionsListGroupQuery>(
     graphql`
       query LecturerSubmissionsListGroupQuery($assessmentId: UUID!) {
         submissionExerciseForLecturer(assessmentId: $assessmentId) {
+          courseId
           tasks {
             itemId
             name
@@ -58,6 +204,7 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
               downloadUrl
             }
             result {
+              id # <-- WICHTIG!
               status
               results {
                 itemId
@@ -70,19 +217,52 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
     `,
     { assessmentId }
   );
-  const exercise = data.submissionExerciseForLecturer;
 
-  // einfache Ableitung von Tabellenzeilen:
-  // pro Solution (Student: userId) zeigen wir alle abgegebenen Files
+  const exercise = data.submissionExerciseForLecturer;
+  const [commitUpdateResult, isUpdating] = useMutation(UpdateResultMutation);
+
+  // Dialog-State
+  const [editing, setEditing] = useState<{
+    open: boolean;
+    userId: string;
+    solutionId: string;
+    resultId: string | null | undefined;
+    initial: ResultRow | null | undefined;
+  } | null>(null);
+
+  // Tabellenzeilen aus Solutions
   const rows = useMemo(() => {
     return (exercise?.solutions ?? []).map((sol) => ({
       key: sol.id ?? `${assessmentId}-${sol.userId}`,
+      solutionId: sol.id!,
       userId: sol.userId,
       files: sol.files ?? [],
       submittedAt: sol.submissionDate,
-      result: sol.result,
+      // <- hier Mapping von readonly + nullable → mutable + konsistente Typen
+      result: sol.result
+        ? {
+            id: sol.result.id,
+            status: sol.result.status ?? null,
+            results: (sol.result.results ?? []).map((r) => ({
+              itemId: r.itemId,
+              score: r.score, // Int! -> number
+            })),
+          }
+        : null,
+      resultId: sol.result?.id ?? null,
     }));
   }, [exercise, assessmentId]);
+
+  const tasks: TaskRow[] = useMemo(
+    () =>
+      (exercise?.tasks ?? []).map((t) => ({
+        itemId: t.itemId,
+        name: t.name,
+        number: t.number,
+        maxScore: t.maxScore ?? null,
+      })),
+    [exercise]
+  );
 
   const handleDownload = (file: {
     id: string;
@@ -100,81 +280,167 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
     window.open(file.downloadUrl ?? "#", "_blank");
   };
 
-  return (
-    <Accordion defaultExpanded>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Typography fontWeight={700}>{name}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            {rows.length} Abgaben · {exercise?.tasks?.length ?? 0} Tasks
-          </Typography>
-        </Box>
-      </AccordionSummary>
+  const openEdit = (r: (typeof rows)[number]) =>
+    setEditing({
+      open: true,
+      userId: r.userId,
+      solutionId: r.solutionId,
+      resultId: r.resultId,
+      initial: r.result,
+    });
 
-      <AccordionDetails>
-        <TableContainer component={Paper} elevation={1}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Student (userId)</TableCell>
-                <TableCell>Files</TableCell>
-                <TableCell align="center">Download</TableCell>
-                <TableCell align="center">View</TableCell>
-                <TableCell align="center">
-                  Bewertung (falls vorhanden)
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((r) => (
-                <TableRow key={r.key} hover>
-                  <TableCell>{r.userId}</TableCell>
-                  <TableCell>
-                    {(r.files ?? []).map((f) => f.name).join(", ")}
-                  </TableCell>
-                  <TableCell align="center">
-                    {(r.files ?? []).map((f) => (
-                      <Button
-                        key={f.id}
-                        variant="outlined"
-                        size="small"
-                        onClick={() => handleDownload(f)}
-                      >
-                        {f.name}
-                      </Button>
-                    ))}
-                  </TableCell>
-                  <TableCell align="center">
-                    {(r.files ?? []).map((f) => (
-                      <Button
-                        key={f.id}
-                        variant="outlined"
-                        size="small"
-                        onClick={() => handleView(f)}
-                      >
-                        {f.name}
-                      </Button>
-                    ))}
-                  </TableCell>
-                  <TableCell align="center">
-                    {r.result?.status ?? "—"}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {rows.length === 0 && (
+  const closeEdit = () => setEditing(null);
+
+  const saveGrading = (payload: {
+    status: string | null;
+    results: { itemId: string; score: number | null }[];
+  }) => {
+    if (!editing) return;
+    const resultId = editing.resultId;
+    const courseId = exercise?.courseId;
+    if (!resultId || !courseId) {
+      // defensiv: ohne IDs kein Update
+      closeEdit();
+      return;
+    }
+
+    // InputResult exakt wie in deinem Schema
+    const variables = {
+      result: {
+        id: resultId,
+        assessmentId,
+        courseId,
+        status: payload.status, // "pending" | "passed" | "failed"
+        results: payload.results
+          // null-Scores ignorieren; falls dein Backend null erlaubt, nimm statt .filter(...) einfach payload.results
+          .filter((r) => r.score != null)
+          .map((r) => ({ itemId: r.itemId, score: r.score as number })),
+      },
+    };
+
+    commitUpdateResult({
+      variables,
+      optimisticResponse: {
+        updateResult: {
+          id: resultId,
+          status: payload.status,
+          results: payload.results
+            .filter((r) => r.score != null)
+            .map((r) => ({
+              itemId: r.itemId,
+              score: r.score as number,
+              number: null, // wird vom Server gesetzt; optimistisch egal
+            })),
+        },
+      },
+      onCompleted: () => closeEdit(),
+      onError: () => closeEdit(),
+    });
+  };
+
+  return (
+    <>
+      <Accordion defaultExpanded>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Typography fontWeight={700}>{name}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {rows.length} Submissions · {exercise?.tasks?.length ?? 0} Tasks
+            </Typography>
+          </Box>
+        </AccordionSummary>
+
+        <AccordionDetails>
+          <TableContainer component={Paper} elevation={1}>
+            <Table size="small">
+              <TableHead>
                 <TableRow>
-                  <TableCell colSpan={5}>
-                    <Typography color="text.secondary">
-                      Keine Abgaben.
-                    </Typography>
-                  </TableCell>
+                  <TableCell>Student (userId)</TableCell>
+                  <TableCell>Files</TableCell>
+                  <TableCell align="center">Download</TableCell>
+                  <TableCell align="center">View</TableCell>
+                  <TableCell align="center">Grading</TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </AccordionDetails>
-    </Accordion>
+              </TableHead>
+              <TableBody>
+                {rows.map((r) => (
+                  <TableRow key={r.key} hover>
+                    <TableCell>{r.userId}</TableCell>
+                    <TableCell>
+                      {(r.files ?? []).map((f) => f.name).join(", ")}
+                    </TableCell>
+                    <TableCell align="center">
+                      {(r.files ?? []).map((f) => (
+                        <Button
+                          key={f.id}
+                          variant="outlined"
+                          size="small"
+                          onClick={() => handleDownload(f)}
+                        >
+                          {f.name}
+                        </Button>
+                      ))}
+                    </TableCell>
+                    <TableCell align="center">
+                      {(r.files ?? []).map((f) => (
+                        <Button
+                          key={f.id}
+                          variant="outlined"
+                          size="small"
+                          onClick={() => handleView(f)}
+                        >
+                          {f.name}
+                        </Button>
+                      ))}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        justifyContent="center"
+                        alignItems="center"
+                      >
+                        <Typography variant="body2">
+                          {r.result?.status ?? "—"}
+                        </Typography>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          disabled={isUpdating || !r.resultId}
+                          onClick={() => openEdit(r)}
+                        >
+                          Edit
+                        </Button>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {rows.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5}>
+                      <Typography color="text.secondary">
+                        No submissions yet.
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Dialog */}
+      {editing && (
+        <GradingDialog
+          open={editing.open}
+          onClose={closeEdit}
+          tasks={tasks}
+          initial={editing.initial}
+          onSave={saveGrading}
+        />
+      )}
+    </>
   );
 }
 
@@ -182,7 +448,6 @@ export default function LecturerSubmissionsList({
   courseId,
   submissions,
 }: Props) {
-  // einfache Filter wie zuvor
   const [selectedId, setSelectedId] = useState<string>("ALL");
   const [search, setSearch] = useState<string>("");
 
@@ -199,7 +464,7 @@ export default function LecturerSubmissionsList({
   if (!submissions.length) {
     return (
       <Typography color="text.secondary">
-        Keine Submission-Contents in diesem Kurs.
+        No Submissions were created in this course yet.
       </Typography>
     );
   }
@@ -220,7 +485,7 @@ export default function LecturerSubmissionsList({
             value={selectedId}
             onChange={(e) => setSelectedId(e.target.value)}
           >
-            <MenuItem value="ALL">Alle</MenuItem>
+            <MenuItem value="ALL">All</MenuItem>
             {submissions.map((s) => (
               <MenuItem key={s.assessmentId} value={s.assessmentId}>
                 {s.name}
@@ -230,7 +495,7 @@ export default function LecturerSubmissionsList({
         </FormControl>
 
         <TextField
-          placeholder="Suche Submission-Name…"
+          placeholder="Search for submission name"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           fullWidth

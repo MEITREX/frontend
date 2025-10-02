@@ -241,7 +241,10 @@ function TaskCard({
             <Typography variant="h6">
               {task.number}. {task.name}
             </Typography>
-            <Chip size="small" label={`Maximum number of points: ${task.maxScore}`} />
+            <Chip
+              size="small"
+              label={`Maximum number of points: ${task.maxScore}`}
+            />
           </Stack>
         }
         action={
@@ -596,6 +599,8 @@ export default function LecturerSubmission() {
       />
     );
   }
+
+  console.log(submissionExerciseForLecturer.files[0]);
 
   return (
     <>
