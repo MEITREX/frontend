@@ -24,13 +24,6 @@ type UserLevelInfo = {
   exceedingXP: number; // XP gathered within current level
 };
 
-const tabs = [
-  { label: "General", path: "general" },
-  { label: "Achievements", path: "achievements" },
-  { label: "Forum", path: "forum" },
-  { label: "Badges", path: "badges" },
-  { label: "Leaderboards", path: "leaderboard" }, // Added new tab
-];
 
 const getUserXPQuery = graphql`
   query pagePrivateProfileStudentGeneral_GetUserXPQuery($userID: ID!) {
@@ -45,6 +38,24 @@ const getUserXPQuery = graphql`
 `;
 
 export default function GeneralPageWrapper() {
+  // TODO: Do this for every Route --> if this would be a layout component we would only need to do it once...
+  const displayGamification = false;
+
+  const baseTabs = [
+    { label: "General", path: "general" },
+    { label: "Forum", path: "forum" },
+  ];
+
+  const gamificationTabs = [
+    { label: "Achievements", path: "achievements" },
+    { label: "Badges", path: "badges" },
+    { label: "Leaderboards", path: "leaderboard" },
+  ];
+
+  const tabs = displayGamification
+    ? [...baseTabs, ...gamificationTabs]
+    : baseTabs;
+
   const router = useRouter();
   const pathname = usePathname();
 
@@ -106,32 +117,35 @@ export default function GeneralPageWrapper() {
       </GamificationGuard>
 
       {/* Level + XP overview */}
-      <Box sx={{ mb: 2 }}>
-        <Stack
-          direction="row"
-          spacing={1.5}
-          alignItems="center"
-          sx={{ mb: 0.5 }}
-        >
-          <img
-            src={levelIconSrc}
-            alt={`Level ${levelInfo.level}`}
-            width={48}
-            height={48}
-            style={{ display: "block" }}
+      <GamificationGuard>
+        <Box sx={{ mb: 2 }}>
+          <Stack
+            direction="row"
+            spacing={1.5}
+            alignItems="center"
+            sx={{ mb: 0.5 }}
+          >
+            <img
+              src={levelIconSrc}
+              alt={`Level ${levelInfo.level}`}
+              width={48}
+              height={48}
+              style={{ display: "block" }}
+            />
+            <Typography variant="body2" color="text.secondary">
+              {`Level ${levelInfo.level} · ${Math.round(
+                levelInfo.exceedingXP
+              )} / ${Math.max(1, Math.round(levelInfo.requiredXP))} XP`}
+            </Typography>
+          </Stack>
+          <LinearProgress
+            variant="determinate"
+            value={progressPct}
+            sx={{ height: 10, borderRadius: 999 }}
           />
-          <Typography variant="body2" color="text.secondary">
-            {`Level ${levelInfo.level} · ${Math.round(
-              levelInfo.exceedingXP
-            )} / ${Math.max(1, Math.round(levelInfo.requiredXP))} XP`}
-          </Typography>
-        </Stack>
-        <LinearProgress
-          variant="determinate"
-          value={progressPct}
-          sx={{ height: 10, borderRadius: 999 }}
-        />
-      </Box>
+        </Box>
+      </GamificationGuard>
+
 
       <Tabs
         value={activeIndex}

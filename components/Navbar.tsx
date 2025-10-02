@@ -73,6 +73,7 @@ import {
   useLazyLoadQuery,
   useRelayEnvironment,
 } from "react-relay";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 
 /** ---------------- Utilities ---------------- */
 function useIsTutor(_frag: NavbarIsTutor$key) {

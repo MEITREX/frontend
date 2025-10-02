@@ -170,13 +170,23 @@ function enrichScoresWithNames(
 export default function PublicProfilePage() {
   const router = useRouter(); // Hook holen
 
-  const publicTabs = [
-    "Achievements",
-    "Forum",
-    "Badges",
-    "Leaderboards",
-    "Items",
+  const displayGamification = false;
+
+  const baseTabs = [
+    { label: "General", path: "general" },
+    { label: "Forum", path: "forum" },
   ];
+
+  const gamificationTabs = [
+    { label: "Achievements", path: "achievements" },
+    { label: "Badges", path: "badges" },
+    { label: "Leaderboards", path: "leaderboard" },
+  ];
+
+  const publicTabs = displayGamification
+    ? [...baseTabs, ...gamificationTabs]
+    : baseTabs;
+
   const [tabIndex, setTabIndex] = useState(0);
 
   const params = useParams();

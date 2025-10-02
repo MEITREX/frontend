@@ -9,15 +9,25 @@ import { graphql } from "relay-runtime";
 import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
 import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 
-const tabs = [
-  { label: "General", path: "general" },
-  { label: "Achievements", path: "achievements" },
-  { label: "Forum", path: "forum" },
-  { label: "Badges", path: "badges" },
-  { label: "Leaderboards", path: "leaderboard" },
-];
 
 export default function ForumPage() {
+  const displayGamification = false;
+
+  const baseTabs = [
+    { label: "General", path: "general" },
+    { label: "Forum", path: "forum" },
+  ];
+
+  const gamificationTabs = [
+    { label: "Achievements", path: "achievements" },
+    { label: "Badges", path: "badges" },
+    { label: "Leaderboards", path: "leaderboard" },
+  ];
+
+  const tabs = displayGamification
+    ? [...baseTabs, ...gamificationTabs]
+    : baseTabs;
+
   const router = useRouter();
   const pathname = usePathname();
   const section = (pathname.split("/profile/")[1] || "").split("/")[0];
