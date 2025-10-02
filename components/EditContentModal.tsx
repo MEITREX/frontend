@@ -405,6 +405,7 @@ export function EditContentModal({
         onClose={() => setOpenSubmissionExerciseModal(false)}
         chapterId={chapterId}
         _existingSubmission={null}
+        tasks={[]}
       />
     </>
   );
