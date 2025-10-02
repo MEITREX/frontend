@@ -276,9 +276,6 @@ export default function StudentSubmissionView() {
             setUploading(false);
             setUploadError(err?.message ?? "Upload failed.");
           });
-        setUploading(false);
-        setFetchKey((prev) => prev + 1);
-
       },
       onError: (err) => {
         setUploading(false);
