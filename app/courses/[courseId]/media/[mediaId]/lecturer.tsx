@@ -121,7 +121,7 @@ export default function LecturerMediaPage() {
   );
 
   return (
-    <main className="flex flex-col h-full">
+    <main className="flex flex-col h-full relative">
       {error?.source.errors.map((err: any, i: number) => (
         <Alert key={i} severity="error" onClose={() => setError(null)}>
           {err.message}
@@ -166,34 +166,24 @@ export default function LecturerMediaPage() {
             >
               Edit
             </Button>
+            <IconButton
+              onClick={handleToggleForum}
+              size="large"
+              sx={{
+                backgroundColor: !isForumActive ? "#1976d2" : "white",
+                color: !isForumActive ? "white" : "black",
+                border: "1px solid #ddd",
+                "&:hover": {
+                  backgroundColor: !isForumActive ? "#1565c0" : "#f0f0f0",
+                },
+              }}
+            >
+              <ForumIcon />
+            </IconButton>
           </div>
         }
         backButton
       />
-
-      <Box
-        sx={{
-          position: "absolute",
-          top: 1,
-          right: 1,
-          zIndex: 1000,
-        }}
-      >
-        <IconButton
-          onClick={handleToggleForum}
-          size="large"
-          sx={{
-            backgroundColor: !isForumActive ? "#1976d2" : "white",
-            color: !isForumActive ? "white" : "black",
-            border: "1px solid #ddd",
-            "&:hover": {
-              backgroundColor: !isForumActive ? "#1565c0" : "#f0f0f0",
-            },
-          }}
-        >
-          <ForumIcon />
-        </IconButton>
-      </Box>
 
       <ContentTags metadata={content.metadata} />
       <div className="my-8 grow">
