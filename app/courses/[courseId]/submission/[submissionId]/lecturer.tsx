@@ -241,7 +241,7 @@ function TaskCard({
             <Typography variant="h6">
               {task.number}. {task.name}
             </Typography>
-            <Chip size="small" label={`Max: ${task.maxScore}`} />
+            <Chip size="small" label={`Maximum number of points: ${task.maxScore}`} />
           </Stack>
         }
         action={
@@ -627,45 +627,50 @@ export default function LecturerSubmission() {
       </Stack>
 
       {/* Files display */}
-      <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap sx={{mb: 2}}>
- {submissionExerciseForLecturer.files.map((f) => (
-    <Paper
-      key={f.id}
-      variant="outlined"
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        borderRadius: 2,
-        px: 1,
-        py: 0.5,
-        boxShadow: 1, // hebt das Set leicht an
-      }}
-    >
-      <Chip
-        icon={<InsertDriveFileIcon />}
-        label={f.name}
-        clickable
-        onClick={() => window.open(f.downloadUrl ?? "#", "_blank")}
-        variant="outlined"
-        sx={{
-          "& .MuiChip-icon": { mr: 0.5 },
-        }}
-      />
-      <IconButton
-        aria-label="Delete file"
-        size="small"
-        onClick={() => deleteFile(f.id)}
-        color="error"
-        sx={{
-          ml: 0.5,
-        }}
+      <Stack
+        direction="row"
+        spacing={2}
+        flexWrap="wrap"
+        useFlexGap
+        sx={{ mb: 2 }}
       >
-        <DeleteIcon fontSize="small" />
-      </IconButton>
-    </Paper>
-  ))}
-</Stack>
-
+        {submissionExerciseForLecturer.files.map((f) => (
+          <Paper
+            key={f.id}
+            variant="outlined"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              borderRadius: 2,
+              px: 1,
+              py: 0.5,
+              boxShadow: 1, // hebt das Set leicht an
+            }}
+          >
+            <Chip
+              icon={<InsertDriveFileIcon />}
+              label={f.name}
+              clickable
+              onClick={() => window.open(f.downloadUrl ?? "#", "_blank")}
+              variant="outlined"
+              sx={{
+                "& .MuiChip-icon": { mr: 0.5 },
+              }}
+            />
+            <IconButton
+              aria-label="Delete file"
+              size="small"
+              onClick={() => deleteFile(f.id)}
+              color="error"
+              sx={{
+                ml: 0.5,
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Paper>
+        ))}
+      </Stack>
 
       {/* Tasks Grid */}
       {sortedTasks.length ? (
