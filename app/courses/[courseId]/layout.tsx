@@ -5,7 +5,7 @@ import { PageView, usePageView } from "@/src/currentView";
 import { isUUID } from "@/src/utils";
 import { PageError } from "@/components/PageError";
 
-import StudentCourseLayout from "../../../components/courses/student/StudentCourseLayout";
+import StudentCourseLayout from "@/components/courses/student/StudentCourseLayout";
 import LecturerCourseLayout from "@/components/courses/lecturer/LecturerCourseLayout";
 
 export default function CourseLayout({

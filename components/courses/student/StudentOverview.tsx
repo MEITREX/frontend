@@ -1,9 +1,9 @@
 "use client";
 
-import { useCourseData } from "../context/CourseDataContext";
 import WidgetsOverview from "@/components/widgets/WidgetsOverview";
 import { ChapterOverview } from "@/components/ChapterOverview";
 import { StudentCourseLayoutCourseIdQuery$data } from "@/__generated__/StudentCourseLayoutCourseIdQuery.graphql";
+import { useCourseData } from "@/components/courses/context/CourseDataContext";
 
 export default function StudentOverview() {
   const data = useCourseData() as StudentCourseLayoutCourseIdQuery$data;

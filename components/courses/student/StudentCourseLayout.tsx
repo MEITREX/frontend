@@ -10,7 +10,7 @@ import { Box, Button, Typography } from "@mui/material";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import { StudentCourseNavigation } from "@/components/courses/student/StudentCourseNavigation";
 import * as React from "react";
-import QuestList from "../../../app/courses/[courseId]/quests/QuestItem";
+import QuestList from "@/app/courses/[courseId]/quests/QuestItem";
 import { StudentCourseLayoutCourseIdQuery } from "@/__generated__/StudentCourseLayoutCourseIdQuery.graphql";
 import { StudentCourseLayoutLeaveMutation } from "@/__generated__/StudentCourseLayoutLeaveMutation.graphql";
 import { StudentCourseLayoutLoginMutation } from "@/__generated__/StudentCourseLayoutLoginMutation.graphql";
