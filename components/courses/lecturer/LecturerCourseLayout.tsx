@@ -37,7 +37,7 @@ graphql`
   }
 `;
 
-const lecturerCourseIdQuery = graphql`
+export const lecturerCourseIdQuery = graphql`
   query LecturerCourseLayoutCourseIdQuery($courseId: UUID!) {
     ...MediaRecordSelector
     currentUserInfo {

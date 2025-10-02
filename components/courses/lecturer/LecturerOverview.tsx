@@ -11,24 +11,9 @@ import {
 } from "@/__generated__/LecturerCourseLayoutCourseIdQuery.graphql";
 import { graphql, useLazyLoadQuery } from "react-relay";
 import { useParams } from "next/navigation";
+import { lecturerCourseIdQuery } from "@/components/courses/lecturer/LecturerCourseLayout";
+import { PageError } from "@/components/PageError";
 
-const lecturerCourseIdQuery = graphql`
-  query LecturerCourseLayoutCourseIdQuery($courseId: UUID!) {
-    ...MediaRecordSelector
-    currentUserInfo {
-      realmRoles
-      courseMemberships {
-        role
-        course {
-          id
-        }
-      }
-    }
-    coursesByIds(ids: [$courseId]) {
-      ...LecturerCourseLayoutFragment @relay(mask: false)
-    }
-  }
-`;
 
 export default function LecturerOverview() {
   // We cant use context here -> when navigating to Members and then back an error appreas. Idk why?
@@ -42,11 +27,17 @@ export default function LecturerOverview() {
     { courseId }
   );
 
-  const course = data.coursesByIds[0];
+  const course = data?.coursesByIds?.[0];
+
+  if (!course) {
+    return (
+      <PageError message="No course found!"/>
+    );
+  }
 
   return (
     <div className="border-2 border-gray-300 rounded-3xl w-full overflow-hidden">
-      {orderBy(course.chapters.elements, [
+      {orderBy(course.chapters?.elements ?? [], [
         (x) => new Date(x.startDate).getTime(),
         "number",
       ]).map((chapter, i) => (
