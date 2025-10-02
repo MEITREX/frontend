@@ -146,11 +146,6 @@ export default function CourseLayout({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [course?.id]);
 
-  useEffect(() => {
-    console.log("Mounted CourseLayout");
-    return () => console.log("Unmounted CourseLayout");
-  }, []);
-
   if (!course) {
     return <PageError message="No course found with given id." />;
   }
