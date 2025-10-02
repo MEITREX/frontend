@@ -235,6 +235,18 @@ export default function StudentSubmissionView() {
     setUploadError(null);
   };
 
+  async function doUpload(file: File, uploadUrl: string) {
+    const res = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": file.type || "application/pdf" },
+      body: file,
+    });
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      throw new Error(`Upload failed (${res.status}): ${txt}`);
+    }
+  }
+
   const onSubmitUpload = async () => {
     if (!selectedFile || !latestSolution) return;
 
@@ -248,9 +260,25 @@ export default function StudentSubmissionView() {
         name: selectedFile.name,
       },
       onCompleted: (response) => {
+        const file = response.createSolutionFile
+        if (!file?.uploadUrl || !selectedFile) {
+          setUploadError("No Upload URL given.");
+          return;
+        }
+        setUploading(true);
+        doUpload(selectedFile, file.uploadUrl)
+          .then(() => {
+            setUploading(false);
+            handleCloseDialog();
+            setFetchKey((k) => k + 1);
+          })
+          .catch((err) => {
+            setUploading(false);
+            setUploadError(err?.message ?? "Upload failed.");
+          });
         setUploading(false);
         setFetchKey((prev) => prev + 1);
-        handleCloseDialog();
+
       },
       onError: (err) => {
         setUploading(false);
