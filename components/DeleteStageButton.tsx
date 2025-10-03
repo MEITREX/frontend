@@ -64,7 +64,9 @@ export function DeleteStageButton({
       <ConfirmationDialog
         open={showDeleteConfirmation}
         title="Delete Stage"
-        message={"Do you really want to delete this stage? This action cannot be undone."}
+        message={
+          "Do you really want to delete this stage? This action cannot be undone."
+        }
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteConfirmation(false)}
         confirmText="Delete"
