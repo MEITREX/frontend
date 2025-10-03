@@ -22,7 +22,10 @@ import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 // --- MUI Icons ---
 import { studentCreateSolutionFileMutation } from "@/__generated__/studentCreateSolutionFileMutation.graphql";
 import { studentCreateSolutionMutation } from "@/__generated__/studentCreateSolutionMutation.graphql";
+import { studentDeleteSolutionFileMutation } from "@/__generated__/studentDeleteSolutionFileMutation.graphql";
 import { studentSubmissionExerciseByUserQuery } from "@/__generated__/studentSubmissionExerciseByUserQuery.graphql";
+import { Heading } from "@/components/Heading";
+import { Delete } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -47,6 +50,7 @@ const GetSubmissionQuery = graphql`
         id
         submissionDate
         files {
+          id
           name
           downloadUrl
         }
@@ -97,12 +101,40 @@ const CreateSolutionMutation = graphql`
   }
 `;
 
-const FileListItem: FC<{ name: string; downloadUrl: string }> = ({
+const DeleteSolutionFileMutation = graphql`
+  mutation studentDeleteSolutionFileMutation(
+    $fileId: UUID!
+    $solutionId: UUID!
+  ) {
+    deleteSolutionFile(fileId: $fileId, solutionId: $solutionId) {
+      name
+    }
+  }
+`;
+
+const dateFormattingOptions: Intl.DateTimeFormatOptions = {
+  year: "2-digit",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+};
+
+interface FileListItemProps {
+  name: string;
+  downloadUrl: string;
+  isDeletable?: boolean; // New: If true, the action icon will be for deletion
+  onDelete?: () => void; // New: Callback for the delete action
+}
+
+const FileListItem: FC<FileListItemProps> = ({
   name,
   downloadUrl,
+  isDeletable = false,
+  onDelete,
 }) => {
   const handleDownload = (e: MouseEvent) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevents the main onClick from firing
     const link = document.createElement("a");
     link.href = downloadUrl;
     link.setAttribute("download", name);
@@ -111,14 +143,30 @@ const FileListItem: FC<{ name: string; downloadUrl: string }> = ({
     link.parentNode?.removeChild(link);
   };
 
+  // This handler calls the parent's onDelete function.
+  const handleDelete = (e: MouseEvent) => {
+    e.stopPropagation();
+    if (onDelete) {
+      onDelete();
+    }
+  };
+
   return (
     <Chip
       icon={<InsertDriveFileIcon />}
       label={name}
       onClick={() => window.open(downloadUrl, "_blank")}
-      onDelete={handleDownload}
-      deleteIcon={<DownloadIcon />}
+      onDelete={isDeletable ? handleDelete : handleDownload}
+      deleteIcon={isDeletable ? <Delete /> : <DownloadIcon />}
       variant="outlined"
+      sx={{
+        "& .MuiChip-deleteIcon": {
+          color: isDeletable ? "error.main" : "action.active",
+          "&:hover": {
+            color: isDeletable ? "error.dark" : "primary.main",
+          },
+        },
+      }}
     />
   );
 };
@@ -151,6 +199,8 @@ export default function StudentSubmissionView() {
     useMutation<studentCreateSolutionFileMutation>(CreateSolutionFileMutation);
   const [commitCreateSolution, isCreateSolutionInFlight] =
     useMutation<studentCreateSolutionMutation>(CreateSolutionMutation);
+  const [commitDeleteFile, isDeletingFile] =
+    useMutation<studentDeleteSolutionFileMutation>(DeleteSolutionFileMutation);
 
   const latestSolution =
     submissionData.solutions && submissionData.solutions.length > 0
@@ -190,7 +240,7 @@ export default function StudentSubmissionView() {
       achievedScore: achieved,
       taskMaxScoreMap: maxScoreMap,
       isPastDeadline: pastDeadline,
-      formattedEndDate: endDate?.toLocaleString(),
+      formattedEndDate: endDate?.toLocaleString("de-DE", dateFormattingOptions),
     };
   }, [submissionData.tasks, submissionData.endDate, latestSolution]);
 
@@ -229,7 +279,6 @@ export default function StudentSubmissionView() {
   };
 
   const handleCloseDialog = () => {
-    if (!selectedFile || !latestSolution) return;
     setUploadOpen(false);
     setSelectedFile(null);
     setUploadError(null);
@@ -247,6 +296,30 @@ export default function StudentSubmissionView() {
     }
   }
 
+  const handleFileDeletion = (fileId: string) => {
+    if (!latestSolution || !latestSolution.id) return;
+
+    if (
+      window.confirm(
+        "Are you sure you want to delete this file? This cannot be undone."
+      )
+    ) {
+      commitDeleteFile({
+        variables: {
+          fileId: fileId,
+          solutionId: latestSolution.id,
+        },
+        onCompleted: (response) => {
+          setFetchKey((prev) => prev + 1);
+        },
+        onError: (err) => {
+          console.error("Error deleting file:", err);
+          alert("There was an error deleting the file. Please try again.");
+        },
+      });
+    }
+  };
+
   const onSubmitUpload = async () => {
     if (!selectedFile || !latestSolution) return;
 
@@ -260,7 +333,7 @@ export default function StudentSubmissionView() {
         name: selectedFile.name,
       },
       onCompleted: (response) => {
-        const file = response.createSolutionFile
+        const file = response.createSolutionFile;
         if (!file?.uploadUrl || !selectedFile) {
           setUploadError("No Upload URL given.");
           return;
@@ -296,306 +369,323 @@ export default function StudentSubmissionView() {
     statusColorMap[status as keyof typeof statusColorMap] ?? "default";
 
   return (
-    <Stack spacing={3}>
-      {/* SECTION 1: Provided Files */}
-      <Paper
-        variant="outlined"
-        sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, boxShadow: 2 }}
-      >
-        <Typography variant="h5" gutterBottom>
-          Provided Files
-        </Typography>
-        {submissionData.files.length > 0 ? (
-          <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
-            {submissionData.files
-              .filter((file) => Boolean(file.downloadUrl))
-              .map((file, i) => (
-                <FileListItem
-                  key={i + 1}
-                  name={file.name}
-                  downloadUrl={file.downloadUrl!}
-                />
-              ))}
-          </Stack>
-        ) : (
-          <Typography color="text.secondary" sx={{ pt: 1 }}>
-            No files were provided for this submission.
-          </Typography>
-        )}
-      </Paper>
-
-      {/* SECTION 2: Your Submission */}
-      <Paper
-        variant="outlined"
-        sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, boxShadow: 2 }}
-      >
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          flexWrap="wrap"
-          gap={1}
-        >
-          <Typography variant="h5" gutterBottom sx={{ mb: 0 }}>
-            Your Submission
-          </Typography>
-          {formattedEndDate && (
-            <Chip
-              label={`Deadline: ${formattedEndDate}`}
-              color={isPastDeadline ? "error" : "default"}
-              variant="outlined"
-              className="font-semibold"
-            />
-          )}
-        </Stack>
-        <Divider sx={{ my: 2 }} />
-
-        {!latestSolution ? (
-          <Box>
-            <Typography color="text.secondary" sx={{ mb: 2 }}>
-              You have not started a submission.
-            </Typography>
-            <Button
-              variant="contained"
-              onClick={handleAddSolution}
-              disabled={isPastDeadline || isCreateSolutionInFlight}
-            >
-              {isCreateSolutionInFlight ? "Creating..." : "Add Solution"}
-            </Button>
-          </Box>
-        ) : (
-          <Stack spacing={2}>
-            <Stack
-              direction="row"
-              spacing={2}
-              alignItems="center"
-              justifyContent="space-between"
-            >
-              <Typography variant="h6">Last Changed on:</Typography>
-              <Typography color="text.secondary">
-                {latestSolution.submissionDate
-                  ? new Date(latestSolution.submissionDate).toLocaleString()
-                  : "Nothing submitted yet"}
-              </Typography>
-            </Stack>
-
-            <Divider />
-
-            {/*TODO: Change these List Items to be deletable instead of downloadable */}
-            <Typography variant="subtitle1">Submitted Files:</Typography>
-            {latestSolution.files.length > 0 ? (
-              <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
-                {latestSolution.files
-                  .filter((file) => file.downloadUrl)
-                  .map((file, i) => (
-                    <FileListItem
-                      key={i + 1}
-                      name={file.name}
-                      downloadUrl={file.downloadUrl!}
-                    />
-                  ))}
-              </Stack>
-            ) : (
-              <Typography color="text.secondary">
-                No files uploaded yet.
-              </Typography>
-            )}
-
-            <Button
-              variant="contained"
-              onClick={() => setUploadOpen(true)}
-              disabled={isPastDeadline}
-            >
-              Upload File
-            </Button>
-          </Stack>
-        )}
-        {isPastDeadline && (
-          <Alert severity={latestSolution?.files.length ? "warning" : "error"} sx={{ mt: 2 }}>
-            The deadline for this submission has passed. You can no longer make
-            changes.
-          </Alert>
-        )}
-      </Paper>
-
-      {/* SECTION 3: Evaluation (only shown if a solution exists)*/}
-      {isPastDeadline && (
+    <>
+      <Heading title={"Test"} backButton />
+      <Stack spacing={3} className="mt-6">
+        {/* SECTION 1: Provided Files */}
         <Paper
           variant="outlined"
           sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, boxShadow: 2 }}
         >
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Typography variant="h5" gutterBottom>
-              Evaluation:
+          <Typography variant="h5" gutterBottom>
+            Provided Files
+          </Typography>
+          {submissionData.files.length > 0 ? (
+            <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
+              {submissionData.files
+                .filter((file) => Boolean(file.downloadUrl))
+                .map((file, i) => (
+                  <FileListItem
+                    key={i + 1}
+                    name={file.name}
+                    downloadUrl={file.downloadUrl!}
+                  />
+                ))}
+            </Stack>
+          ) : (
+            <Typography color="text.secondary" sx={{ pt: 1 }}>
+              No files were provided for this submission.
             </Typography>
-            <Chip label={status.toLocaleUpperCase()} color={statusColor} />
+          )}
+        </Paper>
+
+        {/* SECTION 2: Your Submission */}
+        <Paper
+          variant="outlined"
+          sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, boxShadow: 2 }}
+        >
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            flexWrap="wrap"
+            gap={1}
+          >
+            <Typography variant="h5" gutterBottom sx={{ mb: 0 }}>
+              Your Submission
+            </Typography>
+            {formattedEndDate && (
+              <Chip
+                label={`Deadline: ${formattedEndDate}`}
+                color={isPastDeadline ? "error" : "default"}
+                variant="outlined"
+                className="font-semibold"
+              />
+            )}
           </Stack>
-          {status !== "pending" ? (
+          <Divider sx={{ my: 2 }} />
+
+          {!latestSolution ? (
+            <Box>
+              <Typography color="text.secondary" sx={{ mb: 2 }}>
+                You have not started a submission.
+              </Typography>
+              <Button
+                variant="contained"
+                onClick={handleAddSolution}
+                disabled={isPastDeadline || isCreateSolutionInFlight}
+              >
+                {isCreateSolutionInFlight ? "Creating..." : "Add Solution"}
+              </Button>
+            </Box>
+          ) : (
             <Stack spacing={2}>
               <Stack
                 direction="row"
                 spacing={2}
-                alignItems="baseline"
-                flexWrap="wrap"
+                alignItems="center"
+                justifyContent="space-between"
               >
-                <Typography variant="h4">
-                  {achievedScore} / {totalMaxScore} Points
+                <Typography variant="h6">Last Changed on:</Typography>
+                <Typography color="text.secondary">
+                  {latestSolution.submissionDate
+                    ? new Date(latestSolution.submissionDate).toLocaleString(
+                        "de-DE",
+                        dateFormattingOptions
+                      )
+                    : "Nothing submitted yet"}
                 </Typography>
               </Stack>
 
-              <Box>
-                {submissionData.tasks.length >= 3 || showDetails ? (
-                  <>
-                    <Typography variant="h5" gutterBottom>
-                      Detailed Feedback
-                    </Typography>
-                    <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
-                      <Stack spacing={1}>
-                        {latestSolution!.result.results.map((result, i) => {
-                          const task = submissionData.tasks.find(
-                            (t) => t.number === result.number - 1
-                          );
-                          return !task ? (
-                            <Alert severity="error" sx={{ mt: 2 }}>
-                              Something went wrong with the Evaluation of the
-                              submission. Please contact your tutor!
-                            </Alert>
-                          ) : (
-                            <Typography
-                              key={i}
-                              variant="h6"
-                              sx={{ fontWeight: "normal" }}
-                            >
-                              {task.name}: <strong>{result.score}</strong>/
-                              {task.maxScore} Points
-                            </Typography>
-                          );
-                        })}
-                      </Stack>
-                    </Paper>
-                  </>
-                ) : (
-                  <Button
-                    variant="contained"
-                    onClick={() => setShowDetails(true)}
-                  >
-                    Show Detailed Feedback
-                  </Button>
-                )}
-              </Box>
+              <Divider />
+
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                spacing={2}
+              >
+                <Typography variant="subtitle1">Submitted Files:</Typography>
+                <Button
+                  variant="contained"
+                  onClick={() => setUploadOpen(true)}
+                  disabled={isPastDeadline}
+                >
+                  Upload File
+                </Button>
+              </Stack>
+
+              {latestSolution.files.length > 0 ? (
+                <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
+                  {latestSolution.files
+                    .filter((file) => file.downloadUrl)
+                    .map((file, i) => (
+                      <FileListItem
+                        key={i + 1}
+                        name={file.name}
+                        downloadUrl={file.downloadUrl!}
+                        isDeletable={true}
+                        onDelete={() => handleFileDeletion(file.id)}
+                      />
+                    ))}
+                </Stack>
+              ) : (
+                <Typography color="text.secondary">
+                  No files uploaded yet.
+                </Typography>
+              )}
             </Stack>
-          ) : (
-            // STATE 3B: Not graded yet
-            <Typography color="text.secondary" sx={{ pt: 1 }}>
-              Your submission has not been graded yet.
-            </Typography>
+          )}
+          {isPastDeadline && (
+            <Alert
+              severity={latestSolution?.files.length ? "warning" : "error"}
+              sx={{ mt: 2 }}
+            >
+              The deadline for this submission has passed. You can no longer
+              make changes.
+            </Alert>
           )}
         </Paper>
-      )}
 
-      {/* Upload file Dialog */}
-      {isUploadOpen ? (
-        <Dialog
-          open={isUploadOpen}
-          onClose={handleCloseDialog}
-          fullWidth
-          maxWidth="sm"
-        >
-          <DialogTitle>Upload Submission File</DialogTitle>
-          <DialogContent>
-            <Stack spacing={2} sx={{ mt: 1 }}>
-              <Paper
-                variant="outlined"
-                sx={{
-                  p: 3,
-                  borderStyle: "dashed",
-                  borderRadius: 2,
-                  textAlign: "center",
-                  cursor:
-                    uploading || isCreateFileInFlight
-                      ? "not-allowed"
-                      : "pointer",
-                  opacity: uploading || isCreateFileInFlight ? 0.7 : 1,
-                  "&:hover": {
-                    borderColor: "primary.main",
-                  },
-                }}
-                onClick={() => fileInputRef.current?.click()}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  if (uploading || isCreateFileInFlight) return;
-                  const f = e.dataTransfer.files?.[0] ?? null;
-                  handleDroppedFile(f);
-                }}
-              >
-                <Stack spacing={1} alignItems="center">
-                  <CloudUploadIcon fontSize="large" color="primary" />
-                  <Typography variant="h6">
-                    Drag file here or click to select
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Only PDF files, max. 25 MB
-                  </Typography>
-                </Stack>
-              </Paper>
-
-              <input
-                ref={fileInputRef}
-                style={{ display: "none" }}
-                type="file"
-                accept=".pdf,application/pdf"
-                onChange={onFileChange}
-                disabled={isCreateFileInFlight || uploading}
-              />
-
-              {selectedFile ? (
+        {/* SECTION 3: Evaluation (only shown if a solution exists)*/}
+        {isPastDeadline && (
+          <Paper
+            variant="outlined"
+            sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, boxShadow: 2 }}
+          >
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Typography variant="h5" gutterBottom>
+                Evaluation:
+              </Typography>
+              <Chip label={status.toLocaleUpperCase()} color={statusColor} />
+            </Stack>
+            {status !== "pending" ? (
+              <Stack spacing={2}>
                 <Stack
                   direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
+                  spacing={2}
+                  alignItems="baseline"
+                  flexWrap="wrap"
                 >
-                  <Typography variant="body2">
-                    File: <strong>{selectedFile.name}</strong> (
-                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                  <Typography variant="h4">
+                    {achievedScore} / {totalMaxScore} Points
                   </Typography>
-                  <Button
-                    size="small"
-                    startIcon={<CloseIcon />}
-                    onClick={() => setSelectedFile(null)}
-                    disabled={isCreateFileInFlight || uploading}
-                  >
-                    Remove
-                  </Button>
                 </Stack>
-              ) : null}
 
-              {uploadError ? (
-                <Alert severity="error" variant="outlined">
-                  {uploadError}
-                </Alert>
-              ) : null}
+                <Box>
+                  {submissionData.tasks.length >= 3 || showDetails ? (
+                    <>
+                      <Typography variant="h5" gutterBottom>
+                        Detailed Feedback
+                      </Typography>
+                      <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                        <Stack spacing={1}>
+                          {latestSolution!.result.results.map((result, i) => {
+                            const task = submissionData.tasks.find(
+                              (t) => t.number === result.number - 1
+                            );
+                            return !task ? (
+                              <Alert severity="error" sx={{ mt: 2 }}>
+                                Something went wrong with the Evaluation of the
+                                submission. Please contact your tutor!
+                              </Alert>
+                            ) : (
+                              <Typography
+                                key={i}
+                                variant="h6"
+                                sx={{ fontWeight: "normal" }}
+                              >
+                                {task.name}: <strong>{result.score}</strong>/
+                                {task.maxScore} Points
+                              </Typography>
+                            );
+                          })}
+                        </Stack>
+                      </Paper>
+                    </>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      onClick={() => setShowDetails(true)}
+                    >
+                      Show Detailed Feedback
+                    </Button>
+                  )}
+                </Box>
+              </Stack>
+            ) : (
+              // STATE 3B: Not graded yet
+              <Typography color="text.secondary" sx={{ pt: 1 }}>
+                Your submission has not been graded yet.
+              </Typography>
+            )}
+          </Paper>
+        )}
 
-              {uploading ? <LinearProgress /> : null}
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={handleCloseDialog}
-              disabled={isCreateFileInFlight || uploading}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              onClick={onSubmitUpload}
-              disabled={!selectedFile || isCreateFileInFlight || uploading}
-            >
-              {uploading ? "Uploading..." : "Upload"}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      ) : null}
-    </Stack>
+        {/* Upload file Dialog */}
+        {isUploadOpen ? (
+          <Dialog
+            open={isUploadOpen}
+            onClose={handleCloseDialog}
+            fullWidth
+            maxWidth="sm"
+          >
+            <DialogTitle>Upload Submission File</DialogTitle>
+            <DialogContent>
+              <Stack spacing={2} sx={{ mt: 1 }}>
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    p: 3,
+                    borderStyle: "dashed",
+                    borderRadius: 2,
+                    textAlign: "center",
+                    cursor:
+                      uploading || isCreateFileInFlight
+                        ? "not-allowed"
+                        : "pointer",
+                    opacity: uploading || isCreateFileInFlight ? 0.7 : 1,
+                    "&:hover": {
+                      borderColor: "primary.main",
+                    },
+                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (uploading || isCreateFileInFlight) return;
+                    const f = e.dataTransfer.files?.[0] ?? null;
+                    handleDroppedFile(f);
+                  }}
+                >
+                  <Stack spacing={1} alignItems="center">
+                    <CloudUploadIcon fontSize="large" color="primary" />
+                    <Typography variant="h6">
+                      Drag file here or click to select
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Only PDF files, max. 25 MB
+                    </Typography>
+                  </Stack>
+                </Paper>
+
+                <input
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  onChange={onFileChange}
+                  disabled={isCreateFileInFlight || uploading}
+                />
+
+                {selectedFile ? (
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                  >
+                    <Typography variant="body2">
+                      File: <strong>{selectedFile.name}</strong> (
+                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </Typography>
+                    <Button
+                      size="small"
+                      startIcon={<CloseIcon />}
+                      onClick={() => setSelectedFile(null)}
+                      disabled={isCreateFileInFlight || uploading}
+                    >
+                      Remove
+                    </Button>
+                  </Stack>
+                ) : null}
+
+                {uploadError ? (
+                  <Alert severity="error" variant="outlined">
+                    {uploadError}
+                  </Alert>
+                ) : null}
+
+                {uploading ? <LinearProgress /> : null}
+              </Stack>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={handleCloseDialog}
+                disabled={isCreateFileInFlight || uploading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={onSubmitUpload}
+                disabled={!selectedFile || isCreateFileInFlight || uploading}
+              >
+                {uploading ? "Uploading..." : "Upload"}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        ) : null}
+      </Stack>
+    </>
   );
 }
