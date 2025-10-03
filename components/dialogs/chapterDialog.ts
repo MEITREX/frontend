@@ -79,6 +79,16 @@ export const dialogSections: (
   },
 ];
 
+
+function transformInvalidDate(value: any, originalValue: any) {
+  // check if data is invalid
+  if (!value || isNaN(value.getTime())) {
+    return null;
+  }
+  // make sure empty string or null stays as null
+  return originalValue === "" || originalValue === null ? null : value;
+}
+
 export const validationSchema: (
   courseStart: string,
   courseEnd: string
@@ -90,25 +100,15 @@ export const validationSchema: (
     startDate: yup
       .date()
       .transform((value, originalValue) => {
-        // check if data is invalid
-        if (isNaN(value.getTime())) {
-          return null;
-        }
-      // make sure empty string or null stays as null
-        return originalValue === "" || originalValue === null ? null : value;
+        return transformInvalidDate(value, originalValue);
       })
       .required("Required")
       .min(courseStart, "Must be after the course start date")
       .max(courseEnd, "Must be before the course end date"),
     suggestedStartDate: yup
       .date()
-      .transform((value, originalValue) => {
-        // check if data is invalid
-        if (isNaN(value.getTime())) {
-          return null;
-        }
-      // make sure empty string or null stays as null
-        return originalValue === "" || originalValue === null ? null : value;
+       .transform((value, originalValue) => {
+        return transformInvalidDate(value, originalValue);
       })
       .required("Required")
       .typeError("Please provide a valid date")
@@ -117,12 +117,7 @@ export const validationSchema: (
     suggestedEndDate: yup
       .date()
       .transform((value, originalValue) => {
-        // check if data is invalid
-        if (isNaN(value.getTime())) {
-          return null;
-        }
-      // make sure empty string or null stays as null
-        return originalValue === "" || originalValue === null ? null : value;
+        return transformInvalidDate(value, originalValue);
       })
       .required("Required")
       .typeError("Please provide a valid date")
