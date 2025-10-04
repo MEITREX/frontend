@@ -582,7 +582,7 @@
          "bearerOnly":false,
          "clientAuthenticatorType":"client-secret",
          "secret":"super-secret-value",
-         "fullScopeAllowed":false,
+         "fullScopeAllowed":true,
          "defaultClientScopes":[
             "roles",
             "profile",
@@ -2391,5 +2391,21 @@
       "policies":[
          
       ]
-   }
+   },
+   "users":[
+      {
+         "username":"service-account-gamification-service",
+         "enabled":true,
+         "serviceAccountClientId":"gamification-service",
+         "realmRoles":[
+            
+         ],
+         "clientRoles":{
+            "realm-management":[
+               "view-users",
+               "manage-users"
+            ]
+         }
+      }
+   ]
 }
