@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import { useAuth } from "react-oidc-context";
 
 
 interface GuardProps {
@@ -7,7 +8,8 @@ interface GuardProps {
 }
 
 export default function GamificationGuard({ children }: GuardProps) {
-  const displayGamification = false;
+  const auth = useAuth();
+  const displayGamification = auth.user?.profile.gamification_type === 'gamification';
 
   if(!displayGamification) return null;
 
