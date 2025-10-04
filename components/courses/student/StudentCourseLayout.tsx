@@ -14,6 +14,7 @@ import QuestList from "@/app/courses/[courseId]/quests/QuestItem";
 import { StudentCourseLayoutCourseIdQuery } from "@/__generated__/StudentCourseLayoutCourseIdQuery.graphql";
 import { StudentCourseLayoutLeaveMutation } from "@/__generated__/StudentCourseLayoutLeaveMutation.graphql";
 import { StudentCourseLayoutLoginMutation } from "@/__generated__/StudentCourseLayoutLoginMutation.graphql";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 
 const studentCourseIdQuery = graphql`
   query StudentCourseLayoutCourseIdQuery($id: UUID!) {
