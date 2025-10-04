@@ -77,6 +77,11 @@ export function EditCourseModal({
     endDate != null &&
     endDate.isValid();
 
+  // State für Bestätigungsdialoge
+  const [confirmType, setConfirmType] = useState<
+    "delete" | "reset" | "update" | null
+  >(null);
+
   function handleSubmit() {
     updateCourse({
       variables: {
@@ -207,16 +212,56 @@ export function EditCourseModal({
           </Backdrop>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDelete} variant="contained" color="error">
+          <Button
+            onClick={() => setConfirmType("delete")}
+            variant="contained"
+            color="error"
+          >
             Delete
           </Button>
-          <Button onClick={handleReset} variant="outlined">
+          <Button onClick={() => setConfirmType("reset")} variant="outlined">
             Reset
           </Button>
-          <Button disabled={!valid} variant="contained" onClick={handleSubmit}>
+          <Button
+            disabled={!valid}
+            variant="contained"
+            onClick={() => setConfirmType("update")}
+          >
             Update
           </Button>
         </DialogActions>
+        {/* Bestätigungsdialog */}
+        <Dialog open={!!confirmType} onClose={() => setConfirmType(null)}>
+          <DialogTitle>
+            {confirmType === "delete" &&
+              "Are you sure you want to Delete this course?"}
+            {confirmType === "reset" &&
+              "Are you sure you want to Reset this course?"}
+            {confirmType === "update" &&
+              "Are you sure you want to Update this course?"}
+          </DialogTitle>
+          <DialogActions>
+            <Button
+              onClick={() => {
+                if (confirmType === "delete") handleDelete();
+                if (confirmType === "reset") handleReset();
+                if (confirmType === "update") handleSubmit();
+                setConfirmType(null);
+              }}
+              color="primary"
+              variant="contained"
+            >
+              Yes
+            </Button>
+            <Button
+              onClick={() => setConfirmType(null)}
+              color="inherit"
+              variant="outlined"
+            >
+              No
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Dialog>
     </>
   );
