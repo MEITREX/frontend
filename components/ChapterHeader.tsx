@@ -84,7 +84,14 @@ export function ChapterHeader({
         )}
         <div className="flex flex-col items-start flex-grow gap-5">
           <div className="flex flex-row flex-grow gap-1">
-            <Typography variant="h2" onClick={(e) => e.stopPropagation()}>
+            <Typography
+              variant="h2"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onExpandClick) onExpandClick();
+              }}
+              sx={{ cursor: expandable !== false ? "pointer" : "default" }}
+            >
               {chapter.title}
             </Typography>
             {action}
