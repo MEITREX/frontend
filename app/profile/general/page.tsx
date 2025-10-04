@@ -17,6 +17,7 @@ import { graphql } from "relay-runtime";
 import GeneralPage from "../GeneralPage";
 import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
 import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
+import { useAuth } from "react-oidc-context";
 
 type UserLevelInfo = {
   level: number;
@@ -39,7 +40,8 @@ const getUserXPQuery = graphql`
 
 export default function GeneralPageWrapper() {
   // TODO: Do this for every Route --> if this would be a layout component we would only need to do it once...
-  const displayGamification = false;
+  const auth = useAuth();
+  const displayGamification = auth.user?.profile.gamification_type === 'gamification';
 
   const baseTabs = [
     { label: "General", path: "general" },

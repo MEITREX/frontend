@@ -206,12 +206,14 @@ export default function CourseLayout({
         </div>
 
         {/* Quest */}
-        <Box marginBottom={2} marginTop={2}>
-          <QuestList
-            questsProp={course.dailyQuests.quests}
-            streak={course.dailyQuests.rewardMultiplier}
-          />
-        </Box>
+        <GamificationGuard>
+          <Box marginBottom={2} marginTop={2}>
+            <QuestList
+              questsProp={course.dailyQuests.quests}
+              streak={course.dailyQuests.rewardMultiplier}
+            />
+          </Box>
+        </GamificationGuard>
 
         {/* Navbar */}
         <StudentCourseNavigation courseId={courseId as string} />

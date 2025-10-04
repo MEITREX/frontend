@@ -170,7 +170,8 @@ function enrichScoresWithNames(
 export default function PublicProfilePage() {
   const router = useRouter(); // Hook holen
 
-  const displayGamification = false;
+  const auth = useAuth();
+  const displayGamification = auth.user?.profile.gamification_type === 'gamification';
 
   const baseTabs = [
     { label: "General", path: "general" },
@@ -183,7 +184,7 @@ export default function PublicProfilePage() {
     { label: "Leaderboards", path: "leaderboard" },
   ];
 
-  const publicTabs = displayGamification
+  const tabs = displayGamification
     ? [...baseTabs, ...gamificationTabs]
     : baseTabs;
 
@@ -393,7 +394,6 @@ export default function PublicProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(sharedMemberships), viewedSafe.id, currentUserInfo.id]);
 
-  const auth = useAuth();
 
   const tokenRef = React.useRef<string | undefined>(auth.user?.access_token);
   useEffect(() => {

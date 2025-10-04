@@ -8,10 +8,12 @@ import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
 import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
+import { useAuth } from "react-oidc-context";
 
 
 export default function ForumPage() {
-  const displayGamification = false;
+  const auth = useAuth();
+  const displayGamification = auth.user?.profile.gamification_type === 'gamification';
 
   const baseTabs = [
     { label: "General", path: "general" },
