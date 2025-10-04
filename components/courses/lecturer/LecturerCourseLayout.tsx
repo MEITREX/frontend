@@ -61,11 +61,8 @@ export default function LecturerCourseLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [openModal, setOpenModal] = useState(false);
-  const [infoDialogOpen, setInfoDialogOpen] = useState(false);
 
   const { courseId } = useParams();
-  const router = useRouter();
 
   const data = useLazyLoadQuery<LecturerCourseLayoutCourseIdQuery>(
     lecturerCourseIdQuery,
@@ -77,46 +74,11 @@ export default function LecturerCourseLayout({
     return <PageError message="No course found with given id." />;
   }
 
-  const role = data.currentUserInfo.courseMemberships.find(
-    (x) => x.course.id === courseId
-  )!.role;
-
   return (
     <CourseDataProvider value={data}>
       <main>
-        {openModal && (
-          <AddChapterModal
-            open
-            _course={course}
-            onClose={() => setOpenModal(false)}
-          />
-        )}
         <Heading
           title={course.title}
-          action={
-            <div className="flex gap-4 items-center">
-              <CodeAssessmentProviderCourseButton courseId={courseId} />
-              <Button startIcon={<Add />} onClick={() => setOpenModal(true)}>
-                Add chapter
-              </Button>
-              {role === "ADMINISTRATOR" && (
-                <Button
-                  startIcon={<People />}
-                  onClick={() => router.push(`/courses/${courseId}/members`)}
-                >
-                  Members
-                </Button>
-              )}
-              <IconButton onClick={() => setInfoDialogOpen(true)}>
-                <Settings />
-              </IconButton>
-            </div>
-          }
-        />
-        <EditCourseModal
-          _course={course}
-          open={infoDialogOpen}
-          onClose={() => setInfoDialogOpen(false)}
         />
         <Typography variant="body2" className="!mt-8 !mb-10">
           {course.description}
