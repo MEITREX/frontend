@@ -12,6 +12,7 @@ import { Add, People, Settings } from "@mui/icons-material";
 import { LecturerCourseNavigation } from "@/components/courses/lecturer/LecturerCourseNavigation";
 import { LecturerCourseLayoutCourseIdQuery } from "@/__generated__/LecturerCourseLayoutCourseIdQuery.graphql";
 import { CourseDataProvider } from "@/components/courses/context/CourseDataContext";
+import { CodeAssessmentProviderCourseButton } from "@/components/CodeAssessmentProviderCourseButton";
 
 graphql`
   fragment LecturerCourseLayoutFragment on Course {
@@ -94,6 +95,7 @@ export default function LecturerCourseLayout({
           title={course.title}
           action={
             <div className="flex gap-4 items-center">
+              <CodeAssessmentProviderCourseButton courseId={courseId} />
               <Button startIcon={<Add />} onClick={() => setOpenModal(true)}>
                 Add chapter
               </Button>
