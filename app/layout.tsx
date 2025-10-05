@@ -5,7 +5,7 @@ import React, { useEffect, useMemo } from "react";
 
 import { ClientToaster } from "@/components/ClientToaster";
 import { PageLayout } from "@/components/PageLayout";
-import { GamificationRouteGuard } from "@/components/gamification-guard/GamificationRouteGuard"
+import { GamificationRouteGuard } from "@/components/gamification-guard/GamificationRouteGuard";
 import CurrencyHydrator from "@/components/currency/CurrencyHydrator";
 import TutorWidget from "@/components/tutor/TutorWidget";
 import { initRelayEnvironment } from "@/src/RelayEnvironment";

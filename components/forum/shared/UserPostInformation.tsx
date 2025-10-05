@@ -223,8 +223,7 @@ export default function UserPostInformation({
               frameBool={equipedItemPicFrame != null}
               frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
               profilePic={equipedItemPic?.url ?? "Unkown"}
-            >
-            </HoverCard>
+            ></HoverCard>
           </GamificationGuard>
           <Typography
             noWrap

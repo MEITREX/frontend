@@ -171,7 +171,8 @@ export default function PublicProfilePage() {
   const router = useRouter(); // Hook holen
 
   const auth = useAuth();
-  const displayGamification = auth.user?.profile.gamification_type === 'gamification';
+  const displayGamification =
+    auth.user?.profile.gamification_type === "gamification";
 
   const baseTabs = [
     { label: "General", path: "general" },
@@ -393,7 +394,6 @@ export default function PublicProfilePage() {
     loadShared();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(sharedMemberships), viewedSafe.id, currentUserInfo.id]);
-
 
   const tokenRef = React.useRef<string | undefined>(auth.user?.access_token);
   useEffect(() => {

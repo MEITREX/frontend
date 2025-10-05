@@ -724,7 +724,7 @@ function UserInfo({
             </Box>
           </Box>
         </GamificationGuard>
-          {tutor && (
+        {tutor && (
           <>
             <Divider />
             <SwitchPageViewButton />

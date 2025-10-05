@@ -25,7 +25,6 @@ type UserLevelInfo = {
   exceedingXP: number; // XP gathered within current level
 };
 
-
 const getUserXPQuery = graphql`
   query pagePrivateProfileStudentGeneral_GetUserXPQuery($userID: ID!) {
     getUser(userID: $userID) {
@@ -41,7 +40,8 @@ const getUserXPQuery = graphql`
 export default function GeneralPageWrapper() {
   // TODO: Do this for every Route --> if this would be a layout component we would only need to do it once...
   const auth = useAuth();
-  const displayGamification = auth.user?.profile.gamification_type === 'gamification';
+  const displayGamification =
+    auth.user?.profile.gamification_type === "gamification";
 
   const baseTabs = [
     { label: "General", path: "general" },
@@ -147,7 +147,6 @@ export default function GeneralPageWrapper() {
           />
         </Box>
       </GamificationGuard>
-
 
       <Tabs
         value={activeIndex}

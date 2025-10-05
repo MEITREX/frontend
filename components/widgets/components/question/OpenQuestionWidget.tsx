@@ -27,7 +27,11 @@ export default function OpenQuestionWidget({ openFeedback, category }: Props) {
   );
 
   return (
-    <WidgetWrapper title="Open Questions" linkHref={`${pathname}/forum`} linkLabel="Forum">
+    <WidgetWrapper
+      title="Open Questions"
+      linkHref={`${pathname}/forum`}
+      linkLabel="Forum"
+    >
       <WidgetFeedback openFeedback={openFeedback} category={category} />
       <Box sx={{ display: "flex", flexDirection: "column" }}>
         {(data.openQuestionByCourseId ?? []).length > 0 ? (

@@ -21,8 +21,12 @@ export function GamificationRouteGuard({ children }: Props) {
     "/badges",
   ];
 
-  const hasAccess = auth.isAuthenticated && auth.user?.profile.gamification_type === 'gamification';
-  const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route));
+  const hasAccess =
+    auth.isAuthenticated &&
+    auth.user?.profile.gamification_type === "gamification";
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    path.startsWith(route)
+  );
 
   useEffect(() => {
     if (!auth.isLoading && isProtectedRoute && !hasAccess) {

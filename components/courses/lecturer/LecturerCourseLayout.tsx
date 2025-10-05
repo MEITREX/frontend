@@ -61,7 +61,6 @@ export default function LecturerCourseLayout({
 }: {
   children: React.ReactNode;
 }) {
-
   const { courseId } = useParams();
 
   const data = useLazyLoadQuery<LecturerCourseLayoutCourseIdQuery>(
@@ -77,9 +76,7 @@ export default function LecturerCourseLayout({
   return (
     <CourseDataProvider value={data}>
       <main>
-        <Heading
-          title={course.title}
-        />
+        <Heading title={course.title} />
         <Typography variant="body2" className="!mt-8 !mb-10">
           {course.description}
         </Typography>

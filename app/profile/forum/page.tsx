@@ -10,10 +10,10 @@ import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustom
 import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 import { useAuth } from "react-oidc-context";
 
-
 export default function ForumPage() {
   const auth = useAuth();
-  const displayGamification = auth.user?.profile.gamification_type === 'gamification';
+  const displayGamification =
+    auth.user?.profile.gamification_type === "gamification";
 
   const baseTabs = [
     { label: "General", path: "general" },
