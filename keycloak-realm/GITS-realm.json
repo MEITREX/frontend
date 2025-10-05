@@ -846,6 +846,23 @@
             "phone",
             "offline_access",
             "microprofile-jwt"
+         ],
+         "protocolMappers":[
+            {
+               "id":"f8e5a6d1-13b9-4a62-9b17-8322c78572c5",
+               "name":"gamification_type",
+               "protocol":"openid-connect",
+               "protocolMapper":"oidc-usermodel-attribute-mapper",
+               "consentRequired":false,
+               "config":{
+                  "userinfo.token.claim":"true",
+                  "id.token.claim":"true",
+                  "access.token.claim":"true",
+                  "user.attribute":"gamification_type",
+                  "claim.name":"gamification_type",
+                  "jsonType.label":"String"
+               }
+            }
          ]
       },
       {
