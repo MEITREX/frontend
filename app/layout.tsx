@@ -18,6 +18,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
+import { WebStorageStateStore } from "oidc-client-ts";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import {
@@ -39,7 +40,10 @@ const oidcConfig: AuthProviderProps = {
   authority:
     process.env.NEXT_PUBLIC_OAUTH_AUTHORITY ??
     "http://localhost:9009/realms/GITS",
-
+  userStore:
+    typeof window !== "undefined"
+      ? new WebStorageStateStore({ store: window.localStorage })
+      : undefined,
   onSigninCallback() {
     window.history.replaceState({}, document.title, window.location.pathname);
   },

@@ -25,7 +25,8 @@ export default function UnequipCard({ equippedItem }: UnequipCardProps) {
     useMutation<ItemsApiUnequipItemMutation>(unequipItemMutation);
 
   const clickTimer = React.useRef<number | null>(null);
-  const disabled = !equippedItem;
+  const isLockedDefault = equippedItem.name === "Default Profile Picture";
+  const disabled = !equippedItem || isLockedDefault;
   const [openDialog, setOpenDialog] = React.useState(false);
 
   React.useEffect(() => {
@@ -58,6 +59,7 @@ export default function UnequipCard({ equippedItem }: UnequipCardProps) {
 
   // Call mutation
   function onUnequip() {
+    if (!equippedItem || isLockedDefault) return;
     unequipItem({
       variables: {
         itemId: equippedItem.id,
@@ -104,19 +106,24 @@ export default function UnequipCard({ equippedItem }: UnequipCardProps) {
         {/* Set text depending on if something is equiped */}
         <Box textAlign="center">
           <div style={{ fontWeight: 700, marginBottom: 8 }}>
-            {disabled ? "Nothing equipped" : "Unequip current"}
+            {(!equippedItem && "Nothing equipped") ||
+              (isLockedDefault && "Default item locked") ||
+              "Unequip current"}
           </div>
-          {!disabled && (
+          {!!equippedItem && (
             <div style={{ opacity: 0.8 }}>{equippedItem!.name}</div>
           )}
           <div style={{ marginTop: 12, fontSize: 12, opacity: 0.7 }}>
-            {disabled ? "—" : "Double‑click to unequip"}
+            {(!equippedItem && "—") ||
+              (isLockedDefault
+                ? "This default item can't be unequipped"
+                : "Double-click to unequip")}
           </div>
         </Box>
       </Card>
       {/* PopUp for single click */}
       <Dialog
-        open={openDialog}
+        open={openDialog && !disabled}
         onClose={() => setOpenDialog(false)}
         maxWidth="xs"
         fullWidth

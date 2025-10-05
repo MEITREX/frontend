@@ -1,3 +1,5 @@
+"use client";
+
 import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
 import { LecturerCodeAssignment$key } from "@/__generated__/LecturerCodeAssignment.graphql";
 import { LecturerCodeAssignmentCourseQuery } from "@/__generated__/LecturerCodeAssignmentCourseQuery.graphql";

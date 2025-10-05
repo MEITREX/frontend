@@ -33,7 +33,7 @@ interface RarityStyle {
 }
 
 export const rarityMap: Record<Rarity, RarityStyle> = {
-  default: { border: "#26a0f5", bg: "#e3f2fd" }, // blue
+  default: { border: "#919090ff", bg: "#e3f2fd" }, // grey
   common: { border: "#26a0f5", bg: "#e3f2fd" }, // blue
   uncommon: { border: "#d4af37", bg: "#fff8e1" }, // gold
   rare: { border: "#8e44ad", bg: "#f3e5f5" }, // purple
