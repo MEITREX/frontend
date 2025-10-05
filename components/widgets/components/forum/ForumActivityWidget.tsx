@@ -27,7 +27,11 @@ export default function ForumActivityWidget({ openFeedback, category }: Props) {
   );
 
   return (
-    <WidgetWrapper title="Forum Activity" linkHref={`${pathname}/forum`} linkLabel="Forum">
+    <WidgetWrapper
+      title="Forum Activity"
+      linkHref={`${pathname}/forum`}
+      linkLabel="Forum"
+    >
       <WidgetFeedback openFeedback={openFeedback} category={category} />
       {(data.forumActivity ?? []).length > 0 ? (
         <Stack spacing={2}>

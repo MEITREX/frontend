@@ -66,7 +66,7 @@ export default function MediaForumLayout({
               minSize={35}
               collapsible={true}
               className="h-full overflow-hidden"
-              onCollapse={()=>handleToggleForum()}
+              onCollapse={() => handleToggleForum()}
             >
               {children}
             </Panel>

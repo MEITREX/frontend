@@ -4,9 +4,7 @@ import { orderBy } from "lodash";
 import React, { useState } from "react";
 import { Button, Divider, IconButton } from "@mui/material";
 import { LecturerChapter } from "@/components/courses/lecturer/common/LecturerChapter";
-import {
-  LecturerCourseLayoutCourseIdQuery,
-} from "@/__generated__/LecturerCourseLayoutCourseIdQuery.graphql";
+import { LecturerCourseLayoutCourseIdQuery } from "@/__generated__/LecturerCourseLayoutCourseIdQuery.graphql";
 import { useLazyLoadQuery } from "react-relay";
 import { useParams, useRouter } from "next/navigation";
 import { lecturerCourseIdQuery } from "@/components/courses/lecturer/LecturerCourseLayout";
@@ -16,12 +14,10 @@ import { Add, People, Settings } from "@mui/icons-material";
 import { AddChapterModal } from "@/components/AddChapterModal";
 import { EditCourseModal } from "@/components/EditCourseModal";
 
-
 export default function LecturerOverview() {
   const [openModal, setOpenModal] = useState(false);
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
   const router = useRouter();
-
 
   // We cant use context here -> when navigating to Members and then back an error appreas. Idk why?
   // Therefore refetch...
@@ -41,9 +37,7 @@ export default function LecturerOverview() {
   const course = data?.coursesByIds?.[0];
 
   if (!course) {
-    return (
-      <PageError message="No course found!"/>
-    );
+    return <PageError message="No course found!" />;
   }
 
   return (
