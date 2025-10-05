@@ -78,7 +78,7 @@ export default dynamic(() => Promise.resolve(App), {
 });
 
 /**
- * define configuration als a callback function to avoid the window being used during SSR
+ * define configuration as a callback function to avoid the window being used during SSR
  * @returns
  */
 function oidcConfig(): AuthProviderProps {
