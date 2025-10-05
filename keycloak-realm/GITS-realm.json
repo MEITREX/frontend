@@ -581,7 +581,7 @@
          "directAccessGrantsEnabled":false,
          "bearerOnly":false,
          "clientAuthenticatorType":"client-secret",
-         "secret":"super-secret-value",
+         "secret":"bB8u6Tj60uJL2RKYR0OCyiGMdds9gaEUs9Q2d3bRTTVRKJ516CCc1LeSMChAI0rc",
          "fullScopeAllowed":true,
          "defaultClientScopes":[
             "roles",
