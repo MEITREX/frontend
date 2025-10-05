@@ -1,3 +1,5 @@
+"use client";
+
 import type { LeaderboardWidgetQuery } from "@/__generated__/LeaderboardWidgetQuery.graphql";
 import React, { useEffect, useMemo, useRef } from "react";
 import {
