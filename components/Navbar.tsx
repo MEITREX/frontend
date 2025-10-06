@@ -9,8 +9,8 @@ import logo from "@/assets/logo.svg";
 import StoreIcon from "@mui/icons-material/Store";
 import coins from "assets/lottery/coins.png";
 
-import duration from "dayjs/plugin/duration";
 import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
 dayjs.extend(duration);
 
 import Image from "next/image";
@@ -38,6 +38,7 @@ import {
   Divider,
   IconButton,
   InputAdornment,
+  LinearProgress,
   List,
   ListItem,
   ListItemAvatar,
@@ -48,11 +49,10 @@ import {
   TextField,
   Tooltip,
   Typography,
-  LinearProgress,
 } from "@mui/material";
 import type {
-  AutocompleteRenderOptionState,
   AutocompleteOwnerState,
+  AutocompleteRenderOptionState,
 } from "@mui/material/Autocomplete";
 
 import { chain, debounce } from "lodash";
@@ -281,7 +281,7 @@ function NavbarBase({
           MEITREX
         </Typography>
       </div>
-
+      <UserInfo _isTutor={_isTutor} userId={userId} />
       <NavbarSection>
         <Autocomplete<SearchResultType, false, false, true>
           freeSolo
@@ -354,7 +354,6 @@ function NavbarBase({
       </NavbarSection>
 
       {children}
-      <UserInfo _isTutor={_isTutor} userId={userId} />
     </div>
   );
 }
@@ -592,7 +591,7 @@ function UserInfo({
   }, [level]);
 
   return (
-    <div className="sticky bottom-0 py-3 -mt-3 bg-gradient-to-t from-slate-200 from-75% to-transparent">
+    <div className="sticky bottom-0 -mt-3 bg-gradient-to-t from-slate-200 from-75% to-transparent">
       <NavbarSection>
         {/* Top row: avatar + name + settings + logout */}
         <ListItem
@@ -616,7 +615,8 @@ function UserInfo({
             </Tooltip>
           }
         >
-          <ListItemAvatar>
+          <Tooltip title="Profile" placement="right">
+            <ListItemAvatar>
             <Link href={"/profile"}>
               <ProfilePicAndBorder
                 height={50}
@@ -625,7 +625,8 @@ function UserInfo({
               />
             </Link>
           </ListItemAvatar>
-          <ListItemText primary={auth.user?.profile?.name} />
+          </Tooltip>
+          <ListItemText primary={auth.user?.profile?.name ?? auth.user?.profile?.preferred_username} />
           <Tooltip title="Settings" placement="left">
             <Link href="/settings/gamification">
               <IconButton>
