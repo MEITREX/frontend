@@ -54,6 +54,7 @@ export function EditContentModal({
   const [openMediaModal, setOpenMediaModal] = useState(false);
   const [openFlashcardModal, setOpenFlashcardModal] = useState(false);
   const [openAddQuizModal, setOpenAddQuizModal] = useState(false);
+  const [quizModalKey, setQuizModalKey] = useState(0);
   const [openCodeAssignmentModal, setOpenCodeAssignmentModal] = useState(false);
 
   const [openModal, setOpenModal] = useState(false);
@@ -170,6 +171,11 @@ export function EditContentModal({
         root.setLinkedRecords(newContents, "contentsWithNoSection");
       },
     });
+  };
+
+  const openAndResetQuizModal = () => {
+    setQuizModalKey((prev) => prev + 1);
+    setOpenAddQuizModal(true);
   };
 
   const openCodeAssignment = () => {
@@ -333,7 +339,7 @@ export function EditContentModal({
             Add Media
           </Button>
           <Button
-            onClick={() => setOpenAddQuizModal(true)}
+            onClick={openAndResetQuizModal}
             variant="text"
             className="mt-4"
             startIcon={<Add />}
@@ -363,6 +369,7 @@ export function EditContentModal({
         _mediaRecords={_mediaRecords}
       />
       <QuizModal
+        key={quizModalKey}
         isOpen={openAddQuizModal}
         onClose={() => setOpenAddQuizModal(false)}
         chapterId={chapterId}

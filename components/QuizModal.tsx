@@ -76,7 +76,7 @@ export function QuizModal({
     _existingQuiz
   );
 
-  const assessment = existingQuiz?.content!;
+  const assessment = existingQuiz?.content;
 
   const [input, setInput] = useState<CreateQuizInput>(
     existingQuiz
@@ -90,7 +90,7 @@ export function QuizModal({
   );
 
   const [metadata, setMetadata] = useState<ContentMetadataPayload | null>(
-    existingQuiz
+    existingQuiz && assessment?.metadata
       ? {
           name: assessment!.metadata!.name,
           rewardPoints: assessment!.metadata!.rewardPoints,
@@ -101,7 +101,7 @@ export function QuizModal({
   );
   const [assessmentMetadata, setAssessmentMetadata] =
     useState<AssessmentMetadataPayload | null>(
-      existingQuiz
+      existingQuiz && assessment?.assessmentMetadata
         ? {
             skillPoints: assessment!.assessmentMetadata!.skillPoints,
             skillTypes: assessment!.assessmentMetadata!.skillTypes,
@@ -174,16 +174,6 @@ export function QuizModal({
       (input.numberOfRandomlySelectedQuestions ?? 0) > 0);
 
   function onClose() {
-    setInput(
-      existingQuiz
-        ? {
-            questionPoolingMode: existingQuiz.questionPoolingMode,
-            requiredCorrectAnswers: existingQuiz.requiredCorrectAnswers,
-            numberOfRandomlySelectedQuestions:
-              existingQuiz.numberOfRandomlySelectedQuestions,
-          }
-        : defaultInput
-    );
     _onClose();
   }
 

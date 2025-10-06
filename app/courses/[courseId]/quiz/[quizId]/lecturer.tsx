@@ -62,6 +62,7 @@ export default function LecturerQuiz() {
   const { quizId, courseId } = useParams();
   const [error, setError] = useState<ES2022Error | null>(null);
   const errorContext = useMemo(() => ({ error, setError }), [error, setError]);
+  const [quizModalKey, setQuizModalKey] = useState(0);
 
   const { contentsByIds, ...mediaSelectorQuery } =
     useLazyLoadQuery<lecturerEditQuizQuery>(RootQuery, {
@@ -80,6 +81,12 @@ export default function LecturerQuiz() {
 
   const content = contentsByIds[0];
   const quiz = content.quiz;
+
+  const openAndResetQuizModal = () => {
+    console.log("Attempting to open modal with new key:", quizModalKey + 1);
+    setQuizModalKey((prev) => prev + 1);
+    setEditSetModalOpen(true);
+  };
 
   if (!quiz) {
     return (
@@ -102,7 +109,7 @@ export default function LecturerQuiz() {
     <main>
       <ErrorContext.Provider value={errorContext}>
         <QuizHeader
-          openEditQuizModal={() => setEditSetModalOpen(true)}
+          openEditQuizModal={openAndResetQuizModal}
           content={content}
         />
 
@@ -151,6 +158,7 @@ export default function LecturerQuiz() {
         />
 
         <QuizModal
+          key={quizModalKey}
           onClose={() => setEditSetModalOpen(false)}
           isOpen={isEditSetModalOpen}
           _existingQuiz={quiz}
