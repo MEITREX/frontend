@@ -40,8 +40,8 @@ const getUserXPQuery = graphql`
 export default function GeneralPageWrapper() {
   // TODO: Do this for every Route --> if this would be a layout component we would only need to do it once...
   const auth = useAuth();
-  const displayGamification =
-    auth.user?.profile.gamification_type === "gamification";
+  const isGamificationDisabled =
+    auth.user?.profile.gamification_type === "none";
 
   const baseTabs = [
     { label: "General", path: "general" },
@@ -54,9 +54,9 @@ export default function GeneralPageWrapper() {
     { label: "Leaderboards", path: "leaderboard" },
   ];
 
-  const tabs = displayGamification
-    ? [...baseTabs, ...gamificationTabs]
-    : baseTabs;
+  const tabs = isGamificationDisabled
+    ? baseTabs
+    : [...baseTabs, ...gamificationTabs];
 
   const router = useRouter();
   const pathname = usePathname();

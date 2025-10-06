@@ -12,8 +12,8 @@ import { useAuth } from "react-oidc-context";
 
 export default function ForumPage() {
   const auth = useAuth();
-  const displayGamification =
-    auth.user?.profile.gamification_type === "gamification";
+  const isGamificationDisabled =
+    auth.user?.profile.gamification_type === "none";
 
   const baseTabs = [
     { label: "General", path: "general" },
@@ -26,9 +26,9 @@ export default function ForumPage() {
     { label: "Leaderboards", path: "leaderboard" },
   ];
 
-  const tabs = displayGamification
-    ? [...baseTabs, ...gamificationTabs]
-    : baseTabs;
+  const tabs = isGamificationDisabled
+    ? baseTabs
+    : [...baseTabs, ...gamificationTabs];
 
   const router = useRouter();
   const pathname = usePathname();

@@ -4,6 +4,7 @@ import WidgetsOverview from "@/components/widgets/WidgetsOverview";
 import { ChapterOverview } from "@/components/ChapterOverview";
 import { StudentCourseLayoutCourseIdQuery$data } from "@/__generated__/StudentCourseLayoutCourseIdQuery.graphql";
 import { useCourseData } from "@/components/courses/context/CourseDataContext";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 
 export default function StudentOverview() {
   const data = useCourseData() as StudentCourseLayoutCourseIdQuery$data;
@@ -12,7 +13,9 @@ export default function StudentOverview() {
 
   return (
     <>
-      <WidgetsOverview userId={userId} courseId={course.id} />
+      <GamificationGuard>
+        <WidgetsOverview userId={userId} courseId={course.id} />
+      </GamificationGuard>
       <ChapterOverview _chapters={course} />
     </>
   );

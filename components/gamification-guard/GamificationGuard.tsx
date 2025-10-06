@@ -8,10 +8,10 @@ interface GuardProps {
 
 export default function GamificationGuard({ children }: GuardProps) {
   const auth = useAuth();
-  const displayGamification =
-    auth.user?.profile.gamification_type === "gamification";
+  const isGamificationDisabled =
+    auth.user?.profile.gamification_type === "none";
 
-  if (!displayGamification) return null;
+  if (isGamificationDisabled) return null;
 
   return <>{children}</>;
 }

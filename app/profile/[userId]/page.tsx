@@ -171,8 +171,8 @@ export default function PublicProfilePage() {
   const router = useRouter(); // Hook holen
 
   const auth = useAuth();
-  const displayGamification =
-    auth.user?.profile.gamification_type === "gamification";
+  const isGamificationDisabled =
+    auth.user?.profile.gamification_type === "none";
 
   const baseTabs = [
     { label: "General", path: "general" },
@@ -185,9 +185,9 @@ export default function PublicProfilePage() {
     { label: "Leaderboards", path: "leaderboard" },
   ];
 
-  const tabs = displayGamification
-    ? [...baseTabs, ...gamificationTabs]
-    : baseTabs;
+  const tabs = isGamificationDisabled
+    ? baseTabs
+    : [...baseTabs, ...gamificationTabs];
 
   const [tabIndex, setTabIndex] = useState(0);
 
@@ -463,11 +463,11 @@ export default function PublicProfilePage() {
           ".MuiTabs-indicator": { display: "none" },
         }}
       >
-        {publicTabs.map((tab, index) => (
+        {tabs.map((tab, index) => (
           <Tab
-            key={tab}
+            key={tab.path}
             value={index}
-            label={tab}
+            label={tab.label}
             sx={{
               textTransform: "none",
               fontWeight: 600,

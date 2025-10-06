@@ -14,6 +14,7 @@ import QuestList from "@/app/courses/[courseId]/quests/QuestItem";
 import { StudentCourseLayoutCourseIdQuery } from "@/__generated__/StudentCourseLayoutCourseIdQuery.graphql";
 import { StudentCourseLayoutLeaveMutation } from "@/__generated__/StudentCourseLayoutLeaveMutation.graphql";
 import { StudentCourseLayoutLoginMutation } from "@/__generated__/StudentCourseLayoutLoginMutation.graphql";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 
 const studentCourseIdQuery = graphql`
   query StudentCourseLayoutCourseIdQuery($id: UUID!) {
@@ -205,13 +206,15 @@ export default function CourseLayout({
           )}
         </div>
 
-        {/* Quest */}
-        <Box marginBottom={2} marginTop={2}>
-          <QuestList
-            questsProp={course.dailyQuests.quests}
-            streak={course.dailyQuests.rewardMultiplier}
-          />
-        </Box>
+        <GamificationGuard>
+          {/* Quest */}
+          <Box marginBottom={2} marginTop={2}>
+            <QuestList
+              questsProp={course.dailyQuests.quests}
+              streak={course.dailyQuests.rewardMultiplier}
+            />
+          </Box>
+        </GamificationGuard>
 
         {/* Navbar */}
         <StudentCourseNavigation courseId={courseId as string} />

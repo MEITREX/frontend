@@ -23,13 +23,13 @@ export function GamificationRouteGuard({ children }: Props) {
 
   const hasAccess =
     auth.isAuthenticated &&
-    auth.user?.profile.gamification_type === "gamification";
+    auth.user?.profile.gamification_type === "none";
   const isProtectedRoute = protectedRoutes.some((route) =>
     path.startsWith(route)
   );
 
   useEffect(() => {
-    if (!auth.isLoading && isProtectedRoute && !hasAccess) {
+    if (!auth.isLoading && isProtectedRoute && hasAccess) {
       router.replace("/");
     }
   }, [auth.isLoading, isProtectedRoute, hasAccess, router, path]);
