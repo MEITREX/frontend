@@ -86,6 +86,7 @@ export function DocumentSide({
   const router = useRouter();
   const pathname = usePathname();
 
+  const [isMarkedLocally, setIsMarkedLocally] = useState(false);
   const [numPages, setNumPages] = useState<number>();
   const [pageNumber, setPageNumber] = useState<number>(
     searchParams.get("page") ? Number(searchParams.get("page")) : 1
@@ -126,7 +127,7 @@ export function DocumentSide({
         new Date(),
         new Date(currentRecord?.userProgressData.dateWorkedOn ?? "")
       )
-    ) < 24;
+    ) < 24 || isMarkedLocally;
 
   const ref = useRef<HTMLDivElement>(null);
   const { width = 0 } = useResizeObserver({
@@ -235,6 +236,9 @@ export function DocumentSide({
             mediaRecordWorkedOn({
               variables: { id: currentRecord!.id },
               onError: setError,
+              onCompleted() {
+                setIsMarkedLocally(true);
+              },
             })
           }
         >
