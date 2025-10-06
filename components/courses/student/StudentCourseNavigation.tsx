@@ -17,9 +17,7 @@ export function StudentCourseNavigation({ courseId }: { courseId: string }) {
     { label: "Forum", path: "/forum" },
   ];
 
-  const gamificationTabs = [
-    { label: "Leaderboard", path: "/leaderboard" },
-  ];
+  const gamificationTabs = [{ label: "Leaderboard", path: "/leaderboard" }];
 
   const tabs = isGamificationDisabled
     ? baseTabs

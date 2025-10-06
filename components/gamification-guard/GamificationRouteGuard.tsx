@@ -22,8 +22,7 @@ export function GamificationRouteGuard({ children }: Props) {
   ];
 
   const hasAccess =
-    auth.isAuthenticated &&
-    auth.user?.profile.gamification_type === "none";
+    auth.isAuthenticated && auth.user?.profile.gamification_type === "none";
   const isProtectedRoute = protectedRoutes.some((route) =>
     path.startsWith(route)
   );
