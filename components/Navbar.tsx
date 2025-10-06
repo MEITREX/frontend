@@ -27,14 +27,17 @@ import {
   CollectionsBookmark,
   Dashboard,
   Logout,
+  ManageSearch,
   Search,
   Settings,
 } from "@mui/icons-material";
 import {
   Autocomplete,
   Box,
+  Button,
   Chip,
   CircularProgress,
+  ClickAwayListener,
   Divider,
   IconButton,
   InputAdornment,
@@ -46,6 +49,7 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
+  Paper,
   TextField,
   Tooltip,
   Typography,
@@ -262,6 +266,24 @@ function NavbarBase({
     .value() as SearchResultType[];
 
   const [isSearchPopupOpen, setSearchPopupOpen] = useState(false);
+  function SearchPopupPaper({ children }: { children?: any }) {
+    return (
+      <ClickAwayListener onClickAway={() => setSearchPopupOpen(false)}>
+        <Paper>
+          {children}
+          <Button
+            startIcon={<ManageSearch />}
+            onClick={() => {
+              router.push(`/search?query=${term}`);
+              setSearchPopupOpen(false);
+            }}
+          >
+            Detailed results
+          </Button>
+        </Paper>
+      </ClickAwayListener>
+    );
+  }
 
   return (
     <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
@@ -342,6 +364,7 @@ function NavbarBase({
               }}
             />
           )}
+          PaperComponent={SearchPopupPaper}
         />
         <NavbarLink title="Dashboard" icon={<Dashboard />} href="/" exact />
         <NavbarLink
