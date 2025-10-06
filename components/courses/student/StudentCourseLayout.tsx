@@ -1,19 +1,20 @@
 "use client";
 
-import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
-import { useParams, useRouter } from "next/navigation";
-import { PageError } from "@/components/PageError";
-import { useEffect, useState } from "react";
-import { CourseDataProvider } from "@/components/courses/context/CourseDataContext";
-import { FormErrors } from "@/components/FormErrors";
-import { Box, Button, Typography } from "@mui/material";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import { StudentCourseNavigation } from "@/components/courses/student/StudentCourseNavigation";
-import * as React from "react";
-import QuestList from "@/app/courses/[courseId]/quests/QuestItem";
 import { StudentCourseLayoutCourseIdQuery } from "@/__generated__/StudentCourseLayoutCourseIdQuery.graphql";
 import { StudentCourseLayoutLeaveMutation } from "@/__generated__/StudentCourseLayoutLeaveMutation.graphql";
 import { StudentCourseLayoutLoginMutation } from "@/__generated__/StudentCourseLayoutLoginMutation.graphql";
+import QuestList from "@/app/courses/[courseId]/quests/QuestItem";
+import { CourseDataProvider } from "@/components/courses/context/CourseDataContext";
+import { StudentCourseNavigation } from "@/components/courses/student/StudentCourseNavigation";
+import { FormErrors } from "@/components/FormErrors";
+import { PageError } from "@/components/PageError";
+import { useConfirmation } from "@/src/useConfirmation";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import { Box, Button, Typography } from "@mui/material";
+import { useParams, useRouter } from "next/navigation";
+import * as React from "react";
+import { useEffect, useState } from "react";
+import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
 const studentCourseIdQuery = graphql`
   query StudentCourseLayoutCourseIdQuery($id: UUID!) {
@@ -115,6 +116,7 @@ export default function CourseLayout({
   const { courseId } = useParams();
   const router = useRouter();
   const [error, setError] = useState<any>(null);
+  const confirm = useConfirmation();
 
   const data = useLazyLoadQuery<StudentCourseLayoutCourseIdQuery>(
     studentCourseIdQuery,
@@ -164,11 +166,13 @@ export default function CourseLayout({
               size="small"
               variant="outlined"
               endIcon={<ExitToAppIcon />}
-              onClick={() => {
+              onClick={async () => {
                 if (
-                  confirm(
-                    "Do you really want to leave this course? You might loose the progress you've already made"
-                  )
+                  await confirm({
+                    title: "Confirm Deletion",
+                    message:
+                      "Do you really want to leave this course? You might loose the progress you've already made",
+                  })
                 ) {
                   leave({
                     variables: {
