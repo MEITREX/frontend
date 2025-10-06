@@ -57,7 +57,6 @@ const GetSubmissionQuery = graphql`
         result {
           results {
             score
-            number
           }
           status
         }
@@ -123,15 +122,17 @@ const dateFormattingOptions: Intl.DateTimeFormatOptions = {
 interface FileListItemProps {
   name: string;
   downloadUrl: string;
-  isDeletable?: boolean; // New: If true, the action icon will be for deletion
-  onDelete?: () => void; // New: Callback for the delete action
+  isDeletable?: boolean;
+  onDelete?: () => void;
+  disabled?: boolean;
 }
 
 const FileListItem: FC<FileListItemProps> = ({
   name,
   downloadUrl,
-  isDeletable = false,
   onDelete,
+  isDeletable = false,
+  disabled = false,
 }) => {
   const handleDownload = (e: MouseEvent) => {
     e.stopPropagation(); // Prevents the main onClick from firing
@@ -157,6 +158,7 @@ const FileListItem: FC<FileListItemProps> = ({
       label={name}
       onClick={() => window.open(downloadUrl, "_blank")}
       onDelete={isDeletable ? handleDelete : handleDownload}
+      disabled={disabled}
       deleteIcon={isDeletable ? <Delete /> : <DownloadIcon />}
       variant="outlined"
       sx={{
@@ -492,6 +494,7 @@ export default function StudentSubmissionView() {
                         downloadUrl={file.downloadUrl!}
                         isDeletable={true}
                         onDelete={() => handleFileDeletion(file.id)}
+                        disabled={isPastDeadline}
                       />
                     ))}
                 </Stack>
@@ -546,7 +549,7 @@ export default function StudentSubmissionView() {
                 </Stack>
 
                 <Box>
-                  {submissionData.tasks.length >= 3 || showDetails ? (
+                  {submissionData.tasks.length <= 3 || showDetails ? (
                     <>
                       <Typography variant="h5" gutterBottom>
                         Detailed Feedback
@@ -554,23 +557,18 @@ export default function StudentSubmissionView() {
                       <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
                         <Stack spacing={1}>
                           {latestSolution!.result.results.map((result, i) => {
-                            const task = submissionData.tasks.find(
-                              (t) => t.number === result.number - 1
-                            );
-                            return !task ? (
-                              <Alert severity="error" sx={{ mt: 2 }}>
-                                Something went wrong with the Evaluation of the
-                                submission. Please contact your tutor!
-                              </Alert>
-                            ) : (
-                              <Typography
-                                key={i}
-                                variant="h6"
-                                sx={{ fontWeight: "normal" }}
-                              >
-                                {task.name}: <strong>{result.score}</strong>/
-                                {task.maxScore} Points
-                              </Typography>
+                            const task = submissionData.tasks[i];
+                            return (
+                              task && (
+                                <Typography
+                                  key={i}
+                                  variant="h6"
+                                  sx={{ fontWeight: "normal" }}
+                                >
+                                  {task.name}: <strong>{result.score}</strong>/
+                                  {task.maxScore} Points
+                                </Typography>
+                              )
                             );
                           })}
                         </Stack>
