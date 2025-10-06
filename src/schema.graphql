@@ -1269,6 +1269,7 @@ type ProgressLogItem {
 
 type PublicUserInfo {
   id: UUID!
+  nickname: String!
   userName: String!
 }
 
