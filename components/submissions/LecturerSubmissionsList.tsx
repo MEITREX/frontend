@@ -8,6 +8,7 @@ import {
   AccordionSummary,
   Box,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -27,10 +28,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { useMemo, useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
-// ---------- Types ----------
 type SubmissionInfo = { assessmentId: string; name: string };
 type Props = {
   courseId: string;
@@ -47,10 +48,9 @@ type TaskRow = {
 type ResultRow = {
   id?: string | null;
   status?: string | null;
-  results?: { itemId: string; score: number }[] | null; // score: number (nicht null)
+  results?: { itemId: string; score: number }[] | null;
 };
 
-// ---------- Mutation (❗️passe Feld-/Typnamen an dein Backend an) ----------
 const UpdateResultMutation = graphql`
   mutation LecturerSubmissionsListUpdateResultMutation($result: InputResult!) {
     updateResult(result: $result) {
@@ -65,7 +65,6 @@ const UpdateResultMutation = graphql`
   }
 `;
 
-// ---------- Dialog zum Bearbeiten ----------
 function GradingDialog({
   open,
   onClose,
@@ -82,7 +81,6 @@ function GradingDialog({
     results: { itemId: string; score: number | null }[];
   }) => void;
 }) {
-  // Map initial scores by itemId
   const initialMap = useMemo(() => {
     const m = new Map<string, number | null>();
     initial?.results?.forEach((r) => m.set(r.itemId, r.score ?? 0));
@@ -178,13 +176,13 @@ function GradingDialog({
   );
 }
 
-// ---------- Einzelne Submission-Gruppe lädt ihre Details selbst ----------
 function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
   const data = useLazyLoadQuery<LecturerSubmissionsListGroupQuery>(
     graphql`
       query LecturerSubmissionsListGroupQuery($assessmentId: UUID!) {
         submissionExerciseForLecturer(assessmentId: $assessmentId) {
           courseId
+          endDate
           tasks {
             itemId
             name
@@ -204,7 +202,7 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
               downloadUrl
             }
             result {
-              id # <-- WICHTIG!
+              id
               status
               results {
                 itemId
@@ -220,8 +218,22 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
 
   const exercise = data.submissionExerciseForLecturer;
   const [commitUpdateResult, isUpdating] = useMutation(UpdateResultMutation);
+  const deadlineISO = exercise?.endDate ?? null; // ggf. endDate/dueDate
+  const deadlineDate = deadlineISO ? new Date(deadlineISO) : null;
+  const now = new Date();
+  const isOpen = deadlineDate ? now <= deadlineDate : true;
 
-  // Dialog-State
+  const formatDT = (iso?: string | null) =>
+    iso
+      ? new Date(iso).toLocaleString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "—";
+
   const [editing, setEditing] = useState<{
     open: boolean;
     userId: string;
@@ -230,27 +242,33 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
     initial: ResultRow | null | undefined;
   } | null>(null);
 
-  // Tabellenzeilen aus Solutions
   const rows = useMemo(() => {
-    return (exercise?.solutions ?? []).map((sol) => ({
-      key: sol.id ?? `${assessmentId}-${sol.userId}`,
-      solutionId: sol.id!,
-      userId: sol.userId,
-      files: sol.files ?? [],
-      submittedAt: sol.submissionDate,
-      // <- hier Mapping von readonly + nullable → mutable + konsistente Typen
-      result: sol.result
-        ? {
-            id: sol.result.id,
-            status: sol.result.status ?? null,
-            results: (sol.result.results ?? []).map((r) => ({
-              itemId: r.itemId,
-              score: r.score, // Int! -> number
-            })),
-          }
-        : null,
-      resultId: sol.result?.id ?? null,
-    }));
+    return (exercise?.solutions ?? []).map((sol) => {
+      const displayName =
+        [sol.lastName, sol.firstName].filter(Boolean).join(", ") ||
+        sol.userName ||
+        sol.userId;
+
+      return {
+        key: sol.id ?? `${assessmentId}-${sol.userId}`,
+        solutionId: sol.id!,
+        userId: sol.userId,
+        displayName,
+        files: sol.files ?? [],
+        submittedAt: sol.submissionDate,
+        result: sol.result
+          ? {
+              id: sol.result.id,
+              status: sol.result.status ?? null,
+              results: (sol.result.results ?? []).map((r) => ({
+                itemId: r.itemId,
+                score: r.score,
+              })),
+            }
+          : null,
+        resultId: sol.result?.id ?? null,
+      };
+    });
   }, [exercise, assessmentId]);
 
   const tasks: TaskRow[] = useMemo(
@@ -263,6 +281,21 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
       })),
     [exercise]
   );
+
+  const rowBg = (
+    status: string | null | undefined,
+    theme: any,
+    opacity = 0.08
+  ) => {
+    const s = (status ?? "pending").toLowerCase();
+    if (s === "passed") return alpha(theme.palette.success.main, opacity);
+    if (s === "failed") return alpha(theme.palette.error.main, opacity);
+    // pending / unknown
+    return alpha(theme.palette.warning.main, opacity);
+  };
+
+  const isPending = (status?: string | null) =>
+    (status ?? "").toLowerCase() === "pending";
 
   const handleDownload = (file: {
     id: string;
@@ -299,20 +332,17 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
     const resultId = editing.resultId;
     const courseId = exercise?.courseId;
     if (!resultId || !courseId) {
-      // defensiv: ohne IDs kein Update
       closeEdit();
       return;
     }
 
-    // InputResult exakt wie in deinem Schema
     const variables = {
       result: {
         id: resultId,
         assessmentId,
         courseId,
-        status: payload.status, // "pending" | "passed" | "failed"
+        status: payload.status,
         results: payload.results
-          // null-Scores ignorieren; falls dein Backend null erlaubt, nimm statt .filter(...) einfach payload.results
           .filter((r) => r.score != null)
           .map((r) => ({ itemId: r.itemId, score: r.score as number })),
       },
@@ -329,7 +359,7 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
             .map((r) => ({
               itemId: r.itemId,
               score: r.score as number,
-              number: null, // wird vom Server gesetzt; optimistisch egal
+              number: null,
             })),
         },
       },
@@ -342,11 +372,32 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
     <>
       <Accordion defaultExpanded>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              flexWrap: "wrap",
+            }}
+          >
             <Typography fontWeight={700}>{name}</Typography>
+
             <Typography variant="body2" color="text.secondary">
               {rows.length} Submissions · {exercise?.tasks?.length ?? 0} Tasks
             </Typography>
+
+            {deadlineISO ? (
+              <Chip
+                size="small"
+                label={`${isOpen ? "Open until" : "Closed"} ${formatDT(
+                  deadlineISO
+                )}`}
+                color={isOpen ? "success" : "default"}
+                variant={isOpen ? "filled" : "outlined"}
+              />
+            ) : (
+              <Chip size="small" label="No deadline" variant="outlined" />
+            )}
           </Box>
         </AccordionSummary>
 
@@ -355,33 +406,33 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Student (userId)</TableCell>
-                  <TableCell>Files</TableCell>
-                  <TableCell align="center">Download</TableCell>
-                  <TableCell align="center">View</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>View Solution</TableCell>
                   <TableCell align="center">Grading</TableCell>
+                  <TableCell align="center">Edit</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {rows.map((r) => (
-                  <TableRow key={r.key} hover>
-                    <TableCell>{r.userId}</TableCell>
+                  <TableRow
+                    key={r.key}
+                    hover
+                    sx={(theme) => ({
+                      backgroundColor: rowBg(r.result?.status, theme, 0.08),
+                      transition: "background-color 120ms ease",
+                      "&:hover": {
+                        backgroundColor: rowBg(r.result?.status, theme, 0.16),
+                      },
+                    })}
+                  >
+                    <TableCell
+                      sx={{
+                        fontWeight: isPending(r.result?.status) ? 700 : 400,
+                      }}
+                    >
+                      {r.displayName}
+                    </TableCell>
                     <TableCell>
-                      {(r.files ?? []).map((f) => f.name).join(", ")}
-                    </TableCell>
-                    <TableCell align="center">
-                      {(r.files ?? []).map((f) => (
-                        <Button
-                          key={f.id}
-                          variant="outlined"
-                          size="small"
-                          onClick={() => handleDownload(f)}
-                        >
-                          {f.name}
-                        </Button>
-                      ))}
-                    </TableCell>
-                    <TableCell align="center">
                       {(r.files ?? []).map((f) => (
                         <Button
                           key={f.id}
@@ -393,25 +444,27 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
                         </Button>
                       ))}
                     </TableCell>
-                    <TableCell align="center">
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        justifyContent="center"
-                        alignItems="center"
+                     <TableCell
+                     align="center"
+                      sx={{
+                        fontWeight: isPending(r.result?.status) ? 700 : 400,
+                      }}
+                    >
+                      {r.result?.status ?? "—"}
+                    </TableCell>
+
+                    <TableCell
+                      align="center"
+                      sx={{ whiteSpace: "nowrap" }}
+                    >
+                      <Button
+                        size="small"
+                        variant="contained"
+                        disabled={isUpdating || !r.resultId}
+                        onClick={() => openEdit(r)}
                       >
-                        <Typography variant="body2">
-                          {r.result?.status ?? "—"}
-                        </Typography>
-                        <Button
-                          size="small"
-                          variant="contained"
-                          disabled={isUpdating || !r.resultId}
-                          onClick={() => openEdit(r)}
-                        >
-                          Edit
-                        </Button>
-                      </Stack>
+                        Edit
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -430,7 +483,6 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
         </AccordionDetails>
       </Accordion>
 
-      {/* Dialog */}
       {editing && (
         <GradingDialog
           open={editing.open}
@@ -471,7 +523,6 @@ export default function LecturerSubmissionsList({
 
   return (
     <Box sx={{ display: "grid", gap: 2 }}>
-      {/* Filterleiste */}
       <Stack
         direction={{ xs: "column", sm: "row" }}
         spacing={2}
@@ -502,7 +553,6 @@ export default function LecturerSubmissionsList({
         />
       </Stack>
 
-      {/* Gruppen */}
       {filtered.map((s) => (
         <SubmissionGroup
           key={s.assessmentId}

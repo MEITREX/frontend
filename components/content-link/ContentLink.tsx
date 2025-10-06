@@ -224,7 +224,7 @@ export function ContentLink({
     content.__typename === "MediaContent"
       ? `/courses/${courseId}/media/${content.id}`
       : content.__typename === "SubmissionAssessment"
-      ? `/courses/${courseId}/submission/${content.id}`
+      ? `/courses/${courseId}/submissions/${content.id}`
       : content.__typename === "FlashcardSetAssessment"
       ? `/courses/${courseId}/flashcards/${content.id}`
       : content.__typename === "QuizAssessment"

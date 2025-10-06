@@ -57,7 +57,7 @@ export function SubmissionExerciseModal({
   }>({
     endDate: _existingSubmission
       ? _existingSubmission.endDate
-      : new Date().toISOString(),
+      : null,
   });
 
   const [create, loading] =

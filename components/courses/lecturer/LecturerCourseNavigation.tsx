@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 const tabs = [
   { label: "Course Overview", path: "" },
   { label: "Forum", path: "/forum" },
-  { label: "Submissions", path: "/submission" },
+  { label: "Submissions", path: "/submissions" },
 ];
 
 export function LecturerCourseNavigation({ courseId }: { courseId: string }) {
