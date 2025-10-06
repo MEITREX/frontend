@@ -22,6 +22,7 @@ export const dialogSections: (
         label: "Title",
         type: "text",
         required: true,
+        fullWidth: true,
       },
       {
         key: "description",
@@ -78,27 +79,47 @@ export const dialogSections: (
   },
 ];
 
+function transformInvalidDate(value: any, originalValue: any) {
+  // check if data is invalid
+  if (!value || isNaN(value.getTime())) {
+    return null;
+  }
+  // make sure empty string or null stays as null
+  return originalValue === "" || originalValue === null ? null : value;
+}
+
 export const validationSchema: (
   courseStart: string,
   courseEnd: string
 ) => yup.ObjectSchema<ChapterData> = (courseStart, courseEnd) =>
   // @ts-ignore
-  yup.object({
+  yup.object().shape<ChapterData>({
     title: yup.string().required("Required"),
     description: yup.string().optional(),
     startDate: yup
       .date()
+      .transform((value, originalValue) => {
+        return transformInvalidDate(value, originalValue);
+      })
       .required("Required")
       .min(courseStart, "Must be after the course start date")
       .max(courseEnd, "Must be before the course end date"),
     suggestedStartDate: yup
       .date()
+      .transform((value, originalValue) => {
+        return transformInvalidDate(value, originalValue);
+      })
       .required("Required")
+      .typeError("Please provide a valid date")
       .min(yup.ref("startDate"), "Must be after the start date")
       .max(courseEnd, "Must be before the end date"),
     suggestedEndDate: yup
       .date()
+      .transform((value, originalValue) => {
+        return transformInvalidDate(value, originalValue);
+      })
       .required("Required")
+      .typeError("Please provide a valid date")
       .min(
         yup.ref("suggestedStartDate"),
         "Must be after the suggested start date"

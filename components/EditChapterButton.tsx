@@ -5,9 +5,9 @@ import { useMemo, useState } from "react";
 import { useFragment, useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
 
-import { EditChapterButtonMutation } from "@/__generated__/EditChapterButtonMutation.graphql";
 import { EditChapterButtonDeleteMutation } from "@/__generated__/EditChapterButtonDeleteMutation.graphql";
 import { EditChapterButtonFragment$key } from "@/__generated__/EditChapterButtonFragment.graphql";
+import { EditChapterButtonMutation } from "@/__generated__/EditChapterButtonMutation.graphql";
 import { DialogBase } from "./DialogBase";
 import { dialogSections, validationSchema } from "./dialogs/chapterDialog";
 
@@ -55,6 +55,7 @@ export default function EditChapterButton({
   );
 
   const [error, setError] = useState<any>(null);
+
   const sections = useMemo(
     () =>
       dialogSections(
@@ -63,6 +64,7 @@ export default function EditChapterButton({
       ),
     [chapter.course]
   );
+
   const schema = useMemo(
     () => validationSchema(chapter.course.startDate, chapter.course.endDate),
     [chapter.course]
