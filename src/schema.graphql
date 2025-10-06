@@ -31,20 +31,32 @@ enum AiEntityProcessingState {
   UNKNOWN
 }
 
+input AiGenQuestionContext {
+  description: String!
+  maxAnswersPerQuestion: Int! = 0
+  maxExactQuestions: Int! = 0
+  maxFreeTextQuestions: Int! = 0
+  maxMultipleChoiceQuestions: Int! = 0
+  maxNumericQuestions: Int! = 0
+  mediaRecordIds: [UUID]!
+  minExactQuestions: Int! = 0
+  minFreeTextQuestions: Int! = 0
+  minMultipleChoiceQuestions: Int! = 0
+  minNumericQuestions: Int! = 0
+}
+
 input AnswerInput {
   playerTypes: [PlayerType!]!
   text: String!
 }
 
 interface Assessment {
-  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   assessmentMetadata: AssessmentMetadata!
   id: UUID!
   isAvailableToBeWorkedOn: Boolean!
   items: [Item!]!
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
-  required: Boolean!
   userProgressData: UserProgressData!
 }
 
@@ -54,7 +66,6 @@ type AssessmentContentReference {
 
 type AssessmentMetadata {
   initialLearningInterval: Int
-  required: Boolean!
   skillPoints: Int!
   skillTypes: [SkillType!]!
 }
@@ -86,7 +97,6 @@ type Assignment {
 }
 
 type AssignmentAssessment implements Assessment & Content {
-  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   aiProcessingProgress: AiEntityProcessingProgress!
   assessmentMetadata: AssessmentMetadata!
   assignment: Assignment
@@ -95,7 +105,6 @@ type AssignmentAssessment implements Assessment & Content {
   items: [Item!]!
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
-  required: Boolean!
   suggestedTags: [String!]!
   userProgressData: UserProgressData!
 }
@@ -129,6 +138,7 @@ input AssociationInput {
 }
 
 type AssociationQuestion implements Question {
+  aiGenerated: Boolean!
   correctAssociations: [SingleAssociation!]!
   hint: JSON
   item: Item!
@@ -206,6 +216,7 @@ enum ClozeElementType {
 
 type ClozeQuestion implements Question {
   additionalWrongAnswers: [String!]!
+  aiGenerated: Boolean!
   allBlanks: [String!]!
   clozeElements: [ClozeElement!]!
   hint: JSON
@@ -243,12 +254,10 @@ directive @ContainerNotEmpty(message: String = "graphql.validation.ContainerNotE
 directive @ContainerSize(min: Int = 0, max: Int = 2147483647, message: String = "graphql.validation.ContainerSize.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 interface Content {
-  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   id: UUID!
   isAvailableToBeWorkedOn: Boolean!
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
-  required: Boolean!
   userProgressData: UserProgressData!
 }
 
@@ -287,7 +296,6 @@ enum ContentType {
 
 type Course {
   chapters(filter: ChapterFilter, pagination: Pagination, sortBy: [String!]! = [], sortDirection: [SortDirection!]! = [ASC]): ChapterPayload!
-  dailyQuests: QuestSet!
   description: String!
   endDate: DateTime!
   id: UUID!
@@ -302,7 +310,6 @@ type Course {
   suggestions(amount: Int!, skillTypes: [SkillType!]! = []): [Suggestion!]!
   title: String!
   userProgress: CompositeProgressInformation!
-  widgetRecommendations: [GamificationCategoryRecommendation!]!
   yearDivision: YearDivision
 }
 
@@ -584,13 +591,8 @@ type DocumentRecordSegment implements MediaRecordSegment {
   title: String
 }
 
-type DocumentSource implements Source {
-  mediaRecordId: UUID!
-  mediaRecords: [MediaRecord!]!
-  page: Int!
-}
-
 type ExactAnswerQuestion implements Question {
+  aiGenerated: Boolean!
   caseSensitive: Boolean!
   correctAnswers: [String!]!
   feedback: JSON
@@ -632,7 +634,6 @@ type ExternalAssignment {
 
 type ExternalCourse {
   courseTitle: String!
-  organizationName: String!
   url: String!
 }
 
@@ -682,7 +683,6 @@ type FlashcardSet {
 }
 
 type FlashcardSetAssessment implements Assessment & Content {
-  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   aiProcessingProgress: AiEntityProcessingProgress!
   assessmentMetadata: AssessmentMetadata!
   flashcardSet: FlashcardSet
@@ -691,7 +691,6 @@ type FlashcardSetAssessment implements Assessment & Content {
   items: [Item!]!
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
-  required: Boolean!
   suggestedTags: [String!]!
   userProgressData: UserProgressData!
 }
@@ -793,10 +792,6 @@ interface HasGoal {
   userId: UUID!
 }
 
-type HintResponse {
-  hint: String!
-}
-
 type InfoThread implements Thread {
   creationTime: DateTime!
   creatorId: UUID!
@@ -892,7 +887,6 @@ type Leaderboard {
 
 type LectureQuestionResponse {
   answer: String!
-  sources: [Source!]!
 }
 
 scalar LocalTime
@@ -922,14 +916,12 @@ type ManualMappingInstance {
 directive @Max(value: Int! = 2147483647, message: String = "graphql.validation.Max.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 
 type MediaContent implements Content {
-  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   aiProcessingProgress: AiEntityProcessingProgress!
   id: UUID!
   isAvailableToBeWorkedOn: Boolean!
   mediaRecords: [MediaRecord!]!
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
-  required: Boolean!
   segmentLinks: [MediaRecordSegmentLink!]!
   userProgressData: UserProgressData!
 }
@@ -1001,6 +993,7 @@ input MultipleChoiceAnswerInput {
 }
 
 type MultipleChoiceQuestion implements Question {
+  aiGenerated: Boolean!
   answers: [MultipleChoiceAnswer!]!
   hint: JSON
   item: Item!
@@ -1043,7 +1036,6 @@ type Mutation {
   equipItem(itemId: UUID!): Inventory
   evaluatePlayerHexadScore(input: PlayerAnswerInput!, userId: UUID!): PlayerHexadScore!
   generateAccessToken(input: GenerateAccessTokenInput!): Boolean!
-  generateHint(courseId: UUID!, questionText: String!): HintResponse!
   itemReward(itemId: UUID!): Inventory
   joinCourse(courseId: UUID!): CourseMembership!
   leaveCourse(courseId: UUID!): CourseMembership!
@@ -1099,6 +1091,7 @@ input NotificationInput {
 }
 
 type NumericQuestion implements Question {
+  aiGenerated: Boolean!
   correctAnswer: Float!
   feedback: JSON
   hint: JSON
@@ -1223,7 +1216,6 @@ type Query {
   getSemanticallySimilarEntities(count: Int! = 10, courseWhitelist: [UUID!], excludeEntitiesWithSameParent: Boolean, segmentId: UUID!): [SemanticSearchResult!]!
   getUser(userID: ID!): [User!]
   getWeeklyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
-  inventoriesForUsers(userIds: [UUID!]!): [Inventory!]!
   inventoryForUser: Inventory!
   isAccessTokenAvailable(provider: ExternalServiceProviderDto!): Boolean!
   itemsByUserId(userId: UUID!): [UserItem!]!
@@ -1260,6 +1252,7 @@ type Quest implements HasGoal {
 }
 
 interface Question {
+  aiGenerated: Boolean!
   hint: JSON
   itemId: UUID!
   number: Int!
@@ -1323,8 +1316,11 @@ type Quiz {
   selectedQuestions: [Question!]!
 }
 
+type QuizAIGenAsyncResponse {
+  quiz: Quiz
+}
+
 type QuizAssessment implements Assessment & Content {
-  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   aiProcessingProgress: AiEntityProcessingProgress!
   assessmentMetadata: AssessmentMetadata!
   id: UUID!
@@ -1333,7 +1329,6 @@ type QuizAssessment implements Assessment & Content {
   metadata: ContentMetadata!
   progressDataForUser(userId: UUID!): UserProgressData!
   quiz: Quiz
-  required: Boolean!
   suggestedTags: [String!]!
   userProgressData: UserProgressData!
 }
@@ -1356,6 +1351,7 @@ type QuizMutation {
   addMultipleChoiceQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateMultipleChoiceQuestionInputWithoutItem!): QuizOutput!
   addNumericQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateNumericQuestionInputWithoutItem!): QuizOutput!
   addSelfAssessmentQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateSelfAssessmentQuestionInputWithoutItem!): QuizOutput!
+  aiGenerateQuestionAsync(context: AiGenQuestionContext): QuizAIGenAsyncResponse
   assessmentId: UUID!
   removeQuestion(number: Int!): Quiz!
   setNumberOfRandomlySelectedQuestions(numberOfRandomlySelectedQuestions: Int!): Quiz!
@@ -1446,6 +1442,7 @@ type SectionMutation {
 }
 
 type SelfAssessmentQuestion implements Question {
+  aiGenerated: Boolean!
   hint: JSON
   itemId: UUID!
   number: Int!
@@ -1530,16 +1527,9 @@ enum SortDirection {
   DESC
 }
 
-interface Source {
-  mediaRecordId: UUID!
-}
-
 directive @specifiedBy(url: String!) on SCALAR
 
 type Stage {
-  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
-  _internal_noauth_optionalContentsProgressForUser(userId: UUID!): Float!
-  _internal_noauth_requiredContentsProgressForUser(userId: UUID!): Float!
   id: UUID!
   isAvailableToBeWorkedOn: Boolean!
   optionalContents: [Content!]!
@@ -1829,12 +1819,6 @@ type VideoRecordSegment implements MediaRecordSegment {
   thumbnail: String!
   title: String
   transcript: String!
-}
-
-type VideoSource implements Source {
-  mediaRecordId: UUID!
-  mediaRecords: [MediaRecord!]!
-  startTime: Float!
 }
 
 type WidgetSettings {

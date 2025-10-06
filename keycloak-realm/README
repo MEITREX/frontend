@@ -1,0 +1,4 @@
+This contains the Gits Realm configuration for Keycloak.
+
+- The original real config is the config without the custom scopes for the gamification levels.
+- The default will set up additional scopes and client roles for the gamification levels.

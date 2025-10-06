@@ -10,7 +10,6 @@ import {
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { Dayjs } from "dayjs";
 import { FormikProps, useFormik } from "formik";
-import { useEffect, useState } from "react";
 import { ObjectSchema } from "yup";
 import { Form, FormSection } from "./Form";
 import { FormErrors } from "./FormErrors";
@@ -22,6 +21,7 @@ export type FieldOptions<T extends object> = {
 } & (
   | {
       type: "text";
+      fullWidth?: boolean;
       multiline?: boolean;
     }
   | {
@@ -73,9 +73,9 @@ export function DialogBase<T extends { [k in string]: any }>({
   });
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md">
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>{title}</DialogTitle>
-      <DialogContent className="relative">
+      <DialogContent className="relative full-width">
         <FormErrors error={error} onClose={clearError} />
         <Form>
           {sections.map((section) => (
@@ -147,7 +147,7 @@ function Field<T extends object>({
           helperText={errorText}
           required={field.required}
           multiline={field.multiline}
-          fullWidth={field.multiline}
+          fullWidth={field.fullWidth ? field.fullWidth : field.multiline}
         />
       );
     case "date":

@@ -175,6 +175,7 @@ export function EditCourseModal({
                   <TextField
                     {...params}
                     required
+                    fullWidth
                     error={startDate == null || !startDate.isValid()}
                   />
                 )}
@@ -189,6 +190,7 @@ export function EditCourseModal({
                   <TextField
                     {...params}
                     required
+                    fullWidth
                     error={endDate == null || !endDate.isValid()}
                   />
                 )}
