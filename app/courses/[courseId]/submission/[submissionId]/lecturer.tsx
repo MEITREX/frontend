@@ -38,7 +38,7 @@ import {
   LinearProgress,
   Paper,
   Stack,
-  Typography
+  Typography,
 } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
@@ -632,39 +632,38 @@ export default function LecturerSubmission() {
 
       {/* Files display */}
       {/* Files display */}
-<Stack
-  direction="row"
-  spacing={2}
-  flexWrap="wrap"
-  useFlexGap
-  sx={{ mb: 2 }}
->
-  {submissionExerciseForLecturer.files.map((f) => (
-    <Chip
-      key={f.id}
-      icon={<InsertDriveFileIcon />}
-      label={f.name}
-      clickable
-      variant="outlined"
-      onClick={() => window.open(f.downloadUrl ?? "#", "_blank")}
-      onDelete={(e) => {
-        e.stopPropagation();
-        deleteFile(f.id);
-      }}
-      deleteIcon={
-        <DeleteIcon
-          onMouseDown={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
-        />
-      }
-      sx={{
-        borderRadius: 2,
-        '& .MuiChip-label': { fontWeight: 500 },
-      }}
-    />
-  ))}
-</Stack>
-
+      <Stack
+        direction="row"
+        spacing={2}
+        flexWrap="wrap"
+        useFlexGap
+        sx={{ mb: 2 }}
+      >
+        {submissionExerciseForLecturer.files.map((f) => (
+          <Chip
+            key={f.id}
+            icon={<InsertDriveFileIcon />}
+            label={f.name}
+            clickable
+            variant="outlined"
+            onClick={() => window.open(f.downloadUrl ?? "#", "_blank")}
+            onDelete={(e) => {
+              e.stopPropagation();
+              deleteFile(f.id);
+            }}
+            deleteIcon={
+              <DeleteIcon
+                onMouseDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+              />
+            }
+            sx={{
+              borderRadius: 2,
+              "& .MuiChip-label": { fontWeight: 500 },
+            }}
+          />
+        ))}
+      </Stack>
 
       {/* Tasks Grid */}
       {sortedTasks.length ? (
