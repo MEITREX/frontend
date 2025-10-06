@@ -1,5 +1,4 @@
 "use client";
-import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { lecturerDeleteMediaContentMutation } from "@/__generated__/lecturerDeleteMediaContentMutation.graphql";
 import { lecturerMediaQuery } from "@/__generated__/lecturerMediaQuery.graphql";
 import { ContentLink } from "@/components/content-link/ContentLink";
@@ -7,29 +6,41 @@ import { ContentTags } from "@/components/ContentTags";
 import { Heading } from "@/components/Heading";
 import { MediaContentModal } from "@/components/MediaContentModal";
 import { PageError } from "@/components/PageError";
-import { Delete, Edit } from "@mui/icons-material";
+import { Delete, Edit, Forum as ForumIcon } from "@mui/icons-material";
 import {
   Alert,
   Box,
   Button,
   CircularProgress,
   IconButton,
-  Tooltip,
   Typography,
 } from "@mui/material";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 import { ContentMediaDisplay } from "./ContentMediaDisplay";
 import { DownloadButton } from "./student";
-import ForumOverview from "@/components/forum/ForumOverview";
-import ForumIcon from "@mui/icons-material/Forum";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 export default function LecturerMediaPage() {
-  const [displayForum, setDisplayForum] = useState<boolean>(false);
   const { mediaId, courseId } = useParams();
   const router = useRouter();
+
+  const pathname = usePathname();
+  const isForumActive = pathname.includes("/forum");
+
+  const handleToggleForum = () => {
+    if (isForumActive) {
+      router.push(`/courses/${courseId}/media/${mediaId}`);
+    } else {
+      router.push(`/courses/${courseId}/media/${mediaId}/forum`);
+    }
+  };
+
   const searchParams = useSearchParams();
   const media = useLazyLoadQuery<lecturerMediaQuery>(
     graphql`
@@ -110,138 +121,95 @@ export default function LecturerMediaPage() {
   );
 
   return (
-    <main className="flex flex-col h-full">
+    <main className="flex flex-col h-full relative">
       {error?.source.errors.map((err: any, i: number) => (
         <Alert key={i} severity="error" onClose={() => setError(null)}>
           {err.message}
         </Alert>
       ))}
-
-      <PanelGroup direction="horizontal" className="w-full h-full flex-grow">
-        <Panel
-          defaultSize={displayForum ? 50 : 100}
-          minSize={0}
-          className="flex flex-col h-full overflow-hidden p-4"
-        >
-          <Heading
-            title={mainRecord?.name ?? content.metadata.name}
-            overline={mainRecord != null ? content.metadata.name : undefined}
-            action={
-              <div className="flex gap-2">
-                {mainRecord && <DownloadButton _record={mainRecord} />}{" "}
-                <Button
-                  sx={{ color: "text.secondary" }}
-                  startIcon={
-                    deleting ? <CircularProgress size={16} /> : <Delete />
-                  }
-                  onClick={() => {
-                    if (
-                      confirm(
-                        "Do you really want to delete this content? This can't be undone."
-                      )
-                    ) {
-                      del({
-                        variables: { id: content.id },
-                        onCompleted() {
-                          router.push(`/courses/${courseId}`);
-                        },
-                        onError(error) {
-                          setError(error);
-                        },
-                        updater(store) {
-                          store.get(content.id)?.invalidateRecord();
-                        },
-                      });
-                    }
-                  }}
-                >
-                  Delete
-                </Button>
-                <Button
-                  sx={{ color: "text.secondary" }}
-                  startIcon={<Edit />}
-                  onClick={() => setEditOpen(true)}
-                >
-                  Edit
-                </Button>
-              </div>
-            }
-            backButton
-          />
-
-          <ContentTags metadata={content.metadata} />
-          <div className="my-8 grow">
-            {mainRecord && (
-              <ContentMediaDisplay
-                onProgressChange={() => {}}
-                _record={mainRecord}
-              />
-            )}
-          </div>
-          {relatedRecords.length > 0 && (
-            <>
-              <Typography variant="h2" sx={{ mt: 4 }}>
-                Related media
-              </Typography>
-              <div className="mt-4 flex flex-col gap-2">
-                {relatedRecords.map((record) => (
-                  <ContentLink
-                    courseId={courseId}
-                    key={record.id}
-                    _content={content}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-          <MediaContentModal
-            isOpen={editOpen}
-            onClose={() => setEditOpen(false)}
-            _existingMediaContent={media.contentsByIds[0]}
-            _mediaRecords={media}
-          />
-        </Panel>
-
-        {displayForum && (
-          <>
-            <div className="relative w-1 h-full">
-              <PanelResizeHandle className="w-2 h-full bg-gray-200 hover:bg-gray-400 cursor-ew-resize flex items-center justify-center"></PanelResizeHandle>
-              <Tooltip title={displayForum ? "Close Forum" : "Open Forum"}>
-                <IconButton
-                  onClick={() => setDisplayForum((prev) => !prev)}
-                  color="primary"
-                  aria-label={displayForum ? "Close Forum" : "Open Forum"}
-                  sx={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "-15px",
-                    transform: "translateY(-50%)",
-                    backgroundColor: "primary.main",
-                    color: "white",
-                    boxShadow: 3,
-                    cursor: "pointer",
-                    "&:hover": {
-                      backgroundColor: "primary.dark",
+      <Heading
+        title={mainRecord?.name ?? content.metadata.name}
+        overline={mainRecord != null ? content.metadata.name : undefined}
+        action={
+          <div className="flex gap-2">
+            {mainRecord && <DownloadButton _record={mainRecord} />}{" "}
+            <Button
+              sx={{ color: "text.secondary" }}
+              startIcon={deleting ? <CircularProgress size={16} /> : <Delete />}
+              onClick={() => {
+                if (
+                  confirm(
+                    "Do you really want to delete this content? This can't be undone."
+                  )
+                ) {
+                  del({
+                    variables: { id: content.id },
+                    onCompleted() {
+                      router.push(`/courses/${courseId}`);
                     },
-                    width: 36,
-                    height: 36,
-                    zIndex: 50,
-                  }}
-                >
-                  <ArrowForwardIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </div>
-            <Panel
-              defaultSize={displayForum ? 50 : 0}
-              minSize={displayForum ? 50 : 0}
-              className="h-full overflow-hidden"
+                    onError(error) {
+                      setError(error);
+                    },
+                    updater(store) {
+                      store.get(content.id)?.invalidateRecord();
+                    },
+                  });
+                }
+              }}
             >
-              <ForumOverview></ForumOverview>
-            </Panel>
-          </>
+              Delete
+            </Button>
+            <Button
+              sx={{ color: "text.secondary" }}
+              startIcon={<Edit />}
+              onClick={() => setEditOpen(true)}
+            >
+              Edit
+            </Button>
+            <IconButton
+              onClick={handleToggleForum}
+              size="large"
+              sx={{
+                backgroundColor: !isForumActive ? "#1976d2" : "white",
+                color: !isForumActive ? "white" : "black",
+                border: "1px solid #ddd",
+                "&:hover": {
+                  backgroundColor: !isForumActive ? "#1565c0" : "#f0f0f0",
+                },
+              }}
+            >
+              <ForumIcon />
+            </IconButton>
+          </div>
+        }
+        backButton
+      />
+
+      <ContentTags metadata={content.metadata} />
+      <div className="my-8 grow">
+        {mainRecord && (
+          <ContentMediaDisplay
+            onProgressChange={() => {}}
+            _record={mainRecord}
+          />
         )}
-      </PanelGroup>
+      </div>
+      {relatedRecords.length > 0 && (
+        <>
+          <Typography variant="h2" sx={{ mt: 4 }}>
+            Related media
+          </Typography>
+          <div className="mt-4 flex flex-col gap-2">
+            {relatedRecords.map((record) => (
+              <ContentLink
+                courseId={courseId}
+                key={record.id}
+                _content={content}
+              />
+            ))}
+          </div>
+        </>
+      )}
 
       <MediaContentModal
         isOpen={editOpen}
@@ -249,29 +217,6 @@ export default function LecturerMediaPage() {
         _existingMediaContent={media.contentsByIds[0]}
         _mediaRecords={media}
       />
-      {!displayForum && (
-        <Box sx={{ position: "fixed", bottom: 124, right: 34, zIndex: 10 }}>
-          <Tooltip title={displayForum ? "Close Forum" : "Open Forum"}>
-            <IconButton
-              onClick={() => setDisplayForum((prev) => !prev)}
-              color="primary"
-              aria-label={displayForum ? "Close Forum" : "Open Forum"}
-              sx={{
-                backgroundColor: "primary.main",
-                color: "white",
-                boxShadow: 3,
-                "&:hover": {
-                  backgroundColor: "primary.dark",
-                },
-                width: "60",
-                height: "60",
-              }}
-            >
-              <ForumIcon fontSize="large" />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      )}
     </main>
   );
 }

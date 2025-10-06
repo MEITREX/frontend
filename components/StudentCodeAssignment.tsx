@@ -1,3 +1,5 @@
+"use client";
+
 import { StudentCodeAssignment$key } from "@/__generated__/StudentCodeAssignment.graphql";
 import { StudentCodeAssignmentCurrentUserQuery } from "@/__generated__/StudentCodeAssignmentCurrentUserQuery.graphql";
 import { StudentCodeAssignmentGradingQuery } from "@/__generated__/StudentCodeAssignmentGradingQuery.graphql";
