@@ -13,7 +13,7 @@ import {
   Paper,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useParams, usePathname } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import {
   ForumApiCreateInfoThreadMutation,
   InputInfoThread,
@@ -31,12 +31,9 @@ import { useLazyLoadQuery, useMutation } from "react-relay";
 import { ForumApiForumIdQuery } from "@/__generated__/ForumApiForumIdQuery.graphql";
 import TextEditor from "@/components/forum/richTextEditor/TextEditor";
 
-type Props = {
-  redirect: () => void;
-};
-
-export default function ThreadForm({ redirect }: Props) {
+export default function ThreadForm() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const router = useRouter();
   const params = useParams();
   const courseId = params.courseId as string;
   const mediaId = params.mediaId as string;
@@ -74,7 +71,7 @@ export default function ThreadForm({ redirect }: Props) {
 
   const handleCreationSuccess = () => {
     setSnackbarOpen(true);
-    redirect();
+    router.back();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -145,7 +142,7 @@ export default function ThreadForm({ redirect }: Props) {
   return (
     <>
       <Button
-        onClick={redirect}
+        onClick={() => router.back()}
         component="a"
         variant="text"
         startIcon={<ArrowBackIcon />}

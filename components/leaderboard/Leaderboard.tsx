@@ -1,3 +1,5 @@
+"use client";
+
 `use client`;
 import { LeaderboardDataQuery } from "@/__generated__/LeaderboardDataQuery.graphql";
 

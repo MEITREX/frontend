@@ -127,7 +127,7 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
   }, [currentUserWidgetSettings]);
 
   // Map User preferred categories to Widget-Components
-  // Testing: Use mockedRecommendations
+  // Testing: Use mockedRecommendations instead of 'recommendations'.find
   const selectedWidgets = React.useMemo(() => {
     if (!recommendations.length) return [];
     return widgets
@@ -150,8 +150,12 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
       sx={{
         border: "1px solid #e0e0e0",
         borderRadius: 2,
-        p: 3,
         position: "relative",
+        pt: 5,
+        pr: 3,
+        pb: 1,
+        pl: 3,
+        display: "inline-block",
       }}
     >
       <WidgetSettings
@@ -167,7 +171,6 @@ export default function WidgetsOverview({ userId, courseId }: Properties) {
           display: "grid",
           gridTemplateColumns: "repeat(2, 450px)",
           gap: "16px",
-          justifyContent: "center",
         }}
       >
         {selectedWidgets.map((w) => (
