@@ -65,17 +65,8 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-/**
- * this disables server-side rendering for the entire app using this layout
- * this is a workaround for the fact that oidc-client-ts relies on browser-only APIs like localStorage
- * and would throw errors during SSR.
- *
- * Note if you need SSR use a different layout and make sure it does not require authentication
- *
- */
-dynamic(() => Promise.resolve(Body), {
-  ssr: false
-});
+
+
 
 /**
  * define configuration as a callback function to avoid the window being used during SSR
@@ -112,6 +103,14 @@ function Body({ children }: { children: React.ReactNode }) {
   )
 }
 
+/**
+ * this disables server-side rendering for the entire app using this layout
+ * this is a workaround for the fact that oidc-client-ts relies on browser-only APIs like localStorage
+ * and would throw errors during SSR.
+ *
+ * Note if you need SSR use a different layout and make sure it does not require authentication
+ *
+ */
 const BodyDynamic = dynamic(() => Promise.resolve(Body), {
   ssr: false
 });
