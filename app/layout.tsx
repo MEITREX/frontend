@@ -18,7 +18,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 import { WebStorageStateStore } from "oidc-client-ts";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -33,8 +33,6 @@ import { CurrencyProvider } from "./contexts/CurrencyContext";
 import PageLoading from "./loading";
 
 dayjs.extend(isBetween);
-
-
 
 const theme = createTheme({
   palette: {
@@ -65,9 +63,6 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-
-
-
 /**
  * define configuration as a callback function to avoid the window being used during SSR
  * @returns
@@ -90,17 +85,17 @@ function oidcConfig(): AuthProviderProps {
 function Body({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider {...oidcConfig()}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DndProvider backend={HTML5Backend}>
-              <SigninContent>
-                <PageViewProvider>
-                  <InnerLayout>{children}</InnerLayout>
-                </PageViewProvider>
-              </SigninContent>
-            </DndProvider>
-          </LocalizationProvider>
-        </AuthProvider>
-  )
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DndProvider backend={HTML5Backend}>
+          <SigninContent>
+            <PageViewProvider>
+              <InnerLayout>{children}</InnerLayout>
+            </PageViewProvider>
+          </SigninContent>
+        </DndProvider>
+      </LocalizationProvider>
+    </AuthProvider>
+  );
 }
 
 /**
@@ -112,7 +107,7 @@ function Body({ children }: { children: React.ReactNode }) {
  *
  */
 const BodyDynamic = dynamic(() => Promise.resolve(Body), {
-  ssr: false
+  ssr: false,
 });
 
 export default function App({ children }: { children: React.ReactNode }) {
