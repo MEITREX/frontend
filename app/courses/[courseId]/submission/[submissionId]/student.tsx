@@ -166,6 +166,8 @@ const FileListItem: FC<FileListItemProps> = ({
             color: isDeletable ? "error.dark" : "primary.main",
           },
         },
+        borderRadius: 2,
+        "& .MuiChip-label": { fontWeight: 500 },
       }}
     />
   );
@@ -420,6 +422,10 @@ export default function StudentSubmissionView() {
                 color={isPastDeadline ? "error" : "default"}
                 variant="outlined"
                 className="font-semibold"
+                sx={{
+                  borderRadius: 2,
+                  "& .MuiChip-label": { fontWeight: 500 },
+                }}
               />
             )}
           </Stack>
@@ -517,7 +523,14 @@ export default function StudentSubmissionView() {
               <Typography variant="h5" gutterBottom>
                 Evaluation:
               </Typography>
-              <Chip label={status.toLocaleUpperCase()} color={statusColor} />
+              <Chip
+                label={status.toLocaleUpperCase()}
+                color={statusColor}
+                sx={{
+                  borderRadius: 2,
+                  "& .MuiChip-label": { fontWeight: 500 },
+                }}
+              />
             </Stack>
             {status !== "pending" ? (
               <Stack spacing={2}>
