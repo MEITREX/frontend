@@ -14,76 +14,76 @@
  * limitations under the License.
  */
 var isWelcomePage = function () {
-    var winHash = window.location.hash;
-    return winHash === '#/';
+  var winHash = window.location.hash;
+  return winHash === "#/";
 };
 
 var toggleReact = function () {
-    var welcomeScreen = document.getElementById("welcomeScreen");
-    var spinnerScreen = document.getElementById("spinner_screen");
-    var reactScreen = document.getElementById("main_react_container");
+  var welcomeScreen = document.getElementById("welcomeScreen");
+  var spinnerScreen = document.getElementById("spinner_screen");
+  var reactScreen = document.getElementById("main_react_container");
 
-    if (!isWelcomePage() && !isReactLoading) {
-        if (welcomeScreen) welcomeScreen.style.display = 'none';
-        if (spinnerScreen) spinnerScreen.style.display = 'none';
-        if (reactScreen) reactScreen.style.display = 'block';
-        if (reactScreen) reactScreen.style.height = '100%';
-    } else if (!isWelcomePage() && isReactLoading) {
-        if (welcomeScreen) welcomeScreen.style.display = 'none';
-        if (reactScreen) reactScreen.style.display = 'none';
-        if (spinnerScreen) spinnerScreen.style.display = 'block';
-        if (spinnerScreen) spinnerScreen.style.height = '100%';
-    } else {
-        if (reactScreen) reactScreen.style.display = 'none';
-        if (spinnerScreen) spinnerScreen.style.display = 'none';
-        if (welcomeScreen) welcomeScreen.style.display = 'block';
-        if (welcomeScreen) welcomeScreen.style.height = '100%';
-    }
+  if (!isWelcomePage() && !isReactLoading) {
+    if (welcomeScreen) welcomeScreen.style.display = "none";
+    if (spinnerScreen) spinnerScreen.style.display = "none";
+    if (reactScreen) reactScreen.style.display = "block";
+    if (reactScreen) reactScreen.style.height = "100%";
+  } else if (!isWelcomePage() && isReactLoading) {
+    if (welcomeScreen) welcomeScreen.style.display = "none";
+    if (reactScreen) reactScreen.style.display = "none";
+    if (spinnerScreen) spinnerScreen.style.display = "block";
+    if (spinnerScreen) spinnerScreen.style.height = "100%";
+  } else {
+    if (reactScreen) reactScreen.style.display = "none";
+    if (spinnerScreen) spinnerScreen.style.display = "none";
+    if (welcomeScreen) welcomeScreen.style.display = "block";
+    if (welcomeScreen) welcomeScreen.style.height = "100%";
+  }
 };
 
 function loggedInUserName() {
-    let userName = l18nMsg['unknownUser'];
-    if (keycloak.tokenParsed) {
-        const givenName = keycloak.tokenParsed.given_name;
-        const familyName = keycloak.tokenParsed.family_name;
-        const preferredUsername = keycloak.tokenParsed.preferred_username;
-        if (givenName && familyName) {
-            userName = [givenName, familyName].reduce((acc, value, index) =>
-                acc.replace('{{param_'+ index + '}}', value), l18nMsg['fullName']
-            );
-        } else {
-            userName = (givenName || familyName) || preferredUsername || userName;
-        }
+  let userName = l18nMsg["unknownUser"];
+  if (keycloak.tokenParsed) {
+    const givenName = keycloak.tokenParsed.given_name;
+    const familyName = keycloak.tokenParsed.family_name;
+    const preferredUsername = keycloak.tokenParsed.preferred_username;
+    if (givenName && familyName) {
+      userName = [givenName, familyName].reduce(
+        (acc, value, index) => acc.replace("{{param_" + index + "}}", value),
+        l18nMsg["fullName"]
+      );
+    } else {
+      userName = givenName || familyName || preferredUsername || userName;
     }
-    return sanitize(userName);
+  }
+  return sanitize(userName);
 }
 
 function sanitize(dirtyString) {
-    let element = document.createElement("span");
-    element.textContent = dirtyString;
-    return element.innerHTML;
+  let element = document.createElement("span");
+  element.textContent = dirtyString;
+  return element.innerHTML;
 }
 
-var toggleMobileDropdown = function () {	
-    var mobileDropdown = document.getElementById("landingMobileDropdown");
-    var mobileKebab = document.getElementById("landingMobileKebab");
-    var mobileKebabButton = document.getElementById("landingMobileKebabButton");
-    if (mobileDropdown.style.display === 'none') {
-        mobileDropdown.style.display = 'block';
-        mobileKebab.classList.add("pf-m-expanded");
-        mobileKebabButton.setAttribute("aria-expanded", "true");
-    } else {
-        mobileDropdown.style.display = 'none';
-        mobileKebab.classList.remove("pf-m-expanded");
-        mobileKebabButton.setAttribute("aria-expanded", "false");
-    }
-}
+var toggleMobileDropdown = function () {
+  var mobileDropdown = document.getElementById("landingMobileDropdown");
+  var mobileKebab = document.getElementById("landingMobileKebab");
+  var mobileKebabButton = document.getElementById("landingMobileKebabButton");
+  if (mobileDropdown.style.display === "none") {
+    mobileDropdown.style.display = "block";
+    mobileKebab.classList.add("pf-m-expanded");
+    mobileKebabButton.setAttribute("aria-expanded", "true");
+  } else {
+    mobileDropdown.style.display = "none";
+    mobileKebab.classList.remove("pf-m-expanded");
+    mobileKebabButton.setAttribute("aria-expanded", "false");
+  }
+};
 
 var loadjs = function (url, loadListener) {
-    const script = document.createElement("script");
-    script.src = resourceUrl + url;
-    script.type = "module";
-    if (loadListener)
-        script.addEventListener("load", loadListener);
-    document.head.appendChild(script);
+  const script = document.createElement("script");
+  script.src = resourceUrl + url;
+  script.type = "module";
+  if (loadListener) script.addEventListener("load", loadListener);
+  document.head.appendChild(script);
 };

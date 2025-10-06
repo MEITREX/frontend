@@ -5,12 +5,11 @@ export class Scope {
   }
 
   toString() {
-    if (this.hasOwnProperty('displayName') && this.displayName) {
+    if (this.hasOwnProperty("displayName") && this.displayName) {
       return this.displayName;
     } else {
       return this.name;
     }
   }
-
 }
 //# sourceMappingURL=resource-model.js.map

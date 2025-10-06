@@ -1,4 +1,16 @@
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+  } else {
+    obj[key] = value;
+  }
+  return obj;
+}
 
 /*
  * Copyright 2019 Red Hat, Inc. and/or its affiliates.
@@ -16,45 +28,70 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * limitations under the License.
  */
 import * as React from "../../common/keycloak/web_modules/react.js";
-import { Toolbar, ToolbarGroup, ToolbarItem } from "../../common/keycloak/web_modules/@patternfly/react-core.js";
+import {
+  Toolbar,
+  ToolbarGroup,
+  ToolbarItem,
+} from "../../common/keycloak/web_modules/@patternfly/react-core.js";
 import { ReferrerLink } from "./widgets/ReferrerLink.js";
 import { LogoutButton } from "./widgets/Logout.js";
 export class PageToolbar extends React.Component {
   constructor(props) {
     super(props);
 
-    _defineProperty(this, "hasReferrer", typeof referrerName !== 'undefined');
+    _defineProperty(this, "hasReferrer", typeof referrerName !== "undefined");
 
-    _defineProperty(this, "onKebabDropdownToggle", isKebabDropdownOpen => {
+    _defineProperty(this, "onKebabDropdownToggle", (isKebabDropdownOpen) => {
       this.setState({
-        isKebabDropdownOpen
+        isKebabDropdownOpen,
       });
     });
 
     this.state = {
-      isKebabDropdownOpen: false
+      isKebabDropdownOpen: false,
     };
   }
 
   render() {
-    return /*#__PURE__*/React.createElement(Toolbar, null, this.hasReferrer && /*#__PURE__*/React.createElement(ToolbarGroup, {
-      key: "referrerGroup",
-      alignment: {
-        default: "alignRight"
-      }
-    }, /*#__PURE__*/React.createElement(ToolbarItem, {
-      className: "pf-m-icons",
-      key: "referrer"
-    }, /*#__PURE__*/React.createElement(ReferrerLink, null))), /*#__PURE__*/React.createElement(ToolbarGroup, {
-      key: "secondGroup",
-      alignment: {
-        default: "alignRight"
-      }
-    }, /*#__PURE__*/React.createElement(ToolbarItem, {
-      className: "pf-m-icons",
-      key: "logout"
-    }, /*#__PURE__*/React.createElement(LogoutButton, null))));
+    return /*#__PURE__*/ React.createElement(
+      Toolbar,
+      null,
+      this.hasReferrer &&
+        /*#__PURE__*/ React.createElement(
+          ToolbarGroup,
+          {
+            key: "referrerGroup",
+            alignment: {
+              default: "alignRight",
+            },
+          },
+          /*#__PURE__*/ React.createElement(
+            ToolbarItem,
+            {
+              className: "pf-m-icons",
+              key: "referrer",
+            },
+            /*#__PURE__*/ React.createElement(ReferrerLink, null)
+          )
+        ),
+      /*#__PURE__*/ React.createElement(
+        ToolbarGroup,
+        {
+          key: "secondGroup",
+          alignment: {
+            default: "alignRight",
+          },
+        },
+        /*#__PURE__*/ React.createElement(
+          ToolbarItem,
+          {
+            className: "pf-m-icons",
+            key: "logout",
+          },
+          /*#__PURE__*/ React.createElement(LogoutButton, null)
+        )
+      )
+    );
   }
-
 }
 //# sourceMappingURL=PageToolbar.js.map

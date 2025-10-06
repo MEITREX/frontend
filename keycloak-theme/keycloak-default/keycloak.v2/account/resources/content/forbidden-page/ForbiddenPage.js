@@ -23,14 +23,16 @@ export class ForbiddenPage extends React.Component {
   }
 
   render() {
-    return /*#__PURE__*/React.createElement(EmptyMessageState, {
-      icon: WarningTriangleIcon,
-      messageKey: "forbidden"
-    }, /*#__PURE__*/React.createElement(Msg, {
-      msgKey: "needAccessRights"
-    }));
+    return /*#__PURE__*/ React.createElement(
+      EmptyMessageState,
+      {
+        icon: WarningTriangleIcon,
+        messageKey: "forbidden",
+      },
+      /*#__PURE__*/ React.createElement(Msg, {
+        msgKey: "needAccessRights",
+      })
+    );
   }
-
 }
-;
 //# sourceMappingURL=ForbiddenPage.js.map

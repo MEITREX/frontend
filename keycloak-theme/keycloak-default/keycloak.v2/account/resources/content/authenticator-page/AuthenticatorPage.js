@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2018 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,9 +20,11 @@ export class AuthenticatorPage extends React.Component {
   }
 
   render() {
-    return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", null, "Hello Authenticator Page"));
+    return /*#__PURE__*/ React.createElement(
+      "div",
+      null,
+      /*#__PURE__*/ React.createElement("h2", null, "Hello Authenticator Page")
+    );
   }
-
 }
-;
 //# sourceMappingURL=AuthenticatorPage.js.map

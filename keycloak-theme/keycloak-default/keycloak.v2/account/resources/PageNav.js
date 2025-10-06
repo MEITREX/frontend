@@ -15,7 +15,10 @@
  */
 import * as React from "../../common/keycloak/web_modules/react.js";
 import { withRouter } from "../../common/keycloak/web_modules/react-router-dom.js";
-import { Nav, NavList } from "../../common/keycloak/web_modules/@patternfly/react-core.js";
+import {
+  Nav,
+  NavList,
+} from "../../common/keycloak/web_modules/@patternfly/react-core.js";
 import { makeNavItems, flattenContent } from "./ContentPages.js";
 
 class PageNavigation extends React.Component {
@@ -29,22 +32,24 @@ class PageNavigation extends React.Component {
     const firstItem = items[0];
 
     for (let item of items) {
-      const itemPath = '/' + item.path;
+      const itemPath = "/" + item.path;
 
       if (itemPath === currentPath) {
         return item;
       }
     }
 
-    ;
     return firstItem;
   }
 
   render() {
     const activeItem = this.findActiveItem();
-    return /*#__PURE__*/React.createElement(Nav, null, /*#__PURE__*/React.createElement(NavList, null, makeNavItems(activeItem)));
+    return /*#__PURE__*/ React.createElement(
+      Nav,
+      null,
+      /*#__PURE__*/ React.createElement(NavList, null, makeNavItems(activeItem))
+    );
   }
-
 }
 
 export const PageNav = withRouter(PageNavigation);

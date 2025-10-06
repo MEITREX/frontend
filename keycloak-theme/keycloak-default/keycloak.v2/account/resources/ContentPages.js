@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 import * as React from "../../common/keycloak/web_modules/react.js";
-import { Route, Switch } from "../../common/keycloak/web_modules/react-router-dom.js";
-import { NavItem, NavExpandable } from "../../common/keycloak/web_modules/@patternfly/react-core.js";
+import {
+  Route,
+  Switch,
+} from "../../common/keycloak/web_modules/react-router-dom.js";
+import {
+  NavItem,
+  NavExpandable,
+} from "../../common/keycloak/web_modules/@patternfly/react-core.js";
 import { Msg } from "./widgets/Msg.js";
 import { PageNotFound } from "./content/page-not-found/PageNotFound.js";
 import { ForbiddenPage } from "./content/forbidden-page/ForbiddenPage.js";
-;
 export function isModulePageDef(item) {
   return item.modulePath !== undefined;
 }
@@ -28,11 +33,11 @@ export function isExpansion(contentItem) {
 }
 
 function groupId(group) {
-  return 'grp-' + group;
+  return "grp-" + group;
 }
 
 function itemId(group, item) {
-  return 'grp-' + group + '_itm-' + item;
+  return "grp-" + group + "_itm-" + item;
 }
 
 function isChildOf(parent, child) {
@@ -45,43 +50,52 @@ function isChildOf(parent, child) {
 }
 
 function createNavItems(activePage, contentParam, groupNum) {
-  if (typeof content === 'undefined') return /*#__PURE__*/React.createElement(React.Fragment, null);
-  const links = contentParam.map(item => {
+  if (typeof content === "undefined")
+    return /*#__PURE__*/ React.createElement(React.Fragment, null);
+  const links = contentParam.map((item) => {
     const navLinkId = `nav-link-${item.id}`;
 
     if (isExpansion(item)) {
-      return /*#__PURE__*/React.createElement(NavExpandable, {
-        id: navLinkId,
-        groupId: item.groupId,
-        key: item.groupId,
-        title: Msg.localize(item.label, item.labelParams),
-        isExpanded: isChildOf(item, activePage)
-      }, createNavItems(activePage, item.content, groupNum + 1));
+      return /*#__PURE__*/ React.createElement(
+        NavExpandable,
+        {
+          id: navLinkId,
+          groupId: item.groupId,
+          key: item.groupId,
+          title: Msg.localize(item.label, item.labelParams),
+          isExpanded: isChildOf(item, activePage),
+        },
+        createNavItems(activePage, item.content, groupNum + 1)
+      );
     } else {
       const page = item;
-      return /*#__PURE__*/React.createElement(NavItem, {
-        id: navLinkId,
-        groupId: item.groupId,
-        itemId: item.itemId,
-        key: item.itemId,
-        to: '#/' + page.path,
-        isActive: activePage.itemId === item.itemId,
-        type: "button"
-      }, Msg.localize(page.label, page.labelParams));
+      return /*#__PURE__*/ React.createElement(
+        NavItem,
+        {
+          id: navLinkId,
+          groupId: item.groupId,
+          itemId: item.itemId,
+          key: item.itemId,
+          to: "#/" + page.path,
+          isActive: activePage.itemId === item.itemId,
+          type: "button",
+        },
+        Msg.localize(page.label, page.labelParams)
+      );
     }
   });
-  return /*#__PURE__*/React.createElement(React.Fragment, null, links);
+  return /*#__PURE__*/ React.createElement(React.Fragment, null, links);
 }
 
 export function makeNavItems(activePage) {
   console.log({
-    activePage
+    activePage,
   });
   return createNavItems(activePage, content, 0);
 }
 
 function setIds(contentParam, groupNum) {
-  if (typeof contentParam === 'undefined') return groupNum;
+  if (typeof contentParam === "undefined") return groupNum;
   let expansionGroupNum = groupNum;
 
   for (let i = 0; i < contentParam.length; i++) {
@@ -92,21 +106,20 @@ function setIds(contentParam, groupNum) {
       expansionGroupNum = expansionGroupNum + 1;
       item.groupId = groupId(expansionGroupNum);
       expansionGroupNum = setIds(item.content, expansionGroupNum);
-      console.log('currentGroup=' + expansionGroupNum);
+      console.log("currentGroup=" + expansionGroupNum);
     } else {
       item.groupId = groupId(groupNum);
       item.itemId = itemId(groupNum, i);
     }
   }
 
-  ;
   return expansionGroupNum;
 }
 
 export function initGroupAndItemIds() {
   setIds(content, 0);
   console.log({
-    content
+    content,
   });
 } // get rid of Expansions and put all PageDef items into a single array
 
@@ -124,34 +137,41 @@ export function flattenContent(pageDefs) {
   return flat;
 }
 export function makeRoutes() {
-  if (typeof content === 'undefined') return /*#__PURE__*/React.createElement("span", null);
+  if (typeof content === "undefined")
+    return /*#__PURE__*/ React.createElement("span", null);
   const pageDefs = flattenContent(content);
-  const routes = pageDefs.map(page => {
+  const routes = pageDefs.map((page) => {
     if (isModulePageDef(page)) {
       const node = React.createElement(page.module[page.componentName], {
-        'pageDef': page
+        pageDef: page,
       });
-      return /*#__PURE__*/React.createElement(Route, {
+      return /*#__PURE__*/ React.createElement(Route, {
         key: page.itemId,
-        path: '/' + page.path,
+        path: "/" + page.path,
         exact: true,
-        render: () => node
+        render: () => node,
       });
     } else {
       const pageDef = page;
-      return /*#__PURE__*/React.createElement(Route, {
+      return /*#__PURE__*/ React.createElement(Route, {
         key: page.itemId,
-        path: '/' + page.path,
+        path: "/" + page.path,
         exact: true,
-        component: pageDef.component
+        component: pageDef.component,
       });
     }
   });
-  return /*#__PURE__*/React.createElement(Switch, null, routes, /*#__PURE__*/React.createElement(Route, {
-    path: "/forbidden",
-    component: ForbiddenPage
-  }), /*#__PURE__*/React.createElement(Route, {
-    component: PageNotFound
-  }));
+  return /*#__PURE__*/ React.createElement(
+    Switch,
+    null,
+    routes,
+    /*#__PURE__*/ React.createElement(Route, {
+      path: "/forbidden",
+      component: ForbiddenPage,
+    }),
+    /*#__PURE__*/ React.createElement(Route, {
+      component: PageNotFound,
+    })
+  );
 }
 //# sourceMappingURL=ContentPages.js.map

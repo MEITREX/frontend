@@ -16,7 +16,10 @@
 import * as React from "../../../common/keycloak/web_modules/react.js";
 import { Msg } from "./Msg.js";
 import { KeycloakContext } from "../keycloak-service/KeycloakContext.js";
-import { Button, DropdownItem } from "../../../common/keycloak/web_modules/@patternfly/react-core.js";
+import {
+  Button,
+  DropdownItem,
+} from "../../../common/keycloak/web_modules/@patternfly/react-core.js";
 
 function handleLogout(keycloak) {
   keycloak.logout();
@@ -24,23 +27,39 @@ function handleLogout(keycloak) {
 
 export class LogoutButton extends React.Component {
   render() {
-    return /*#__PURE__*/React.createElement(KeycloakContext.Consumer, null, keycloak => /*#__PURE__*/React.createElement(Button, {
-      id: "signOutButton",
-      onClick: () => handleLogout(keycloak)
-    }, /*#__PURE__*/React.createElement(Msg, {
-      msgKey: "doSignOut"
-    })));
+    return /*#__PURE__*/ React.createElement(
+      KeycloakContext.Consumer,
+      null,
+      (keycloak) =>
+        /*#__PURE__*/ React.createElement(
+          Button,
+          {
+            id: "signOutButton",
+            onClick: () => handleLogout(keycloak),
+          },
+          /*#__PURE__*/ React.createElement(Msg, {
+            msgKey: "doSignOut",
+          })
+        )
+    );
   }
-
 }
 export class LogoutDropdownItem extends React.Component {
   render() {
-    return /*#__PURE__*/React.createElement(KeycloakContext.Consumer, null, keycloak => /*#__PURE__*/React.createElement(DropdownItem, {
-      id: "signOutLink",
-      key: "logout",
-      onClick: () => handleLogout(keycloak)
-    }, Msg.localize('doSignOut')));
+    return /*#__PURE__*/ React.createElement(
+      KeycloakContext.Consumer,
+      null,
+      (keycloak) =>
+        /*#__PURE__*/ React.createElement(
+          DropdownItem,
+          {
+            id: "signOutLink",
+            key: "logout",
+            onClick: () => handleLogout(keycloak),
+          },
+          Msg.localize("doSignOut")
+        )
+    );
   }
-
 }
 //# sourceMappingURL=Logout.js.map

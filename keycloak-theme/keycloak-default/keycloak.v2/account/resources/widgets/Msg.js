@@ -24,14 +24,22 @@ export class Msg extends React.Component {
       return Msg.localizeWithChildren(this.props.msgKey, this.props.children);
     }
 
-    return /*#__PURE__*/React.createElement(React.Fragment, null, Msg.localize(this.props.msgKey, this.props.params));
+    return /*#__PURE__*/ React.createElement(
+      React.Fragment,
+      null,
+      Msg.localize(this.props.msgKey, this.props.params)
+    );
   }
 
   static localizeWithChildren(msgKey, children) {
     const message = l18nMsg[this.processKey(msgKey)];
     const parts = message.split(/\{\{param_\d*}}/);
     const count = React.Children.count(children);
-    return React.Children.map(children, (child, i) => [parts[i], child, count === i + 1 ? parts[count] : '']);
+    return React.Children.map(children, (child, i) => [
+      parts[i],
+      child,
+      count === i + 1 ? parts[count] : "",
+    ]);
   }
 
   static localize(msgKey, params) {
@@ -41,29 +49,26 @@ export class Msg extends React.Component {
     if (params !== undefined && params.length > 0) {
       params.forEach((value, index) => {
         value = this.processParam(value);
-        message = message.replace('{{param_' + index + '}}', value);
+        message = message.replace("{{param_" + index + "}}", value);
       });
     }
 
     return message;
   } // if the message key has Freemarker syntax, remove it
 
-
   static processKey(msgKey) {
-    if (!(msgKey.startsWith('${') && msgKey.endsWith('}'))) return msgKey; // remove Freemarker syntax
+    if (!(msgKey.startsWith("${") && msgKey.endsWith("}"))) return msgKey; // remove Freemarker syntax
 
     return msgKey.substring(2, msgKey.length - 1);
   } // if the param has Freemarker syntax, try to look up its value
 
-
   static processParam(param) {
-    if (!(param.startsWith('${') && param.endsWith('}'))) return param; // remove Freemarker syntax
+    if (!(param.startsWith("${") && param.endsWith("}"))) return param; // remove Freemarker syntax
 
     const key = param.substring(2, param.length - 1);
     let value = l18nMsg[key];
     if (value === undefined) return param;
     return value;
   }
-
 }
 //# sourceMappingURL=Msg.js.map

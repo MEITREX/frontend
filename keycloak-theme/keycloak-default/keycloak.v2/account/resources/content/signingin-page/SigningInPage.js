@@ -1,4 +1,16 @@
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+  } else {
+    obj[key] = value;
+  }
+  return obj;
+}
 
 /*
  * Copyright 2018 Red Hat, Inc. and/or its affiliates.
@@ -17,7 +29,27 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  */
 import * as React from "../../../../common/keycloak/web_modules/react.js";
 import { withRouter } from "../../../../common/keycloak/web_modules/react-router-dom.js";
-import { Alert, Button, DataList, DataListAction, DataListItemCells, DataListCell, DataListItem, DataListItemRow, EmptyState, EmptyStateVariant, EmptyStateBody, Split, SplitItem, Title, Dropdown, DropdownPosition, KebabToggle, PageSection, PageSectionVariants } from "../../../../common/keycloak/web_modules/@patternfly/react-core.js";
+import {
+  Alert,
+  Button,
+  DataList,
+  DataListAction,
+  DataListItemCells,
+  DataListCell,
+  DataListItem,
+  DataListItemRow,
+  EmptyState,
+  EmptyStateVariant,
+  EmptyStateBody,
+  Split,
+  SplitItem,
+  Title,
+  Dropdown,
+  DropdownPosition,
+  KebabToggle,
+  PageSection,
+  PageSectionVariants,
+} from "../../../../common/keycloak/web_modules/@patternfly/react-core.js";
 import { AIACommand } from "../../util/AIACommand.js";
 import TimeUtil from "../../util/TimeUtil.js";
 import { AccountServiceContext } from "../../account-service/AccountServiceContext.js";
@@ -37,24 +69,26 @@ class SigningInPage extends React.Component {
     _defineProperty(this, "context", void 0);
 
     _defineProperty(this, "handleRemove", (credentialId, userLabel) => {
-      this.context.doDelete("/credentials/" + encodeURIComponent(credentialId)).then(() => {
-        this.getCredentialContainers();
-        ContentAlert.success("successRemovedMessage", [userLabel]);
-      });
+      this.context
+        .doDelete("/credentials/" + encodeURIComponent(credentialId))
+        .then(() => {
+          this.getCredentialContainers();
+          ContentAlert.success("successRemovedMessage", [userLabel]);
+        });
     });
 
     this.context = context;
     this.state = {
-      credentialContainers: new Map()
+      credentialContainers: new Map(),
     };
     this.getCredentialContainers();
   }
 
   getCredentialContainers() {
-    this.context.doGet("/credentials").then(response => {
+    this.context.doGet("/credentials").then((response) => {
       const allContainers = new Map();
       const containers = response.data || [];
-      containers.forEach(container => {
+      containers.forEach((container) => {
         let categoryMap = allContainers.get(container.category);
 
         if (!categoryMap) {
@@ -65,7 +99,7 @@ class SigningInPage extends React.Component {
         categoryMap.set(container.type, container);
       });
       this.setState({
-        credentialContainers: allContainers
+        credentialContainers: allContainers,
       });
     });
   }
@@ -75,40 +109,81 @@ class SigningInPage extends React.Component {
   }
 
   render() {
-    return /*#__PURE__*/React.createElement(ContentPage, {
-      title: "signingIn",
-      introMessage: "signingInSubMessage"
-    }, this.renderCategories());
+    return /*#__PURE__*/ React.createElement(
+      ContentPage,
+      {
+        title: "signingIn",
+        introMessage: "signingInSubMessage",
+      },
+      this.renderCategories()
+    );
   }
 
   renderCategories() {
-    return Array.from(this.state.credentialContainers.keys()).map(category => /*#__PURE__*/React.createElement(PageSection, {
-      key: category,
-      variant: PageSectionVariants.light
-    }, /*#__PURE__*/React.createElement(Title, {
-      id: `${category}-categ-title`,
-      headingLevel: "h2",
-      size: "xl"
-    }, /*#__PURE__*/React.createElement(Msg, {
-      msgKey: category
-    })), this.renderTypes(category)));
+    return Array.from(this.state.credentialContainers.keys()).map((category) =>
+      /*#__PURE__*/ React.createElement(
+        PageSection,
+        {
+          key: category,
+          variant: PageSectionVariants.light,
+        },
+        /*#__PURE__*/ React.createElement(
+          Title,
+          {
+            id: `${category}-categ-title`,
+            headingLevel: "h2",
+            size: "xl",
+          },
+          /*#__PURE__*/ React.createElement(Msg, {
+            msgKey: category,
+          })
+        ),
+        this.renderTypes(category)
+      )
+    );
   }
 
   renderTypes(category) {
     let credTypeMap = this.state.credentialContainers.get(category);
-    return /*#__PURE__*/React.createElement(KeycloakContext.Consumer, null, keycloak => /*#__PURE__*/React.createElement(React.Fragment, null, Array.from(credTypeMap.keys()).map((credType, index, typeArray) => [this.renderCredTypeTitle(credTypeMap.get(credType), keycloak, category), this.renderUserCredentials(credTypeMap, credType, keycloak)])));
+    return /*#__PURE__*/ React.createElement(
+      KeycloakContext.Consumer,
+      null,
+      (keycloak) =>
+        /*#__PURE__*/ React.createElement(
+          React.Fragment,
+          null,
+          Array.from(credTypeMap.keys()).map((credType, index, typeArray) => [
+            this.renderCredTypeTitle(
+              credTypeMap.get(credType),
+              keycloak,
+              category
+            ),
+            this.renderUserCredentials(credTypeMap, credType, keycloak),
+          ])
+        )
+    );
   }
 
   renderEmptyRow(type, isLast) {
     if (isLast) return; // don't put empty row at the end
 
-    return /*#__PURE__*/React.createElement(DataListItem, {
-      "aria-labelledby": "empty-list-item-" + type
-    }, /*#__PURE__*/React.createElement(DataListItemRow, {
-      key: "empty-row-" + type
-    }, /*#__PURE__*/React.createElement(DataListItemCells, {
-      dataListCells: [/*#__PURE__*/React.createElement(DataListCell, null)]
-    })));
+    return /*#__PURE__*/ React.createElement(
+      DataListItem,
+      {
+        "aria-labelledby": "empty-list-item-" + type,
+      },
+      /*#__PURE__*/ React.createElement(
+        DataListItemRow,
+        {
+          key: "empty-row-" + type,
+        },
+        /*#__PURE__*/ React.createElement(DataListItemCells, {
+          dataListCells: [
+            /*#__PURE__*/ React.createElement(DataListCell, null),
+          ],
+        })
+      )
+    );
   }
 
   renderUserCredentials(credTypeMap, credType, keycloak) {
@@ -120,36 +195,65 @@ class SigningInPage extends React.Component {
 
     if (!userCredentialMetadatas || userCredentialMetadatas.length === 0) {
       const localizedDisplayName = Msg.localize(displayName);
-      return /*#__PURE__*/React.createElement(DataList, {
-        "aria-label": Msg.localize('notSetUp', [localizedDisplayName]),
-        className: "pf-u-mb-xl"
-      }, /*#__PURE__*/React.createElement(DataListItem, {
-        key: "no-credentials-list-item",
-        "aria-labelledby": Msg.localize('notSetUp', [localizedDisplayName])
-      }, /*#__PURE__*/React.createElement(DataListItemRow, {
-        key: "no-credentials-list-item-row",
-        className: "pf-u-align-items-center"
-      }, /*#__PURE__*/React.createElement(DataListItemCells, {
-        dataListCells: [/*#__PURE__*/React.createElement(DataListCell, {
-          key: 'no-credentials-cell-0'
-        }), /*#__PURE__*/React.createElement(EmptyState, {
-          id: `${type}-not-set-up`,
-          key: 'no-credentials-cell-1',
-          variant: EmptyStateVariant.xs
-        }, /*#__PURE__*/React.createElement(EmptyStateBody, null, /*#__PURE__*/React.createElement(Msg, {
-          msgKey: "notSetUp",
-          params: [localizedDisplayName]
-        }))), /*#__PURE__*/React.createElement(DataListCell, {
-          key: 'no-credentials-cell-2'
-        })]
-      }))));
+      return /*#__PURE__*/ React.createElement(
+        DataList,
+        {
+          "aria-label": Msg.localize("notSetUp", [localizedDisplayName]),
+          className: "pf-u-mb-xl",
+        },
+        /*#__PURE__*/ React.createElement(
+          DataListItem,
+          {
+            key: "no-credentials-list-item",
+            "aria-labelledby": Msg.localize("notSetUp", [localizedDisplayName]),
+          },
+          /*#__PURE__*/ React.createElement(
+            DataListItemRow,
+            {
+              key: "no-credentials-list-item-row",
+              className: "pf-u-align-items-center",
+            },
+            /*#__PURE__*/ React.createElement(DataListItemCells, {
+              dataListCells: [
+                /*#__PURE__*/ React.createElement(DataListCell, {
+                  key: "no-credentials-cell-0",
+                }),
+                /*#__PURE__*/ React.createElement(
+                  EmptyState,
+                  {
+                    id: `${type}-not-set-up`,
+                    key: "no-credentials-cell-1",
+                    variant: EmptyStateVariant.xs,
+                  },
+                  /*#__PURE__*/ React.createElement(
+                    EmptyStateBody,
+                    null,
+                    /*#__PURE__*/ React.createElement(Msg, {
+                      msgKey: "notSetUp",
+                      params: [localizedDisplayName],
+                    })
+                  )
+                ),
+                /*#__PURE__*/ React.createElement(DataListCell, {
+                  key: "no-credentials-cell-2",
+                }),
+              ],
+            })
+          )
+        )
+      );
     }
 
-    userCredentialMetadatas.forEach(credentialMetadata => {
+    userCredentialMetadatas.forEach((credentialMetadata) => {
       let credential = credentialMetadata.credential;
-      if (!credential.userLabel) credential.userLabel = Msg.localize(credential.type);
+      if (!credential.userLabel)
+        credential.userLabel = Msg.localize(credential.type);
 
-      if (credential.hasOwnProperty('createdDate') && credential.createdDate && credential.createdDate > 0) {
+      if (
+        credential.hasOwnProperty("createdDate") &&
+        credential.createdDate &&
+        credential.createdDate > 0
+      ) {
         credential.strCreatedDate = TimeUtil.format(credential.createdDate);
       }
     });
@@ -160,74 +264,161 @@ class SigningInPage extends React.Component {
     }
 
     let maxWidth = {
-      maxWidth: 689
+      maxWidth: 689,
     };
-    return /*#__PURE__*/React.createElement(React.Fragment, {
-      key: "userCredentialMetadatas"
-    }, " ", userCredentialMetadatas.map(credentialMetadata => /*#__PURE__*/React.createElement(React.Fragment, null, credentialMetadata.infoMessage && !credentialMetadata.warningMessageTitle && !credentialMetadata.warningMessageDescription && /*#__PURE__*/React.createElement(Alert, {
-      variant: "default",
-      className: "pf-u-mb-md",
-      isInline: true,
-      isPlain: true,
-      title: Msg.localize(JSON.parse(credentialMetadata.infoMessage).key, JSON.parse(credentialMetadata.infoMessage).parameters)
-    }), credentialMetadata.warningMessageTitle && credentialMetadata.warningMessageDescription && /*#__PURE__*/React.createElement(Alert, {
-      variant: "warning",
-      className: "pf-u-mb-md",
-      isInline: true,
-      title: Msg.localize(JSON.parse(credentialMetadata.warningMessageTitle).key, JSON.parse(credentialMetadata.warningMessageTitle).parameters),
-      style: maxWidth
-    }, /*#__PURE__*/React.createElement("p", null, Msg.localize(JSON.parse(credentialMetadata.warningMessageDescription).key, JSON.parse(credentialMetadata.warningMessageDescription).parameters))), /*#__PURE__*/React.createElement(DataList, {
-      "aria-label": "user credential",
-      className: "pf-u-mb-xl"
-    }, /*#__PURE__*/React.createElement(DataListItem, {
-      id: `${SigningInPage.credElementId(type, credentialMetadata.credential.id, 'row')}`,
-      key: 'credential-list-item-' + credentialMetadata.credential.id,
-      "aria-labelledby": 'credential-list-item-' + credentialMetadata.credential.userLabel
-    }, /*#__PURE__*/React.createElement(DataListItemRow, {
-      key: 'userCredentialRow-' + credentialMetadata.credential.id,
-      className: "pf-u-align-items-center"
-    }, /*#__PURE__*/React.createElement(DataListItemCells, {
-      dataListCells: this.credentialRowCells(credentialMetadata, type)
-    }), /*#__PURE__*/React.createElement(CredentialAction, {
-      credential: credentialMetadata.credential,
-      removeable: removeable,
-      updateAction: updateAIA,
-      credRemover: this.handleRemove
-    })))))), " ");
+    return /*#__PURE__*/ React.createElement(
+      React.Fragment,
+      {
+        key: "userCredentialMetadatas",
+      },
+      " ",
+      userCredentialMetadatas.map((credentialMetadata) =>
+        /*#__PURE__*/ React.createElement(
+          React.Fragment,
+          null,
+          credentialMetadata.infoMessage &&
+            !credentialMetadata.warningMessageTitle &&
+            !credentialMetadata.warningMessageDescription &&
+            /*#__PURE__*/ React.createElement(Alert, {
+              variant: "default",
+              className: "pf-u-mb-md",
+              isInline: true,
+              isPlain: true,
+              title: Msg.localize(
+                JSON.parse(credentialMetadata.infoMessage).key,
+                JSON.parse(credentialMetadata.infoMessage).parameters
+              ),
+            }),
+          credentialMetadata.warningMessageTitle &&
+            credentialMetadata.warningMessageDescription &&
+            /*#__PURE__*/ React.createElement(
+              Alert,
+              {
+                variant: "warning",
+                className: "pf-u-mb-md",
+                isInline: true,
+                title: Msg.localize(
+                  JSON.parse(credentialMetadata.warningMessageTitle).key,
+                  JSON.parse(credentialMetadata.warningMessageTitle).parameters
+                ),
+                style: maxWidth,
+              },
+              /*#__PURE__*/ React.createElement(
+                "p",
+                null,
+                Msg.localize(
+                  JSON.parse(credentialMetadata.warningMessageDescription).key,
+                  JSON.parse(credentialMetadata.warningMessageDescription)
+                    .parameters
+                )
+              )
+            ),
+          /*#__PURE__*/ React.createElement(
+            DataList,
+            {
+              "aria-label": "user credential",
+              className: "pf-u-mb-xl",
+            },
+            /*#__PURE__*/ React.createElement(
+              DataListItem,
+              {
+                id: `${SigningInPage.credElementId(
+                  type,
+                  credentialMetadata.credential.id,
+                  "row"
+                )}`,
+                key: "credential-list-item-" + credentialMetadata.credential.id,
+                "aria-labelledby":
+                  "credential-list-item-" +
+                  credentialMetadata.credential.userLabel,
+              },
+              /*#__PURE__*/ React.createElement(
+                DataListItemRow,
+                {
+                  key: "userCredentialRow-" + credentialMetadata.credential.id,
+                  className: "pf-u-align-items-center",
+                },
+                /*#__PURE__*/ React.createElement(DataListItemCells, {
+                  dataListCells: this.credentialRowCells(
+                    credentialMetadata,
+                    type
+                  ),
+                }),
+                /*#__PURE__*/ React.createElement(CredentialAction, {
+                  credential: credentialMetadata.credential,
+                  removeable: removeable,
+                  updateAction: updateAIA,
+                  credRemover: this.handleRemove,
+                })
+              )
+            )
+          )
+        )
+      ),
+      " "
+    );
   }
 
   credentialRowCells(credMetadata, type) {
     const credRowCells = [];
     const credential = credMetadata.credential;
     let maxWidth = {
-      "--pf-u-max-width--MaxWidth": "300px"
+      "--pf-u-max-width--MaxWidth": "300px",
     };
-    credRowCells.push( /*#__PURE__*/React.createElement(DataListCell, {
-      id: `${SigningInPage.credElementId(type, credential.id, 'label')}`,
-      key: 'userLabel-' + credential.id,
-      className: "pf-u-max-width",
-      style: maxWidth
-    }, credential.userLabel));
+    credRowCells.push(
+      /*#__PURE__*/ React.createElement(
+        DataListCell,
+        {
+          id: `${SigningInPage.credElementId(type, credential.id, "label")}`,
+          key: "userLabel-" + credential.id,
+          className: "pf-u-max-width",
+          style: maxWidth,
+        },
+        credential.userLabel
+      )
+    );
 
     if (credential.strCreatedDate) {
-      credRowCells.push( /*#__PURE__*/React.createElement(DataListCell, {
-        id: `${SigningInPage.credElementId(type, credential.id, "created-at")}`,
-        key: "created-" + credential.id
-      }, /*#__PURE__*/React.createElement("strong", {
-        className: "pf-u-mr-md"
-      }, /*#__PURE__*/React.createElement(Msg, {
-        msgKey: "credentialCreatedAt"
-      }), " "), credential.strCreatedDate));
-      credRowCells.push( /*#__PURE__*/React.createElement(DataListCell, {
-        key: "spacer-" + credential.id
-      }));
+      credRowCells.push(
+        /*#__PURE__*/ React.createElement(
+          DataListCell,
+          {
+            id: `${SigningInPage.credElementId(
+              type,
+              credential.id,
+              "created-at"
+            )}`,
+            key: "created-" + credential.id,
+          },
+          /*#__PURE__*/ React.createElement(
+            "strong",
+            {
+              className: "pf-u-mr-md",
+            },
+            /*#__PURE__*/ React.createElement(Msg, {
+              msgKey: "credentialCreatedAt",
+            }),
+            " "
+          ),
+          credential.strCreatedDate
+        )
+      );
+      credRowCells.push(
+        /*#__PURE__*/ React.createElement(DataListCell, {
+          key: "spacer-" + credential.id,
+        })
+      );
     }
 
     return credRowCells;
   }
 
   renderCredTypeTitle(credContainer, keycloak, category) {
-    if (!credContainer.hasOwnProperty("helptext") && !credContainer.hasOwnProperty("createAction")) return;
+    if (
+      !credContainer.hasOwnProperty("helptext") &&
+      !credContainer.hasOwnProperty("createAction")
+    )
+      return;
     let setupAction;
 
     if (credContainer.createAction) {
@@ -235,114 +426,196 @@ class SigningInPage extends React.Component {
     }
 
     const credContainerDisplayName = Msg.localize(credContainer.displayName);
-    return /*#__PURE__*/React.createElement(React.Fragment, {
-      key: "credTypeTitle-" + credContainer.type
-    }, /*#__PURE__*/React.createElement(Split, {
-      className: "pf-u-mt-lg pf-u-mb-lg"
-    }, /*#__PURE__*/React.createElement(SplitItem, null, /*#__PURE__*/React.createElement(Title, {
-      headingLevel: "h3",
-      size: "md",
-      className: "pf-u-mb-md"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "cred-title pf-u-display-block",
-      id: `${credContainer.type}-cred-title`
-    }, /*#__PURE__*/React.createElement(Msg, {
-      msgKey: credContainer.displayName
-    }))), /*#__PURE__*/React.createElement("span", {
-      id: `${credContainer.type}-cred-help`
-    }, credContainer.helptext && /*#__PURE__*/React.createElement(Msg, {
-      msgKey: credContainer.helptext
-    }))), /*#__PURE__*/React.createElement(SplitItem, {
-      isFilled: true
-    }, credContainer.createAction && /*#__PURE__*/React.createElement("div", {
-      id: "mob-setUpAction-" + credContainer.type,
-      className: "pf-u-display-none-on-lg pf-u-float-right"
-    }, /*#__PURE__*/React.createElement(Dropdown, {
-      isPlain: true,
-      position: DropdownPosition.right,
-      toggle: /*#__PURE__*/React.createElement(KebabToggle, {
-        onToggle: isOpen => {
-          credContainer.open = isOpen;
-          this.setState({
-            credentialContainers: new Map(this.state.credentialContainers)
-          });
-        }
-      }),
-      isOpen: credContainer.open,
-      dropdownItems: [/*#__PURE__*/React.createElement("button", {
-        id: `mob-${credContainer.type}-set-up`,
-        className: "pf-c-button pf-m-link",
-        type: "button",
-        onClick: () => setupAction.execute()
-      }, /*#__PURE__*/React.createElement("span", {
-        className: "pf-c-button__icon"
-      }, /*#__PURE__*/React.createElement("i", {
-        className: "fa fa-plus-circle",
-        "aria-hidden": "true"
-      })), /*#__PURE__*/React.createElement(Msg, {
-        msgKey: "setUpNew",
-        params: [credContainerDisplayName]
-      }))]
-    })), credContainer.createAction && /*#__PURE__*/React.createElement("div", {
-      id: "setUpAction-" + credContainer.type,
-      className: "pf-u-display-none pf-u-display-inline-flex-on-lg pf-u-float-right"
-    }, /*#__PURE__*/React.createElement("button", {
-      id: `${credContainer.type}-set-up`,
-      className: "pf-c-button pf-m-link",
-      type: "button",
-      onClick: () => setupAction.execute()
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "pf-c-button__icon"
-    }, /*#__PURE__*/React.createElement("i", {
-      className: "fa fa-plus-circle",
-      "aria-hidden": "true"
-    })), /*#__PURE__*/React.createElement(Msg, {
-      msgKey: "setUpNew",
-      params: [credContainerDisplayName]
-    }))))));
+    return /*#__PURE__*/ React.createElement(
+      React.Fragment,
+      {
+        key: "credTypeTitle-" + credContainer.type,
+      },
+      /*#__PURE__*/ React.createElement(
+        Split,
+        {
+          className: "pf-u-mt-lg pf-u-mb-lg",
+        },
+        /*#__PURE__*/ React.createElement(
+          SplitItem,
+          null,
+          /*#__PURE__*/ React.createElement(
+            Title,
+            {
+              headingLevel: "h3",
+              size: "md",
+              className: "pf-u-mb-md",
+            },
+            /*#__PURE__*/ React.createElement(
+              "span",
+              {
+                className: "cred-title pf-u-display-block",
+                id: `${credContainer.type}-cred-title`,
+              },
+              /*#__PURE__*/ React.createElement(Msg, {
+                msgKey: credContainer.displayName,
+              })
+            )
+          ),
+          /*#__PURE__*/ React.createElement(
+            "span",
+            {
+              id: `${credContainer.type}-cred-help`,
+            },
+            credContainer.helptext &&
+              /*#__PURE__*/ React.createElement(Msg, {
+                msgKey: credContainer.helptext,
+              })
+          )
+        ),
+        /*#__PURE__*/ React.createElement(
+          SplitItem,
+          {
+            isFilled: true,
+          },
+          credContainer.createAction &&
+            /*#__PURE__*/ React.createElement(
+              "div",
+              {
+                id: "mob-setUpAction-" + credContainer.type,
+                className: "pf-u-display-none-on-lg pf-u-float-right",
+              },
+              /*#__PURE__*/ React.createElement(Dropdown, {
+                isPlain: true,
+                position: DropdownPosition.right,
+                toggle: /*#__PURE__*/ React.createElement(KebabToggle, {
+                  onToggle: (isOpen) => {
+                    credContainer.open = isOpen;
+                    this.setState({
+                      credentialContainers: new Map(
+                        this.state.credentialContainers
+                      ),
+                    });
+                  },
+                }),
+                isOpen: credContainer.open,
+                dropdownItems: [
+                  /*#__PURE__*/ React.createElement(
+                    "button",
+                    {
+                      id: `mob-${credContainer.type}-set-up`,
+                      className: "pf-c-button pf-m-link",
+                      type: "button",
+                      onClick: () => setupAction.execute(),
+                    },
+                    /*#__PURE__*/ React.createElement(
+                      "span",
+                      {
+                        className: "pf-c-button__icon",
+                      },
+                      /*#__PURE__*/ React.createElement("i", {
+                        className: "fa fa-plus-circle",
+                        "aria-hidden": "true",
+                      })
+                    ),
+                    /*#__PURE__*/ React.createElement(Msg, {
+                      msgKey: "setUpNew",
+                      params: [credContainerDisplayName],
+                    })
+                  ),
+                ],
+              })
+            ),
+          credContainer.createAction &&
+            /*#__PURE__*/ React.createElement(
+              "div",
+              {
+                id: "setUpAction-" + credContainer.type,
+                className:
+                  "pf-u-display-none pf-u-display-inline-flex-on-lg pf-u-float-right",
+              },
+              /*#__PURE__*/ React.createElement(
+                "button",
+                {
+                  id: `${credContainer.type}-set-up`,
+                  className: "pf-c-button pf-m-link",
+                  type: "button",
+                  onClick: () => setupAction.execute(),
+                },
+                /*#__PURE__*/ React.createElement(
+                  "span",
+                  {
+                    className: "pf-c-button__icon",
+                  },
+                  /*#__PURE__*/ React.createElement("i", {
+                    className: "fa fa-plus-circle",
+                    "aria-hidden": "true",
+                  })
+                ),
+                /*#__PURE__*/ React.createElement(Msg, {
+                  msgKey: "setUpNew",
+                  params: [credContainerDisplayName],
+                })
+              )
+            )
+        )
+      )
+    );
   }
-
 }
 
 _defineProperty(SigningInPage, "contextType", AccountServiceContext);
 
-;
-
 class CredentialAction extends React.Component {
   render() {
     if (this.props.updateAction) {
-      return /*#__PURE__*/React.createElement(DataListAction, {
-        "aria-labelledby": Msg.localize('updateCredAriaLabel'),
-        "aria-label": Msg.localize('updateCredAriaLabel'),
-        id: "updateAction-" + this.props.credential.id
-      }, /*#__PURE__*/React.createElement(Button, {
-        variant: "secondary",
-        id: `${SigningInPage.credElementId(this.props.credential.type, this.props.credential.id, "update")}`,
-        onClick: () => this.props.updateAction.execute()
-      }, /*#__PURE__*/React.createElement(Msg, {
-        msgKey: "update"
-      })));
+      return /*#__PURE__*/ React.createElement(
+        DataListAction,
+        {
+          "aria-labelledby": Msg.localize("updateCredAriaLabel"),
+          "aria-label": Msg.localize("updateCredAriaLabel"),
+          id: "updateAction-" + this.props.credential.id,
+        },
+        /*#__PURE__*/ React.createElement(
+          Button,
+          {
+            variant: "secondary",
+            id: `${SigningInPage.credElementId(
+              this.props.credential.type,
+              this.props.credential.id,
+              "update"
+            )}`,
+            onClick: () => this.props.updateAction.execute(),
+          },
+          /*#__PURE__*/ React.createElement(Msg, {
+            msgKey: "update",
+          })
+        )
+      );
     }
 
     if (this.props.removeable) {
       const userLabel = this.props.credential.userLabel;
-      return /*#__PURE__*/React.createElement(DataListAction, {
-        "aria-label": Msg.localize('removeCredAriaLabel'),
-        "aria-labelledby": Msg.localize('removeCredAriaLabel'),
-        id: 'removeAction-' + this.props.credential.id
-      }, /*#__PURE__*/React.createElement(ContinueCancelModal, {
-        buttonTitle: "remove",
-        buttonVariant: "danger",
-        buttonId: `${SigningInPage.credElementId(this.props.credential.type, this.props.credential.id, 'remove')}`,
-        modalTitle: Msg.localize('removeCred', [userLabel]),
-        modalMessage: Msg.localize('stopUsingCred', [userLabel]),
-        onContinue: () => this.props.credRemover(this.props.credential.id, userLabel)
-      }));
+      return /*#__PURE__*/ React.createElement(
+        DataListAction,
+        {
+          "aria-label": Msg.localize("removeCredAriaLabel"),
+          "aria-labelledby": Msg.localize("removeCredAriaLabel"),
+          id: "removeAction-" + this.props.credential.id,
+        },
+        /*#__PURE__*/ React.createElement(ContinueCancelModal, {
+          buttonTitle: "remove",
+          buttonVariant: "danger",
+          buttonId: `${SigningInPage.credElementId(
+            this.props.credential.type,
+            this.props.credential.id,
+            "remove"
+          )}`,
+          modalTitle: Msg.localize("removeCred", [userLabel]),
+          modalMessage: Msg.localize("stopUsingCred", [userLabel]),
+          onContinue: () =>
+            this.props.credRemover(this.props.credential.id, userLabel),
+        })
+      );
     }
 
-    return /*#__PURE__*/React.createElement(React.Fragment, null);
+    return /*#__PURE__*/ React.createElement(React.Fragment, null);
   }
-
 }
 
 const SigningInPageWithRouter = withRouter(SigningInPage);

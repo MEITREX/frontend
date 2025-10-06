@@ -2759,27 +2759,63 @@
 }
 @media (min-width: 576px) {
   .pf-u-min-width {
-    min-width: var(--pf-u-min-width--MinWidth-on-sm, var(--pf-u-min-width--MinWidth)) !important;
+    min-width: var(
+      --pf-u-min-width--MinWidth-on-sm,
+      var(--pf-u-min-width--MinWidth)
+    ) !important;
   }
 }
 @media (min-width: 768px) {
   .pf-u-min-width {
-    min-width: var(--pf-u-min-width--MinWidth-on-md, var(--pf-u-min-width--MinWidth-on-sm, var(--pf-u-min-width--MinWidth))) !important;
+    min-width: var(
+      --pf-u-min-width--MinWidth-on-md,
+      var(--pf-u-min-width--MinWidth-on-sm, var(--pf-u-min-width--MinWidth))
+    ) !important;
   }
 }
 @media (min-width: 992px) {
   .pf-u-min-width {
-    min-width: var(--pf-u-min-width--MinWidth-on-lg, var(--pf-u-min-width--MinWidth-on-md, var(--pf-u-min-width--MinWidth-on-sm, var(--pf-u-min-width--MinWidth)))) !important;
+    min-width: var(
+      --pf-u-min-width--MinWidth-on-lg,
+      var(
+        --pf-u-min-width--MinWidth-on-md,
+        var(--pf-u-min-width--MinWidth-on-sm, var(--pf-u-min-width--MinWidth))
+      )
+    ) !important;
   }
 }
 @media (min-width: 1200px) {
   .pf-u-min-width {
-    min-width: var(--pf-u-min-width--MinWidth-on-xl, var(--pf-u-min-width--MinWidth-on-lg, var(--pf-u-min-width--MinWidth-on-md, var(--pf-u-min-width--MinWidth-on-sm, var(--pf-u-min-width--MinWidth))))) !important;
+    min-width: var(
+      --pf-u-min-width--MinWidth-on-xl,
+      var(
+        --pf-u-min-width--MinWidth-on-lg,
+        var(
+          --pf-u-min-width--MinWidth-on-md,
+          var(--pf-u-min-width--MinWidth-on-sm, var(--pf-u-min-width--MinWidth))
+        )
+      )
+    ) !important;
   }
 }
 @media (min-width: 1450px) {
   .pf-u-min-width {
-    min-width: var(--pf-u-min-width--MinWidth-on-2xl, var(--pf-u-min-width--MinWidth-on-xl, var(--pf-u-min-width--MinWidth-on-lg, var(--pf-u-min-width--MinWidth-on-md, var(--pf-u-min-width--MinWidth-on-sm, var(--pf-u-min-width--MinWidth)))))) !important;
+    min-width: var(
+      --pf-u-min-width--MinWidth-on-2xl,
+      var(
+        --pf-u-min-width--MinWidth-on-xl,
+        var(
+          --pf-u-min-width--MinWidth-on-lg,
+          var(
+            --pf-u-min-width--MinWidth-on-md,
+            var(
+              --pf-u-min-width--MinWidth-on-sm,
+              var(--pf-u-min-width--MinWidth)
+            )
+          )
+        )
+      )
+    ) !important;
   }
 }
 
@@ -2789,27 +2825,63 @@
 }
 @media (min-width: 576px) {
   .pf-u-max-width {
-    max-width: var(--pf-u-max-width--MaxWidth-on-sm, var(--pf-u-max-width--MaxWidth)) !important;
+    max-width: var(
+      --pf-u-max-width--MaxWidth-on-sm,
+      var(--pf-u-max-width--MaxWidth)
+    ) !important;
   }
 }
 @media (min-width: 768px) {
   .pf-u-max-width {
-    max-width: var(--pf-u-max-width--MaxWidth-on-md, var(--pf-u-max-width--MaxWidth-on-sm, var(--pf-u-max-width--MaxWidth))) !important;
+    max-width: var(
+      --pf-u-max-width--MaxWidth-on-md,
+      var(--pf-u-max-width--MaxWidth-on-sm, var(--pf-u-max-width--MaxWidth))
+    ) !important;
   }
 }
 @media (min-width: 992px) {
   .pf-u-max-width {
-    max-width: var(--pf-u-max-width--MaxWidth-on-lg, var(--pf-u-max-width--MaxWidth-on-md, var(--pf-u-max-width--MaxWidth-on-sm, var(--pf-u-max-width--MaxWidth)))) !important;
+    max-width: var(
+      --pf-u-max-width--MaxWidth-on-lg,
+      var(
+        --pf-u-max-width--MaxWidth-on-md,
+        var(--pf-u-max-width--MaxWidth-on-sm, var(--pf-u-max-width--MaxWidth))
+      )
+    ) !important;
   }
 }
 @media (min-width: 1200px) {
   .pf-u-max-width {
-    max-width: var(--pf-u-max-width--MaxWidth-on-xl, var(--pf-u-max-width--MaxWidth-on-lg, var(--pf-u-max-width--MaxWidth-on-md, var(--pf-u-max-width--MaxWidth-on-sm, var(--pf-u-max-width--MaxWidth))))) !important;
+    max-width: var(
+      --pf-u-max-width--MaxWidth-on-xl,
+      var(
+        --pf-u-max-width--MaxWidth-on-lg,
+        var(
+          --pf-u-max-width--MaxWidth-on-md,
+          var(--pf-u-max-width--MaxWidth-on-sm, var(--pf-u-max-width--MaxWidth))
+        )
+      )
+    ) !important;
   }
 }
 @media (min-width: 1450px) {
   .pf-u-max-width {
-    max-width: var(--pf-u-max-width--MaxWidth-on-2xl, var(--pf-u-max-width--MaxWidth-on-xl, var(--pf-u-max-width--MaxWidth-on-lg, var(--pf-u-max-width--MaxWidth-on-md, var(--pf-u-max-width--MaxWidth-on-sm, var(--pf-u-max-width--MaxWidth)))))) !important;
+    max-width: var(
+      --pf-u-max-width--MaxWidth-on-2xl,
+      var(
+        --pf-u-max-width--MaxWidth-on-xl,
+        var(
+          --pf-u-max-width--MaxWidth-on-lg,
+          var(
+            --pf-u-max-width--MaxWidth-on-md,
+            var(
+              --pf-u-max-width--MaxWidth-on-sm,
+              var(--pf-u-max-width--MaxWidth)
+            )
+          )
+        )
+      )
+    ) !important;
   }
 }
 
@@ -2819,27 +2891,69 @@
 }
 @media (min-width: 576px) {
   .pf-u-min-height {
-    min-height: var(--pf-u-min-height--MinHeight-on-sm, var(--pf-u-min-height--MinHeight)) !important;
+    min-height: var(
+      --pf-u-min-height--MinHeight-on-sm,
+      var(--pf-u-min-height--MinHeight)
+    ) !important;
   }
 }
 @media (min-width: 768px) {
   .pf-u-min-height {
-    min-height: var(--pf-u-min-height--MinHeight-on-md, var(--pf-u-min-height--MinHeight-on-sm, var(--pf-u-min-height--MinHeight))) !important;
+    min-height: var(
+      --pf-u-min-height--MinHeight-on-md,
+      var(--pf-u-min-height--MinHeight-on-sm, var(--pf-u-min-height--MinHeight))
+    ) !important;
   }
 }
 @media (min-width: 992px) {
   .pf-u-min-height {
-    min-height: var(--pf-u-min-height--MinHeight-on-lg, var(--pf-u-min-height--MinHeight-on-md, var(--pf-u-min-height--MinHeight-on-sm, var(--pf-u-min-height--MinHeight)))) !important;
+    min-height: var(
+      --pf-u-min-height--MinHeight-on-lg,
+      var(
+        --pf-u-min-height--MinHeight-on-md,
+        var(
+          --pf-u-min-height--MinHeight-on-sm,
+          var(--pf-u-min-height--MinHeight)
+        )
+      )
+    ) !important;
   }
 }
 @media (min-width: 1200px) {
   .pf-u-min-height {
-    min-height: var(--pf-u-min-height--MinHeight-on-xl, var(--pf-u-min-height--MinHeight-on-lg, var(--pf-u-min-height--MinHeight-on-md, var(--pf-u-min-height--MinHeight-on-sm, var(--pf-u-min-height--MinHeight))))) !important;
+    min-height: var(
+      --pf-u-min-height--MinHeight-on-xl,
+      var(
+        --pf-u-min-height--MinHeight-on-lg,
+        var(
+          --pf-u-min-height--MinHeight-on-md,
+          var(
+            --pf-u-min-height--MinHeight-on-sm,
+            var(--pf-u-min-height--MinHeight)
+          )
+        )
+      )
+    ) !important;
   }
 }
 @media (min-width: 1450px) {
   .pf-u-min-height {
-    min-height: var(--pf-u-min-height--MinHeight-on-2xl, var(--pf-u-min-height--MinHeight-on-xl, var(--pf-u-min-height--MinHeight-on-lg, var(--pf-u-min-height--MinHeight-on-md, var(--pf-u-min-height--MinHeight-on-sm, var(--pf-u-min-height--MinHeight)))))) !important;
+    min-height: var(
+      --pf-u-min-height--MinHeight-on-2xl,
+      var(
+        --pf-u-min-height--MinHeight-on-xl,
+        var(
+          --pf-u-min-height--MinHeight-on-lg,
+          var(
+            --pf-u-min-height--MinHeight-on-md,
+            var(
+              --pf-u-min-height--MinHeight-on-sm,
+              var(--pf-u-min-height--MinHeight)
+            )
+          )
+        )
+      )
+    ) !important;
   }
 }
 
@@ -2849,27 +2963,69 @@
 }
 @media (min-width: 576px) {
   .pf-u-max-height {
-    max-height: var(--pf-u-max-height--MaxHeight-on-sm, var(--pf-u-max-height--MaxHeight)) !important;
+    max-height: var(
+      --pf-u-max-height--MaxHeight-on-sm,
+      var(--pf-u-max-height--MaxHeight)
+    ) !important;
   }
 }
 @media (min-width: 768px) {
   .pf-u-max-height {
-    max-height: var(--pf-u-max-height--MaxHeight-on-md, var(--pf-u-max-height--MaxHeight-on-sm, var(--pf-u-max-height--MaxHeight))) !important;
+    max-height: var(
+      --pf-u-max-height--MaxHeight-on-md,
+      var(--pf-u-max-height--MaxHeight-on-sm, var(--pf-u-max-height--MaxHeight))
+    ) !important;
   }
 }
 @media (min-width: 992px) {
   .pf-u-max-height {
-    max-height: var(--pf-u-max-height--MaxHeight-on-lg, var(--pf-u-max-height--MaxHeight-on-md, var(--pf-u-max-height--MaxHeight-on-sm, var(--pf-u-max-height--MaxHeight)))) !important;
+    max-height: var(
+      --pf-u-max-height--MaxHeight-on-lg,
+      var(
+        --pf-u-max-height--MaxHeight-on-md,
+        var(
+          --pf-u-max-height--MaxHeight-on-sm,
+          var(--pf-u-max-height--MaxHeight)
+        )
+      )
+    ) !important;
   }
 }
 @media (min-width: 1200px) {
   .pf-u-max-height {
-    max-height: var(--pf-u-max-height--MaxHeight-on-xl, var(--pf-u-max-height--MaxHeight-on-lg, var(--pf-u-max-height--MaxHeight-on-md, var(--pf-u-max-height--MaxHeight-on-sm, var(--pf-u-max-height--MaxHeight))))) !important;
+    max-height: var(
+      --pf-u-max-height--MaxHeight-on-xl,
+      var(
+        --pf-u-max-height--MaxHeight-on-lg,
+        var(
+          --pf-u-max-height--MaxHeight-on-md,
+          var(
+            --pf-u-max-height--MaxHeight-on-sm,
+            var(--pf-u-max-height--MaxHeight)
+          )
+        )
+      )
+    ) !important;
   }
 }
 @media (min-width: 1450px) {
   .pf-u-max-height {
-    max-height: var(--pf-u-max-height--MaxHeight-on-2xl, var(--pf-u-max-height--MaxHeight-on-xl, var(--pf-u-max-height--MaxHeight-on-lg, var(--pf-u-max-height--MaxHeight-on-md, var(--pf-u-max-height--MaxHeight-on-sm, var(--pf-u-max-height--MaxHeight)))))) !important;
+    max-height: var(
+      --pf-u-max-height--MaxHeight-on-2xl,
+      var(
+        --pf-u-max-height--MaxHeight-on-xl,
+        var(
+          --pf-u-max-height--MaxHeight-on-lg,
+          var(
+            --pf-u-max-height--MaxHeight-on-md,
+            var(
+              --pf-u-max-height--MaxHeight-on-sm,
+              var(--pf-u-max-height--MaxHeight)
+            )
+          )
+        )
+      )
+    ) !important;
   }
 }
 
@@ -7890,7 +8046,9 @@
 }
 
 .pf-u-font-family-redhatVF-heading-sans-serif {
-  font-family: var(--pf-global--FontFamily--redhatVF--heading--sans-serif) !important;
+  font-family: var(
+    --pf-global--FontFamily--redhatVF--heading--sans-serif
+  ) !important;
 }
 
 .pf-u-font-family-redhatVF-monospace {

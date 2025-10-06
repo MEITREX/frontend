@@ -1,4 +1,16 @@
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+  } else {
+    obj[key] = value;
+  }
+  return obj;
+}
 
 /*
  * Copyright 2017 Red Hat, Inc. and/or its affiliates
@@ -24,13 +36,18 @@ export class KeycloakService {
   }
 
   authenticated() {
-    return this.keycloakAuth.authenticated ? this.keycloakAuth.authenticated : false;
+    return this.keycloakAuth.authenticated
+      ? this.keycloakAuth.authenticated
+      : false;
   }
 
   audiencePresent() {
     if (this.keycloakAuth.tokenParsed) {
-      const audience = this.keycloakAuth.tokenParsed['aud'];
-      return audience === 'account' || Array.isArray(audience) && audience.indexOf('account') >= 0;
+      const audience = this.keycloakAuth.tokenParsed["aud"];
+      return (
+        audience === "account" ||
+        (Array.isArray(audience) && audience.indexOf("account") >= 0)
+      );
     }
 
     return false;
@@ -42,7 +59,7 @@ export class KeycloakService {
 
   logout(redirectUri = baseUrl) {
     this.keycloakAuth.logout({
-      redirectUri: redirectUri
+      redirectUri: redirectUri,
     });
   }
 
@@ -52,7 +69,9 @@ export class KeycloakService {
 
   authServerUrl() {
     const authServerUrl = this.keycloakAuth.authServerUrl;
-    return authServerUrl.charAt(authServerUrl.length - 1) === '/' ? authServerUrl : authServerUrl + '/';
+    return authServerUrl.charAt(authServerUrl.length - 1) === "/"
+      ? authServerUrl
+      : authServerUrl + "/";
   }
 
   realm() {
@@ -62,16 +81,18 @@ export class KeycloakService {
   getToken() {
     return new Promise((resolve, reject) => {
       if (this.keycloakAuth.token) {
-        this.keycloakAuth.updateToken(5).then(() => {
-          resolve(this.keycloakAuth.token);
-        }).catch(() => {
-          reject('Failed to refresh token');
-        });
+        this.keycloakAuth
+          .updateToken(5)
+          .then(() => {
+            resolve(this.keycloakAuth.token);
+          })
+          .catch(() => {
+            reject("Failed to refresh token");
+          });
       } else {
-        reject('Not logged in');
+        reject("Not logged in");
       }
     });
   }
-
 }
 //# sourceMappingURL=keycloak.service.js.map

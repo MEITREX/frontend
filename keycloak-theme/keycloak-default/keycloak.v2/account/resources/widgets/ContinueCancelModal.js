@@ -1,6 +1,33 @@
-function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+function _extends() {
+  _extends = Object.assign
+    ? Object.assign.bind()
+    : function (target) {
+        for (var i = 1; i < arguments.length; i++) {
+          var source = arguments[i];
+          for (var key in source) {
+            if (Object.prototype.hasOwnProperty.call(source, key)) {
+              target[key] = source[key];
+            }
+          }
+        }
+        return target;
+      };
+  return _extends.apply(this, arguments);
+}
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+  } else {
+    obj[key] = value;
+  }
+  return obj;
+}
 
 /*
  * Copyright 2019 Red Hat, Inc. and/or its affiliates.
@@ -18,7 +45,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * limitations under the License.
  */
 import * as React from "../../../common/keycloak/web_modules/react.js";
-import { Modal, ModalVariant, Button } from "../../../common/keycloak/web_modules/@patternfly/react-core.js";
+import {
+  Modal,
+  ModalVariant,
+  Button,
+} from "../../../common/keycloak/web_modules/@patternfly/react-core.js";
 import { Msg } from "./Msg.js";
 /**
  * For any of these properties that are strings, you can
@@ -36,10 +67,8 @@ export class ContinueCancelModal extends React.Component {
     super(props);
 
     _defineProperty(this, "handleModalToggle", () => {
-      this.setState(({
-        isModalOpen
-      }) => ({
-        isModalOpen: !isModalOpen
+      this.setState(({ isModalOpen }) => ({
+        isModalOpen: !isModalOpen,
       }));
       if (this.props.onClose) this.props.onClose();
     });
@@ -50,54 +79,77 @@ export class ContinueCancelModal extends React.Component {
     });
 
     this.state = {
-      isModalOpen: false
+      isModalOpen: false,
     };
   }
 
   render() {
-    const {
-      isModalOpen
-    } = this.state;
-    return /*#__PURE__*/React.createElement(React.Fragment, null, !this.props.render && /*#__PURE__*/React.createElement(Button, {
-      id: this.props.buttonId,
-      variant: this.props.buttonVariant,
-      onClick: this.handleModalToggle,
-      isDisabled: this.props.isDisabled
-    }, /*#__PURE__*/React.createElement(Msg, {
-      msgKey: this.props.buttonTitle
-    })), this.props.render && this.props.render(this.handleModalToggle), /*#__PURE__*/React.createElement(Modal, _extends({}, this.props, {
-      variant: ModalVariant.small,
-      title: Msg.localize(this.props.modalTitle),
-      isOpen: isModalOpen,
-      onClose: this.handleModalToggle,
-      actions: [/*#__PURE__*/React.createElement(Button, {
-        id: "modal-confirm",
-        key: "confirm",
-        variant: "primary",
-        onClick: this.handleContinue
-      }, /*#__PURE__*/React.createElement(Msg, {
-        msgKey: this.props.modalContinueButtonLabel
-      })), /*#__PURE__*/React.createElement(Button, {
-        id: "modal-cancel",
-        key: "cancel",
-        variant: "secondary",
-        onClick: this.handleModalToggle
-      }, /*#__PURE__*/React.createElement(Msg, {
-        msgKey: this.props.modalCancelButtonLabel
-      }))]
-    }), !this.props.modalMessage && this.props.children, this.props.modalMessage && /*#__PURE__*/React.createElement(Msg, {
-      msgKey: this.props.modalMessage
-    })));
+    const { isModalOpen } = this.state;
+    return /*#__PURE__*/ React.createElement(
+      React.Fragment,
+      null,
+      !this.props.render &&
+        /*#__PURE__*/ React.createElement(
+          Button,
+          {
+            id: this.props.buttonId,
+            variant: this.props.buttonVariant,
+            onClick: this.handleModalToggle,
+            isDisabled: this.props.isDisabled,
+          },
+          /*#__PURE__*/ React.createElement(Msg, {
+            msgKey: this.props.buttonTitle,
+          })
+        ),
+      this.props.render && this.props.render(this.handleModalToggle),
+      /*#__PURE__*/ React.createElement(
+        Modal,
+        _extends({}, this.props, {
+          variant: ModalVariant.small,
+          title: Msg.localize(this.props.modalTitle),
+          isOpen: isModalOpen,
+          onClose: this.handleModalToggle,
+          actions: [
+            /*#__PURE__*/ React.createElement(
+              Button,
+              {
+                id: "modal-confirm",
+                key: "confirm",
+                variant: "primary",
+                onClick: this.handleContinue,
+              },
+              /*#__PURE__*/ React.createElement(Msg, {
+                msgKey: this.props.modalContinueButtonLabel,
+              })
+            ),
+            /*#__PURE__*/ React.createElement(
+              Button,
+              {
+                id: "modal-cancel",
+                key: "cancel",
+                variant: "secondary",
+                onClick: this.handleModalToggle,
+              },
+              /*#__PURE__*/ React.createElement(Msg, {
+                msgKey: this.props.modalCancelButtonLabel,
+              })
+            ),
+          ],
+        }),
+        !this.props.modalMessage && this.props.children,
+        this.props.modalMessage &&
+          /*#__PURE__*/ React.createElement(Msg, {
+            msgKey: this.props.modalMessage,
+          })
+      )
+    );
   }
-
 }
 
 _defineProperty(ContinueCancelModal, "defaultProps", {
-  buttonVariant: 'primary',
-  modalContinueButtonLabel: 'continue',
-  modalCancelButtonLabel: 'doCancel',
-  isDisabled: false
+  buttonVariant: "primary",
+  modalContinueButtonLabel: "continue",
+  modalCancelButtonLabel: "doCancel",
+  isDisabled: false,
 });
-
-;
 //# sourceMappingURL=ContinueCancelModal.js.map

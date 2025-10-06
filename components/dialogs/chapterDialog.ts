@@ -94,7 +94,7 @@ export const validationSchema: (
         if (isNaN(value.getTime())) {
           return null;
         }
-      // make sure empty string or null stays as null
+        // make sure empty string or null stays as null
         return originalValue === "" || originalValue === null ? null : value;
       })
       .required("Required")
@@ -107,7 +107,7 @@ export const validationSchema: (
         if (isNaN(value.getTime())) {
           return null;
         }
-      // make sure empty string or null stays as null
+        // make sure empty string or null stays as null
         return originalValue === "" || originalValue === null ? null : value;
       })
       .required("Required")
@@ -121,7 +121,7 @@ export const validationSchema: (
         if (isNaN(value.getTime())) {
           return null;
         }
-      // make sure empty string or null stays as null
+        // make sure empty string or null stays as null
         return originalValue === "" || originalValue === null ? null : value;
       })
       .required("Required")

@@ -1,4 +1,16 @@
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+  } else {
+    obj[key] = value;
+  }
+  return obj;
+}
 
 /*
  * Copyright 2019 Red Hat, Inc. and/or its affiliates.
@@ -16,7 +28,20 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * limitations under the License.
  */
 import * as React from "../../../../common/keycloak/web_modules/react.js";
-import { Button, Chip, ChipGroup, Form, FormGroup, Gallery, GalleryItem, Modal, Stack, StackItem, TextInput, ModalVariant } from "../../../../common/keycloak/web_modules/@patternfly/react-core.js";
+import {
+  Button,
+  Chip,
+  ChipGroup,
+  Form,
+  FormGroup,
+  Gallery,
+  GalleryItem,
+  Modal,
+  Stack,
+  StackItem,
+  TextInput,
+  ModalVariant,
+} from "../../../../common/keycloak/web_modules/@patternfly/react-core.js";
 import { AccountServiceContext } from "../../account-service/AccountServiceContext.js";
 import { Msg } from "../../widgets/Msg.js";
 import { ContentAlert } from "../ContentAlert.js";
@@ -44,67 +69,80 @@ export class ShareTheResource extends React.Component {
       for (const username of this.state.usernames) {
         permissions.push({
           username: username,
-          scopes: newPermissions
+          scopes: newPermissions,
         });
       }
 
       this.handleToggleDialog();
-      this.context.doPut(`/resources/${encodeURIComponent(rscId)}/permissions`, permissions).then(() => {
-        ContentAlert.success('shareSuccess');
-        this.props.onClose();
-      });
+      this.context
+        .doPut(
+          `/resources/${encodeURIComponent(rscId)}/permissions`,
+          permissions
+        )
+        .then(() => {
+          ContentAlert.success("shareSuccess");
+          this.props.onClose();
+        });
     });
 
     _defineProperty(this, "handleToggleDialog", () => {
       if (this.state.isOpen) {
         this.setState({
-          isOpen: false
+          isOpen: false,
         });
         this.props.onClose();
       } else {
         this.clearState();
         this.setState({
-          isOpen: true
+          isOpen: true,
         });
       }
     });
 
-    _defineProperty(this, "handleUsernameChange", username => {
+    _defineProperty(this, "handleUsernameChange", (username) => {
       this.setState({
-        usernameInput: username
+        usernameInput: username,
       });
     });
 
     _defineProperty(this, "handleAddUsername", async () => {
-      if (this.state.usernameInput !== '' && !this.state.usernames.includes(this.state.usernameInput)) {
-        const response = await this.context.doGet(`/resources/${encodeURIComponent(this.props.resource._id)}/user`, {
-          params: {
-            value: this.state.usernameInput
+      if (
+        this.state.usernameInput !== "" &&
+        !this.state.usernames.includes(this.state.usernameInput)
+      ) {
+        const response = await this.context.doGet(
+          `/resources/${encodeURIComponent(this.props.resource._id)}/user`,
+          {
+            params: {
+              value: this.state.usernameInput,
+            },
           }
-        });
+        );
 
         if (response.data && response.data.username) {
           this.setState({
-            usernameInput: '',
-            usernames: [...this.state.usernames, this.state.usernameInput]
+            usernameInput: "",
+            usernames: [...this.state.usernames, this.state.usernameInput],
           });
         } else {
-          ContentAlert.info('userNotFound', [this.state.usernameInput]);
+          ContentAlert.info("userNotFound", [this.state.usernameInput]);
         }
       }
     });
 
-    _defineProperty(this, "handleEnterKeyInAddField", event => {
+    _defineProperty(this, "handleEnterKeyInAddField", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
         this.handleAddUsername();
       }
     });
 
-    _defineProperty(this, "handleDeleteUsername", username => {
-      const newUsernames = this.state.usernames.filter(user => user !== username);
+    _defineProperty(this, "handleDeleteUsername", (username) => {
+      const newUsernames = this.state.usernames.filter(
+        (user) => user !== username
+      );
       this.setState({
-        usernames: newUsernames
+        usernames: newUsernames,
       });
     });
 
@@ -114,7 +152,7 @@ export class ShareTheResource extends React.Component {
       permissionsSelected: [],
       permissionsUnSelected: this.props.resource.scopes,
       usernames: [],
-      usernameInput: ''
+      usernameInput: "",
     };
   }
 
@@ -123,12 +161,12 @@ export class ShareTheResource extends React.Component {
       permissionsSelected: [],
       permissionsUnSelected: this.props.resource.scopes,
       usernames: [],
-      usernameInput: ''
+      usernameInput: "",
     });
   }
 
   isAddDisabled() {
-    return this.state.usernameInput === '' || this.isAlreadyShared();
+    return this.state.usernameInput === "" || this.isAlreadyShared();
   }
 
   isAlreadyShared() {
@@ -140,82 +178,164 @@ export class ShareTheResource extends React.Component {
   }
 
   isFormInvalid() {
-    return this.state.usernames.length === 0 || this.state.permissionsSelected.length === 0;
+    return (
+      this.state.usernames.length === 0 ||
+      this.state.permissionsSelected.length === 0
+    );
   }
 
   render() {
-    return /*#__PURE__*/React.createElement(React.Fragment, null, this.props.children(this.handleToggleDialog), /*#__PURE__*/React.createElement(Modal, {
-      title: 'Share the resource - ' + this.props.resource.name,
-      variant: ModalVariant.large,
-      isOpen: this.state.isOpen,
-      onClose: this.handleToggleDialog,
-      actions: [/*#__PURE__*/React.createElement(Button, {
-        key: "cancel",
-        variant: "link",
-        onClick: this.handleToggleDialog
-      }, /*#__PURE__*/React.createElement(Msg, {
-        msgKey: "cancel"
-      })), /*#__PURE__*/React.createElement(Button, {
-        key: "confirm",
-        variant: "primary",
-        id: "done",
-        onClick: this.handleAddPermission,
-        isDisabled: this.isFormInvalid()
-      }, /*#__PURE__*/React.createElement(Msg, {
-        msgKey: "done"
-      }))]
-    }, /*#__PURE__*/React.createElement(Stack, {
-      hasGutter: true
-    }, /*#__PURE__*/React.createElement(StackItem, {
-      isFilled: true
-    }, /*#__PURE__*/React.createElement(Form, null, /*#__PURE__*/React.createElement(FormGroup, {
-      label: "Add users to share your resource with",
-      type: "string",
-      helperTextInvalid: Msg.localize('resourceAlreadyShared'),
-      fieldId: "username",
-      isRequired: true
-    }, /*#__PURE__*/React.createElement(Gallery, {
-      hasGutter: true
-    }, /*#__PURE__*/React.createElement(GalleryItem, null, /*#__PURE__*/React.createElement(TextInput, {
-      value: this.state.usernameInput,
-      id: "username",
-      "aria-describedby": "username-helper",
-      placeholder: "Username or email",
-      onChange: this.handleUsernameChange,
-      onKeyPress: this.handleEnterKeyInAddField
-    })), /*#__PURE__*/React.createElement(GalleryItem, null, /*#__PURE__*/React.createElement(Button, {
-      key: "add-user",
-      variant: "primary",
-      id: "add",
-      onClick: this.handleAddUsername,
-      isDisabled: this.isAddDisabled()
-    }, /*#__PURE__*/React.createElement(Msg, {
-      msgKey: "add"
-    })))), /*#__PURE__*/React.createElement(ChipGroup, {
-      categoryName: Msg.localize('shareWith')
-    }, this.state.usernames.map(currentChip => /*#__PURE__*/React.createElement(Chip, {
-      key: currentChip,
-      onClick: () => this.handleDeleteUsername(currentChip)
-    }, currentChip)))), /*#__PURE__*/React.createElement(FormGroup, {
-      label: "",
-      fieldId: "permissions-selected"
-    }, /*#__PURE__*/React.createElement(PermissionSelect, {
-      scopes: this.state.permissionsUnSelected,
-      onSelect: selection => this.setState({
-        permissionsSelected: selection
-      }),
-      direction: "up"
-    })))), /*#__PURE__*/React.createElement(StackItem, {
-      isFilled: true
-    }, /*#__PURE__*/React.createElement("br", null)), /*#__PURE__*/React.createElement(StackItem, {
-      isFilled: true
-    }, this.props.sharedWithUsersMsg))));
+    return /*#__PURE__*/ React.createElement(
+      React.Fragment,
+      null,
+      this.props.children(this.handleToggleDialog),
+      /*#__PURE__*/ React.createElement(
+        Modal,
+        {
+          title: "Share the resource - " + this.props.resource.name,
+          variant: ModalVariant.large,
+          isOpen: this.state.isOpen,
+          onClose: this.handleToggleDialog,
+          actions: [
+            /*#__PURE__*/ React.createElement(
+              Button,
+              {
+                key: "cancel",
+                variant: "link",
+                onClick: this.handleToggleDialog,
+              },
+              /*#__PURE__*/ React.createElement(Msg, {
+                msgKey: "cancel",
+              })
+            ),
+            /*#__PURE__*/ React.createElement(
+              Button,
+              {
+                key: "confirm",
+                variant: "primary",
+                id: "done",
+                onClick: this.handleAddPermission,
+                isDisabled: this.isFormInvalid(),
+              },
+              /*#__PURE__*/ React.createElement(Msg, {
+                msgKey: "done",
+              })
+            ),
+          ],
+        },
+        /*#__PURE__*/ React.createElement(
+          Stack,
+          {
+            hasGutter: true,
+          },
+          /*#__PURE__*/ React.createElement(
+            StackItem,
+            {
+              isFilled: true,
+            },
+            /*#__PURE__*/ React.createElement(
+              Form,
+              null,
+              /*#__PURE__*/ React.createElement(
+                FormGroup,
+                {
+                  label: "Add users to share your resource with",
+                  type: "string",
+                  helperTextInvalid: Msg.localize("resourceAlreadyShared"),
+                  fieldId: "username",
+                  isRequired: true,
+                },
+                /*#__PURE__*/ React.createElement(
+                  Gallery,
+                  {
+                    hasGutter: true,
+                  },
+                  /*#__PURE__*/ React.createElement(
+                    GalleryItem,
+                    null,
+                    /*#__PURE__*/ React.createElement(TextInput, {
+                      value: this.state.usernameInput,
+                      id: "username",
+                      "aria-describedby": "username-helper",
+                      placeholder: "Username or email",
+                      onChange: this.handleUsernameChange,
+                      onKeyPress: this.handleEnterKeyInAddField,
+                    })
+                  ),
+                  /*#__PURE__*/ React.createElement(
+                    GalleryItem,
+                    null,
+                    /*#__PURE__*/ React.createElement(
+                      Button,
+                      {
+                        key: "add-user",
+                        variant: "primary",
+                        id: "add",
+                        onClick: this.handleAddUsername,
+                        isDisabled: this.isAddDisabled(),
+                      },
+                      /*#__PURE__*/ React.createElement(Msg, {
+                        msgKey: "add",
+                      })
+                    )
+                  )
+                ),
+                /*#__PURE__*/ React.createElement(
+                  ChipGroup,
+                  {
+                    categoryName: Msg.localize("shareWith"),
+                  },
+                  this.state.usernames.map((currentChip) =>
+                    /*#__PURE__*/ React.createElement(
+                      Chip,
+                      {
+                        key: currentChip,
+                        onClick: () => this.handleDeleteUsername(currentChip),
+                      },
+                      currentChip
+                    )
+                  )
+                )
+              ),
+              /*#__PURE__*/ React.createElement(
+                FormGroup,
+                {
+                  label: "",
+                  fieldId: "permissions-selected",
+                },
+                /*#__PURE__*/ React.createElement(PermissionSelect, {
+                  scopes: this.state.permissionsUnSelected,
+                  onSelect: (selection) =>
+                    this.setState({
+                      permissionsSelected: selection,
+                    }),
+                  direction: "up",
+                })
+              )
+            )
+          ),
+          /*#__PURE__*/ React.createElement(
+            StackItem,
+            {
+              isFilled: true,
+            },
+            /*#__PURE__*/ React.createElement("br", null)
+          ),
+          /*#__PURE__*/ React.createElement(
+            StackItem,
+            {
+              isFilled: true,
+            },
+            this.props.sharedWithUsersMsg
+          )
+        )
+      )
+    );
   }
-
 }
 
 _defineProperty(ShareTheResource, "defaultProps", {
-  permissions: []
+  permissions: [],
 });
 
 _defineProperty(ShareTheResource, "contextType", AccountServiceContext);

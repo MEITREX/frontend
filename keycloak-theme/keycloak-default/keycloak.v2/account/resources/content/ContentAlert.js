@@ -1,4 +1,16 @@
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+  } else {
+    obj[key] = value;
+  }
+  return obj;
+}
 
 /*
  * Copyright 2019 Red Hat, Inc. and/or its affiliates.
@@ -16,15 +28,20 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * limitations under the License.
  */
 import * as React from "../../../common/keycloak/web_modules/react.js";
-import { Alert, AlertActionCloseButton, AlertGroup, AlertVariant } from "../../../common/keycloak/web_modules/@patternfly/react-core.js";
+import {
+  Alert,
+  AlertActionCloseButton,
+  AlertGroup,
+  AlertVariant,
+} from "../../../common/keycloak/web_modules/@patternfly/react-core.js";
 import { Msg } from "../widgets/Msg.js";
 export class ContentAlert extends React.Component {
   constructor(props) {
     super(props);
 
-    _defineProperty(this, "hideAlert", key => {
+    _defineProperty(this, "hideAlert", (key) => {
       this.setState({
-        alerts: [...this.state.alerts.filter(el => el.key !== key)]
+        alerts: [...this.state.alerts.filter((el) => el.key !== key)],
       });
     });
 
@@ -36,10 +53,10 @@ export class ContentAlert extends React.Component {
       alerts.push({
         key,
         message: Msg.localize(message, params),
-        variant
+        variant,
       });
       this.setState({
-        alerts
+        alerts,
       });
 
       if (variant !== AlertVariant.danger) {
@@ -48,14 +65,13 @@ export class ContentAlert extends React.Component {
     });
 
     this.state = {
-      alerts: []
+      alerts: [],
     };
     ContentAlert.instance = this;
   }
   /**
    * @param message A literal text message or localization key.
    */
-
 
   static success(message, params) {
     ContentAlert.instance.postAlert(AlertVariant.success, message, params);
@@ -64,14 +80,12 @@ export class ContentAlert extends React.Component {
    * @param message A literal text message or localization key.
    */
 
-
   static danger(message, params) {
     ContentAlert.instance.postAlert(AlertVariant.danger, message, params);
   }
   /**
    * @param message A literal text message or localization key.
    */
-
 
   static warning(message, params) {
     ContentAlert.instance.postAlert(AlertVariant.warning, message, params);
@@ -80,33 +94,36 @@ export class ContentAlert extends React.Component {
    * @param message A literal text message or localization key.
    */
 
-
   static info(message, params) {
     ContentAlert.instance.postAlert(AlertVariant.info, message, params);
   }
 
   render() {
-    return /*#__PURE__*/React.createElement(AlertGroup, {
-      isToast: true,
-      "aria-live": "assertive"
-    }, this.state.alerts.map(({
-      key,
-      variant,
-      message
-    }) => /*#__PURE__*/React.createElement(Alert, {
-      "aria-details": message,
-      isLiveRegion: true,
-      variant: variant,
-      title: message,
-      actionClose: /*#__PURE__*/React.createElement(AlertActionCloseButton, {
-        title: message,
-        variantLabel: `${variant} alert`,
-        onClose: () => this.hideAlert(key)
-      }),
-      key: key
-    })));
+    return /*#__PURE__*/ React.createElement(
+      AlertGroup,
+      {
+        isToast: true,
+        "aria-live": "assertive",
+      },
+      this.state.alerts.map(({ key, variant, message }) =>
+        /*#__PURE__*/ React.createElement(Alert, {
+          "aria-details": message,
+          isLiveRegion: true,
+          variant: variant,
+          title: message,
+          actionClose: /*#__PURE__*/ React.createElement(
+            AlertActionCloseButton,
+            {
+              title: message,
+              variantLabel: `${variant} alert`,
+              onClose: () => this.hideAlert(key),
+            }
+          ),
+          key: key,
+        })
+      )
+    );
   }
-
 }
 
 _defineProperty(ContentAlert, "instance", void 0);

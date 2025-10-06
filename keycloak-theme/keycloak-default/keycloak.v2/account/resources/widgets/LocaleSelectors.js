@@ -14,28 +14,35 @@
  * limitations under the License.
  */
 import * as React from "../../../common/keycloak/web_modules/react.js";
-import { FormSelect, FormSelectOption } from "../../../common/keycloak/web_modules/@patternfly/react-core.js";
+import {
+  FormSelect,
+  FormSelectOption,
+} from "../../../common/keycloak/web_modules/@patternfly/react-core.js";
 import { Msg } from "./Msg.js";
-;
 export class LocaleSelector extends React.Component {
   constructor(props) {
     super(props);
   }
 
   render() {
-    return /*#__PURE__*/React.createElement(FormSelect, {
-      id: "locale-select",
-      value: this.props.value,
-      onChange: (value, event) => {
-        if (this.props.onChange) this.props.onChange(value, event);
+    return /*#__PURE__*/ React.createElement(
+      FormSelect,
+      {
+        id: "locale-select",
+        value: this.props.value,
+        onChange: (value, event) => {
+          if (this.props.onChange) this.props.onChange(value, event);
+        },
+        "aria-label": Msg.localize("selectLocale"),
       },
-      "aria-label": Msg.localize('selectLocale')
-    }, availableLocales.map((locale, index) => /*#__PURE__*/React.createElement(FormSelectOption, {
-      key: index,
-      value: locale.locale,
-      label: locale.label
-    })));
+      availableLocales.map((locale, index) =>
+        /*#__PURE__*/ React.createElement(FormSelectOption, {
+          key: index,
+          value: locale.locale,
+          label: locale.label,
+        })
+      )
+    );
   }
-
 }
 //# sourceMappingURL=LocaleSelectors.js.map

@@ -17,7 +17,12 @@ import * as React from "../../common/keycloak/web_modules/react.js";
 import * as ReactDOM from "../../common/keycloak/web_modules/react-dom.js";
 import { HashRouter } from "../../common/keycloak/web_modules/react-router-dom.js";
 import { App } from "./App.js";
-import { flattenContent, initGroupAndItemIds, isExpansion, isModulePageDef } from "./ContentPages.js";
+import {
+  flattenContent,
+  initGroupAndItemIds,
+  isExpansion,
+  isModulePageDef,
+} from "./ContentPages.js";
 import { KeycloakService } from "./keycloak-service/keycloak.service.js";
 import { KeycloakContext } from "./keycloak-service/KeycloakContext.js";
 import { AccountServiceClient } from "./account-service/account.service.js";
@@ -34,15 +39,25 @@ export class Main extends React.Component {
 
   render() {
     const keycloakService = new KeycloakService(keycloak);
-    return /*#__PURE__*/React.createElement(HashRouter, null, /*#__PURE__*/React.createElement(KeycloakContext.Provider, {
-      value: keycloakService
-    }, /*#__PURE__*/React.createElement(AccountServiceContext.Provider, {
-      value: new AccountServiceClient(keycloakService)
-    }, /*#__PURE__*/React.createElement(App, null))));
+    return /*#__PURE__*/ React.createElement(
+      HashRouter,
+      null,
+      /*#__PURE__*/ React.createElement(
+        KeycloakContext.Provider,
+        {
+          value: keycloakService,
+        },
+        /*#__PURE__*/ React.createElement(
+          AccountServiceContext.Provider,
+          {
+            value: new AccountServiceClient(keycloakService),
+          },
+          /*#__PURE__*/ React.createElement(App, null)
+        )
+      )
+    );
   }
-
 }
-;
 const e = React.createElement;
 
 function removeHidden(items) {
@@ -71,27 +86,30 @@ initGroupAndItemIds();
 
 function loadModule(modulePage) {
   return new Promise((resolve, reject) => {
-    console.log('loading: ' + resourceUrl + modulePage.modulePath);
-    import(resourceUrl + modulePage.modulePath).then(module => {
-      modulePage.module = module;
-      resolve(modulePage);
-    }).catch(error => {
-      console.warn('Unable to load ' + modulePage.label + ' because ' + error.message);
-      reject(modulePage);
-    });
+    console.log("loading: " + resourceUrl + modulePage.modulePath);
+    import(resourceUrl + modulePage.modulePath)
+      .then((module) => {
+        modulePage.module = module;
+        resolve(modulePage);
+      })
+      .catch((error) => {
+        console.warn(
+          "Unable to load " + modulePage.label + " because " + error.message
+        );
+        reject(modulePage);
+      });
   });
 }
 
-;
 const moduleLoaders = [];
-flattenContent(content).forEach(item => {
+flattenContent(content).forEach((item) => {
   if (isModulePageDef(item)) {
     moduleLoaders.push(loadModule(item));
   }
 }); // load content modules and start
 
 Promise.all(moduleLoaders).then(() => {
-  const domContainer = document.querySelector('#main_react_container');
+  const domContainer = document.querySelector("#main_react_container");
   ReactDOM.render(e(Main), domContainer);
 });
 //# sourceMappingURL=Main.js.map

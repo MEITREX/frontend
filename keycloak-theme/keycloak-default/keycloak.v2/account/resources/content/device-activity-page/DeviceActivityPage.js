@@ -1,4 +1,16 @@
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+  } else {
+    obj[key] = value;
+  }
+  return obj;
+}
 
 /*
  * Copyright 2018 Red Hat, Inc. and/or its affiliates.
@@ -18,8 +30,31 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 import * as React from "../../../../common/keycloak/web_modules/react.js";
 import { AccountServiceContext } from "../../account-service/AccountServiceContext.js";
 import TimeUtil from "../../util/TimeUtil.js";
-import { Button, DataList, DataListItem, DataListItemRow, DataListContent, DescriptionList, DescriptionListTerm, DescriptionListDescription, DescriptionListGroup, Grid, GridItem, Label, PageSection, PageSectionVariants, Title, Tooltip, SplitItem, Split } from "../../../../common/keycloak/web_modules/@patternfly/react-core.js";
-import { DesktopIcon, MobileAltIcon, SyncAltIcon } from "../../../../common/keycloak/web_modules/@patternfly/react-icons.js";
+import {
+  Button,
+  DataList,
+  DataListItem,
+  DataListItemRow,
+  DataListContent,
+  DescriptionList,
+  DescriptionListTerm,
+  DescriptionListDescription,
+  DescriptionListGroup,
+  Grid,
+  GridItem,
+  Label,
+  PageSection,
+  PageSectionVariants,
+  Title,
+  Tooltip,
+  SplitItem,
+  Split,
+} from "../../../../common/keycloak/web_modules/@patternfly/react-core.js";
+import {
+  DesktopIcon,
+  MobileAltIcon,
+  SyncAltIcon,
+} from "../../../../common/keycloak/web_modules/@patternfly/react-icons.js";
 import { Msg } from "../../widgets/Msg.js";
 import { ContinueCancelModal } from "../../widgets/ContinueCancelModal.js";
 import { KeycloakContext } from "../../keycloak-service/KeycloakContext.js";
@@ -35,38 +70,42 @@ export class DeviceActivityPage extends React.Component {
 
     _defineProperty(this, "context", void 0);
 
-    _defineProperty(this, "signOutAll", keycloakService => {
+    _defineProperty(this, "signOutAll", (keycloakService) => {
       this.context.doDelete("/sessions").then(() => {
         keycloakService.logout();
       });
     });
 
     _defineProperty(this, "signOutSession", (device, session) => {
-      this.context.doDelete("/sessions/" + encodeURIComponent(session.id)).then(() => {
-        this.fetchDevices();
-        ContentAlert.success('signedOutSession', [session.browser, device.os]);
-      });
+      this.context
+        .doDelete("/sessions/" + encodeURIComponent(session.id))
+        .then(() => {
+          this.fetchDevices();
+          ContentAlert.success("signedOutSession", [
+            session.browser,
+            device.os,
+          ]);
+        });
     });
 
     this.context = context;
     this.state = {
-      devices: []
+      devices: [],
     };
     this.fetchDevices();
   }
 
   fetchDevices() {
-    this.context.doGet("/sessions/devices").then(response => {
+    this.context.doGet("/sessions/devices").then((response) => {
       console.log({
-        response
+        response,
       });
       let devices = this.moveCurrentToTop(response.data);
       this.setState({
-        devices: devices
+        devices: devices,
       });
     });
   } // current device and session should display at the top of their respective lists
-
 
   moveCurrentToTop(devices) {
     let currentDevice = devices[0];
@@ -90,27 +129,29 @@ export class DeviceActivityPage extends React.Component {
     return TimeUtil.format(time * 1000);
   }
 
-  elementId(item, session, element = 'session') {
+  elementId(item, session, element = "session") {
     return `${element}-${session.id.substring(0, 7)}-${item}`;
   }
 
   findDeviceTypeIcon(session, device) {
     const deviceType = device.mobile;
-    if (deviceType === true) return /*#__PURE__*/React.createElement(MobileAltIcon, {
-      id: this.elementId('icon-mobile', session, 'device')
-    });
-    return /*#__PURE__*/React.createElement(DesktopIcon, {
-      id: this.elementId('icon-desktop', session, 'device')
+    if (deviceType === true)
+      return /*#__PURE__*/ React.createElement(MobileAltIcon, {
+        id: this.elementId("icon-mobile", session, "device"),
+      });
+    return /*#__PURE__*/ React.createElement(DesktopIcon, {
+      id: this.elementId("icon-desktop", session, "device"),
     });
   }
 
   findOS(device) {
-    if (device.os.toLowerCase().includes('unknown')) return Msg.localize('unknownOperatingSystem');
+    if (device.os.toLowerCase().includes("unknown"))
+      return Msg.localize("unknownOperatingSystem");
     return device.os;
   }
 
   findOSVersion(device) {
-    if (device.osVersion.toLowerCase().includes('unknown')) return '';
+    if (device.osVersion.toLowerCase().includes("unknown")) return "";
     return device.osVersion;
   }
 
@@ -119,14 +160,18 @@ export class DeviceActivityPage extends React.Component {
     clients.forEach((client, index) => {
       let clientName;
 
-      if (client.hasOwnProperty('clientName') && client.clientName !== undefined && client.clientName !== '') {
+      if (
+        client.hasOwnProperty("clientName") &&
+        client.clientName !== undefined &&
+        client.clientName !== ""
+      ) {
         clientName = Msg.localize(client.clientName);
       } else {
         clientName = client.clientId;
       }
 
       clientsString += clientName;
-      if (clients.length > index + 1) clientsString += ', ';
+      if (clients.length > index + 1) clientsString += ", ";
     });
     return clientsString;
   }
@@ -139,114 +184,303 @@ export class DeviceActivityPage extends React.Component {
   }
 
   render() {
-    return /*#__PURE__*/React.createElement(ContentPage, {
-      title: "device-activity",
-      introMessage: "signedInDevicesExplanation"
-    }, /*#__PURE__*/React.createElement(PageSection, {
-      isFilled: true,
-      variant: PageSectionVariants.light
-    }, /*#__PURE__*/React.createElement(Split, {
-      hasGutter: true,
-      className: "pf-u-mb-lg"
-    }, /*#__PURE__*/React.createElement(SplitItem, {
-      isFilled: true
-    }, /*#__PURE__*/React.createElement("div", {
-      id: "signedInDevicesTitle",
-      className: "pf-c-content"
-    }, /*#__PURE__*/React.createElement(Title, {
-      headingLevel: "h2",
-      size: "xl"
-    }, /*#__PURE__*/React.createElement(Msg, {
-      msgKey: "signedInDevices"
-    })))), /*#__PURE__*/React.createElement(SplitItem, null, /*#__PURE__*/React.createElement(Tooltip, {
-      content: /*#__PURE__*/React.createElement(Msg, {
-        msgKey: "refreshPage"
-      })
-    }, /*#__PURE__*/React.createElement(Button, {
-      "aria-describedby": "refresh page",
-      id: "refresh-page",
-      variant: "link",
-      onClick: this.fetchDevices.bind(this),
-      icon: /*#__PURE__*/React.createElement(SyncAltIcon, null)
-    }, /*#__PURE__*/React.createElement(Msg, {
-      msgKey: "refresh"
-    })))), /*#__PURE__*/React.createElement(SplitItem, null, /*#__PURE__*/React.createElement(KeycloakContext.Consumer, null, keycloak => this.isShowSignOutAll(this.state.devices) && /*#__PURE__*/React.createElement(ContinueCancelModal, {
-      buttonTitle: "signOutAllDevices",
-      buttonId: "sign-out-all",
-      modalTitle: "signOutAllDevices",
-      modalMessage: "signOutAllDevicesWarning",
-      onContinue: () => this.signOutAll(keycloak)
-    })))), /*#__PURE__*/React.createElement(DataList, {
-      className: "signed-in-device-list",
-      "aria-label": Msg.localize('signedInDevices')
-    }, /*#__PURE__*/React.createElement(DataListItem, {
-      "aria-labelledby": "sessions",
-      id: "device-activity-sessions"
-    }, this.state.devices.map((device, deviceIndex) => {
-      return /*#__PURE__*/React.createElement(React.Fragment, null, device.sessions.map((session, sessionIndex) => {
-        return /*#__PURE__*/React.createElement(React.Fragment, {
-          key: 'device-' + deviceIndex + '-session-' + sessionIndex
-        }, /*#__PURE__*/React.createElement(DataListItemRow, null, /*#__PURE__*/React.createElement(DataListContent, {
-          "aria-label": "device-sessions-content",
-          isHidden: false,
-          className: "pf-u-flex-grow-1"
-        }, /*#__PURE__*/React.createElement(Grid, {
-          id: this.elementId("item", session),
-          className: "signed-in-device-grid",
-          hasGutter: true
-        }, /*#__PURE__*/React.createElement(GridItem, {
-          className: "device-icon",
-          span: 1,
-          rowSpan: 2
-        }, /*#__PURE__*/React.createElement("span", null, this.findDeviceTypeIcon(session, device))), /*#__PURE__*/React.createElement(GridItem, {
-          sm: 8,
-          md: 9,
-          span: 10
-        }, /*#__PURE__*/React.createElement("span", {
-          id: this.elementId('browser', session),
-          className: "pf-u-mr-md session-title"
-        }, this.findOS(device), " ", this.findOSVersion(device), " / ", session.browser), session.current && /*#__PURE__*/React.createElement(Label, {
-          color: "green",
-          id: this.elementId('current-badge', session)
-        }, /*#__PURE__*/React.createElement(Msg, {
-          msgKey: "currentSession"
-        }))), /*#__PURE__*/React.createElement(GridItem, {
-          className: "pf-u-text-align-right",
-          sm: 3,
-          md: 2,
-          span: 1
-        }, !session.current && /*#__PURE__*/React.createElement(ContinueCancelModal, {
-          buttonTitle: "doSignOut",
-          buttonId: this.elementId('sign-out', session),
-          modalTitle: "doSignOut",
-          buttonVariant: "secondary",
-          modalMessage: "signOutWarning",
-          onContinue: () => this.signOutSession(device, session)
-        })), /*#__PURE__*/React.createElement(GridItem, {
-          span: 11
-        }, /*#__PURE__*/React.createElement(DescriptionList, {
-          columnModifier: {
-            sm: '2Col',
-            lg: '3Col'
-          }
-        }, /*#__PURE__*/React.createElement(DescriptionListGroup, null, /*#__PURE__*/React.createElement(DescriptionListTerm, null, Msg.localize('ipAddress')), /*#__PURE__*/React.createElement(DescriptionListDescription, {
-          id: this.elementId('ip', session)
-        }, session.ipAddress)), /*#__PURE__*/React.createElement(DescriptionListGroup, null, /*#__PURE__*/React.createElement(DescriptionListTerm, null, Msg.localize('lastAccessedOn')), /*#__PURE__*/React.createElement(DescriptionListDescription, {
-          id: this.elementId('last-access', session)
-        }, this.time(session.lastAccess))), /*#__PURE__*/React.createElement(DescriptionListGroup, null, /*#__PURE__*/React.createElement(DescriptionListTerm, null, Msg.localize('clients')), /*#__PURE__*/React.createElement(DescriptionListDescription, {
-          id: this.elementId('clients', session)
-        }, this.makeClientsString(session.clients))), /*#__PURE__*/React.createElement(DescriptionListGroup, null, /*#__PURE__*/React.createElement(DescriptionListTerm, null, Msg.localize('started')), /*#__PURE__*/React.createElement(DescriptionListDescription, {
-          id: this.elementId('started', session)
-        }, this.time(session.started))), /*#__PURE__*/React.createElement(DescriptionListGroup, null, /*#__PURE__*/React.createElement(DescriptionListTerm, null, Msg.localize('expires')), /*#__PURE__*/React.createElement(DescriptionListDescription, {
-          id: this.elementId('expires', session)
-        }, this.time(session.expires)))))))));
-      }));
-    })))));
+    return /*#__PURE__*/ React.createElement(
+      ContentPage,
+      {
+        title: "device-activity",
+        introMessage: "signedInDevicesExplanation",
+      },
+      /*#__PURE__*/ React.createElement(
+        PageSection,
+        {
+          isFilled: true,
+          variant: PageSectionVariants.light,
+        },
+        /*#__PURE__*/ React.createElement(
+          Split,
+          {
+            hasGutter: true,
+            className: "pf-u-mb-lg",
+          },
+          /*#__PURE__*/ React.createElement(
+            SplitItem,
+            {
+              isFilled: true,
+            },
+            /*#__PURE__*/ React.createElement(
+              "div",
+              {
+                id: "signedInDevicesTitle",
+                className: "pf-c-content",
+              },
+              /*#__PURE__*/ React.createElement(
+                Title,
+                {
+                  headingLevel: "h2",
+                  size: "xl",
+                },
+                /*#__PURE__*/ React.createElement(Msg, {
+                  msgKey: "signedInDevices",
+                })
+              )
+            )
+          ),
+          /*#__PURE__*/ React.createElement(
+            SplitItem,
+            null,
+            /*#__PURE__*/ React.createElement(
+              Tooltip,
+              {
+                content: /*#__PURE__*/ React.createElement(Msg, {
+                  msgKey: "refreshPage",
+                }),
+              },
+              /*#__PURE__*/ React.createElement(
+                Button,
+                {
+                  "aria-describedby": "refresh page",
+                  id: "refresh-page",
+                  variant: "link",
+                  onClick: this.fetchDevices.bind(this),
+                  icon: /*#__PURE__*/ React.createElement(SyncAltIcon, null),
+                },
+                /*#__PURE__*/ React.createElement(Msg, {
+                  msgKey: "refresh",
+                })
+              )
+            )
+          ),
+          /*#__PURE__*/ React.createElement(
+            SplitItem,
+            null,
+            /*#__PURE__*/ React.createElement(
+              KeycloakContext.Consumer,
+              null,
+              (keycloak) =>
+                this.isShowSignOutAll(this.state.devices) &&
+                /*#__PURE__*/ React.createElement(ContinueCancelModal, {
+                  buttonTitle: "signOutAllDevices",
+                  buttonId: "sign-out-all",
+                  modalTitle: "signOutAllDevices",
+                  modalMessage: "signOutAllDevicesWarning",
+                  onContinue: () => this.signOutAll(keycloak),
+                })
+            )
+          )
+        ),
+        /*#__PURE__*/ React.createElement(
+          DataList,
+          {
+            className: "signed-in-device-list",
+            "aria-label": Msg.localize("signedInDevices"),
+          },
+          /*#__PURE__*/ React.createElement(
+            DataListItem,
+            {
+              "aria-labelledby": "sessions",
+              id: "device-activity-sessions",
+            },
+            this.state.devices.map((device, deviceIndex) => {
+              return /*#__PURE__*/ React.createElement(
+                React.Fragment,
+                null,
+                device.sessions.map((session, sessionIndex) => {
+                  return /*#__PURE__*/ React.createElement(
+                    React.Fragment,
+                    {
+                      key: "device-" + deviceIndex + "-session-" + sessionIndex,
+                    },
+                    /*#__PURE__*/ React.createElement(
+                      DataListItemRow,
+                      null,
+                      /*#__PURE__*/ React.createElement(
+                        DataListContent,
+                        {
+                          "aria-label": "device-sessions-content",
+                          isHidden: false,
+                          className: "pf-u-flex-grow-1",
+                        },
+                        /*#__PURE__*/ React.createElement(
+                          Grid,
+                          {
+                            id: this.elementId("item", session),
+                            className: "signed-in-device-grid",
+                            hasGutter: true,
+                          },
+                          /*#__PURE__*/ React.createElement(
+                            GridItem,
+                            {
+                              className: "device-icon",
+                              span: 1,
+                              rowSpan: 2,
+                            },
+                            /*#__PURE__*/ React.createElement(
+                              "span",
+                              null,
+                              this.findDeviceTypeIcon(session, device)
+                            )
+                          ),
+                          /*#__PURE__*/ React.createElement(
+                            GridItem,
+                            {
+                              sm: 8,
+                              md: 9,
+                              span: 10,
+                            },
+                            /*#__PURE__*/ React.createElement(
+                              "span",
+                              {
+                                id: this.elementId("browser", session),
+                                className: "pf-u-mr-md session-title",
+                              },
+                              this.findOS(device),
+                              " ",
+                              this.findOSVersion(device),
+                              " / ",
+                              session.browser
+                            ),
+                            session.current &&
+                              /*#__PURE__*/ React.createElement(
+                                Label,
+                                {
+                                  color: "green",
+                                  id: this.elementId("current-badge", session),
+                                },
+                                /*#__PURE__*/ React.createElement(Msg, {
+                                  msgKey: "currentSession",
+                                })
+                              )
+                          ),
+                          /*#__PURE__*/ React.createElement(
+                            GridItem,
+                            {
+                              className: "pf-u-text-align-right",
+                              sm: 3,
+                              md: 2,
+                              span: 1,
+                            },
+                            !session.current &&
+                              /*#__PURE__*/ React.createElement(
+                                ContinueCancelModal,
+                                {
+                                  buttonTitle: "doSignOut",
+                                  buttonId: this.elementId("sign-out", session),
+                                  modalTitle: "doSignOut",
+                                  buttonVariant: "secondary",
+                                  modalMessage: "signOutWarning",
+                                  onContinue: () =>
+                                    this.signOutSession(device, session),
+                                }
+                              )
+                          ),
+                          /*#__PURE__*/ React.createElement(
+                            GridItem,
+                            {
+                              span: 11,
+                            },
+                            /*#__PURE__*/ React.createElement(
+                              DescriptionList,
+                              {
+                                columnModifier: {
+                                  sm: "2Col",
+                                  lg: "3Col",
+                                },
+                              },
+                              /*#__PURE__*/ React.createElement(
+                                DescriptionListGroup,
+                                null,
+                                /*#__PURE__*/ React.createElement(
+                                  DescriptionListTerm,
+                                  null,
+                                  Msg.localize("ipAddress")
+                                ),
+                                /*#__PURE__*/ React.createElement(
+                                  DescriptionListDescription,
+                                  {
+                                    id: this.elementId("ip", session),
+                                  },
+                                  session.ipAddress
+                                )
+                              ),
+                              /*#__PURE__*/ React.createElement(
+                                DescriptionListGroup,
+                                null,
+                                /*#__PURE__*/ React.createElement(
+                                  DescriptionListTerm,
+                                  null,
+                                  Msg.localize("lastAccessedOn")
+                                ),
+                                /*#__PURE__*/ React.createElement(
+                                  DescriptionListDescription,
+                                  {
+                                    id: this.elementId("last-access", session),
+                                  },
+                                  this.time(session.lastAccess)
+                                )
+                              ),
+                              /*#__PURE__*/ React.createElement(
+                                DescriptionListGroup,
+                                null,
+                                /*#__PURE__*/ React.createElement(
+                                  DescriptionListTerm,
+                                  null,
+                                  Msg.localize("clients")
+                                ),
+                                /*#__PURE__*/ React.createElement(
+                                  DescriptionListDescription,
+                                  {
+                                    id: this.elementId("clients", session),
+                                  },
+                                  this.makeClientsString(session.clients)
+                                )
+                              ),
+                              /*#__PURE__*/ React.createElement(
+                                DescriptionListGroup,
+                                null,
+                                /*#__PURE__*/ React.createElement(
+                                  DescriptionListTerm,
+                                  null,
+                                  Msg.localize("started")
+                                ),
+                                /*#__PURE__*/ React.createElement(
+                                  DescriptionListDescription,
+                                  {
+                                    id: this.elementId("started", session),
+                                  },
+                                  this.time(session.started)
+                                )
+                              ),
+                              /*#__PURE__*/ React.createElement(
+                                DescriptionListGroup,
+                                null,
+                                /*#__PURE__*/ React.createElement(
+                                  DescriptionListTerm,
+                                  null,
+                                  Msg.localize("expires")
+                                ),
+                                /*#__PURE__*/ React.createElement(
+                                  DescriptionListDescription,
+                                  {
+                                    id: this.elementId("expires", session),
+                                  },
+                                  this.time(session.expires)
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  );
+                })
+              );
+            })
+          )
+        )
+      )
+    );
   }
-
 }
 
 _defineProperty(DeviceActivityPage, "contextType", AccountServiceContext);
-
-;
 //# sourceMappingURL=DeviceActivityPage.js.map

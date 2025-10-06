@@ -17,23 +17,29 @@
 
 /**
  * Create a redirect uri that can return to this application with referrer and referrer_uri intact.
- * 
+ *
  * @param currentLocation The ReactRouter location to return to.
- *  
+ *
  * @author Stan Silvert
  */
-export const createRedirect = currentLocation => {
+export const createRedirect = (currentLocation) => {
   let redirectUri = baseUrl;
 
-  if (typeof referrer !== 'undefined') {
+  if (typeof referrer !== "undefined") {
     // '_hash_' is a workaround for when uri encoding is not
     // sufficient to escape the # character properly.
     // The problem is that both the redirect and the application URL contain a hash.
     // The browser will consider anything after the first hash to be client-side.  So
     // it sees the hash in the redirect param and stops.
-    redirectUri += "?referrer=" + referrer + "&referrer_uri=" + referrerUri.replace('#', '_hash_');
+    redirectUri +=
+      "?referrer=" +
+      referrer +
+      "&referrer_uri=" +
+      referrerUri.replace("#", "_hash_");
   }
 
-  return encodeURIComponent(redirectUri) + encodeURIComponent("/#" + currentLocation);
+  return (
+    encodeURIComponent(redirectUri) + encodeURIComponent("/#" + currentLocation)
+  );
 };
 //# sourceMappingURL=RedirectUri.js.map

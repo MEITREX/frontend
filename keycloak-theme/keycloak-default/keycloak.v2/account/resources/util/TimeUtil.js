@@ -1,4 +1,16 @@
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+  } else {
+    obj[key] = value;
+  }
+  return obj;
+}
 
 /*
  * Copyright 2020 Red Hat, Inc. and/or its affiliates.
@@ -22,11 +34,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 class TimeUtil {
   constructor() {
     _defineProperty(this, "options", {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric'
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
     });
 
     _defineProperty(this, "formatter", void 0);
@@ -35,14 +47,13 @@ class TimeUtil {
       this.formatter = new Intl.DateTimeFormat(locale, this.options);
     } catch (e) {
       // unknown locale falling back to English
-      this.formatter = new Intl.DateTimeFormat('en', this.options);
+      this.formatter = new Intl.DateTimeFormat("en", this.options);
     }
   }
 
   format(time) {
     return this.formatter.format(time);
   }
-
 }
 
 const TimeUtilInstance = new TimeUtil();

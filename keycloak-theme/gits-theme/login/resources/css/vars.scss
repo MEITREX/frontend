@@ -2,32 +2,38 @@
 This colors are computed based on Material Design 3 guidelines using #089cdc as primary color.
 */
 
-@use 'sass:color';
-
+@use "sass:color";
 
 $primary-color: #006590;
-$primary-color-hover: color.adjust($primary-color, $saturation: -5%, $lightness: -2%);
+$primary-color-hover: color.adjust(
+  $primary-color,
+  $saturation: -5%,
+  $lightness: -2%
+);
 $on-primary-color: #ffffff;
 $primary-container-color: #089cdc;
-$primary-container-hover-color: color.adjust($primary-container-color, $saturation: -5%, $lightness: -2%);
+$primary-container-hover-color: color.adjust(
+  $primary-container-color,
+  $saturation: -5%,
+  $lightness: -2%
+);
 $on-primary-container-color: #002f46;
 
 :root {
-    --primary-color: #{$primary-color};
-    --primary-color-hover: #{$primary-color-hover};
-    --on-primary-color: #{$on-primary-color};
-    --primary-container-color: #{$primary-container-color};
-    --on-primary-container-color: #{$on-primary-container-color};
-    --primary-container-hover-color: #{$primary-container-hover-color};
-}
-
-
-@font-face {
-    font-family: Quicksand;
-    src: url(Quicksand-DinAYkjp.woff2) format("woff2");
+  --primary-color: #{$primary-color};
+  --primary-color-hover: #{$primary-color-hover};
+  --on-primary-color: #{$on-primary-color};
+  --primary-container-color: #{$primary-container-color};
+  --on-primary-container-color: #{$on-primary-container-color};
+  --primary-container-hover-color: #{$primary-container-hover-color};
 }
 
 @font-face {
-    font-family: Roboto;
-    src: url(roboto-v48-latin-regular.woff2) format("woff2");
+  font-family: Quicksand;
+  src: url(Quicksand-DinAYkjp.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: Roboto;
+  src: url(roboto-v48-latin-regular.woff2) format("woff2");
 }

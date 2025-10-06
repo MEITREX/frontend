@@ -31,16 +31,20 @@ export class ReferrerLink extends React.Component {
       // '_hash_' is a workaround for when uri encoding is not
       // sufficient to escape the # character properly.
       // See AppInitiatedActionPage for more details.
-      React.createElement("a", {
-        id: "referrerLink",
-        href: referrerUri.replace('_hash_', '#')
-      }, /*#__PURE__*/React.createElement(ArrowIcon, null), " ", /*#__PURE__*/React.createElement(Msg, {
-        msgKey: "backTo",
-        params: [referrerName]
-      }))
+      React.createElement(
+        "a",
+        {
+          id: "referrerLink",
+          href: referrerUri.replace("_hash_", "#"),
+        },
+        /*#__PURE__*/ React.createElement(ArrowIcon, null),
+        " ",
+        /*#__PURE__*/ React.createElement(Msg, {
+          msgKey: "backTo",
+          params: [referrerName],
+        })
+      )
     );
   }
-
 }
-;
 //# sourceMappingURL=ReferrerLink.js.map

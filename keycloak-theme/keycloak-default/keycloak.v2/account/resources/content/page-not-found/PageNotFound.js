@@ -15,17 +15,19 @@ class PgNotFound extends React.Component {
   }
 
   render() {
-    return /*#__PURE__*/React.createElement(EmptyMessageState, {
-      icon: WarningTriangleIcon,
-      messageKey: "pageNotFound"
-    }, /*#__PURE__*/React.createElement(Msg, {
-      msgKey: "invalidRoute",
-      params: [this.props.location.pathname]
-    }));
+    return /*#__PURE__*/ React.createElement(
+      EmptyMessageState,
+      {
+        icon: WarningTriangleIcon,
+        messageKey: "pageNotFound",
+      },
+      /*#__PURE__*/ React.createElement(Msg, {
+        msgKey: "invalidRoute",
+        params: [this.props.location.pathname],
+      })
+    );
   }
-
 }
 
-;
 export const PageNotFound = withRouter(PgNotFound);
 //# sourceMappingURL=PageNotFound.js.map

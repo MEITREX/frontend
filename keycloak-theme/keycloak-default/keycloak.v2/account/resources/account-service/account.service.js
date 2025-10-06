@@ -1,4 +1,16 @@
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+  } else {
+    obj[key] = value;
+  }
+  return obj;
+}
 
 /*
  * Copyright 2018 Red Hat Inc. and/or its affiliates and other contributors
@@ -22,7 +34,6 @@ export class AccountServiceError extends Error {
     super(response.statusText);
     this.response = response;
   }
-
 }
 /**
  *
@@ -36,42 +47,43 @@ export class AccountServiceClient {
     _defineProperty(this, "accountUrl", void 0);
 
     this.kcSvc = keycloakService;
-    this.accountUrl = this.kcSvc.authServerUrl() + 'realms/' + this.kcSvc.realm() + '/account';
+    this.accountUrl =
+      this.kcSvc.authServerUrl() + "realms/" + this.kcSvc.realm() + "/account";
   }
 
   async doGet(endpoint, config) {
-    return this.doRequest(endpoint, { ...config,
-      method: 'get'
-    });
+    return this.doRequest(endpoint, { ...config, method: "get" });
   }
 
   async doDelete(endpoint, config) {
-    return this.doRequest(endpoint, { ...config,
-      method: 'delete'
-    });
+    return this.doRequest(endpoint, { ...config, method: "delete" });
   }
 
   async doPost(endpoint, body, config) {
-    return this.doRequest(endpoint, { ...config,
+    return this.doRequest(endpoint, {
+      ...config,
       body: JSON.stringify(body),
-      method: 'post'
+      method: "post",
     });
   }
 
   async doPut(endpoint, body, config) {
-    return this.doRequest(endpoint, { ...config,
+    return this.doRequest(endpoint, {
+      ...config,
       body: JSON.stringify(body),
-      method: 'put'
+      method: "put",
     });
   }
 
   async doRequest(endpoint, config) {
-    const response = await fetch(this.makeUrl(endpoint, config).toString(), await this.makeConfig(config));
+    const response = await fetch(
+      this.makeUrl(endpoint, config).toString(),
+      await this.makeConfig(config)
+    );
 
     try {
       response.data = await response.json();
     } catch (e) {} // ignore.  Might be empty
-
 
     if (!response.ok) {
       this.handleError(response);
@@ -85,7 +97,7 @@ export class AccountServiceClient {
     if (response !== null && response.status === 401) {
       if (this.kcSvc.authenticated() && !this.kcSvc.audiencePresent()) {
         // authenticated and the audience is not present => not allowed
-        window.location.href = baseUrl + '#/forbidden';
+        window.location.href = baseUrl + "#/forbidden";
       } else {
         // session timed out?
         this.kcSvc.login();
@@ -93,53 +105,61 @@ export class AccountServiceClient {
     }
 
     if (response !== null && response.status === 403) {
-      window.location.href = baseUrl + '#/forbidden';
+      window.location.href = baseUrl + "#/forbidden";
     }
 
     if (response !== null && response.data != null) {
-      if (response.data['errors'] != null) {
-        for (let err of response.data['errors']) ContentAlert.danger(err['errorMessage'], err['params']);
+      if (response.data["errors"] != null) {
+        for (let err of response.data["errors"])
+          ContentAlert.danger(err["errorMessage"], err["params"]);
       } else {
-        ContentAlert.danger(`${response.statusText}: ${response.data['errorMessage'] ? response.data['errorMessage'] : ''} ${response.data['error'] ? response.data['error'] : ''}`);
+        ContentAlert.danger(
+          `${response.statusText}: ${
+            response.data["errorMessage"] ? response.data["errorMessage"] : ""
+          } ${response.data["error"] ? response.data["error"] : ""}`
+        );
       }
-
-      ;
     } else {
       ContentAlert.danger(response.statusText);
     }
   }
 
   makeUrl(endpoint, config) {
-    if (endpoint.startsWith('http')) return new URL(endpoint);
+    if (endpoint.startsWith("http")) return new URL(endpoint);
     const url = new URL(this.accountUrl + endpoint); // add request params
 
-    if (config && config.hasOwnProperty('params')) {
+    if (config && config.hasOwnProperty("params")) {
       const params = config.params || {};
-      Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+      Object.keys(params).forEach((key) =>
+        url.searchParams.append(key, params[key])
+      );
     }
 
     return url;
   }
 
   makeConfig(config = {}) {
-    return new Promise(resolve => {
-      this.kcSvc.getToken().then(token => {
-        resolve({ ...config,
-          headers: {
-            'Content-Type': 'application/json',
-            ...config.headers,
-            Authorization: 'Bearer ' + token
-          }
+    return new Promise((resolve) => {
+      this.kcSvc
+        .getToken()
+        .then((token) => {
+          resolve({
+            ...config,
+            headers: {
+              "Content-Type": "application/json",
+              ...config.headers,
+              Authorization: "Bearer " + token,
+            },
+          });
+        })
+        .catch(() => {
+          this.kcSvc.login();
         });
-      }).catch(() => {
-        this.kcSvc.login();
-      });
     });
   }
-
 }
-window.addEventListener("unhandledrejection", event => {
-  event.promise.catch(error => {
+window.addEventListener("unhandledrejection", (event) => {
+  event.promise.catch((error) => {
     if (error instanceof AccountServiceError) {
       // We already handled the error. Ignore unhandled rejection.
       event.preventDefault();

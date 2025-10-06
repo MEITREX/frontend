@@ -25,9 +25,8 @@ export class AIACommand {
 
   execute() {
     this.keycloak.login({
-      action: this.action
+      action: this.action,
     });
   }
-
 }
 //# sourceMappingURL=AIACommand.js.map

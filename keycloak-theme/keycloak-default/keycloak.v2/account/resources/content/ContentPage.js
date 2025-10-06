@@ -14,7 +14,17 @@
  * limitations under the License.
  */
 import * as React from "../../../common/keycloak/web_modules/react.js";
-import { Button, Text, Title, Tooltip, PageSection, TextContent, PageSectionVariants, SplitItem, Split } from "../../../common/keycloak/web_modules/@patternfly/react-core.js";
+import {
+  Button,
+  Text,
+  Title,
+  Tooltip,
+  PageSection,
+  TextContent,
+  PageSectionVariants,
+  SplitItem,
+  Split,
+} from "../../../common/keycloak/web_modules/@patternfly/react-core.js";
 import { SyncAltIcon } from "../../../common/keycloak/web_modules/@patternfly/react-icons.js";
 import { Msg } from "../widgets/Msg.js";
 import { ContentAlert } from "./ContentAlert.js";
@@ -28,36 +38,80 @@ export class ContentPage extends React.Component {
   }
 
   render() {
-    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ContentAlert, null), /*#__PURE__*/React.createElement(PageSection, {
-      variant: PageSectionVariants.light,
-      className: "pf-u-pb-xs"
-    }, /*#__PURE__*/React.createElement(Split, null, /*#__PURE__*/React.createElement(SplitItem, {
-      isFilled: true
-    }, /*#__PURE__*/React.createElement(TextContent, null, /*#__PURE__*/React.createElement(Title, {
-      headingLevel: "h1",
-      size: "2xl",
-      className: "pf-u-mb-xl"
-    }, /*#__PURE__*/React.createElement(Msg, {
-      msgKey: this.props.title
-    })), this.props.introMessage && /*#__PURE__*/React.createElement(Text, {
-      component: "p"
-    }, /*#__PURE__*/React.createElement(Msg, {
-      msgKey: this.props.introMessage
-    })))), this.props.onRefresh && /*#__PURE__*/React.createElement(SplitItem, null, /*#__PURE__*/React.createElement(Tooltip, {
-      content: /*#__PURE__*/React.createElement(Msg, {
-        msgKey: "refreshPage"
-      })
-    }, /*#__PURE__*/React.createElement(Button, {
-      "aria-label": Msg.localize('refreshPage'),
-      id: "refresh-page",
-      variant: "link",
-      onClick: this.props.onRefresh,
-      icon: /*#__PURE__*/React.createElement(SyncAltIcon, null)
-    }, /*#__PURE__*/React.createElement(Msg, {
-      msgKey: "refresh"
-    })))))), this.props.children);
+    return /*#__PURE__*/ React.createElement(
+      React.Fragment,
+      null,
+      /*#__PURE__*/ React.createElement(ContentAlert, null),
+      /*#__PURE__*/ React.createElement(
+        PageSection,
+        {
+          variant: PageSectionVariants.light,
+          className: "pf-u-pb-xs",
+        },
+        /*#__PURE__*/ React.createElement(
+          Split,
+          null,
+          /*#__PURE__*/ React.createElement(
+            SplitItem,
+            {
+              isFilled: true,
+            },
+            /*#__PURE__*/ React.createElement(
+              TextContent,
+              null,
+              /*#__PURE__*/ React.createElement(
+                Title,
+                {
+                  headingLevel: "h1",
+                  size: "2xl",
+                  className: "pf-u-mb-xl",
+                },
+                /*#__PURE__*/ React.createElement(Msg, {
+                  msgKey: this.props.title,
+                })
+              ),
+              this.props.introMessage &&
+                /*#__PURE__*/ React.createElement(
+                  Text,
+                  {
+                    component: "p",
+                  },
+                  /*#__PURE__*/ React.createElement(Msg, {
+                    msgKey: this.props.introMessage,
+                  })
+                )
+            )
+          ),
+          this.props.onRefresh &&
+            /*#__PURE__*/ React.createElement(
+              SplitItem,
+              null,
+              /*#__PURE__*/ React.createElement(
+                Tooltip,
+                {
+                  content: /*#__PURE__*/ React.createElement(Msg, {
+                    msgKey: "refreshPage",
+                  }),
+                },
+                /*#__PURE__*/ React.createElement(
+                  Button,
+                  {
+                    "aria-label": Msg.localize("refreshPage"),
+                    id: "refresh-page",
+                    variant: "link",
+                    onClick: this.props.onRefresh,
+                    icon: /*#__PURE__*/ React.createElement(SyncAltIcon, null),
+                  },
+                  /*#__PURE__*/ React.createElement(Msg, {
+                    msgKey: "refresh",
+                  })
+                )
+              )
+            )
+        )
+      ),
+      this.props.children
+    );
   }
-
 }
-;
 //# sourceMappingURL=ContentPage.js.map

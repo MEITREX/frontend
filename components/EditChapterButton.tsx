@@ -11,7 +11,6 @@ import { EditChapterButtonMutation } from "@/__generated__/EditChapterButtonMuta
 import { DialogBase } from "./DialogBase";
 import { dialogSections, validationSchema } from "./dialogs/chapterDialog";
 
-
 export default function EditChapterButton({
   courseId,
   _chapter,

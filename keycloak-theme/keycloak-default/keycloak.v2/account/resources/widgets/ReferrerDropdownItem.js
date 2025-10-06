@@ -27,12 +27,16 @@ export class ReferrerDropdownItem extends React.Component {
   }
 
   render() {
-    return /*#__PURE__*/React.createElement(DropdownItem, {
-      id: "referrerMobileLink",
-      href: referrerUri
-    }, /*#__PURE__*/React.createElement(ArrowIcon, null), " ", Msg.localize('backTo', [referrerName]));
+    return /*#__PURE__*/ React.createElement(
+      DropdownItem,
+      {
+        id: "referrerMobileLink",
+        href: referrerUri,
+      },
+      /*#__PURE__*/ React.createElement(ArrowIcon, null),
+      " ",
+      Msg.localize("backTo", [referrerName])
+    );
   }
-
 }
-;
 //# sourceMappingURL=ReferrerDropdownItem.js.map
