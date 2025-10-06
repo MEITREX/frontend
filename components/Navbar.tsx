@@ -638,18 +638,35 @@ function UserInfo({
             </Tooltip>
           }
         >
-          <Tooltip title="Profile" placement="right">
-            <ListItemAvatar>
-            <Link href={"/profile"}>
-              <ProfilePicAndBorder
-                height={50}
-                profilePicFrame={profilePicFrame}
-                profilePic={profilePic}
+          <Tooltip title="View Profile" placement="right">
+            <Box
+              component={Link}
+              href="/profile"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                flexGrow: 1, // Allows the box to take up available space
+                textDecoration: "none",
+                color: "inherit",
+              }}
+            >
+              <ListItemAvatar>
+                {/* The <Link> wrapper is no longer needed here */}
+                <ProfilePicAndBorder
+                  height={50}
+                  profilePicFrame={profilePicFrame}
+                  profilePic={profilePic}
+                />
+              </ListItemAvatar>
+              <ListItemText
+                // The primary prop is now just the name string
+                primary={
+                  auth.user?.profile?.name ??
+                  auth.user?.profile?.preferred_username
+                }
               />
-            </Link>
-          </ListItemAvatar>
+            </Box>
           </Tooltip>
-          <ListItemText primary={auth.user?.profile?.name ?? auth.user?.profile?.preferred_username} />
           <Tooltip title="Settings" placement="left">
             <Link href="/settings/gamification">
               <IconButton>
