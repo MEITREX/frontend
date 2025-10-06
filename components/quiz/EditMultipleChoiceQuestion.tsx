@@ -15,7 +15,7 @@ import {
 import {
   MultipleChoiceQuestionData,
   MultipleChoiceQuestionModal,
-} from "./MutlipleChoiceQuestionModal";
+} from "./MultipleChoiceQuestionModal";
 
 const MultipleChoiceQuestionFragment = graphql`
   fragment EditMultipleChoiceQuestionFragment on MultipleChoiceQuestion {

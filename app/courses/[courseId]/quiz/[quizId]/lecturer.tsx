@@ -6,6 +6,7 @@ import { QuizModal } from "@/components/QuizModal";
 import { AddQuestionButton } from "@/components/quiz/AddQuestionButton";
 import QuestionPreview from "@/components/quiz/QuestionPreview";
 import QuizHeader from "@/components/quiz/QuizHeader";
+import { Alert, AlertTitle } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { graphql, useLazyLoadQuery, useQueryLoader } from "react-relay";
@@ -37,6 +38,10 @@ const RootQuery = graphql`
             ...AssociationQuestionPreviewFragment
           }
           ...QuizModalFragment
+
+          requiredCorrectAnswers
+          numberOfRandomlySelectedQuestions
+          questionPoolingMode
         }
         items {
           id
@@ -84,6 +89,15 @@ export default function LecturerQuiz() {
       />
     );
   }
+
+  const totalQuestions = quiz.questionPool.length;
+
+  const notEnoughToPass = totalQuestions < quiz.requiredCorrectAnswers;
+
+  const notEnoughForRandom =
+    quiz.questionPoolingMode === "RANDOM" &&
+    totalQuestions < quiz.numberOfRandomlySelectedQuestions!;
+
   return (
     <main>
       <ErrorContext.Provider value={errorContext}>
@@ -91,6 +105,31 @@ export default function LecturerQuiz() {
           openEditQuizModal={() => setEditSetModalOpen(true)}
           content={content}
         />
+
+        <>
+          {(notEnoughToPass || notEnoughForRandom) && (
+            <Alert severity="error">
+              <AlertTitle>Configuration Warning</AlertTitle>
+              <ul>
+                {notEnoughToPass && (
+                  <li>
+                    <strong>A student can never pass this quiz.</strong> The
+                    number of available questions is less than the required
+                    correct answers to pass ({quiz.requiredCorrectAnswers}{" "}
+                    questions needed).
+                  </li>
+                )}
+                {notEnoughForRandom && (
+                  <li>
+                    This quiz is set to randomly select{" "}
+                    {quiz.numberOfRandomlySelectedQuestions} questions, but only{" "}
+                    {totalQuestions} are available in the question pool.
+                  </li>
+                )}
+              </ul>
+            </Alert>
+          )}
+        </>
 
         <div className="mt-8 flex flex-col items-stretch">
           {quiz.questionPool.map((question, i) => (

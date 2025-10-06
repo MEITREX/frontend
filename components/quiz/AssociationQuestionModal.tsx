@@ -112,6 +112,8 @@ export function AssociationQuestionModal({
     [setQuestionData]
   );
 
+  const isItemValid =
+    item.associatedSkills.length > 0 && item.associatedBloomLevels.length > 0;
   const hatAtLeastTwoItems = useMemo(
     () => questionData.correctAssociations.length >= 2,
     [questionData.correctAssociations]
@@ -127,7 +129,7 @@ export function AssociationQuestionModal({
     [questionData.correctAssociations]
   );
 
-  const valid = hasTitle && hatAtLeastTwoItems && allItemsFilled;
+  const valid = hasTitle && hatAtLeastTwoItems && allItemsFilled && isItemValid;
 
   return (
     <Dialog open={open} maxWidth="lg" onClose={onClose}>
@@ -140,6 +142,7 @@ export function AssociationQuestionModal({
             item={item}
             setItem={setItem}
             allSkillsQueryRef={allSkillsQueryRef}
+            required
           />
           <FormSection title="Question">
             <RichTextEditor
@@ -157,10 +160,10 @@ export function AssociationQuestionModal({
                 {questionData.correctAssociations.map((elem, i) => (
                   <div key={i} className="flex items-center">
                     <div className="flex flex-col items-center">
-                      <div className="flex items-end relative pl-2">
+                      <div className="flex items-end relative pl-2 w-full">
                         <div className="absolute left-0 top-1/2 h-1/2 w-2 mt-1.5 border-t border-l border-gray-400 rounded-tl-sm"></div>
                         <RichTextEditor
-                          className="w-[650px]"
+                          className="w-[655px]"
                           _allRecords={_allRecords}
                           label="Left"
                           initialValue={elem.left}
@@ -173,7 +176,7 @@ export function AssociationQuestionModal({
                       <div className="flex items-end relative pl-2 pt-3 -mt-2">
                         <div className="absolute left-0 bottom-1/2 h-1/2 w-2 -mb-2.5 border-b border-l border-gray-400 rounded-tl-sm"></div>
                         <RichTextEditor
-                          className="w-[650px]"
+                          className="w-[655px]"
                           _allRecords={_allRecords}
                           label="Right"
                           initialValue={elem.right}
@@ -230,17 +233,12 @@ export function AssociationQuestionModal({
       </DialogContent>
       <DialogActions>
         <div className="text-red-600 text-xs mr-3">
+          {!isItemValid && <div>Item Information is not valid yet</div>}
           {!hatAtLeastTwoItems && <div>Add at least two items</div>}
           {hatAtLeastTwoItems && !allItemsFilled && (
             <div>All items need a text</div>
           )}
           {!hasTitle && <div>A title is required</div>}
-          {item.associatedBloomLevels.length < 1 && (
-            <div>Level of Blooms Taxonomy are required</div>
-          )}
-          {item.associatedSkills.length < 1 && (
-            <div>At least one skill is required</div>
-          )}
         </div>
         <Button disabled={isLoading} onClick={onClose}>
           Cancel

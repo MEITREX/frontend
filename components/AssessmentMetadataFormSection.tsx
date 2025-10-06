@@ -1,3 +1,4 @@
+import { BloomLevel } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
 import { SkillType } from "@/__generated__/AddFlashcardSetModalMutation.graphql";
 import {
   Checkbox,
@@ -13,13 +14,10 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import AssessmentDetailsSkillSection, {
+  AssessmentDetailsSkillSectionProps,
+} from "./AssessmentDetailsSkillSection";
 import { FormSection } from "./Form";
-import { AssessmentDetailsSkillSectionProps } from "./AssessmentDetailsSkillSection";
-import { BloomLevel } from "@/__generated__/AddAssociationQuestionModalMutation.graphql";
-import AssessmentDetailsSkillSection from "./AssessmentDetailsSkillSection";
-import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.graphql";
-import { useQueryLoader } from "react-relay";
-import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 
 export type AssessmentMetadataPayload = {
   skillTypes: readonly SkillType[];
@@ -76,7 +74,7 @@ export function AssessmentMetadataFormSection({
   return (
     <FormSection title="Assessment details">
       <FormControl variant="outlined">
-        <InputLabel htmlFor="assessmentSkillTypeInput">Skill Type</InputLabel>
+        <InputLabel htmlFor="assessmentSkillTypeInput">Skill Type *</InputLabel>
 
         <Select
           className="min-w-[16rem] "
