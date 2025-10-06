@@ -79,7 +79,6 @@ export const dialogSections: (
   },
 ];
 
-
 function transformInvalidDate(value: any, originalValue: any) {
   // check if data is invalid
   if (!value || isNaN(value.getTime())) {
@@ -107,7 +106,7 @@ export const validationSchema: (
       .max(courseEnd, "Must be before the course end date"),
     suggestedStartDate: yup
       .date()
-       .transform((value, originalValue) => {
+      .transform((value, originalValue) => {
         return transformInvalidDate(value, originalValue);
       })
       .required("Required")
