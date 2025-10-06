@@ -73,7 +73,7 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
  * Note if you need SSR use a different layout and make sure it does not require authentication
  *
  */
-export default dynamic(() => Promise.resolve(App), {
+dynamic(() => Promise.resolve(Body), {
   ssr: false
 });
 
@@ -96,14 +96,9 @@ function oidcConfig(): AuthProviderProps {
   };
 }
 
-function App({ children }: { children: React.ReactNode }) {
+function Body({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de" className="h-full overflow-hidden">
-      <head>
-        <title>MEITREX</title>
-      </head>
-      <body className="h-full">
-        <AuthProvider {...oidcConfig()}>
+    <AuthProvider {...oidcConfig()}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DndProvider backend={HTML5Backend}>
               <SigninContent>
@@ -114,6 +109,21 @@ function App({ children }: { children: React.ReactNode }) {
             </DndProvider>
           </LocalizationProvider>
         </AuthProvider>
+  )
+}
+
+const BodyDynamic = dynamic(() => Promise.resolve(Body), {
+  ssr: false
+});
+
+export default function App({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="de" className="h-full overflow-hidden">
+      <head>
+        <title>MEITREX</title>
+      </head>
+      <body className="h-full">
+        <BodyDynamic>{children}</BodyDynamic>
       </body>
     </html>
   );
