@@ -76,8 +76,6 @@ export default function LecturerQuiz() {
   const content = contentsByIds[0];
   const quiz = content.quiz;
 
-  console.log(quiz);
-
   if (!quiz) {
     return (
       <PageError

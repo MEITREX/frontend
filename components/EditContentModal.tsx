@@ -185,7 +185,6 @@ export function EditContentModal({
     setOpenCodeAssignmentModal(true);
   };
 
-  console.log(chapter);
   return (
     <>
       <Button startIcon={<EditNote />} onClick={() => setOpenModal(true)}>
