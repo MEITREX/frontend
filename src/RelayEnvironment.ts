@@ -1,13 +1,13 @@
+import { Client, createClient } from "graphql-ws";
 import { useAuth } from "react-oidc-context";
 import {
   Environment,
   FetchFunction,
   Network,
+  Observable,
   RecordSource,
   Store,
-  Observable,
 } from "relay-runtime";
-import { createClient, Client } from "graphql-ws";
 useAuth;
 
 const HTTP_ENDPOINT =
