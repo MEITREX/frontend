@@ -24,7 +24,7 @@ export function GamificationRouteGuard({ children }: Props) {
   const gamificationDisabled = auth.user?.profile?.gamification_type === "none";
 
   const isProtectedRoute = protectedRoutes.some((route) =>
-    path.startsWith(route)
+    path.includes(route)
   );
 
   useEffect(() => {
