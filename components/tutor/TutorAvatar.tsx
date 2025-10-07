@@ -5,20 +5,40 @@ import { useLazyLoadQuery } from "react-relay";
 import { WidgetApiItemInventoryForUserQuery } from "@/__generated__/WidgetApiItemInventoryForUserQuery.graphql";
 import { widgetApiItemInventoryForUserQuery } from "@/components/widgets/api/WidgetApi";
 import { Box } from "@mui/material";
+import { useAuth } from "react-oidc-context";
+import  logo  from "@/assets/logo.svg"
 
 export default function TutorAvatar() {
+  const auth = useAuth();
+  const isGamificationDisabled =
+    auth.user?.profile?.gamification_type === "none";
+
   const { inventoryForUser } =
     useLazyLoadQuery<WidgetApiItemInventoryForUserQuery>(
       widgetApiItemInventoryForUserQuery,
       { fetchPolicy: "network-only" }
     );
-  const tutor = getUnlockedItemAndEquiped(inventoryForUser, "tutors");
+
+  let avatarProps;
+
+  if (isGamificationDisabled) {
+    avatarProps = {
+      src: logo,
+      alt: "Logo",
+    };
+  } else {
+    const tutor = getUnlockedItemAndEquiped(inventoryForUser, "tutors");
+    avatarProps = {
+      src: tutor?.url ?? logo, // benutze tutor.url oder das Logo als Fallback
+      alt: tutor?.name ?? "Tutor Avatar",
+    };
+  }
   return (
     <div className="avatar-container" draggable={false}>
       <Box width="80px" height="80px">
         <Image
-          src={tutor?.url as string}
-          alt={tutor?.name as string}
+          src={avatarProps.src as string}
+          alt={avatarProps.alt as string}
           fill
           className="avatar-img"
           style={{ objectFit: "contain" }}
