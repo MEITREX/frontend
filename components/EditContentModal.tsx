@@ -25,19 +25,29 @@ import {
   Switch,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { useEffect, useState } from "react";
 import { graphql, useFragment, useMutation, useQueryLoader } from "react-relay";
 import { AddCodeAssignmentModal } from "./AddCodeAssignmentModal";
 import { MediaContentModal } from "./MediaContentModal";
 import { QuizModal } from "./QuizModal";
 import { SubmissionExerciseModal } from "./SubmissionExerciseModal";
 
-type Props = {
+export function EditContentModal({
+  chapterId,
+  stageId,
+  sectionId,
+  _chapter,
+  _mediaRecords,
+  optionalRecords: _optionalRecords,
+  requiredRecords: _requiredRecords,
+  courseId,
+}: {
   chapterId: string;
   sectionId: string;
   stageId: string;
   _mediaRecords: MediaRecordSelector$key;
   _chapter: EditContentModalFragment$key;
+
   optionalRecords: string[];
   requiredRecords: string[];
   courseId: string;
@@ -49,27 +59,24 @@ type Props = {
   const [openSubmissionExerciseModal, setOpenSubmissionExerciseModal] =
     useState(false);
 
-    useImperativeHandle(ref, () => ({
-      open: () => setOpenModal(true),
-    }));
+  const [openModal, setOpenModal] = useState(false);
 
-    const [allSkillsQueryRef, loadAllSkillsQuery] =
-      useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
+  const [allSkillsQueryRef, loadAllSkillsQuery] =
+    useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
 
-    const chapter = useFragment(
-      graphql`
-        fragment EditContentModalFragment on Chapter {
-          ...AddFlashcardSetModalFragment
-          sections {
+  const chapter = useFragment(
+    graphql`
+      fragment EditContentModalFragment on Chapter {
+        ...AddFlashcardSetModalFragment
+        sections {
+          id
+          stages {
             id
-            stages {
+            optionalContents {
               id
-              optionalContents {
-                id
-              }
-              requiredContents {
-                id
-              }
+            }
+            requiredContents {
+              id
             }
           }
         }
@@ -96,80 +103,80 @@ type Props = {
               assignmentType
             }
           }
-          contentsWithNoSection {
+        }
+        contentsWithNoSection {
+          id
+        }
+      }
+    `,
+    _chapter
+  );
+
+  const [optionalRecords, setOptionalRecords] = useState(_optionalRecords);
+  const [requiredRecords, setRequiredRecords] = useState(_requiredRecords);
+
+  const [updateStage, loading] =
+    useMutation<EditContentModalUpdateStageMutation>(graphql`
+      mutation EditContentModalUpdateStageMutation(
+        $stage: UpdateStageInput!
+        $sectionId: UUID!
+      ) {
+        mutateSection(sectionId: $sectionId) {
+          updateStage(input: $stage) {
             id
+            ...LecturerSectionStageFragment
           }
         }
-      `,
-      _chapter
-    );
+      }
+    `);
 
-    const [optionalRecords, setOptionalRecords] = useState(_optionalRecords);
-    const [requiredRecords, setRequiredRecords] = useState(_requiredRecords);
+  useEffect(() => {
+    setOptionalRecords(_optionalRecords);
+  }, [_optionalRecords]);
 
-    const [updateStage, loading] =
-      useMutation<EditContentModalUpdateStageMutation>(graphql`
-        mutation EditContentModalUpdateStageMutation(
-          $stage: UpdateStageInput!
-          $sectionId: UUID!
-        ) {
-          mutateSection(sectionId: $sectionId) {
-            updateStage(input: $stage) {
-              id
-              ...LecturerSectionStageFragment
-            }
-          }
-        }
-      `);
+  useEffect(() => {
+    setRequiredRecords(_requiredRecords);
+  }, [_requiredRecords]);
 
-    useEffect(() => {
-      setOptionalRecords(_optionalRecords);
-    }, [_optionalRecords]);
+  const router = useRouter();
 
-    useEffect(() => {
-      setRequiredRecords(_requiredRecords);
-    }, [_requiredRecords]);
+  const [error, setError] = useState<any>(null);
 
-    const router = useRouter();
-
-    const [error, setError] = useState<any>(null);
-
-    const submit = () => {
-      updateStage({
-        variables: {
-          sectionId,
-          stage: {
-            id: stageId,
-            requiredContents: requiredRecords,
-            optionalContents: optionalRecords,
-          },
+  const submit = () => {
+    updateStage({
+      variables: {
+        sectionId,
+        stage: {
+          id: stageId,
+          requiredContents: requiredRecords,
+          optionalContents: optionalRecords,
         },
-        onError: setError,
-        onCompleted() {
-          setOpenModal(false);
-        },
-        updater(store) {
-          const root = store.get(chapterId);
-          if (!root) return;
+      },
+      onError: setError,
+      onCompleted() {
+        setOpenModal(false);
+      },
+      updater(store) {
+        const root = store.get(chapterId);
+        if (!root) return;
 
-          const prevOther = chapter.contentsWithNoSection.map((x) => x.id);
-          const prevSelected = [..._optionalRecords, ..._requiredRecords];
-          const newSelected = [...optionalRecords, ...requiredRecords];
+        const prevOther = chapter.contentsWithNoSection.map((x) => x.id);
+        const prevSelected = [..._optionalRecords, ..._requiredRecords];
+        const newSelected = [...optionalRecords, ...requiredRecords];
 
-          const toAdd = prevSelected.filter((x) => !newSelected.includes(x));
-          const toRemove = prevOther.filter((x) => newSelected.includes(x));
+        const toAdd = prevSelected.filter((x) => !newSelected.includes(x));
+        const toRemove = prevOther.filter((x) => newSelected.includes(x));
 
-          const contents =
-            root?.getLinkedRecords("contentsWithNoSection") ?? [];
-          const newContents = [
-            ...contents.filter((x) => !toRemove.includes(x.getDataID())),
-            ...toAdd.map((x) => store.get(x)!),
-          ];
+        const contents = root?.getLinkedRecords("contentsWithNoSection") ?? [];
+        const newContents = [
+          ...contents.filter((x) => !toRemove.includes(x.getDataID())),
+          ...toAdd.map((x) => store.get(x)!),
+        ];
 
-          root.setLinkedRecords(newContents, "contentsWithNoSection");
-        },
-      });
-    };
+        root.setLinkedRecords(newContents, "contentsWithNoSection");
+      },
+    });
+  };
 
   const openCodeAssignment = () => {
     if (!allSkillsQueryRef) {
@@ -184,123 +191,84 @@ type Props = {
         Edit content
       </Button>
 
-        <Dialog
-          maxWidth="lg"
-          open={openModal}
-          onClose={() => setOpenModal(false)}
-        >
-          <DialogTitle>Select content</DialogTitle>
-          <DialogContent sx={{ paddingX: 0 }}>
-            {error?.source.errors.map((err: any, i: number) => (
-              <Alert
-                key={i}
-                severity="error"
-                sx={{ minWidth: 400, maxWidth: 800, width: "fit-content" }}
-                onClose={() => setError(null)}
-              >
-                {err.message}
-              </Alert>
-            ))}
+      <Dialog
+        maxWidth="lg"
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+      >
+        <DialogTitle>Select content</DialogTitle>
+        <DialogContent sx={{ paddingX: 0 }}>
+          {error?.source.errors.map((err: any, i: number) => (
+            <Alert
+              key={i}
+              severity="error"
+              sx={{ minWidth: 400, maxWidth: 800, width: "fit-content" }}
+              onClose={() => setError(null)}
+            >
+              {err.message}
+            </Alert>
+          ))}
 
-            <List className="min-w-[500px]">
-              {chapter.contents.map((content) => {
-                const optional = optionalRecords.find((x) => x === content.id);
-                const required = requiredRecords.find((x) => x === content.id);
+          <List className="min-w-[500px]">
+            {chapter.contents.map((content) => {
+              const optional = optionalRecords.find((x) => x === content.id);
+              const required = requiredRecords.find((x) => x === content.id);
 
-                const partOfOtherStage = chapter.sections
-                  .flatMap((s) => s.stages)
-                  .filter((s) => s.id !== stageId)
-                  .some(
-                    (s) =>
-                      s.optionalContents.some((c) => c.id === content.id) ||
-                      s.requiredContents.some((c) => c.id === content.id)
-                  );
+              const partOfOtherStage = chapter.sections
+                .flatMap((s) => s.stages)
+                .filter((s) => s.id !== stageId)
+                .some(
+                  (s) =>
+                    s.optionalContents.some((c) => c.id === content.id) ||
+                    s.requiredContents.some((c) => c.id === content.id)
+                );
 
-                const toggle =
-                  optional || required
-                    ? () => {
-                        setOptionalRecords(
-                          optionalRecords.filter((x) => x !== content.id)
-                        );
-                        setRequiredRecords(
-                          requiredRecords.filter((x) => x !== content.id)
-                        );
-                      }
-                    : () => {
-                        setRequiredRecords([...requiredRecords, content.id]);
-                      };
-
-                const checked = optional || required;
-
-                const toggleOptional = optional
+              const toggle =
+                optional || required
                   ? () => {
                       setOptionalRecords(
                         optionalRecords.filter((x) => x !== content.id)
                       );
-                      setRequiredRecords([...requiredRecords, content.id]);
-                    }
-                  : () => {
-                      setOptionalRecords([...optionalRecords, content.id]);
                       setRequiredRecords(
                         requiredRecords.filter((x) => x !== content.id)
                       );
+                    }
+                  : () => {
+                      setRequiredRecords([...requiredRecords, content.id]);
                     };
 
-                return (
-                  <ListItem
-                    key={content.id}
-                    secondaryAction={
-                      <div className="mr-2 flex gap-x-3">
-                        {checked && (
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={!!required}
-                                onClick={toggleOptional}
-                              />
-                            }
-                            label={required ? "Required" : "Optional"}
-                          />
-                        )}
+              const checked = optional || required;
 
-                        <IconButton
-                          edge="end"
-                          onClick={() =>
-                            router.push(
-                              content.__typename === "FlashcardSetAssessment"
-                                ? `/courses/${courseId}/flashcards/${content.id}`
-                                : content.__typename === "MediaContent"
-                                ? `/courses/${courseId}/media/${content.id}`
-                                : content.__typename === "QuizAssessment"
-                                ? `/courses/${courseId}/quiz/${content.id}`
-                                : content.__typename ===
-                                    "AssignmentAssessment" &&
-                                  content.assignment?.assignmentType ===
-                                    "CODE_ASSIGNMENT"
-                                ? `/courses/${courseId}/assignment/${content.id}`
-                                : ""
-                            )
+              const toggleOptional = optional
+                ? () => {
+                    setOptionalRecords(
+                      optionalRecords.filter((x) => x !== content.id)
+                    );
+                    setRequiredRecords([...requiredRecords, content.id]);
+                  }
+                : () => {
+                    setOptionalRecords([...optionalRecords, content.id]);
+                    setRequiredRecords(
+                      requiredRecords.filter((x) => x !== content.id)
+                    );
+                  };
+
+              return (
+                <ListItem
+                  key={content.id}
+                  secondaryAction={
+                    <div className="mr-2 flex gap-x-3">
+                      {checked && (
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={!!required}
+                              onClick={toggleOptional}
+                            />
                           }
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                      </div>
-                    }
-                    disablePadding
-                  >
-                    <ListItemButton
-                      onClick={toggle}
-                      disabled={partOfOtherStage}
-                      className="!pl-6"
-                    >
-                      <ListItemIcon>
-                        <Checkbox
-                          edge="start"
-                          checked={!!checked}
-                          tabIndex={-1}
-                          disableRipple
+                          label={required ? "Required" : "Optional"}
                         />
-                      </ListItemIcon>
+                      )}
 
                       <IconButton
                         edge="end"
@@ -321,13 +289,39 @@ type Props = {
                               : ""
                           )
                         }
+                      >
+                        <Edit fontSize="small" />
+                      </IconButton>
+                    </div>
+                  }
+                  disablePadding
+                >
+                  <ListItemButton
+                    onClick={toggle}
+                    disabled={partOfOtherStage}
+                    className="!pl-6"
+                  >
+                    <ListItemIcon>
+                      <Checkbox
+                        edge="start"
+                        checked={!!checked}
+                        tabIndex={-1}
+                        disableRipple
                       />
-                    </ListItemButton>
-                  </ListItem>
-                );
-              })}
-            </List>
-          </DialogContent>
+                    </ListItemIcon>
+
+                    <ListItemText
+                      primary={content.metadata.name}
+                      secondary={
+                        partOfOtherStage ? "Already part of another stage" : ""
+                      }
+                    />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
+          </List>
+        </DialogContent>
 
         <DialogContent>
           {/* add flashcard button */}
@@ -379,17 +373,30 @@ type Props = {
         </DialogActions>
       </Dialog>
 
-        <MediaContentModal
-          chapterId={chapterId}
-          isOpen={openMediaModal}
-          onClose={() => setOpenMediaModal(false)}
-          _mediaRecords={_mediaRecords}
+      <MediaContentModal
+        chapterId={chapterId}
+        isOpen={openMediaModal}
+        onClose={() => setOpenMediaModal(false)}
+        _mediaRecords={_mediaRecords}
+      />
+      <QuizModal
+        isOpen={openAddQuizModal}
+        onClose={() => setOpenAddQuizModal(false)}
+        chapterId={chapterId}
+        _existingQuiz={null}
+      />
+      {openFlashcardModal && (
+        <AddFlashcardSetModal
+          onClose={() => setOpenFlashcardModal(false)}
+          _chapter={chapter}
         />
-        <QuizModal
-          isOpen={openAddQuizModal}
-          onClose={() => setOpenAddQuizModal(false)}
+      )}
+      {openCodeAssignmentModal && allSkillsQueryRef && (
+        <AddCodeAssignmentModal
+          onClose={() => setOpenCodeAssignmentModal(false)}
           chapterId={chapterId}
-          _existingQuiz={null}
+          courseId={courseId}
+          allSkillsQueryRef={allSkillsQueryRef}
         />
       )}
       <SubmissionExerciseModal
