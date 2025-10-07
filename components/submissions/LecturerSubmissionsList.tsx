@@ -32,7 +32,12 @@ import { alpha } from "@mui/material/styles";
 import { useMemo, useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
-type SubmissionInfo = { assessmentId: string; name: string };
+type SubmissionInfo = {
+  assessmentId: string;
+  name: string;
+  isOtherContent?: boolean;
+};
+
 type Props = {
   courseId: string;
   submissions: SubmissionInfo[];
@@ -495,6 +500,11 @@ export default function LecturerSubmissionsList({
   courseId,
   submissions,
 }: Props) {
+  const visibleSubmissions = useMemo(
+    () => submissions.filter((s) => !s.isOtherContent),
+    [submissions]
+  );
+
   const [selectedId, setSelectedId] = useState<string>("ALL");
   const [search, setSearch] = useState<string>("");
 
@@ -502,13 +512,13 @@ export default function LecturerSubmissionsList({
     const l = search.trim().toLowerCase();
     const base =
       selectedId === "ALL"
-        ? submissions
-        : submissions.filter((s) => s.assessmentId === selectedId);
+        ? visibleSubmissions
+        : visibleSubmissions.filter((s) => s.assessmentId === selectedId);
     if (!l) return base;
     return base.filter((s) => s.name.toLowerCase().includes(l));
-  }, [submissions, selectedId, search]);
+  }, [visibleSubmissions, selectedId, search]);
 
-  if (!submissions.length) {
+  if (!visibleSubmissions.length) {
     return (
       <Typography color="text.secondary">
         No Submissions were created in this course yet.
@@ -532,7 +542,7 @@ export default function LecturerSubmissionsList({
             onChange={(e) => setSelectedId(e.target.value)}
           >
             <MenuItem value="ALL">All</MenuItem>
-            {submissions.map((s) => (
+            {visibleSubmissions.map((s) => (
               <MenuItem key={s.assessmentId} value={s.assessmentId}>
                 {s.name}
               </MenuItem>
