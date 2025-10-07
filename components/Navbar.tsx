@@ -27,11 +27,17 @@ import {
   CollectionsBookmark,
   Dashboard,
   Logout,
+  ManageSearch,
+  Notifications,
   Search,
   Settings,
 } from "@mui/icons-material";
+
 import {
   Autocomplete,
+  Avatar,
+  Badge,
+  Button,
   Box,
   Chip,
   CircularProgress,
@@ -57,27 +63,61 @@ import type {
 
 import { chain, debounce } from "lodash";
 import { usePathname, useRouter } from "next/navigation";
-import {
+
+import React, {
   ReactElement,
-  useCallback,
   useEffect,
+  useCallback,
   useRef,
   useState,
   useTransition,
 } from "react";
 import { useAuth } from "react-oidc-context";
 import {
-  fetchQuery,
   graphql,
+  fetchQuery,
   useFragment,
   useLazyLoadQuery,
+  useSubscription,
   useRelayEnvironment,
 } from "react-relay";
+import NotificationsWithArrow from "./navbar/notifications/NotificationsWithArrow";
+import { NavbarNotificationsQuery } from "@/__generated__/NavbarNotificationsQuery.graphql";
 import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
+
+const NAVBAR_NOTIFICATIONS_QUERY = graphql`
+  query NavbarNotificationsQuery {
+    currentUserInfo {
+      id
+      notificationUnreadCount
+      notifications {
+        id
+        title
+        description
+        href
+        createdAt
+        read
+      }
+    }
+  }
+`;
+
+const NAVBAR_NOTIFICATION_ADDED_SUB = graphql`
+  subscription NavbarNotificationAddedSubscription($userId: UUID!) {
+    notificationAdded(userId: $userId) {
+      id
+      title
+      description
+      href
+      createdAt
+      read
+    }
+  }
+`;
 
 /** ---------------- Utilities ---------------- */
 function useIsTutor(_frag: NavbarIsTutor$key) {
-  const { realmRoles, courseMemberships } = useFragment(
+  const data = useFragment(
     graphql`
       fragment NavbarIsTutor on UserInfo {
         realmRoles
@@ -88,11 +128,15 @@ function useIsTutor(_frag: NavbarIsTutor$key) {
     `,
     _frag
   );
+  const realmRoles = Array.isArray(data?.realmRoles) ? data.realmRoles : [];
+  const courseMemberships = Array.isArray(data?.courseMemberships)
+    ? data.courseMemberships
+    : [];
   return (
     realmRoles.includes("SUPER_USER") ||
     realmRoles.includes("COURSE_CREATOR") ||
     courseMemberships.some(
-      (x) => x.role === "TUTOR" || x.role === "ADMINISTRATOR"
+      (x) => x && (x.role === "TUTOR" || x.role === "ADMINISTRATOR")
     )
   );
 }
@@ -107,11 +151,11 @@ type SearchResultType = {
 /** ---------------- Navbar Shell ---------------- */
 function NavbarBase({
   children,
-  _isTutor,
+  tutor,
   userId,
 }: {
   children: React.ReactNode;
-  _isTutor: NavbarIsTutor$key;
+  tutor: boolean;
   userId: string;
 }) {
   const [term, setTerm] = useState("");
@@ -195,7 +239,6 @@ function NavbarBase({
 
   const [isPending, startTransition] = useTransition();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSetter = useCallback(
     debounce((value: string) => startTransition(() => setTerm(value)), 150),
     [setTerm, startTransition]
@@ -357,7 +400,7 @@ function NavbarBase({
       </NavbarSection>
 
       {children}
-      <UserInfo _isTutor={_isTutor} userId={userId} />
+      <UserInfo tutor={tutor} userId={userId} />
     </div>
   );
 }
@@ -440,18 +483,40 @@ function SwitchPageViewButton(): JSX.Element | null {
   }
 }
 
-/** ---------------- User Panel with XP + Avatar ---------------- */
-function UserInfo({
-  _isTutor,
-  userId,
-}: {
-  _isTutor: NavbarIsTutor$key;
-  userId: string;
-}) {
+function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
   const auth = useAuth();
-  const clearChat = useAITutorStore((state) => state.clearChat);
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const clearChat = useAITutorStore((s) => s.clearChat);
   const { points } = useCurrency();
-  const tutor = useIsTutor(_isTutor);
+  const notifData = useLazyLoadQuery<NavbarNotificationsQuery>(
+    NAVBAR_NOTIFICATIONS_QUERY,
+    {},
+    { fetchPolicy: "store-and-network" }
+  );
+
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    const list = notifData?.currentUserInfo?.notifications ?? [];
+    setNotifications([...list]);
+  }, [notifData]);
+
+  useSubscription({
+    subscription: NAVBAR_NOTIFICATION_ADDED_SUB,
+    variables: { userId },
+    onNext: (ev: any) => {
+      const n = ev?.notificationAdded;
+      if (!n) return;
+      setNotifications((prev) => [n, ...prev]);
+    },
+  });
+
+  const handleOpenNotifications = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const unreadCount = (notifications ?? []).filter((n) => !n.read).length;
 
   // Inventory/profile picture (from origin/main)
   const { inventoryForUser } =
@@ -633,6 +698,21 @@ function UserInfo({
           <Link href={"/profile"}>
             <ListItemText primary={auth.user?.profile?.name} />
           </Link>
+          <Tooltip title="Notifications" placement="left">
+            <IconButton onClick={handleOpenNotifications}>
+              <Badge
+                badgeContent={unreadCount}
+                color="error"
+                max={99}
+                overlap="circular"
+                sx={{
+                  zIndex: 2,
+                }}
+              >
+                <Notifications />
+              </Badge>
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Settings" placement="left">
             <Link href="/settings/notification">
               <IconButton>
@@ -730,6 +810,12 @@ function UserInfo({
             <SwitchPageViewButton />
           </>
         )}
+        <NotificationsWithArrow
+          anchorEl={anchorEl}
+          setAnchorEl={setAnchorEl}
+          setNotifications={setNotifications}
+          notifications={notifications}
+        />
       </NavbarSection>
     </div>
   );
@@ -762,7 +848,8 @@ export function Navbar() {
     {}
   );
 
-  const filtered = currentUserInfo.courseMemberships
+  const memberships = currentUserInfo?.courseMemberships ?? [];
+  const filtered = memberships
     .filter(
       (x) =>
         ["ADMINISTRATOR", "TUTOR"].includes(x.role) ||
@@ -776,8 +863,10 @@ export function Navbar() {
         pageView === PageView.Lecturer
     );
 
+  const tutor = useIsTutor(currentUserInfo);
+
   return (
-    <NavbarBase _isTutor={currentUserInfo} userId={currentUserInfo.id}>
+    <NavbarBase tutor={tutor} userId={currentUserInfo.id}>
       {filtered.length > 0 ? (
         <NavbarSection
           title={
