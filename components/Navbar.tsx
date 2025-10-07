@@ -666,6 +666,21 @@ function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
         <ListItem
           secondaryAction={
           <>
+            <Tooltip title="Notifications" placement="left">
+              <IconButton onClick={handleOpenNotifications}>
+                <Badge
+                  badgeContent={unreadCount}
+                  color="error"
+                  max={99}
+                  overlap="circular"
+                  sx={{
+                    zIndex: 2,
+                  }}
+                >
+                  <Notifications />
+                </Badge>
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Settings" placement="left">
               <Link href="/settings/notification">
                 <IconButton>
@@ -707,28 +722,6 @@ function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
           <Link href={"/profile"}>
             <ListItemText primary={auth.user?.profile?.name} />
           </Link>
-          <Tooltip title="Notifications" placement="left">
-            <IconButton onClick={handleOpenNotifications}>
-              <Badge
-                badgeContent={unreadCount}
-                color="error"
-                max={99}
-                overlap="circular"
-                sx={{
-                  zIndex: 2,
-                }}
-              >
-                <Notifications />
-              </Badge>
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Settings" placement="left">
-            <Link href="/settings/notification">
-              <IconButton>
-                <Settings />
-              </IconButton>
-            </Link>
-          </Tooltip>
         </ListItem>
 
         <GamificationGuard>
