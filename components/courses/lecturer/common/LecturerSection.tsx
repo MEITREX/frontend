@@ -3,17 +3,13 @@ import { LecturerSectionFragment$key } from "@/__generated__/LecturerSectionFrag
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { AddStageButton } from "@/components/AddStageButton";
 import { DeleteStageButton } from "@/components/DeleteStageButton";
-import {
-  EditContentModal,
-  EditContentModalHandle,
-} from "@/components/EditContentModal";
+import { EditContentModal } from "@/components/EditContentModal";
 import EditSectionButton from "@/components/EditSectionButton";
 import { Section, SectionContent, SectionHeader } from "@/components/Section";
 import { Stage } from "@/components/Stage";
 import { ContentLink } from "@/components/content-link/ContentLink";
 import { orderBy } from "lodash";
 import { graphql, useFragment } from "react-relay";
-import { useEffect, useRef, useState } from "react";
 
 graphql`
   fragment LecturerSectionStageFragment on Stage {
@@ -23,14 +19,17 @@ graphql`
     position
     requiredContents {
       ...ContentLinkFragment
+
       userProgressData {
         nextLearnDate
       }
       __typename
       id
     }
+
     optionalContents {
       ...ContentLinkFragment
+
       userProgressData {
         nextLearnDate
       }
@@ -65,22 +64,6 @@ export function LecturerSection({
     _section
   );
 
-  const modalRefs = useRef<Record<string, EditContentModalHandle | null>>({});
-  const [pendingOpenStageId, setPendingOpenStageId] = useState<string | null>(
-    null
-  );
-
-  useEffect(() => {
-    if (!pendingOpenStageId) return;
-    const hasStage = section.stages.some((s) => s.id === pendingOpenStageId);
-    if (!hasStage) return;
-    const handle = modalRefs.current[pendingOpenStageId];
-    if (handle?.open) {
-      handle.open();
-      setPendingOpenStageId(null);
-    }
-  }, [pendingOpenStageId, section.stages]);
-
   return (
     <Section key={section.id}>
       <SectionHeader
@@ -114,10 +97,6 @@ export function LecturerSection({
             ))}
             <div className="mt-4 flex flex-col items-start">
               <EditContentModal
-                ref={(inst) => {
-                  if (inst) modalRefs.current[stage.id] = inst;
-                  else delete modalRefs.current[stage.id];
-                }}
                 sectionId={section.id}
                 courseId={section.courseId}
                 stageId={stage.id}
@@ -134,14 +113,9 @@ export function LecturerSection({
           </Stage>
         ))}
         <Stage progress={0}>
-          <AddStageButton
-            sectionId={section.id}
-            onCreated={(id) => setPendingOpenStageId(id)}
-          />
+          <AddStageButton sectionId={section.id} />
         </Stage>
       </SectionContent>
     </Section>
   );
 }
-
-export default LecturerSection;
