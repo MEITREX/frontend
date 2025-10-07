@@ -634,7 +634,7 @@ function UserInfo({
             <ListItemText primary={auth.user?.profile?.name} />
           </Link>
           <Tooltip title="Settings" placement="left">
-            <Link href="/settings/gamification">
+            <Link href="/settings/notification">
               <IconButton>
                 <Settings />
               </IconButton>
