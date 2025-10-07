@@ -22,6 +22,7 @@ function createFetchFn(token: string | undefined): FetchFunction {
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
+
     const resp = await fetch(HTTP_ENDPOINT, {
       method: "POST",
       headers,
