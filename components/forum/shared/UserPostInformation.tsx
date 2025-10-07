@@ -7,6 +7,7 @@ import {
   forumApiUserInfoQuery,
 } from "@/components/forum/api/ForumApi";
 import { ThreadType } from "@/components/forum/types";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 import { HoverCard } from "@/components/HoverCard";
 import { getPublicProfileItemsMergedCustomID } from "@/components/items/logic/GetItems";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -129,79 +130,8 @@ export default function UserPostInformation({
       flexWrap="nowrap"
       overflow="hidden"
     >
-      {displayPB && (
-        <HoverCard
-          key={userInfo?.id}
-          background={
-            (equipedItemColorTheme?.backColor
-              ? equipedItemColorTheme.backColor
-              : equipedItemPatternTheme?.url) ?? "#ffffff"
-          }
-          foreground={
-            (equipedItemColorTheme
-              ? equipedItemColorTheme.foreColor
-              : equipedItemPatternTheme?.foreColor) ?? "#000000"
-          }
-          nickname={userInfo?.nickname ?? "Unknown"}
-          patternThemeBool={equipedItemPatternTheme?.url != null}
-          frameBool={equipedItemPicFrame != null}
-          frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
-          profilePic={equipedItemPic?.url ?? "Unkown"}
-        >
-          <div
-            style={{ position: "relative", width: 24, height: 24 }}
-            onClick={() => {
-              if (!userInfo) return;
-              const isOwnProfile =
-                loggedInUser.currentUserInfo.id === userInfo.id;
-              const profileUrl = isOwnProfile
-                ? "/profile"
-                : `/profile/${userInfo.id}`;
-              router.push(profileUrl);
-            }}
-          >
-            {equipedItemPicFrame && (
-              <img
-                src={decodeURIComponent(equipedItemPicFrame?.url ?? "Unkown")}
-                alt={equipedItemPicFrame?.id ?? "Unkown"}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: 24,
-                  height: 24,
-                  borderRadius: 2,
-
-                  zIndex: 1,
-                }}
-              />
-            )}
-            <img
-              src={decodeURIComponent(equipedItemPic?.url ?? "Unkown")}
-              alt={equipedItemPic?.id ?? "Unkown"}
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: 24,
-                height: 24,
-                borderRadius: 2,
-
-                zIndex: 0,
-              }}
-            />
-          </div>
-        </HoverCard>
-      )}
-      {userInfo && (
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            lineHeight: 0,
-            verticalAlign: "middle",
-          }}
-        >
+      <GamificationGuard>
+        {displayPB && (
           <HoverCard
             key={userInfo?.id}
             background={
@@ -220,22 +150,8 @@ export default function UserPostInformation({
             frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
             profilePic={equipedItemPic?.url ?? "Unkown"}
           >
-            <Typography
-              noWrap
-              sx={{
-                textOverflow: "ellipsis",
-                overflow: "hidden",
-
-                "&:hover": {
-                  cursor: "pointer",
-                },
-              }}
-              color={
-                loggedInUser.currentUserInfo.id === userInfo.id
-                  ? "#00a152"
-                  : "default"
-              }
-              variant="caption"
+            <div
+              style={{ position: "relative", width: 24, height: 24 }}
               onClick={() => {
                 if (!userInfo) return;
                 const isOwnProfile =
@@ -246,9 +162,96 @@ export default function UserPostInformation({
                 router.push(profileUrl);
               }}
             >
-              {userInfo.nickname ?? "unknown"}
-            </Typography>
+              {equipedItemPicFrame && (
+                <img
+                  src={decodeURIComponent(equipedItemPicFrame?.url ?? "Unkown")}
+                  alt={equipedItemPicFrame?.id ?? "Unkown"}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: 24,
+                    height: 24,
+                    borderRadius: 2,
+
+                    zIndex: 1,
+                  }}
+                />
+              )}
+              <img
+                src={decodeURIComponent(equipedItemPic?.url ?? "Unkown")}
+                alt={equipedItemPic?.id ?? "Unkown"}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: 24,
+                  height: 24,
+                  borderRadius: 2,
+                  zIndex: 0,
+                }}
+              />
+            </div>
           </HoverCard>
+        )}
+      </GamificationGuard>
+      {userInfo && (
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            lineHeight: 0,
+            verticalAlign: "middle",
+          }}
+        >
+          <GamificationGuard>
+            <HoverCard
+              key={userInfo?.id}
+              background={
+                (equipedItemColorTheme?.backColor
+                  ? equipedItemColorTheme.backColor
+                  : equipedItemPatternTheme?.url) ?? "#ffffff"
+              }
+              foreground={
+                (equipedItemColorTheme
+                  ? equipedItemColorTheme.foreColor
+                  : equipedItemPatternTheme?.foreColor) ?? "#000000"
+              }
+              nickname={userInfo?.nickname ?? "Unknown"}
+              patternThemeBool={equipedItemPatternTheme?.url != null}
+              frameBool={equipedItemPicFrame != null}
+              frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
+              profilePic={equipedItemPic?.url ?? "Unkown"}
+            ></HoverCard>
+          </GamificationGuard>
+          <Typography
+            noWrap
+            sx={{
+              textOverflow: "ellipsis",
+              overflow: "hidden",
+
+              "&:hover": {
+                cursor: "pointer",
+              },
+            }}
+            color={
+              loggedInUser.currentUserInfo.id === userInfo.id
+                ? "#00a152"
+                : "default"
+            }
+            variant="caption"
+            onClick={() => {
+              if (!userInfo) return;
+              const isOwnProfile =
+                loggedInUser.currentUserInfo.id === userInfo.id;
+              const profileUrl = isOwnProfile
+                ? "/profile"
+                : `/profile/${userInfo.id}`;
+              router.push(profileUrl);
+            }}
+          >
+            {userInfo.nickname ?? "unknown"}
+          </Typography>
         </div>
       )}
 

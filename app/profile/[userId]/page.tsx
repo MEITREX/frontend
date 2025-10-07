@@ -170,13 +170,25 @@ function enrichScoresWithNames(
 export default function PublicProfilePage() {
   const router = useRouter(); // Hook holen
 
-  const publicTabs = [
-    "Achievements",
-    "Forum",
-    "Badges",
-    "Leaderboards",
-    "Items",
+  const auth = useAuth();
+  const isGamificationDisabled =
+    auth.user?.profile.gamification_type === "none";
+
+  const baseTabs = [
+    { label: "General", path: "general" },
+    { label: "Forum", path: "forum" },
   ];
+
+  const gamificationTabs = [
+    { label: "Achievements", path: "achievements" },
+    { label: "Badges", path: "badges" },
+    { label: "Leaderboards", path: "leaderboard" },
+  ];
+
+  const tabs = isGamificationDisabled
+    ? baseTabs
+    : [...baseTabs, ...gamificationTabs];
+
   const [tabIndex, setTabIndex] = useState(0);
 
   const params = useParams();
@@ -383,8 +395,6 @@ export default function PublicProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(sharedMemberships), viewedSafe.id, currentUserInfo.id]);
 
-  const auth = useAuth();
-
   const tokenRef = React.useRef<string | undefined>(auth.user?.access_token);
   useEffect(() => {
     tokenRef.current = auth.user?.access_token;
@@ -453,11 +463,11 @@ export default function PublicProfilePage() {
           ".MuiTabs-indicator": { display: "none" },
         }}
       >
-        {publicTabs.map((tab, index) => (
+        {tabs.map((tab, index) => (
           <Tab
-            key={tab}
+            key={tab.path}
             value={index}
-            label={tab}
+            label={tab.label}
             sx={{
               textTransform: "none",
               fontWeight: 600,

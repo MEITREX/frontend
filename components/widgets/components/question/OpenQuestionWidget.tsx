@@ -2,7 +2,7 @@ import { ForumApiOpenQuestionQuery } from "@/__generated__/ForumApiOpenQuestionQ
 import { forumApiOpenQuestionQuery } from "@/components/forum/api/ForumApi";
 import ThreadList from "@/components/forum/thread/ThreadList";
 import { Box } from "@mui/material";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
 import WidgetFeedback from "@/components/widgets/common/WidgetFeedback";
@@ -15,6 +15,7 @@ type Props = {
 
 export default function OpenQuestionWidget({ openFeedback, category }: Props) {
   const params = useParams();
+  const pathname = usePathname();
   const courseId = params.courseId as string;
 
   const data = useLazyLoadQuery<ForumApiOpenQuestionQuery>(
@@ -26,7 +27,11 @@ export default function OpenQuestionWidget({ openFeedback, category }: Props) {
   );
 
   return (
-    <WidgetWrapper title="Open Questions" linkHref="/profile" linkLabel="Forum">
+    <WidgetWrapper
+      title="Open Questions"
+      linkHref={`${pathname}/forum`}
+      linkLabel="Forum"
+    >
       <WidgetFeedback openFeedback={openFeedback} category={category} />
       <Box sx={{ display: "flex", flexDirection: "column" }}>
         {(data.openQuestionByCourseId ?? []).length > 0 ? (

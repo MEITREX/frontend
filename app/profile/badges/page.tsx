@@ -2,10 +2,12 @@
 
 import { pagePrivateProfileStudentBadgeQuery } from "@/__generated__/pagePrivateProfileStudentBadgeQuery.graphql";
 import { Box, Tab, Tabs, Typography } from "@mui/material";
+import XpOverview from "../xpoverview/XpOverview";
 import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 
 const tabs = [
   { label: "General", path: "general" },
@@ -40,7 +42,13 @@ export default function BadgesPage() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
+      <GamificationGuard>
+        <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
+      </GamificationGuard>
+
+      <GamificationGuard>
+        <XpOverview userId={currentUserInfo.id} />
+      </GamificationGuard>
 
       <Tabs
         value={activeIndex}

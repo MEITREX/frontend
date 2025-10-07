@@ -29,4 +29,11 @@
   font-size: 0.9rem;
 }
 
-/* Add aditional Styles here */
+.prose-styles .mention {
+  background-color: #e3f2fd;
+  color: #0d47a1;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-weight: 600;
+  white-space: nowrap;
+}
