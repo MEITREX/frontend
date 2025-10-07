@@ -218,7 +218,7 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
 
   const exercise = data.submissionExerciseForLecturer;
   const [commitUpdateResult, isUpdating] = useMutation(UpdateResultMutation);
-  const deadlineISO = exercise?.endDate ?? null; // ggf. endDate/dueDate
+  const deadlineISO = exercise?.endDate ?? null;
   const deadlineDate = deadlineISO ? new Date(deadlineISO) : null;
   const now = new Date();
   const isOpen = deadlineDate ? now <= deadlineDate : true;
@@ -290,7 +290,6 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
     const s = (status ?? "pending").toLowerCase();
     if (s === "passed") return alpha(theme.palette.success.main, opacity);
     if (s === "failed") return alpha(theme.palette.error.main, opacity);
-    // pending / unknown
     return alpha(theme.palette.warning.main, opacity);
   };
 

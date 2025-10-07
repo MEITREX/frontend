@@ -174,7 +174,6 @@ const CreateExerciseFileMutation = graphql`
   }
 `;
 
-// unter deine anderen graphql-Mutationen:
 const DeleteExerciseFileMutation = graphql`
   mutation lecturerDeleteExerciseFileMutation(
     $assessmentId: UUID!
@@ -437,7 +436,6 @@ export default function LecturerSubmission() {
     });
   }
 
-  // in deiner Komponente LecturerSubmission, bei den anderen useMutation Hooks:
   const [commitDeleteFile, isDeleteFileInFlight] =
     useMutation<lecturerDeleteExerciseFileMutation>(DeleteExerciseFileMutation);
 
@@ -454,7 +452,6 @@ export default function LecturerSubmission() {
     commitDeleteFile({
       variables: { assessmentId, fileId },
 
-      // optimistisch sofort aus UI entfernen
       optimisticUpdater: (store) => {
         const current = store
           .getRoot()
@@ -467,7 +464,6 @@ export default function LecturerSubmission() {
         current.setLinkedRecords(next, "files");
       },
 
-      // nach Server-OK Store aufräumen (falls nötig)
       updater: (store) => {
         const deleted = store.getRootField("deleteExerciseFile");
         const deletedId = (deleted?.getValue("id") as string) || fileId;
@@ -485,7 +481,7 @@ export default function LecturerSubmission() {
       onError: (e) => {
         console.error("Delete file failed:", e);
         alert("Deleting the file failed. Reloading the list.");
-        setFetchKey((k) => k + 1); // fallback: refetch
+        setFetchKey((k) => k + 1);
       },
     });
   }
@@ -598,8 +594,6 @@ export default function LecturerSubmission() {
       />
     );
   }
-
-  console.log(submissionExerciseForLecturer.files[0]);
 
   return (
     <>

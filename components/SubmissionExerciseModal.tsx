@@ -25,12 +25,6 @@ import {
   ContentMetadataPayload,
 } from "./ContentMetadataFormSection";
 
-const defaultInput = {
-  questionPoolingMode: "RANDOM",
-  requiredCorrectAnswers: 4,
-  numberOfRandomlySelectedQuestions: 5,
-} as const;
-
 export function SubmissionExerciseModal({
   onClose: _onClose,
   chapterId,
@@ -168,7 +162,6 @@ export function SubmissionExerciseModal({
   }
 
   function handleSubmit() {
-    console.log(deadline);
     if (!valid) {
       return;
     }
@@ -178,18 +171,6 @@ export function SubmissionExerciseModal({
         setError({ message: "Fehlende IDs für Update." });
         return;
       }
-
-      // UpdateAssessmentInput sauber bauen (ohne 'type')
-      const updateAssessmentInput = {
-        metadata: {
-          ...metadata!,
-          chapterId, // kommt aus den Props
-        },
-        assessmentMetadata: assessmentMetadata!,
-        // items weglassen (optional)
-      };
-
-      console.log(_existingSubmission.tasks, "TASKS");
 
       edit({
         variables: {
@@ -202,7 +183,6 @@ export function SubmissionExerciseModal({
           _onClose();
         },
         onError: setError,
-        // Falls du lokal sofort updaten willst, könntest du hier noch einen updater setzen.
       });
 
       return;

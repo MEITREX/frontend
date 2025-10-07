@@ -25,7 +25,6 @@ export default function SubmissionsHeader({
   content,
   openEditSubmissionModal,
 }: Props) {
-  console.log(content.content);
   const { courseId, submissionId } = useParams();
   const router = useRouter();
 

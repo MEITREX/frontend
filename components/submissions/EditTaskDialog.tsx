@@ -158,7 +158,6 @@ export default function AddTaskDialog({
         current.setLinkedRecords(newTasks, "tasks");
       },
       onCompleted: () => {
-        console.log(item.associatedBloomLevels);
         setIsAddOpen(false);
         onAdded?.();
       },
