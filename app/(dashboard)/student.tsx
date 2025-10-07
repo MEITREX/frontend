@@ -149,9 +149,7 @@ export default function StudentPage() {
       return <div></div>;
     } else {
       return (
-        <GamificationGuard>
-          <SurveyPopup id={userId} />
-        </GamificationGuard>
+        <SurveyPopup id={userId} />
       );
     }
   }
