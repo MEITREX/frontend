@@ -4,7 +4,13 @@ import { Alert, Button } from "@mui/material";
 import { useState } from "react";
 import { graphql, useMutation } from "react-relay";
 
-export function AddStageButton({ sectionId }: { sectionId: string }) {
+export function AddStageButton({
+  sectionId,
+  onStageCreated,
+}: {
+  sectionId: string;
+  onStageCreated?: (stageId: string) => void;
+}) {
   const [addStage] = useMutation<AddStageButtonMutation>(graphql`
     mutation AddStageButtonMutation($id: UUID!) {
       mutateSection(sectionId: $id) {
@@ -45,6 +51,11 @@ export function AddStageButton({ sectionId }: { sectionId: string }) {
                 [...stages, store.get(data.mutateSection.createStage.id)!],
                 "stages"
               );
+            },
+            onCompleted(data) {
+              if (onStageCreated) {
+                onStageCreated(data.mutateSection.createStage.id);
+              }
             },
           })
         }
