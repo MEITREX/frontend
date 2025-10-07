@@ -115,7 +115,6 @@ const NAVBAR_NOTIFICATION_ADDED_SUB = graphql`
   }
 `;
 
-
 /** ---------------- Utilities ---------------- */
 function useIsTutor(_frag: NavbarIsTutor$key) {
   const data = useFragment(
@@ -713,7 +712,7 @@ function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
                 <Notifications />
               </Badge>
             </IconButton>
-          </Tooltip>         
+          </Tooltip>
           <Tooltip title="Settings" placement="left">
             <Link href="/settings/notification">
               <IconButton>
