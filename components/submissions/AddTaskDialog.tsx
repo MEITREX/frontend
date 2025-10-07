@@ -188,6 +188,10 @@ export default function AddTaskDialog({
             onChange={(e) => setNumber(Number(e.target.value))}
             fullWidth
             required
+            helperText="Please be aware: Task number must be unique inside submission"
+            FormHelperTextProps={{
+              sx: { color: "orange" },
+            }}
           />
 
           <TextField

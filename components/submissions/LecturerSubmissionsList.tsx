@@ -444,8 +444,8 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
                         </Button>
                       ))}
                     </TableCell>
-                     <TableCell
-                     align="center"
+                    <TableCell
+                      align="center"
                       sx={{
                         fontWeight: isPending(r.result?.status) ? 700 : 400,
                       }}
@@ -453,10 +453,7 @@ function SubmissionGroup({ assessmentId, name }: SubmissionInfo) {
                       {r.result?.status ?? "—"}
                     </TableCell>
 
-                    <TableCell
-                      align="center"
-                      sx={{ whiteSpace: "nowrap" }}
-                    >
+                    <TableCell align="center" sx={{ whiteSpace: "nowrap" }}>
                       <Button
                         size="small"
                         variant="contained"
