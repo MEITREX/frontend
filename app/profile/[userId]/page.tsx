@@ -27,6 +27,7 @@ import { fetchQuery, useLazyLoadQuery, useRelayEnvironment } from "react-relay";
 
 import { pagePublicProfileUserXPQuery } from "@/__generated__/pagePublicProfileUserXPQuery.graphql";
 import { graphql } from "relay-runtime";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 
 const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
@@ -172,7 +173,7 @@ export default function PublicProfilePage() {
 
   const auth = useAuth();
   const isGamificationDisabled =
-    auth.user?.profile.gamification_type === "none";
+    auth.user?.profile?.gamification_type === "none";
 
   const baseTabs = [
     { label: "General", path: "general" },
@@ -412,43 +413,47 @@ export default function PublicProfilePage() {
         Back
       </Button>
 
-      <UserProfileCustomHeader
-        displayName={userInfos.findUserInfos[0]?.nickname as string}
-      />
-
-      {/* XP / Level overview for viewed user */}
-      <Box
-        sx={{ mt: 2, mb: 2, display: "flex", alignItems: "center", gap: 1.5 }}
-      >
-        <img
-          src={levelIconSrc}
-          alt={`Level ${level}`}
-          width={44}
-          height={44}
-          style={{ display: "block" }}
-          onError={(e) => {
-            const el = e.currentTarget as HTMLImageElement;
-            el.src = "/levels/level_0.svg";
-          }}
+      <GamificationGuard>
+        <UserProfileCustomHeader
+          displayName={userInfos.findUserInfos[0]?.nickname as string}
         />
-        <Box sx={{ flexGrow: 1 }}>
-          <LinearProgress
-            variant="determinate"
-            value={xpPercent}
-            sx={{ height: 8, borderRadius: 999 }}
+      </GamificationGuard>
+
+      <GamificationGuard>
+        {/* XP / Level overview for viewed user */}
+        <Box
+          sx={{ mt: 2, mb: 2, display: "flex", alignItems: "center", gap: 1.5 }}
+        >
+          <img
+            src={levelIconSrc}
+            alt={`Level ${level}`}
+            width={44}
+            height={44}
+            style={{ display: "block" }}
+            onError={(e) => {
+              const el = e.currentTarget as HTMLImageElement;
+              el.src = "/levels/level_0.svg";
+            }}
           />
-          <Typography variant="caption" sx={{ mt: 0.5, display: "block" }}>
-            {fmtInt(xpInLevel)} / {fmtInt(xpRequired)} XP
+          <Box sx={{ flexGrow: 1 }}>
+            <LinearProgress
+              variant="determinate"
+              value={xpPercent}
+              sx={{ height: 8, borderRadius: 999 }}
+            />
+            <Typography variant="caption" sx={{ mt: 0.5, display: "block" }}>
+              {fmtInt(xpInLevel)} / {fmtInt(xpRequired)} XP
+            </Typography>
+          </Box>
+          <Typography
+            variant="body2"
+            fontWeight={700}
+            sx={{ minWidth: 64, textAlign: "right" }}
+          >
+            Level {fmtInt(level)}
           </Typography>
         </Box>
-        <Typography
-          variant="body2"
-          fontWeight={700}
-          sx={{ minWidth: 64, textAlign: "right" }}
-        >
-          Level {fmtInt(level)}
-        </Typography>
-      </Box>
+      </GamificationGuard>
 
       {/* Tabs */}
       <Tabs

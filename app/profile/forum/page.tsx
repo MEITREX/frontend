@@ -14,7 +14,7 @@ import { useAuth } from "react-oidc-context";
 export default function ForumPage() {
   const auth = useAuth();
   const isGamificationDisabled =
-    auth.user?.profile.gamification_type === "none";
+    auth.user?.profile?.gamification_type === "none";
 
   const baseTabs = [
     { label: "General", path: "general" },

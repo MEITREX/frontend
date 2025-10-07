@@ -10,6 +10,7 @@ import {
 import { useMutation, graphql } from "react-relay";
 import UserSettings from "./UserSettings";
 import { NotificationSettings } from "./types";
+import  GamificationGuard  from "@/components/gamification-guard/GamificationGuard"
 
 type Props = {
   userId: string;
@@ -82,22 +83,24 @@ export default function NotificationSettingsPage({ userId }: Props) {
       </Typography>
 
       <FormGroup>
-        <Box sx={{ display: "flex", flexDirection: "column", mb: 2 }}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                name="gamification"
-                checked={settings?.gamification}
-                onChange={handleChange}
-              />
-            }
-            label="Gamification Notifications"
-          />
-          <Typography variant="caption" sx={{ ml: 4, color: "text.secondary" }}>
-            Get updates related to Gamification such as new badges,
-            leaderboards, or games.
-          </Typography>
-        </Box>
+        <GamificationGuard>
+          <Box sx={{ display: "flex", flexDirection: "column", mb: 2 }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="gamification"
+                  checked={settings?.gamification}
+                  onChange={handleChange}
+                />
+              }
+              label="Gamification Notifications"
+            />
+            <Typography variant="caption" sx={{ ml: 4, color: "text.secondary" }}>
+              Get updates related to Gamification such as new badges,
+              leaderboards, or games.
+            </Typography>
+          </Box>
+        </GamificationGuard>
 
         <Box sx={{ display: "flex", flexDirection: "column", mb: 2 }}>
           <FormControlLabel
