@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "react-oidc-context";
-import PageLoading from "@/app/loading"; // Stell sicher, dass du eine Ladekomponente hast
+import PageLoading from "@/app/loading";
 
 interface Props {
   children: React.ReactNode;
@@ -21,23 +21,19 @@ export function GamificationRouteGuard({ children }: Props) {
     "/badges",
   ];
 
-  const hasAccess =
-    auth.isAuthenticated && auth.user?.profile.gamification_type === "none";
+  const gamificationDisabled = auth.user?.profile?.gamification_type === "none";
+
   const isProtectedRoute = protectedRoutes.some((route) =>
     path.startsWith(route)
   );
 
   useEffect(() => {
-    if (!auth.isLoading && isProtectedRoute && hasAccess) {
+    if (isProtectedRoute && gamificationDisabled) {
       router.replace("/");
     }
-  }, [auth.isLoading, isProtectedRoute, hasAccess, router, path]);
+  }, [isProtectedRoute, gamificationDisabled, router]);
 
-  if (auth.isLoading) {
-    return <PageLoading />;
-  }
-
-  if (isProtectedRoute && !hasAccess) {
+  if (isProtectedRoute && gamificationDisabled) {
     return <PageLoading />;
   }
 
