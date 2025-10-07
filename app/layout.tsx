@@ -18,6 +18,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
+import dynamic from "next/dynamic";
 import { WebStorageStateStore } from "oidc-client-ts";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -32,19 +33,6 @@ import { CurrencyProvider } from "./contexts/CurrencyContext";
 import PageLoading from "./loading";
 
 dayjs.extend(isBetween);
-
-const oidcConfig: AuthProviderProps = {
-  redirect_uri:
-    process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ?? "http://localhost:3005",
-  client_id: process.env.NEXT_PUBLIC_OAUTH_CLIENT_ID ?? "frontend",
-  authority:
-    process.env.NEXT_PUBLIC_OAUTH_AUTHORITY ??
-    "http://localhost:9009/realms/GITS",
-  userStore: new WebStorageStateStore({ store: window.localStorage }),
-  onSigninCallback() {
-    window.history.replaceState({}, document.title, window.location.pathname);
-  },
-};
 
 const theme = createTheme({
   palette: {
@@ -75,6 +63,53 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * define configuration as a callback function to avoid the window being used during SSR
+ * @returns
+ */
+function oidcConfig(): AuthProviderProps {
+  return {
+    redirect_uri:
+      process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ?? "http://localhost:3005",
+    client_id: process.env.NEXT_PUBLIC_OAUTH_CLIENT_ID ?? "frontend",
+    authority:
+      process.env.NEXT_PUBLIC_OAUTH_AUTHORITY ??
+      "http://localhost:9009/realms/GITS",
+    userStore: new WebStorageStateStore({ store: window.localStorage }),
+    onSigninCallback() {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    },
+  };
+}
+
+function Body({ children }: { children: React.ReactNode }) {
+  return (
+    <AuthProvider {...oidcConfig()}>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DndProvider backend={HTML5Backend}>
+          <SigninContent>
+            <PageViewProvider>
+              <InnerLayout>{children}</InnerLayout>
+            </PageViewProvider>
+          </SigninContent>
+        </DndProvider>
+      </LocalizationProvider>
+    </AuthProvider>
+  );
+}
+
+/**
+ * this disables server-side rendering for the entire app using this layout
+ * this is a workaround for the fact that oidc-client-ts relies on browser-only APIs like localStorage
+ * and would throw errors during SSR.
+ *
+ * Note if you need SSR use a different layout and make sure it does not require authentication
+ *
+ */
+const BodyDynamic = dynamic(() => Promise.resolve(Body), {
+  ssr: false,
+});
+
 export default function App({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de" className="h-full overflow-hidden">
@@ -82,17 +117,7 @@ export default function App({ children }: { children: React.ReactNode }) {
         <title>MEITREX</title>
       </head>
       <body className="h-full">
-        <AuthProvider {...oidcConfig}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DndProvider backend={HTML5Backend}>
-              <SigninContent>
-                <PageViewProvider>
-                  <InnerLayout>{children}</InnerLayout>
-                </PageViewProvider>
-              </SigninContent>
-            </DndProvider>
-          </LocalizationProvider>
-        </AuthProvider>
+        <BodyDynamic>{children}</BodyDynamic>
       </body>
     </html>
   );
