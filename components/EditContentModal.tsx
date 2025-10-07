@@ -30,6 +30,7 @@ import { graphql, useFragment, useMutation, useQueryLoader } from "react-relay";
 import { AddCodeAssignmentModal } from "./AddCodeAssignmentModal";
 import { MediaContentModal } from "./MediaContentModal";
 import { QuizModal } from "./QuizModal";
+import { SubmissionExerciseModal } from "./SubmissionExerciseModal";
 
 type Props = {
   chapterId: string;
@@ -40,31 +41,13 @@ type Props = {
   optionalRecords: string[];
   requiredRecords: string[];
   courseId: string;
-};
-
-export type EditContentModalHandle = { open: () => void };
-
-export const EditContentModal = forwardRef<EditContentModalHandle, Props>(
-  function EditContentModal(
-    {
-      chapterId,
-      stageId,
-      sectionId,
-      _chapter,
-      _mediaRecords,
-      optionalRecords: _optionalRecords,
-      requiredRecords: _requiredRecords,
-      courseId,
-    },
-    ref
-  ) {
-    const [openMediaModal, setOpenMediaModal] = useState(false);
-    const [openFlashcardModal, setOpenFlashcardModal] = useState(false);
-    const [openAddQuizModal, setOpenAddQuizModal] = useState(false);
-    const [openCodeAssignmentModal, setOpenCodeAssignmentModal] =
-      useState(false);
-
-    const [openModal, setOpenModal] = useState(false);
+}) {
+  const [openMediaModal, setOpenMediaModal] = useState(false);
+  const [openFlashcardModal, setOpenFlashcardModal] = useState(false);
+  const [openAddQuizModal, setOpenAddQuizModal] = useState(false);
+  const [openCodeAssignmentModal, setOpenCodeAssignmentModal] = useState(false);
+  const [openSubmissionExerciseModal, setOpenSubmissionExerciseModal] =
+    useState(false);
 
     useImperativeHandle(ref, () => ({
       open: () => setOpenModal(true),
@@ -89,25 +72,28 @@ export const EditContentModal = forwardRef<EditContentModalHandle, Props>(
               }
             }
           }
-          contents {
-            id
-            metadata {
-              name
-            }
-            ... on FlashcardSetAssessment {
-              __typename
-            }
-            ... on MediaContent {
-              __typename
-            }
-            ... on QuizAssessment {
-              __typename
-            }
-            ... on AssignmentAssessment {
-              __typename
-              assignment {
-                assignmentType
-              }
+        }
+        contents {
+          id
+          metadata {
+            name
+          }
+          ... on FlashcardSetAssessment {
+            __typename
+          }
+          ... on MediaContent {
+            __typename
+          }
+          ... on QuizAssessment {
+            __typename
+          }
+          ... on SubmissionAssessment {
+            __typename
+          }
+          ... on AssignmentAssessment {
+            __typename
+            assignment {
+              assignmentType
             }
           }
           contentsWithNoSection {
@@ -185,17 +171,18 @@ export const EditContentModal = forwardRef<EditContentModalHandle, Props>(
       });
     };
 
-    const openCodeAssignment = () => {
-      if (!allSkillsQueryRef) {
-        loadAllSkillsQuery({ courseId });
-      }
-      setOpenCodeAssignmentModal(true);
-    };
-    return (
-      <>
-        <Button startIcon={<EditNote />} onClick={() => setOpenModal(true)}>
-          Edit content
-        </Button>
+  const openCodeAssignment = () => {
+    if (!allSkillsQueryRef) {
+      loadAllSkillsQuery({ courseId });
+    }
+    setOpenCodeAssignmentModal(true);
+  };
+
+  return (
+    <>
+      <Button startIcon={<EditNote />} onClick={() => setOpenModal(true)}>
+        Edit content
+      </Button>
 
         <Dialog
           maxWidth="lg"
@@ -315,12 +302,24 @@ export const EditContentModal = forwardRef<EditContentModalHandle, Props>(
                         />
                       </ListItemIcon>
 
-                      <ListItemText
-                        primary={content.metadata.name}
-                        secondary={
-                          partOfOtherStage
-                            ? "Already part of another stage"
-                            : ""
+                      <IconButton
+                        edge="end"
+                        onClick={() =>
+                          router.push(
+                            content.__typename === "FlashcardSetAssessment"
+                              ? `/courses/${courseId}/flashcards/${content.id}`
+                              : content.__typename === "SubmissionAssessment"
+                              ? `/courses/${courseId}/submissions/${content.id}`
+                              : content.__typename === "MediaContent"
+                              ? `/courses/${courseId}/media/${content.id}`
+                              : content.__typename === "QuizAssessment"
+                              ? `/courses/${courseId}/quiz/${content.id}`
+                              : content.__typename === "AssignmentAssessment" &&
+                                content.assignment?.assignmentType ===
+                                  "CODE_ASSIGNMENT"
+                              ? `/courses/${courseId}/assignment/${content.id}`
+                              : ""
+                          )
                         }
                       />
                     </ListItemButton>
@@ -330,46 +329,55 @@ export const EditContentModal = forwardRef<EditContentModalHandle, Props>(
             </List>
           </DialogContent>
 
-          <DialogContent>
-            <Button
-              onClick={() => setOpenFlashcardModal(true)}
-              variant="text"
-              className="mt-4"
-              startIcon={<Add />}
-            >
-              Add Flashcards
-            </Button>
-            <Button
-              onClick={() => setOpenMediaModal(true)}
-              variant="text"
-              className="mt-4"
-              startIcon={<Add />}
-            >
-              Add Media
-            </Button>
-            <Button
-              onClick={() => setOpenAddQuizModal(true)}
-              variant="text"
-              className="mt-4"
-              startIcon={<Add />}
-            >
-              Add Quiz
-            </Button>
-            <Button
-              onClick={openCodeAssignment}
-              variant="text"
-              className="mt-4"
-              startIcon={<Add />}
-            >
-              Add Code Assignment
-            </Button>
-          </DialogContent>
-          <DialogActions>
-            <LoadingButton loading={loading} onClick={submit}>
-              Ok
-            </LoadingButton>
-          </DialogActions>
-        </Dialog>
+        <DialogContent>
+          {/* add flashcard button */}
+          <Button
+            onClick={() => setOpenFlashcardModal(true)}
+            variant="text"
+            className="mt-4"
+            startIcon={<Add />}
+          >
+            Add Flashcards
+          </Button>
+          <Button
+            onClick={() => setOpenMediaModal(true)}
+            variant="text"
+            className="mt-4"
+            startIcon={<Add />}
+          >
+            Add Media
+          </Button>
+          <Button
+            onClick={() => setOpenAddQuizModal(true)}
+            variant="text"
+            className="mt-4"
+            startIcon={<Add />}
+          >
+            Add Quiz
+          </Button>
+          <Button
+            onClick={openCodeAssignment}
+            variant="text"
+            className="mt-4"
+            startIcon={<Add />}
+          >
+            Add Code Assignment
+          </Button>
+          <Button
+            onClick={() => setOpenSubmissionExerciseModal(true)}
+            variant="text"
+            className="mt-4"
+            startIcon={<Add />}
+          >
+            Add Submission Exercise
+          </Button>
+        </DialogContent>
+        <DialogActions>
+          <LoadingButton loading={loading} onClick={submit}>
+            Ok
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
 
         <MediaContentModal
           chapterId={chapterId}
@@ -383,21 +391,14 @@ export const EditContentModal = forwardRef<EditContentModalHandle, Props>(
           chapterId={chapterId}
           _existingQuiz={null}
         />
-        {openFlashcardModal && (
-          <AddFlashcardSetModal
-            onClose={() => setOpenFlashcardModal(false)}
-            _chapter={chapter}
-          />
-        )}
-        {openCodeAssignmentModal && allSkillsQueryRef && (
-          <AddCodeAssignmentModal
-            onClose={() => setOpenCodeAssignmentModal(false)}
-            chapterId={chapterId}
-            courseId={courseId}
-            allSkillsQueryRef={allSkillsQueryRef}
-          />
-        )}
-      </>
-    );
-  }
-);
+      )}
+      <SubmissionExerciseModal
+        isOpen={openSubmissionExerciseModal}
+        onClose={() => setOpenSubmissionExerciseModal(false)}
+        chapterId={chapterId}
+        _existingSubmission={null}
+        tasks={[]}
+      />
+    </>
+  );
+}

@@ -31,20 +31,6 @@ enum AiEntityProcessingState {
   UNKNOWN
 }
 
-input AiGenQuestionContext {
-  description: String!
-  maxAnswersPerQuestion: Int! = 5
-  maxExactQuestions: Int! = 5
-  maxFreeTextQuestions: Int! = 5
-  maxMultipleChoiceQuestions: Int! = 5
-  maxNumericQuestions: Int! = 5
-  mediaRecordIds: [UUID]!
-  minExactQuestions: Int! = 1
-  minFreeTextQuestions: Int! = 1
-  minMultipleChoiceQuestions: Int! = 1
-  minNumericQuestions: Int! = 1
-}
-
 input AnswerInput {
   playerTypes: [PlayerType!]!
   text: String!
@@ -148,7 +134,6 @@ input AssociationPairInput {
 }
 
 type AssociationQuestion implements Question {
-  aiGenerated: Boolean!
   correctAssociations: [SingleAssociation!]!
   hint: JSON
   item: Item!
@@ -226,7 +211,6 @@ enum ClozeElementType {
 
 type ClozeQuestion implements Question {
   additionalWrongAnswers: [String!]!
-  aiGenerated: Boolean!
   allBlanks: [String!]!
   clozeElements: [ClozeElement!]!
   hint: JSON
@@ -304,6 +288,7 @@ enum ContentType {
   FLASHCARDS
   MEDIA
   QUIZ
+  SUBMISSION
 }
 
 type Course {
@@ -612,7 +597,6 @@ type DocumentSource implements Source {
 }
 
 type ExactAnswerQuestion implements Question {
-  aiGenerated: Boolean!
   caseSensitive: Boolean!
   correctAnswers: [String!]!
   feedback: JSON
@@ -654,6 +638,7 @@ type ExternalAssignment {
 
 type ExternalCourse {
   courseTitle: String!
+  organizationName: String!
   url: String!
 }
 
@@ -664,6 +649,13 @@ enum ExternalServiceProviderDto {
 type ExternalUserIdWithUser {
   externalUserId: String!
   userId: UUID!
+}
+
+type File {
+  downloadUrl: String
+  id: UUID!
+  name: String!
+  uploadUrl: String
 }
 
 type Flashcard {
@@ -888,6 +880,42 @@ input InputQuestionThread {
   title: String!
 }
 
+input InputResult {
+  assessmentId: UUID!
+  courseId: UUID!
+  id: UUID!
+  results: [InputTaskResult!]!
+  status: Status!
+}
+
+input InputSubmissionExercise {
+  endDate: DateTime!
+  tasks: [InputTask]
+}
+
+input InputSubmissionSolution {
+  courseId: UUID!
+  submissionExerciseId: UUID!
+}
+
+input InputTask {
+  itemId: UUID!
+  maxScore: Int!
+  name: String!
+  number: Int!
+}
+
+input InputTaskResult {
+  itemId: UUID!
+  score: Int!
+}
+
+input InputTaskWithoutItem {
+  maxScore: Int!
+  name: String!
+  number: Int!
+}
+
 input InputThreadContentReference {
   contentId: UUID!
   pageNumber: Int
@@ -1051,7 +1079,6 @@ input MultipleChoiceAnswerInput {
 }
 
 type MultipleChoiceQuestion implements Question {
-  aiGenerated: Boolean!
   answers: [MultipleChoiceAnswer!]!
   hint: JSON
   item: Item!
@@ -1071,6 +1098,7 @@ type Mutation {
   createAssignmentAssessment(assessmentInput: CreateAssessmentInput!, assignmentInput: CreateAssignmentInput!): AssignmentAssessment!
   createChapter(input: CreateChapterInput!): Chapter!
   createCourse(input: CreateCourseInput!): Course!
+  createExerciseFile(assessmentId: UUID!, name: String!): File
   createFlashcardSetAssessment(assessmentInput: CreateAssessmentInput!, flashcardSetInput: CreateFlashcardSetInput!): FlashcardSetAssessment
   createForum(courseId: UUID!): Forum
   createInfoThread(thread: InputInfoThread!): InfoThread
@@ -1080,17 +1108,21 @@ type Mutation {
   createQuestionThread(thread: InputQuestionThread!): QuestionThread
   createQuizAssessment(assessmentInput: CreateAssessmentInput!, quizInput: CreateQuizInput!): QuizAssessment!
   createSection(input: CreateSectionInput!): Section!
+  createSolutionFile(assessmentId: UUID!, name: String!, solutionId: UUID!): File
+  createSubmissionAssessment(assessmentInput: CreateAssessmentInput!, submissionExerciseInput: InputSubmissionExercise!): SubmissionAssessment!
   currencyReward(points: Int!): Inventory
   defaultSettings(userId: UUID!): Settings!
   deleteAllNotifications(userId: UUID!): Int!
   deleteChapter(id: UUID!): UUID!
   deleteCourse(id: UUID!): UUID!
+  deleteExerciseFile(assessmentId: UUID!, fileId: UUID!): File
   deleteFlashcardSet(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the flashcard set and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
   deleteMediaRecord(id: UUID!): UUID!
   deleteMembership(input: CourseMembershipInput!): CourseMembership!
   deleteOneNotification(notificationId: UUID!, userId: UUID!): Int!
   deletePost(postId: UUID!): Post
   deleteQuiz(assessmentId: UUID!): UUID! @deprecated(reason: "Only use if you specifically only want to delete the quiz and not the whole assessment. Otherwise, use deleteAssessment in contents service instead.")
+  deleteSolutionFile(fileId: UUID!, solutionId: UUID!): File
   deleteThread(threadId: UUID!): Thread
   downvotePost(postId: UUID!): Post
   equipItem(itemId: UUID!): Inventory
@@ -1113,6 +1145,7 @@ type Mutation {
   mutateFlashcardSet(assessmentId: UUID!): FlashcardSetMutation!
   mutateQuiz(assessmentId: UUID!): QuizMutation!
   mutateSection(sectionId: UUID!): SectionMutation!
+  mutateSubmission(assessmentId: UUID!): SubmissionMutation!
   recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
   recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
   saveStudentMappings(courseId: UUID!, studentMappingInputs: [StudentMappingInput!]!): [String]!
@@ -1131,7 +1164,9 @@ type Mutation {
   updateMediaRecord(input: UpdateMediaRecordInput!): MediaRecord!
   updateMembership(input: CourseMembershipInput!): CourseMembership!
   updatePost(post: InputPost!): Post
+  updateResult(result: InputResult!): Result!
   updateSettings(input: SettingsInput!, userId: UUID!): Settings!
+  uploadSolution(solution: InputSubmissionSolution!): SubmissionSolution!
   upvotePost(postId: UUID!): Post
 }
 
@@ -1163,7 +1198,6 @@ input NotificationInput {
 }
 
 type NumericQuestion implements Question {
-  aiGenerated: Boolean!
   correctAnswer: Float!
   feedback: JSON
   hint: JSON
@@ -1306,6 +1340,8 @@ type Query {
   PlayerHexadScoreExists(userId: UUID!): Boolean!
   scoreboard(courseId: UUID!): [ScoreboardItem!]!
   semanticSearch(count: Int! = 10, courseWhitelist: [UUID!], queryText: String!): [SemanticSearchResult!]!
+  submissionExerciseByUser(assessmentId: UUID!): SubmissionExercise!
+  submissionExerciseForLecturer(assessmentId: UUID!): SubmissionExercise!
   suggestionsByChapterIds(amount: Int!, chapterIds: [UUID!]!, skillTypes: [SkillType!]! = []): [Suggestion!]!
   thread(id: UUID!): Thread
   threadsByContentId(id: UUID!): [Thread!]!
@@ -1329,7 +1365,6 @@ type Quest implements HasGoal {
 }
 
 interface Question {
-  aiGenerated: Boolean!
   hint: JSON
   itemId: UUID!
   number: Int!
@@ -1393,10 +1428,6 @@ type Quiz {
   selectedQuestions: [Question!]!
 }
 
-type QuizAIGenAsyncResponse {
-  quiz: Quiz
-}
-
 type QuizAssessment implements Assessment & Content {
   _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
   aiProcessingProgress: AiEntityProcessingProgress!
@@ -1430,7 +1461,6 @@ type QuizMutation {
   addMultipleChoiceQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateMultipleChoiceQuestionInputWithoutItem!): QuizOutput!
   addNumericQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateNumericQuestionInputWithoutItem!): QuizOutput!
   addSelfAssessmentQuestion(assessmentId: UUID!, item: CreateItemInput!, questionInput: CreateSelfAssessmentQuestionInputWithoutItem!): QuizOutput!
-  aiGenerateQuestionAsync(context: AiGenQuestionContext): QuizAIGenAsyncResponse
   assessmentId: UUID!
   removeQuestion(number: Int!): Quiz!
   setNumberOfRandomlySelectedQuestions(numberOfRandomlySelectedQuestions: Int!): Quiz!
@@ -1462,6 +1492,12 @@ enum RecommendationUserFeedback {
 directive @resolveTo(requiredSelectionSet: String, sourceName: String, sourceTypeName: String, sourceFieldName: String, sourceSelectionSet: String, sourceArgs: ResolveToSourceArgs, keyField: String, keysArg: String, pubsubTopic: String, filterBy: String, additionalArgs: ResolveToSourceArgs, result: String, resultType: String) on FIELD_DEFINITION
 
 scalar ResolveToSourceArgs
+
+type Result {
+  id: UUID
+  results: [TaskResult!]!
+  status: Status!
+}
 
 enum RewardChangeReason {
   COMPOSITE_VALUE
@@ -1521,7 +1557,6 @@ type SectionMutation {
 }
 
 type SelfAssessmentQuestion implements Question {
-  aiGenerated: Boolean!
   hint: JSON
   itemId: UUID!
   number: Int!
@@ -1625,6 +1660,12 @@ type Stage {
   requiredContentsProgress: Float!
 }
 
+enum Status {
+  failed
+  passed
+  pending
+}
+
 input StringFilter {
   contains: String
   equals: String
@@ -1659,6 +1700,46 @@ type SubexerciseGrading {
   studentId: UUID!
 }
 
+type SubmissionAssessment implements Assessment & Content {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
+  assessmentMetadata: AssessmentMetadata!
+  id: UUID!
+  isAvailableToBeWorkedOn: Boolean!
+  items: [Item!]!
+  metadata: ContentMetadata!
+  progressDataForUser(userId: UUID!): UserProgressData!
+  required: Boolean!
+  userProgressData: UserProgressData!
+}
+
+type SubmissionExercise {
+  assessmentId: UUID
+  courseId: UUID!
+  endDate: DateTime!
+  files: [File!]!
+  solutions: [SubmissionSolution!]!
+  tasks: [Task!]!
+}
+
+type SubmissionMutation {
+  addTask(assessmentId: UUID!, item: CreateItemInput!, submissionInput: InputTaskWithoutItem!): TaskOutput!
+  assessmentId: UUID!
+  mutateSubmission(assessmentId: UUID!, input: InputSubmissionExercise!): SubmissionExercise
+  removeTask(itemId: UUID!): SubmissionExercise
+  updateTask(assessmentId: UUID!, item: ItemInput!, submissionInput: InputTask!): TaskOutput!
+}
+
+type SubmissionSolution {
+  files: [File!]!
+  firstName: String!
+  id: UUID
+  lastName: String!
+  result: Result!
+  submissionDate: DateTime
+  userId: UUID!
+  userName: String!
+}
+
 type Subscription {
   notificationAdded(userId: UUID!): NotificationData!
 }
@@ -1671,6 +1752,26 @@ type Suggestion {
 enum SuggestionType {
   NEW_CONTENT
   REPETITION
+}
+
+type Task {
+  item: Item!
+  itemId: UUID!
+  maxScore: Int!
+  name: String!
+  number: Int!
+}
+
+type TaskOutput {
+  assessmentId: UUID!
+  modifiedTask: Task!
+  tasks: [Task!]!
+}
+
+type TaskResult {
+  itemId: UUID!
+  number: Int!
+  score: Int!
 }
 
 interface Thread {

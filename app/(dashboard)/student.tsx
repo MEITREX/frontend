@@ -24,6 +24,7 @@ import {
   useQueryLoader,
 } from "react-relay";
 import { graphql } from "relay-runtime";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 export default function StudentPage() {
   const { currentUserInfo } = useLazyLoadQuery<studentStudentQuery>(
     graphql`
@@ -156,8 +157,14 @@ export default function StudentPage() {
       }
     }, [searchParams, router, pathname]);
 
-    if (forceOnce || !data.PlayerHexadScoreExists) {
-      return <SurveyPopup id={userId} />;
+    if (!forceOnce || data.PlayerHexadScoreExists) {
+      return <div></div>;
+    } else {
+      return (
+        <GamificationGuard>
+          <SurveyPopup id={userId} />
+        </GamificationGuard>
+      );
     }
     return <div></div>;
   }

@@ -1,12 +1,13 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { Box, Tab, Tabs } from "@mui/material";
 import Link from "next/link";
-import { Tabs, Tab, Box } from "@mui/material";
+import { usePathname } from "next/navigation";
 
 const tabs = [
   { label: "Course Overview", path: "" },
   { label: "Forum", path: "/forum" },
+  { label: "Submissions", path: "/submissions" },
 ];
 
 export function LecturerCourseNavigation({ courseId }: { courseId: string }) {

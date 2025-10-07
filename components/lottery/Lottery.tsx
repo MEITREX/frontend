@@ -32,6 +32,7 @@ import {
 import { LotteryApiLotteryRunMutation } from "@/__generated__/LotteryApiLotteryRunMutation.graphql";
 import { LotteryApiLotteryEquipItemMutation } from "@/__generated__/LotteryApiLotteryEquipItemMutation.graphql";
 import { Rarity, rarityMap } from "@/components/items/types/Types";
+import { grey } from "@mui/material/colors";
 
 export interface LotteryRun {
   id: string;
@@ -382,7 +383,7 @@ export default function Lottery() {
             overflow: "hidden",
             borderWidth: 2,
             borderStyle: "solid",
-            borderColor: rarityMap[rarity as Rarity].border,
+            borderColor: rarityMap[rarity as Rarity]?.border ?? grey[300],
             background: rarityMap[rarity as Rarity].bg,
           }}
         >
