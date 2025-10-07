@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 import XpOverview from "../xpoverview/XpOverview";
 
 const tabs = [
@@ -120,14 +121,13 @@ export default function LeaderboardPage() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h4" gutterBottom>
-        Hi, {currentUserInfo.nickname}
-      </Typography>
-      <Typography variant="body1" color="text.secondary" mb={3}>
-        Here you can see your leaderboard positions across your courses.
-      </Typography>
-      <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
-      <XpOverview userId={currentUserInfo.id} />
+      <GamificationGuard>
+        <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
+      </GamificationGuard>
+
+      <GamificationGuard>
+        <XpOverview userId={currentUserInfo.id} />
+      </GamificationGuard>
 
       <Tabs
         value={activeIndex}

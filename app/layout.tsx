@@ -31,6 +31,7 @@ import {
 import { RelayEnvironmentProvider } from "react-relay";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
 import PageLoading from "./loading";
+import { GamificationRouteGuard } from "@/components/gamification-guard/GamificationRouteGuard";
 
 dayjs.extend(isBetween);
 
@@ -89,7 +90,9 @@ function Body({ children }: { children: React.ReactNode }) {
         <DndProvider backend={HTML5Backend}>
           <SigninContent>
             <PageViewProvider>
-              <InnerLayout>{children}</InnerLayout>
+              <GamificationRouteGuard>
+                <InnerLayout>{children}</InnerLayout>
+              </GamificationRouteGuard>
             </PageViewProvider>
           </SigninContent>
         </DndProvider>

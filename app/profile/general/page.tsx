@@ -8,16 +8,30 @@ import { graphql } from "relay-runtime";
 import GeneralPage from "../GeneralPage";
 import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
 import XpOverview from "../xpoverview/XpOverview";
-
-const tabs = [
-  { label: "General", path: "general" },
-  { label: "Achievements", path: "achievements" },
-  { label: "Forum", path: "forum" },
-  { label: "Badges", path: "badges" },
-  { label: "Leaderboards", path: "leaderboard" },
-];
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
+import { useAuth } from "react-oidc-context";
 
 export default function GeneralPageWrapper() {
+  // TODO: Do this for every Route --> if this would be a layout component we would only need to do it once...
+  const auth = useAuth();
+  const isGamificationDisabled =
+    auth.user?.profile.gamification_type === "none";
+
+  const baseTabs = [
+    { label: "General", path: "general" },
+    { label: "Forum", path: "forum" },
+  ];
+
+  const gamificationTabs = [
+    { label: "Achievements", path: "achievements" },
+    { label: "Badges", path: "badges" },
+    { label: "Leaderboards", path: "leaderboard" },
+  ];
+
+  const tabs = isGamificationDisabled
+    ? baseTabs
+    : [...baseTabs, ...gamificationTabs];
+
   const router = useRouter();
   const pathname = usePathname();
 
@@ -45,10 +59,14 @@ export default function GeneralPageWrapper() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
+      <GamificationGuard>
+        <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
+      </GamificationGuard>
 
       {/* XP Overview Component - ersetzt die inline XP-Anzeige */}
-      <XpOverview userId={currentUserInfo.id} />
+      <GamificationGuard>
+        <XpOverview userId={currentUserInfo.id} />
+      </GamificationGuard>
 
       <Tabs
         value={activeIndex}

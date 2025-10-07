@@ -27,7 +27,7 @@ export function AddStageButton({
 
   return (
     <>
-      {error?.source.errors.map((err: any, i: number) => (
+      {error?.source?.errors?.map((err: any, i: number) => (
         <Alert
           key={i}
           severity="error"
@@ -43,6 +43,10 @@ export function AddStageButton({
           addStage({
             variables: { id: sectionId },
             onError: setError,
+            onCompleted(data) {
+              const newId = data?.mutateSection?.createStage?.id;
+              if (newId && onCreated) onCreated(newId);
+            },
             updater(store, data) {
               const section = store.get(sectionId);
               const stages = section?.getLinkedRecords("stages");
