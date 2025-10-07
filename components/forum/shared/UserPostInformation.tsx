@@ -7,6 +7,7 @@ import {
   forumApiUserInfoQuery,
 } from "@/components/forum/api/ForumApi";
 import { ThreadType } from "@/components/forum/types";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 import { HoverCard } from "@/components/HoverCard";
 import { getPublicProfileItemsMergedCustomID } from "@/components/items/logic/GetItems";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -15,7 +16,6 @@ import { Stack, Typography } from "@mui/material";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
-import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 
 type Props = {
   creatorId: ThreadType["creatorId"];
@@ -26,12 +26,12 @@ type Props = {
 };
 
 export default function UserPostInformation({
-  creationTime,
-  numberOfPosts,
-  displayDate = true,
-  displayPB = true,
-  creatorId,
-}: Props) {
+                                              creationTime,
+                                              numberOfPosts,
+                                              displayDate = true,
+                                              displayPB = true,
+                                              creatorId,
+                                            }: Props) {
   // TODO: Refactor: We should add the username in the backend to the post, so we don't have to fetch for it for every post
   const router = useRouter();
 
@@ -130,8 +130,8 @@ export default function UserPostInformation({
       flexWrap="nowrap"
       overflow="hidden"
     >
-      {displayPB && (
-        <GamificationGuard>
+      <GamificationGuard>
+        {displayPB && (
           <HoverCard
             key={userInfo?.id}
             background={
@@ -188,14 +188,13 @@ export default function UserPostInformation({
                   width: 24,
                   height: 24,
                   borderRadius: 2,
-
                   zIndex: 0,
                 }}
               />
             </div>
           </HoverCard>
-        </GamificationGuard>
-      )}
+        )}
+      </GamificationGuard>
       {userInfo && (
         <div
           style={{
@@ -223,7 +222,8 @@ export default function UserPostInformation({
               frameBool={equipedItemPicFrame != null}
               frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
               profilePic={equipedItemPic?.url ?? "Unkown"}
-            ></HoverCard>
+            >
+            </HoverCard>
           </GamificationGuard>
           <Typography
             noWrap

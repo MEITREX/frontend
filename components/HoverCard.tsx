@@ -195,9 +195,6 @@ export function HoverCard({
                 >
                   {nickname}
                 </div>
-                <div style={{ fontSize: 15, color: "#a1a6b2", marginTop: 8 }}>
-                  Profilinfos folgen…
-                </div>
               </div>
             </div>
           </div>,
