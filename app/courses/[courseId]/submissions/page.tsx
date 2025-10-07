@@ -15,7 +15,6 @@ export default function Forum() {
       graphql`
         query pageLecturerCourseIdQuery($courseId: UUID!) {
           coursesByIds(ids: [$courseId]) {
-            ...lecturerCourseFragment @relay(mask: false)
 
             chapters {
               elements {
