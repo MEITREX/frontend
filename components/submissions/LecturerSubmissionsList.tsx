@@ -59,7 +59,6 @@ const UpdateResultMutation = graphql`
       results {
         itemId
         score
-        number
       }
     }
   }
