@@ -116,12 +116,12 @@ const BodyDynamic = dynamic(() => Promise.resolve(Body), {
 export default function App({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de" className="h-full overflow-hidden">
-    <head>
-      <title>MEITREX</title>
-    </head>
-    <body className="h-full">
-    <BodyDynamic>{children}</BodyDynamic>
-    </body>
+      <head>
+        <title>MEITREX</title>
+      </head>
+      <body className="h-full">
+        <BodyDynamic>{children}</BodyDynamic>
+      </body>
     </html>
   );
 }

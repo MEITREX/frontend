@@ -26,12 +26,12 @@ type Props = {
 };
 
 export default function UserPostInformation({
-                                              creationTime,
-                                              numberOfPosts,
-                                              displayDate = true,
-                                              displayPB = true,
-                                              creatorId,
-                                            }: Props) {
+  creationTime,
+  numberOfPosts,
+  displayDate = true,
+  displayPB = true,
+  creatorId,
+}: Props) {
   // TODO: Refactor: We should add the username in the backend to the post, so we don't have to fetch for it for every post
   const router = useRouter();
 
@@ -222,8 +222,7 @@ export default function UserPostInformation({
               frameBool={equipedItemPicFrame != null}
               frame={equipedItemPicFrame ? equipedItemPicFrame.url : "Unknown"}
               profilePic={equipedItemPic?.url ?? "Unkown"}
-            >
-            </HoverCard>
+            ></HoverCard>
           </GamificationGuard>
           <Typography
             noWrap
