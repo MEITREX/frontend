@@ -600,6 +600,14 @@ function UserInfo({
         {/* Top row: avatar + name + settings + logout */}
         <ListItem
           secondaryAction={
+          <>
+            <Tooltip title="Settings" placement="left">
+              <Link href="/settings/notification">
+                <IconButton>
+                  <Settings />
+                </IconButton>
+              </Link>
+            </Tooltip>
             <Tooltip title="Logout" placement="left">
               <IconButton
                 edge="end"
@@ -617,6 +625,7 @@ function UserInfo({
                 <Logout />
               </IconButton>
             </Tooltip>
+          </>
           }
         >
           <GamificationGuard>
@@ -633,16 +642,11 @@ function UserInfo({
           <Link href={"/profile"}>
             <ListItemText primary={auth.user?.profile?.name} />
           </Link>
-          <Tooltip title="Settings" placement="left">
-            <Link href="/settings/notification">
-              <IconButton>
-                <Settings />
-              </IconButton>
-            </Link>
-          </Tooltip>
         </ListItem>
 
-        <Divider />
+        <GamificationGuard>
+          <Divider />
+        </GamificationGuard>
 
         {/* XP/Level + Currency row */}
         <GamificationGuard>
