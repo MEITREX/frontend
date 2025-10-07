@@ -7,6 +7,7 @@ import QuestList from "@/app/courses/[courseId]/quests/QuestItem";
 import { CourseDataProvider } from "@/components/courses/context/CourseDataContext";
 import { StudentCourseNavigation } from "@/components/courses/student/StudentCourseNavigation";
 import { FormErrors } from "@/components/FormErrors";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 import { PageError } from "@/components/PageError";
 import { useConfirmation } from "@/src/useConfirmation";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
@@ -209,13 +210,15 @@ export default function CourseLayout({
           )}
         </div>
 
-        {/* Quest */}
-        <Box marginBottom={2} marginTop={2}>
-          <QuestList
-            questsProp={course.dailyQuests.quests}
-            streak={course.dailyQuests.rewardMultiplier}
-          />
-        </Box>
+        <GamificationGuard>
+          {/* Quest */}
+          <Box marginBottom={2} marginTop={2}>
+            <QuestList
+              questsProp={course.dailyQuests.quests}
+              streak={course.dailyQuests.rewardMultiplier}
+            />
+          </Box>
+        </GamificationGuard>
 
         {/* Navbar */}
         <StudentCourseNavigation courseId={courseId as string} />

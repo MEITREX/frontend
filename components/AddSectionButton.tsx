@@ -17,7 +17,6 @@ export function AddSectionButton({ chapterId }: { chapterId: string }) {
         id
         ...StudentSectionFragment
         ...LecturerSectionFragment
-
         stages {
           id
           optionalContents {
@@ -35,7 +34,7 @@ export function AddSectionButton({ chapterId }: { chapterId: string }) {
   return (
     <>
       <Section>
-        {error?.source.errors.map((err: any, i: number) => (
+        {error?.source?.errors?.map((err: any, i: number) => (
           <Alert
             key={i}
             severity="error"
@@ -62,25 +61,26 @@ export function AddSectionButton({ chapterId }: { chapterId: string }) {
           </Stage>
         </SectionContent>
       </Section>
-      <DialogBase
-        open={open}
-        title="Add section"
-        sections={dialogSections}
-        onSubmit={(data) =>
-          addSection({
-            variables: { input: { chapterId, name: data.name } },
-            onCompleted() {
-              setOpen(false);
-            },
-            onError: setError,
-          })
-        }
-        initialValues={{
-          name: "",
-        }}
-        validationSchema={validationSchema}
-        onClose={() => setOpen(false)}
-      />
+
+      {open && (
+        <DialogBase
+          open={open}
+          title="Add section"
+          sections={dialogSections}
+          onSubmit={(data) =>
+            addSection({
+              variables: { input: { chapterId, name: data.name } },
+              onCompleted() {
+                setOpen(false);
+              },
+              onError: setError,
+            })
+          }
+          initialValues={{ name: "" }}
+          validationSchema={validationSchema}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </>
   );
 }

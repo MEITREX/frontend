@@ -1,7 +1,8 @@
 "use client";
 
-import { studentPlayerHexadScoreExistsQuery } from "@/__generated__/studentPlayerHexadScoreExistsQuery.graphql";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { studentStudentQuery } from "@/__generated__/studentStudentQuery.graphql";
+import { studentPlayerHexadScoreExistsQuery } from "@/__generated__/studentPlayerHexadScoreExistsQuery.graphql";
 import { CourseCard, yearDivisionToStringShort } from "@/components/CourseCard";
 import SurveyPopup from "@/components/gamification/player-hexad-type-survey/PlayerTypeSurvey";
 import { Settings } from "@/components/settings/types";
@@ -23,6 +24,7 @@ import {
   useQueryLoader,
 } from "react-relay";
 import { graphql } from "relay-runtime";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 export default function StudentPage() {
   const { currentUserInfo } = useLazyLoadQuery<studentStudentQuery>(
     graphql`
@@ -142,13 +144,29 @@ export default function StudentPage() {
       queryRef
     );
 
-    console.log("EXE", data.PlayerHexadScoreExists);
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
 
-    if (data.PlayerHexadScoreExists) {
+    const [forceOnce, setForceOnce] = useState(false);
+
+    useEffect(() => {
+      if (searchParams.get("resumeSurvey") === "1") {
+        setForceOnce(true);
+        // router.replace(pathname);
+      }
+    }, [searchParams, router, pathname]);
+
+    if (!forceOnce || data.PlayerHexadScoreExists) {
       return <div></div>;
     } else {
-      return <SurveyPopup id={userId} />;
+      return (
+        <GamificationGuard>
+          <SurveyPopup id={userId} />
+        </GamificationGuard>
+      );
     }
+    return <div></div>;
   }
 
   function GetPlayerHexadScore() {

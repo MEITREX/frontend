@@ -30,6 +30,7 @@ import { graphql, useFragment, useMutation, useQueryLoader } from "react-relay";
 import { AddCodeAssignmentModal } from "./AddCodeAssignmentModal";
 import { MediaContentModal } from "./MediaContentModal";
 import { QuizModal } from "./QuizModal";
+import { SubmissionExerciseModal } from "./SubmissionExerciseModal";
 
 export function EditContentModal({
   chapterId,
@@ -56,6 +57,8 @@ export function EditContentModal({
   const [openAddQuizModal, setOpenAddQuizModal] = useState(false);
   const [quizModalKey, setQuizModalKey] = useState(0);
   const [openCodeAssignmentModal, setOpenCodeAssignmentModal] = useState(false);
+  const [openSubmissionExerciseModal, setOpenSubmissionExerciseModal] =
+    useState(false);
 
   const [openModal, setOpenModal] = useState(false);
 
@@ -90,6 +93,9 @@ export function EditContentModal({
             __typename
           }
           ... on QuizAssessment {
+            __typename
+          }
+          ... on SubmissionAssessment {
             __typename
           }
           ... on AssignmentAssessment {
@@ -184,6 +190,7 @@ export function EditContentModal({
     }
     setOpenCodeAssignmentModal(true);
   };
+
   return (
     <>
       <Button startIcon={<EditNote />} onClick={() => setOpenModal(true)}>
@@ -275,6 +282,8 @@ export function EditContentModal({
                           router.push(
                             content.__typename === "FlashcardSetAssessment"
                               ? `/courses/${courseId}/flashcards/${content.id}`
+                              : content.__typename === "SubmissionAssessment"
+                              ? `/courses/${courseId}/submissions/${content.id}`
                               : content.__typename === "MediaContent"
                               ? `/courses/${courseId}/media/${content.id}`
                               : content.__typename === "QuizAssessment"
@@ -354,6 +363,14 @@ export function EditContentModal({
           >
             Add Code Assignment
           </Button>
+          <Button
+            onClick={() => setOpenSubmissionExerciseModal(true)}
+            variant="text"
+            className="mt-4"
+            startIcon={<Add />}
+          >
+            Add Submission Exercise
+          </Button>
         </DialogContent>
         <DialogActions>
           <LoadingButton loading={loading} onClick={submit}>
@@ -389,6 +406,13 @@ export function EditContentModal({
           allSkillsQueryRef={allSkillsQueryRef}
         />
       )}
+      <SubmissionExerciseModal
+        isOpen={openSubmissionExerciseModal}
+        onClose={() => setOpenSubmissionExerciseModal(false)}
+        chapterId={chapterId}
+        _existingSubmission={null}
+        tasks={[]}
+      />
     </>
   );
 }
