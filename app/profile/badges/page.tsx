@@ -2,6 +2,7 @@
 
 import { pagePrivateProfileStudentBadgeQuery } from "@/__generated__/pagePrivateProfileStudentBadgeQuery.graphql";
 import { Box, Tab, Tabs, Typography } from "@mui/material";
+import XpOverview from "../xpoverview/XpOverview";
 import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
@@ -43,6 +44,10 @@ export default function BadgesPage() {
     <Box sx={{ p: 2 }}>
       <GamificationGuard>
         <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
+      </GamificationGuard>
+
+      <GamificationGuard>
+        <XpOverview userId={currentUserInfo.id} />
       </GamificationGuard>
 
       <Tabs

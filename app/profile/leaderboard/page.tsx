@@ -9,6 +9,7 @@ import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
 import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
+import XpOverview from "../xpoverview/XpOverview";
 
 const tabs = [
   { label: "General", path: "general" },
@@ -123,6 +124,11 @@ export default function LeaderboardPage() {
       <GamificationGuard>
         <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
       </GamificationGuard>
+
+      <GamificationGuard>
+        <XpOverview userId={currentUserInfo.id} />
+      </GamificationGuard>
+
       <Tabs
         value={activeIndex}
         onChange={handleChange}
