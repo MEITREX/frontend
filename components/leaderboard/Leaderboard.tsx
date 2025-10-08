@@ -197,7 +197,7 @@ export default function Leaderboard({
           id
           score
           user {
-            id
+            refUserID
             name
           }
         }
@@ -211,7 +211,7 @@ export default function Leaderboard({
           id
           score
           user {
-            id
+            refUserID
             name
           }
         }
@@ -225,7 +225,7 @@ export default function Leaderboard({
           id
           score
           user {
-            id
+            refUserID
             name
           }
         }
@@ -365,6 +365,10 @@ export default function Leaderboard({
     [rawScores]
   );
 
+  const mapUserId = (user: any): string => {
+    return user?.refUserID ?? user?.id ?? "";
+  };
+
   // displayUsers logic unchanged
   const displayUsers = React.useMemo(
     () =>
@@ -372,12 +376,13 @@ export default function Leaderboard({
         .filter((us) => us.user)
         .map((us, idx) => {
           const user = us.user!;
+          const userId = mapUserId(user);
           return {
-            id: user.id,
+            id: userId,
             name: user.name ?? "Unknown",
             points: us.score ?? 0,
             rank: idx + 1,
-            isCurrentUser: user.id === data?.currentUserInfo?.id,
+            isCurrentUser: userId === data?.currentUserInfo?.id,
             profileImage: undefined,
             backgroundImage: undefined,
           };
