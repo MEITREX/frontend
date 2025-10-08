@@ -12,6 +12,7 @@ import { SubmissionExerciseModal } from "@/components/SubmissionExerciseModal";
 import AddTaskDialog from "@/components/submissions/AddTaskDialog";
 import EditTaskDialog from "@/components/submissions/EditTaskDialog";
 import SubmissionsHeader from "@/components/submissions/SubmissionsHeader";
+import { useConfirmation } from "@/src/useConfirmation";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -366,6 +367,7 @@ export default function LecturerSubmission() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const confirm = useConfirmation();
 
   const [commitCreateFile, isCreateInFlight] =
     useMutation<lecturerCreateExerciseFileMutation>(CreateExerciseFileMutation);
@@ -402,12 +404,15 @@ export default function LecturerSubmission() {
   );
 
   // Function for deleting tasks
-  function deleteTask(itemId: string) {
+  async function deleteTask(itemId: string) {
     const assessmentId = String(submissionId);
 
     if (!assessmentId || !itemId) return;
     if (
-      !confirm("Do you really want to delete this task? This can't be undone.")
+      !await confirm({
+        title: "Delete Task",
+        message: "Do you really want to delete this task? This can't be undone.",
+      })
     )
       return;
 
@@ -438,12 +443,15 @@ export default function LecturerSubmission() {
   const [commitDeleteFile, isDeleteFileInFlight] =
     useMutation<lecturerDeleteExerciseFileMutation>(DeleteExerciseFileMutation);
 
-  function deleteFile(fileId: string) {
+  async function deleteFile(fileId: string) {
     const assessmentId = String(submissionId);
     if (!assessmentId || !fileId) return;
 
     if (
-      !confirm("Do you really want to delete this file? This can't be undone.")
+      !await confirm({
+        title: "Delete File",
+        message: "Do you really want to delete this file? This can't be undone.",
+      })
     ) {
       return;
     }

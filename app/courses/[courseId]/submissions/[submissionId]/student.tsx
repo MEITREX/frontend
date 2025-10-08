@@ -25,6 +25,7 @@ import { studentCreateSolutionMutation } from "@/__generated__/studentCreateSolu
 import { studentDeleteSolutionFileMutation } from "@/__generated__/studentDeleteSolutionFileMutation.graphql";
 import { studentSubmissionExerciseByUserQuery } from "@/__generated__/studentSubmissionExerciseByUserQuery.graphql";
 import { Heading } from "@/components/Heading";
+import { useConfirmation } from "@/src/useConfirmation";
 import { Delete } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -198,6 +199,7 @@ export default function StudentSubmissionView() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const confirm = useConfirmation();
 
   const [commitCreateFile, isCreateFileInFlight] =
     useMutation<studentCreateSolutionFileMutation>(CreateSolutionFileMutation);
@@ -300,13 +302,14 @@ export default function StudentSubmissionView() {
     }
   }
 
-  const handleFileDeletion = (fileId: string) => {
+  const handleFileDeletion = async (fileId: string) => {
     if (!latestSolution || !latestSolution.id) return;
 
     if (
-      window.confirm(
-        "Are you sure you want to delete this file? This cannot be undone."
-      )
+      await confirm({
+        title: "Delete submitted File",
+        message: "Are you sure you want to delete this file? This cannot be undone."
+      })
     ) {
       commitDeleteFile({
         variables: {

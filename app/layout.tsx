@@ -172,11 +172,11 @@ function SigninContent({ children }: { children: React.ReactNode }) {
       <RelayEnvironmentProvider environment={environment}>
         <ThemeProvider theme={theme}>
           <ConfirmationProvider>
-          <CurrencyProvider>
-            <ClientToaster />
-            <CurrencyHydrator />
-            {children}
-          </CurrencyProvider>
+            <CurrencyProvider>
+              <ClientToaster />
+              <CurrencyHydrator />
+              {children}
+            </CurrencyProvider>
           </ConfirmationProvider>
         </ThemeProvider>
       </RelayEnvironmentProvider>
