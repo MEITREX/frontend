@@ -1,5 +1,6 @@
 import { SubmissionsHeaderDeleteSubmissionMutation } from "@/__generated__/SubmissionsHeaderDeleteSubmissionMutation.graphql";
 import { updaterSetDelete } from "@/src/relay-helpers/common";
+import { useConfirmation } from "@/src/useConfirmation";
 import { Delete, Edit } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
@@ -27,6 +28,7 @@ export default function SubmissionsHeader({
 }: Props) {
   const { courseId, submissionId } = useParams();
   const router = useRouter();
+  const confirm = useConfirmation();
 
   const [commitDeleteSubmission, isDeleteCommitInFlight] =
     useMutation<SubmissionsHeaderDeleteSubmissionMutation>(
@@ -71,11 +73,13 @@ export default function SubmissionsHeader({
                   <Delete />
                 )
               }
-              onClick={() => {
+              onClick={async () => {
                 if (
-                  confirm(
-                    "Do you really want to delete this submission? This can't be undone."
-                  )
+                  await confirm({
+                    title: "Delete Submission",
+                    message:
+                      "Do you really want to delete this submission? This can't be undone.",
+                  })
                 )
                   deleteSubmission();
               }}

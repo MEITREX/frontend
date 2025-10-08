@@ -1,6 +1,7 @@
 import { FlashcardHeaderDeleteFlashcardSetMutation } from "@/__generated__/FlashcardHeaderDeleteFlashcardSetMutation.graphql";
 import { FlashcardHeaderFragment$key } from "@/__generated__/FlashcardHeaderFragment.graphql";
 import { updaterSetDelete } from "@/src/relay-helpers/common";
+import { useConfirmation } from "@/src/useConfirmation";
 import { Delete, Edit } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
@@ -39,6 +40,7 @@ const LecturerFlashcardHeader = ({
 }: Props) => {
   const { courseId, flashcardSetId } = useParams();
   const router = useRouter();
+  const confirm = useConfirmation();
 
   const { error, setError } = useError();
 
@@ -84,11 +86,13 @@ const LecturerFlashcardHeader = ({
                   <Delete />
                 )
               }
-              onClick={() => {
+              onClick={async () => {
                 if (
-                  confirm(
-                    "Do you really want to delete this flashcard set? This can't be undone."
-                  )
+                  await confirm({
+                    title: "Confirm Deletion",
+                    message:
+                      "Do you really want to delete this flashcard set? This can't be undone.",
+                  })
                 )
                   deleteFlashcardSet();
               }}

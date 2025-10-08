@@ -1,7 +1,8 @@
+import { DeleteAssignmentButtonMutation } from "@/__generated__/DeleteAssignmentButtonMutation.graphql";
+import { useConfirmation } from "@/src/useConfirmation";
 import { Delete } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
 import { graphql, useMutation } from "react-relay";
-import { DeleteAssignmentButtonMutation } from "@/__generated__/DeleteAssignmentButtonMutation.graphql";
 
 export function DeleteAssignmentButton({
   chapterId,
@@ -14,6 +15,7 @@ export function DeleteAssignmentButton({
   onError: (e: any) => void;
   onCompleted: () => void;
 }) {
+  const confirm = useConfirmation();
   const [deleteAssignment, isDeleting] =
     useMutation<DeleteAssignmentButtonMutation>(graphql`
       mutation DeleteAssignmentButtonMutation($id: UUID!) {
@@ -23,11 +25,13 @@ export function DeleteAssignmentButton({
       }
     `);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (
-      confirm(
-        "Do you really want to delete this assignment? This can't be undone."
-      )
+      await confirm({
+        title: "Confirm Deletion",
+        message:
+          "Do you really want to delete this assignment? This can't be undone.",
+      })
     ) {
       deleteAssignment({
         variables: { id: contentId },

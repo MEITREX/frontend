@@ -4,7 +4,6 @@ import {
   Autocomplete,
   Box,
   Chip,
-  CircularProgress,
   createFilterOptions,
   Stack,
   TextField,
@@ -77,6 +76,7 @@ interface Props {
   SKILL_CATALOGUE: Record<string, MappedSkillType[]>;
   SKILL_CATEGORY_ABBREVIATION: Record<string, string>;
   stackDirection?: "row" | "column";
+  required?: boolean;
 }
 
 const ItemFormSectionAutocompletes = ({
@@ -86,6 +86,7 @@ const ItemFormSectionAutocompletes = ({
   SKILL_CATALOGUE,
   SKILL_CATEGORY_ABBREVIATION,
   stackDirection = "row",
+  required,
 }: Props) => {
   const { coursesByIds } = usePreloadedQuery(AllSkillQuery, allSkillsQueryRef);
   // FIXME: after waiting some time, this turns undefined?!
@@ -374,7 +375,10 @@ const ItemFormSectionAutocompletes = ({
             })
           }
           renderInput={(params) => (
-            <TextField {...params} label="Knowledge Area" />
+            <TextField
+              {...params}
+              label={`Knowledge Area${required ? " *" : ""}`}
+            />
           )}
           sx={{ width: 300 }}
           filterOptions={(options, params) => {
@@ -552,7 +556,10 @@ const ItemFormSectionAutocompletes = ({
             value={newSkillAndCategory}
             // render stuff
             renderInput={(params) => (
-              <TextField {...params} label="All Skills" />
+              <TextField
+                {...params}
+                label={`All Skills${required ? " *" : ""}`}
+              />
             )}
             renderTags={() => null}
             // data stuff

@@ -9,8 +9,8 @@ import logo from "@/assets/logo.svg";
 import StoreIcon from "@mui/icons-material/Store";
 import coins from "assets/lottery/coins.png";
 
-import duration from "dayjs/plugin/duration";
 import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
 dayjs.extend(duration);
 
 import Image from "next/image";
@@ -35,15 +35,16 @@ import {
 
 import {
   Autocomplete,
-  Avatar,
   Badge,
-  Button,
   Box,
+  Button,
   Chip,
   CircularProgress,
+  ClickAwayListener,
   Divider,
   IconButton,
   InputAdornment,
+  LinearProgress,
   List,
   ListItem,
   ListItemAvatar,
@@ -51,39 +52,39 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
+  Paper,
   TextField,
   Tooltip,
   Typography,
-  LinearProgress,
 } from "@mui/material";
 import type {
-  AutocompleteRenderOptionState,
   AutocompleteOwnerState,
+  AutocompleteRenderOptionState,
 } from "@mui/material/Autocomplete";
 
 import { chain, debounce } from "lodash";
 import { usePathname, useRouter } from "next/navigation";
 
+import { NavbarNotificationsQuery } from "@/__generated__/NavbarNotificationsQuery.graphql";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 import React, {
   ReactElement,
-  useEffect,
   useCallback,
+  useEffect,
   useRef,
   useState,
   useTransition,
 } from "react";
 import { useAuth } from "react-oidc-context";
 import {
-  graphql,
   fetchQuery,
+  graphql,
   useFragment,
   useLazyLoadQuery,
-  useSubscription,
   useRelayEnvironment,
+  useSubscription,
 } from "react-relay";
 import NotificationsWithArrow from "./navbar/notifications/NotificationsWithArrow";
-import { NavbarNotificationsQuery } from "@/__generated__/NavbarNotificationsQuery.graphql";
-import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 
 const NAVBAR_NOTIFICATIONS_QUERY = graphql`
   query NavbarNotificationsQuery {
@@ -306,6 +307,24 @@ function NavbarBase({
     .value() as SearchResultType[];
 
   const [isSearchPopupOpen, setSearchPopupOpen] = useState(false);
+  function SearchPopupPaper({ children }: { children?: any }) {
+    return (
+      <ClickAwayListener onClickAway={() => setSearchPopupOpen(false)}>
+        <Paper>
+          {children}
+          <Button
+            startIcon={<ManageSearch />}
+            onClick={() => {
+              router.push(`/search?query=${term}`);
+              setSearchPopupOpen(false);
+            }}
+          >
+            Detailed results
+          </Button>
+        </Paper>
+      </ClickAwayListener>
+    );
+  }
 
   return (
     <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
@@ -325,7 +344,7 @@ function NavbarBase({
           MEITREX
         </Typography>
       </div>
-
+      <UserInfo tutor={tutor} userId={userId} />
       <NavbarSection>
         <Autocomplete<SearchResultType, false, false, true>
           freeSolo
@@ -386,6 +405,7 @@ function NavbarBase({
               }}
             />
           )}
+          PaperComponent={SearchPopupPaper}
         />
         <NavbarLink title="Dashboard" icon={<Dashboard />} href="/" exact />
         <NavbarLink
@@ -400,7 +420,6 @@ function NavbarBase({
       </NavbarSection>
 
       {children}
-      <UserInfo tutor={tutor} userId={userId} />
     </div>
   );
 }
@@ -660,7 +679,7 @@ function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
   }, [level]);
 
   return (
-    <div className="sticky bottom-0 py-3 -mt-3 bg-gradient-to-t from-slate-200 from-75% to-transparent">
+    <div className="sticky bottom-0 -mt-3 bg-gradient-to-t from-slate-200 from-75% to-transparent">
       <NavbarSection>
         {/* Top row: avatar + name + settings + logout */}
         <ListItem

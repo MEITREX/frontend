@@ -10,7 +10,7 @@ import { CreateItem } from "../form-sections/item/ItemFormSection";
 import {
   MultipleChoiceQuestionData,
   MultipleChoiceQuestionModal,
-} from "./MutlipleChoiceQuestionModal";
+} from "./MultipleChoiceQuestionModal";
 
 const MultipleChoiceQuestionMutation = graphql`
   mutation AddMultipleChoiceQuestionModalMutation(

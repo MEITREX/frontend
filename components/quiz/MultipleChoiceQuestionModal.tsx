@@ -12,7 +12,13 @@ import {
   FormControlLabel,
   IconButton,
 } from "@mui/material";
-import { Dispatch, SetStateAction, useCallback } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { PreloadedQuery } from "react-relay";
 import { useError } from "../ErrorContext";
 import { Form, FormSection } from "../Form";
@@ -62,6 +68,32 @@ export function MultipleChoiceQuestionModal({
   onClose,
 }: Readonly<Props>) {
   const { error } = useError();
+  const [focusedAnswerIndex, setFocusedAnswerIndex] = useState<number | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (open && questionData.answers.length < 2) {
+      setQuestionData((prev) => ({
+        ...prev,
+        answers: [
+          ...prev.answers,
+          ...Array.from({ length: 2 - prev.answers.length }, () => ({
+            correct: false,
+            answerText: "",
+            feedback: "",
+          })),
+        ],
+      }));
+    }
+  }, [open, questionData.answers.length, setQuestionData]);
+
+  useEffect(() => {
+    if (focusedAnswerIndex !== null) {
+      const timer = setTimeout(() => setFocusedAnswerIndex(null), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [focusedAnswerIndex]);
 
   const updateQuestionData = useCallback(
     <K extends keyof MultipleChoiceQuestionData>(
@@ -98,6 +130,8 @@ export function MultipleChoiceQuestionModal({
     [setQuestionData]
   );
 
+  const isItemValid = item.associatedSkills.length > 0;
+
   const isOneAnswerCorrect = questionData.answers.some(
     (x) => x.correct === true
   );
@@ -109,11 +143,13 @@ export function MultipleChoiceQuestionModal({
     isOneAnswerCorrect &&
     hasAtLeastTwoAnswers &&
     !!serializeToText(questionData.text) &&
-    areAllAnswersFilled;
+    areAllAnswersFilled &&
+    isItemValid;
 
-  const addEmptyAnswer = useCallback(
-    () =>
-      setQuestionData((oldValue) => ({
+  const addEmptyAnswer = useCallback(() => {
+    setQuestionData((oldValue) => {
+      setFocusedAnswerIndex(oldValue.answers.length);
+      return {
         ...oldValue,
         answers: [
           ...oldValue.answers,
@@ -123,9 +159,9 @@ export function MultipleChoiceQuestionModal({
             feedback: "",
           },
         ],
-      })),
-    [setQuestionData]
-  );
+      };
+    });
+  }, [setQuestionData]);
 
   return (
     <Dialog open={open} maxWidth="lg" onClose={onClose}>
@@ -138,6 +174,7 @@ export function MultipleChoiceQuestionModal({
             item={item}
             setItem={setItem}
             allSkillsQueryRef={allSkillsQueryRef}
+            required
           />
           <FormSection title="Question">
             <RichTextEditor
@@ -147,6 +184,7 @@ export function MultipleChoiceQuestionModal({
               className="w-[700px]"
               label="Title"
               required
+              autoFocus
             />
 
             <RichTextEditor
@@ -168,6 +206,7 @@ export function MultipleChoiceQuestionModal({
                 className="w-[700px]"
                 label="Text"
                 required
+                autoFocus={i === focusedAnswerIndex}
               />
 
               <RichTextEditor
@@ -220,6 +259,7 @@ export function MultipleChoiceQuestionModal({
       </DialogContent>
       <DialogActions>
         <div className="text-red-600 text-xs mr-3">
+          {!isItemValid && <div>At least one skill must be associated</div>}
           {!isOneAnswerCorrect && (
             <div>At least one answer has to be correct</div>
           )}

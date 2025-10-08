@@ -9,6 +9,7 @@ import CurrencyHydrator from "@/components/currency/CurrencyHydrator";
 import TutorWidget from "@/components/tutor/TutorWidget";
 import { initRelayEnvironment } from "@/src/RelayEnvironment";
 import { PageView, PageViewProvider, usePageView } from "@/src/currentView";
+import { ConfirmationProvider } from "@/src/useConfirmation";
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
@@ -170,11 +171,13 @@ function SigninContent({ children }: { children: React.ReactNode }) {
     return (
       <RelayEnvironmentProvider environment={environment}>
         <ThemeProvider theme={theme}>
-          <CurrencyProvider>
-            <ClientToaster />
-            <CurrencyHydrator />
-            {children}
-          </CurrencyProvider>
+          <ConfirmationProvider>
+            <CurrencyProvider>
+              <ClientToaster />
+              <CurrencyHydrator />
+              {children}
+            </CurrencyProvider>
+          </ConfirmationProvider>
         </ThemeProvider>
       </RelayEnvironmentProvider>
     );

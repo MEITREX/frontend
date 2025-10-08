@@ -93,6 +93,7 @@ export type ItemFormSectionProps =
         | PreloadedQuery<lecturerAllSkillsQuery>
         | undefined
         | null;
+      required?: boolean;
     }
   | {
       operation: "edit";
@@ -103,6 +104,7 @@ export type ItemFormSectionProps =
         | PreloadedQuery<lecturerAllSkillsQuery>
         | undefined
         | null;
+      required?: boolean;
     };
 
 const ItemFormSection = (props: ItemFormSectionProps) => {
@@ -116,10 +118,10 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
   const skillsSelected = item.associatedSkills;
 
   return (
-    <FormSection title="Item Information">
+    <FormSection title={`Item Information${props.required ? " *" : ""}`}>
       <FormControl variant="outlined">
         <InputLabel htmlFor="assessmentBloomLevelsInput">
-          Levels of Blooms Taxonomy
+          Levels of Blooms Taxonomy {props.required ? " *" : ""}
         </InputLabel>
 
         <Select
@@ -219,27 +221,15 @@ const ItemFormSection = (props: ItemFormSectionProps) => {
           allSkillsQueryRef={props.allSkillsQueryRef}
           SKILL_CATALOGUE={SKILL_CATALOGUE}
           SKILL_CATEGORY_ABBREVIATION={SKILL_CATEGORY_ABBREVIATION}
+          required={props.required}
         />
       )}
       <div className="text-red-600 text-xs mr-3 mb-4">
-        {item.associatedBloomLevels.length < 1 && skillsSelected.length < 1 ? (
-          <div>
-            Attention without Blooms Taxonomy and Skill, task cannot be
-            considered in the performance analysis
-          </div>
-        ) : (
-          (item.associatedBloomLevels.length < 1 && (
-            <div>
-              Attention without Blooms Taxonomy, task cannot be considered in
-              the performance analysis
-            </div>
-          )) ||
-          (skillsSelected.length < 1 && (
-            <div>
-              Attention without Skill, task cannot be considered in the
-              performance analysis
-            </div>
-          ))
+        {props.required && item.associatedBloomLevels.length < 1 && (
+          <div>A Bloom&apos;s Taxonomy level is required.</div>
+        )}
+        {props.required && skillsSelected.length < 1 && (
+          <div>An associated skill is required.</div>
         )}
       </div>
     </FormSection>

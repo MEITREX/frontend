@@ -122,6 +122,8 @@ export function ClozeQuestionModal({
     [setQuestionData]
   );
 
+  const isItemValid = item.associatedSkills.length > 0;
+
   const hasAtLeastOneTextElement = useMemo(
     () =>
       questionData.clozeElements.filter((e) => e.type === "TEXT").length > 0,
@@ -142,7 +144,8 @@ export function ClozeQuestionModal({
   const valid =
     hasAtLeastOneTextElement &&
     hasAtLeastOneBlankElement &&
-    allElementsAreFilled;
+    allElementsAreFilled &&
+    isItemValid;
 
   return (
     <Dialog open={open} maxWidth="lg" onClose={onClose}>
@@ -155,6 +158,7 @@ export function ClozeQuestionModal({
             item={item}
             setItem={setItem}
             allSkillsQueryRef={allSkillsQueryRef}
+            required
           />
           <FormSection title="Cloze text">
             {questionData.clozeElements.map((elem, i) =>
@@ -288,6 +292,7 @@ export function ClozeQuestionModal({
       </DialogContent>
       <DialogActions>
         <div className="text-red-600 text-xs mr-3">
+          {!isItemValid && <div>At least one skill must be associated</div>}
           {!hasAtLeastOneTextElement && (
             <div>Add at least one text element</div>
           )}
