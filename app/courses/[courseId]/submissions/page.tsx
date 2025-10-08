@@ -49,11 +49,18 @@ export default function Forum() {
   const course = coursesByIds[0];
 
   const submissionAssessments = course.chapters.elements
-    .flatMap((ch) => [
-      ...(ch.contents ?? []),
-      ...(ch.contentsWithNoSection ?? []),
-    ])
-    .filter((c: any) => c?.__typename === "SubmissionAssessment")
+    .flatMap((ch) => {
+      const contents = (ch.contents ?? []).filter(
+        (c: any) => c?.__typename === "SubmissionAssessment"
+      );
+
+      const contentsWithNoSection = (ch.contentsWithNoSection ?? [])
+        .filter((c: any) => c?.__typename === "SubmissionAssessment")
+        // Nur hinzufügen, wenn sie nicht bereits in contents vorkommen
+        .filter((c: any) => !contents.some((x: any) => x.id === c.id));
+
+      return [...contents, ...contentsWithNoSection];
+    })
     .map((c: any) => ({
       assessmentId: c.id,
       name: c.metadata?.name ?? "Submission",
