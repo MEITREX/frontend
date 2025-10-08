@@ -53,7 +53,7 @@ function startOfMonth(d: Date): Date {
 const PublicProfileUserXPQueryGQL = graphql`
   query pagePublicProfileUserXPQuery($userID: ID!) {
     getUser(userID: $userID) {
-      id
+      refUserID
       xpValue
       requiredXP
       exceedingXP
@@ -81,7 +81,7 @@ const PagePublicProfileCourseLBQueryGQL = graphql`
         id
         score
         user {
-          id
+          refUserID
           name
         }
       }
@@ -131,7 +131,9 @@ const PagePublicProfileManyUserInfosQueryGQL = graphql`
     }
   }
 `;
-
+function mapUserId(user: any): string {
+  return user?.refUserID ?? user?.id ?? "";
+}
 /** Build id -> display name map (prefer explicit user.name if present; otherwise nickname from public info). */
 function buildNameMap(
   fromScores: Array<any>[],
@@ -140,7 +142,7 @@ function buildNameMap(
   const map: Record<string, string> = {};
   for (const arr of fromScores) {
     for (const s of arr ?? []) {
-      const id = s?.user?.id;
+      const id = mapUserId(s?.user);
       const nm = s?.user?.name;
       if (id && nm) map[id] = nm;
     }
@@ -158,12 +160,13 @@ function enrichScoresWithNames(
   nameById: Record<string, string>
 ) {
   return (scores ?? []).map((s) => {
-    const id = s?.user?.id;
+    // verwende gemappte ID
+    const id = mapUserId(s?.user);
     const existing = s?.user?.name;
     const name = existing ?? (id ? nameById[id] : undefined) ?? "Unknown";
     return {
       ...s,
-      user: { ...(s?.user ?? {}), name },
+      user: { id, name }, // NEU: erstelle normalisiertes User-Objekt
     };
   });
 }
@@ -335,7 +338,8 @@ export default function PublicProfilePage() {
         const idSet = new Set<string>();
         for (const board of [...weeklyRaw, ...monthlyRaw, ...allTimeRaw]) {
           for (const s of board?.userScores ?? []) {
-            if (s?.user?.id) idSet.add(s.user.id);
+            const id = mapUserId(s?.user);
+            if (id) idSet.add(id);
           }
         }
 

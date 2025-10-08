@@ -64,7 +64,7 @@ const LeaderboardWidget: React.FC<Props> = ({
             id
             score
             user {
-              id
+              refUserID
               name
             }
           }
@@ -105,8 +105,23 @@ const LeaderboardWidget: React.FC<Props> = ({
   const rawScores = selectedWeekly?.userScores ?? [];
   const noData = rawScores.length === 0;
 
+  const mapUserId = (user: any): string => {
+    return user?.refUserID ?? user?.id ?? "";
+  };
+
   const sorted = React.useMemo(
-    () => [...rawScores].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)),
+    () =>
+      [...rawScores]
+        .map((us) => ({
+          ...us,
+          user: us.user
+            ? {
+                id: mapUserId(us.user), // ← NEU: gemappte ID
+                name: us.user.name,
+              }
+            : null,
+        }))
+        .sort((a, b) => (b.score ?? 0) - (a.score ?? 0)),
     [rawScores]
   );
 

@@ -3,12 +3,12 @@ import { graphql } from "relay-runtime";
 import { useLazyLoadQuery } from "react-relay";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRelayEnvironment, fetchQuery } from "react-relay";
-//import { pagePrivateProfileStudentGeneral_GetUserXPQuery } from "@/__generated__/pagePrivateProfileStudentGeneral_GetUserXPQuery.graphql";
 
+// ← GEÄNDERT: id zu refUserID
 const getUserXPQuery = graphql`
   query XpOverview_GetUserXPQuery($userID: ID!) {
     getUser(userID: $userID) {
-      id
+      refUserID
       xpValue
       requiredXP
       exceedingXP
@@ -116,8 +116,8 @@ export default function XpOverview({ userId }: Props) {
 
   // Calculate display values (exactly like Navbar)
   const level = levelInfo?.level ?? 0;
-  const xpInLevel = levelInfo?.xpInLevel ?? 0; // exceedingXP
-  const xpRemaining = Math.max(0, levelInfo?.xpRequiredForLevelUp ?? 0); // requiredXP
+  const xpInLevel = levelInfo?.xpInLevel ?? 0;
+  const xpRemaining = Math.max(0, levelInfo?.xpRequiredForLevelUp ?? 0);
   const xpTotalThisLevel = Math.max(1, Math.round(xpInLevel + xpRemaining));
   const percent = Math.max(
     0,
