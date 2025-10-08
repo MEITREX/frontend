@@ -101,7 +101,7 @@ const XPWidgetQuery = graphql`
 const XPWidgetGetUserXPQuery = graphql`
   query XPWidgetGetUserXPQuery($userID: ID!) {
     getUser(userID: $userID) {
-      id
+      refUserID
       name
       email
       xpValue

@@ -564,7 +564,7 @@ function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
       const query = graphql`
         query NavbarGetUserXPQuery($userID: ID!) {
           getUser(userID: $userID) {
-            id
+            refUserID
             name
             email
             xpValue

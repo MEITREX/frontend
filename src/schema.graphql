@@ -1931,6 +1931,7 @@ type User {
   id: UUID!
   level: Int!
   name: String
+  refUserID: UUID
   requiredXP: Float!
   xpValue: Int!
 }
