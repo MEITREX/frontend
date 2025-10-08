@@ -157,16 +157,10 @@ export default function StudentPage() {
       }
     }, [searchParams, router, pathname]);
 
-    if (!forceOnce || data.PlayerHexadScoreExists) {
-      return <div></div>;
-    } else {
-      return (
-        <GamificationGuard>
-          <SurveyPopup id={userId} />
-        </GamificationGuard>
-      );
+    if (forceOnce || !data.PlayerHexadScoreExists) {
+      return <SurveyPopup id={userId} />;
     }
-    return <div></div>;
+    return null;
   }
 
   function GetPlayerHexadScore() {

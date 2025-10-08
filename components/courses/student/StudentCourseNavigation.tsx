@@ -8,7 +8,7 @@ import { useAuth } from "react-oidc-context";
 export function StudentCourseNavigation({ courseId }: { courseId: string }) {
   const auth = useAuth();
   const isGamificationDisabled =
-    auth.user?.profile.gamification_type === "none";
+    auth.user?.profile?.gamification_type === "none";
 
   const baseTabs = [
     { label: "Course Overview", path: "" },
