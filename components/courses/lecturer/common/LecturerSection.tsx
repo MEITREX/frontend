@@ -9,6 +9,7 @@ import { Section, SectionContent, SectionHeader } from "@/components/Section";
 import { Stage } from "@/components/Stage";
 import { ContentLink } from "@/components/content-link/ContentLink";
 import { orderBy } from "lodash";
+import { useState } from "react"; // ← NEU
 import { graphql, useFragment } from "react-relay";
 
 graphql`
@@ -19,17 +20,14 @@ graphql`
     position
     requiredContents {
       ...ContentLinkFragment
-
       userProgressData {
         nextLearnDate
       }
       __typename
       id
     }
-
     optionalContents {
       ...ContentLinkFragment
-
       userProgressData {
         nextLearnDate
       }
@@ -63,6 +61,9 @@ export function LecturerSection({
     `,
     _section
   );
+
+  // ← NEU: State für automatisches Öffnen des Edit-Modals
+  const [autoOpenStageId, setAutoOpenStageId] = useState<string | null>(null);
 
   return (
     <Section key={section.id}>
@@ -105,6 +106,8 @@ export function LecturerSection({
                 _chapter={section.chapter}
                 optionalRecords={stage.optionalContents.map((x) => x.id)}
                 requiredRecords={stage.requiredContents.map((x) => x.id)}
+                autoOpen={autoOpenStageId === stage.id} // ← NEU
+                onClose={() => setAutoOpenStageId(null)} // ← NEU
               />
             </div>
             <div className="mt-2">
@@ -113,7 +116,10 @@ export function LecturerSection({
           </Stage>
         ))}
         <Stage progress={0}>
-          <AddStageButton sectionId={section.id} />
+          <AddStageButton
+            sectionId={section.id}
+            onCreated={(newStageId) => setAutoOpenStageId(newStageId)} // ← NEU
+          />
         </Stage>
       </SectionContent>
     </Section>

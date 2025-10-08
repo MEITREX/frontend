@@ -41,6 +41,8 @@ export function EditContentModal({
   optionalRecords: _optionalRecords,
   requiredRecords: _requiredRecords,
   courseId,
+  autoOpen = false, // ← NEU
+  onClose: onCloseProp, // ← NEU
 }: {
   chapterId: string;
   sectionId: string;
@@ -51,6 +53,8 @@ export function EditContentModal({
   optionalRecords: string[];
   requiredRecords: string[];
   courseId: string;
+  autoOpen?: boolean; // ← NEU
+  onClose?: () => void; // ← NEU
 }) {
   const [openMediaModal, setOpenMediaModal] = useState(false);
   const [openFlashcardModal, setOpenFlashcardModal] = useState(false);
@@ -130,6 +134,13 @@ export function EditContentModal({
       }
     `);
 
+  // ← NEU: Auto-open wenn autoOpen prop true ist
+  useEffect(() => {
+    if (autoOpen) {
+      setOpenModal(true);
+    }
+  }, [autoOpen]);
+
   useEffect(() => {
     setOptionalRecords(_optionalRecords);
   }, [_optionalRecords]);
@@ -141,6 +152,12 @@ export function EditContentModal({
   const router = useRouter();
 
   const [error, setError] = useState<any>(null);
+
+  // ← NEU: Wrapper für onClose
+  const handleClose = () => {
+    setOpenModal(false);
+    onCloseProp?.(); // Ruft Parent callback auf
+  };
 
   const submit = () => {
     updateStage({
@@ -154,7 +171,7 @@ export function EditContentModal({
       },
       onError: setError,
       onCompleted() {
-        setOpenModal(false);
+        handleClose(); // ← GEÄNDERT: verwendet handleClose statt setOpenModal
       },
       updater(store) {
         const root = store.get(chapterId);
@@ -194,7 +211,7 @@ export function EditContentModal({
       <Dialog
         maxWidth="lg"
         open={openModal}
-        onClose={() => setOpenModal(false)}
+        onClose={handleClose} // ← GEÄNDERT: verwendet handleClose
       >
         <DialogTitle>Select content</DialogTitle>
         <DialogContent sx={{ paddingX: 0 }}>
