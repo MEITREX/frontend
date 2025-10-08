@@ -119,7 +119,7 @@ export function ChapterHeader({
         >
           {chapter.title}
         </Typography>
-        {warningMessage && (
+        {!student && warningMessage && (
           <Tooltip
             title={warningMessage}
             componentsProps={{
