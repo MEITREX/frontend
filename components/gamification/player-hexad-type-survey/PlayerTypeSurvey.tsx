@@ -99,7 +99,10 @@ const SurveyPopup = ({ id }: { id: string }) => {
     PlayerTypeSurveyCalcScoresMutation({
       variables: {
         id: id,
-        input: { questions: input },
+        input: {
+          noNotification: isGamificationDisabled,
+          questions: input,
+        },
       },
       onError() {
         setIsErrorScreen(true);
@@ -212,7 +215,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
     return `${adj}${dino}${number}`;
   }
 
-  const handlSubmitNickname = (nickname: string) => {
+  const handleSubmitNickname = (nickname: string) => {
     PlayerTypeSurveySetNicknameMutation({
       variables: {
         nickname: nickname,
@@ -223,7 +226,9 @@ const SurveyPopup = ({ id }: { id: string }) => {
       onCompleted() {
         console.log("Set nickname successfully");
         setIsNicknameScreen(false);
-        if(!isGamificationDisabled) {
+        if(isGamificationDisabled) {
+          handleFinishSurvey([]);
+        } else {
           setIsStartScreen(true);
         }
       },
@@ -294,7 +299,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
           <Button
             variant="contained"
             onClick={() => {
-              handlSubmitNickname(nickname);
+              handleSubmitNickname(nickname);
             }}
           >
             Continue
@@ -306,63 +311,65 @@ const SurveyPopup = ({ id }: { id: string }) => {
 
   if (isSkippedScreen) {
     return (
-      <Dialog open={open} maxWidth="md" fullWidth>
-        <Box
-          sx={{
-            position: "sticky",
-            top: 0,
-            zIndex: 1,
-            backgroundColor: "white",
-          }}
-        >
-          <LinearProgress
-            variant="determinate"
-            value={100}
-            sx={{
-              height: 6,
-              borderRadius: 2,
-              backgroundColor: "#eee",
-              "& .MuiLinearProgress-bar": {
-                backgroundColor: "#2196f3",
-              },
-            }}
-          />
-        </Box>
-        <DialogTitle>
-          <Button
-            onClick={() => setConfirmSkipOpen(true)}
-            disabled={true}
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-              minWidth: "auto",
-              padding: 1,
-              color: "grey.600",
-            }}
-          >
-            <CloseIcon />
-          </Button>
-        </DialogTitle>
-        <DialogContent>
-          <Box textAlign="center" py={6}>
-            <Box fontSize={60}>🚫</Box>
-            <Typography variant="h5" fontWeight="bold" mt={2}>
-              Survey skipped
-            </Typography>
-            <Typography mt={1}>
-              Default settings have been applied. They’ll automatically adapt
-              over time based on your interactions to provide a more
-              personalized experience.
-            </Typography>
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ px: 3 }}>
-          <Button onClick={() => setOpen(false)} variant="contained">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <GamificationGuard>
+          <Dialog open={open} maxWidth="md" fullWidth>
+            <Box
+              sx={{
+                position: "sticky",
+                top: 0,
+                zIndex: 1,
+                backgroundColor: "white",
+              }}
+            >
+              <LinearProgress
+                variant="determinate"
+                value={100}
+                sx={{
+                  height: 6,
+                  borderRadius: 2,
+                  backgroundColor: "#eee",
+                  "& .MuiLinearProgress-bar": {
+                    backgroundColor: "#2196f3",
+                  },
+                }}
+              />
+            </Box>
+            <DialogTitle>
+              <Button
+                onClick={() => setConfirmSkipOpen(true)}
+                disabled={true}
+                sx={{
+                  position: "absolute",
+                  right: 8,
+                  top: 8,
+                  minWidth: "auto",
+                  padding: 1,
+                  color: "grey.600",
+                }}
+              >
+                <CloseIcon />
+              </Button>
+            </DialogTitle>
+            <DialogContent>
+              <Box textAlign="center" py={6}>
+                <Box fontSize={60}>🚫</Box>
+                <Typography variant="h5" fontWeight="bold" mt={2}>
+                  Survey skipped
+                </Typography>
+                <Typography mt={1}>
+                  Default settings have been applied. They’ll automatically adapt
+                  over time based on your interactions to provide a more
+                  personalized experience.
+                </Typography>
+              </Box>
+            </DialogContent>
+            <DialogActions sx={{ px: 3 }}>
+              <Button onClick={() => setOpen(false)} variant="contained">
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </GamificationGuard>
     );
   }
 
