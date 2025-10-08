@@ -13,6 +13,7 @@ import LecturerFlashcardHeader from "@/components/flashcard/FlashcardHeader";
 import FlashcardView from "@/components/flashcard/FlashcardView";
 import SuccessSnackbar from "@/components/flashcard/SuccessSnackbar";
 import { flashcardUpdaterDeleteClosure } from "@/src/relay-helpers/flashcard";
+import { useConfirmation } from "@/src/useConfirmation";
 import { Add, Delete, Edit } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import { useParams } from "next/navigation";
@@ -96,6 +97,7 @@ export default function LecturerFlashcards() {
   const { flashcardSetId, courseId } = useParams();
   const [error, setError] = useState<ES2022Error | Error | null>(null);
   const errorContext = useMemo(() => ({ error, setError }), [error]);
+  const confirm = useConfirmation();
 
   const data = useLazyLoadQuery<lecturerEditFlashcardsQuery>(RootQuery, {
     id: flashcardSetId,
@@ -223,11 +225,13 @@ export default function LecturerFlashcards() {
                       disabled={isAddFlashcardOpen}
                       sx={{ color: "red" }}
                       startIcon={<Delete />}
-                      onClick={() => {
+                      onClick={async () => {
                         if (
-                          confirm(
-                            "Do you really want to delete this flashcard? This can't be undone."
-                          )
+                          await confirm({
+                            title: "Confirm Deletion",
+                            message:
+                              "Are you sure you want to delete this? This action cannot be undone.",
+                          })
                         ) {
                           handleDeleteFlashcard(flashcard.itemId, i);
                         }

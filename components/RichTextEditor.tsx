@@ -141,6 +141,7 @@ export function RichTextEditor({
   required,
   placeholder,
   _allRecords,
+  autoFocus,
 }: {
   initialValue?: string | undefined;
   onChange: (val: string) => void;
@@ -149,6 +150,7 @@ export function RichTextEditor({
   required?: boolean;
   placeholder?: string;
   _allRecords: MediaRecordSelector$key;
+  autoFocus?: boolean;
 }) {
   const editor = useMemo(
     () => withMediaRecords(withHistory(withReact(createEditor()))),
@@ -187,7 +189,7 @@ export function RichTextEditor({
               renderLeaf={Leaf}
               placeholder={placeholder ?? label}
               spellCheck
-              autoFocus
+              autoFocus={autoFocus}
               onKeyDown={(event) => {
                 for (const hotkey in HOTKEYS) {
                   if (isHotkey(hotkey, event as any)) {

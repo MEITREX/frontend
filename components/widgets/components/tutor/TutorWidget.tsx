@@ -3,6 +3,7 @@
 import type { GamificationCategory } from "@/__generated__/WidgetApiRecommendationFeedbackMutation.graphql";
 import WidgetFeedback from "@/components/widgets/common/WidgetFeedback";
 import WidgetWrapper from "@/components/widgets/common/WidgetWrapper";
+import { useAITutorStore } from "@/stores/aiTutorStore";
 import { Box, CircularProgress } from "@mui/material";
 import { useParams } from "next/navigation";
 import { Suspense } from "react";
@@ -17,13 +18,14 @@ export default function TutorWidgetShell({
 }) {
   const params = useParams();
   const courseId = params.courseId as string;
+  const openChat = useAITutorStore((state) => state.openChat);
 
   return (
     <WidgetWrapper
       title="AI Tutor"
-      linkHref="/items/lottery"
       linkLabel="AI TUTOR"
       overflow="auto"
+      onButtonClick={openChat}
     >
       <WidgetFeedback openFeedback={openFeedback} category={category} />
       <Suspense

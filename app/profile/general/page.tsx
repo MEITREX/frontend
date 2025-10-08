@@ -15,7 +15,7 @@ export default function GeneralPageWrapper() {
   // TODO: Do this for every Route --> if this would be a layout component we would only need to do it once...
   const auth = useAuth();
   const isGamificationDisabled =
-    auth.user?.profile.gamification_type === "none";
+    auth.user?.profile?.gamification_type === "none";
 
   const baseTabs = [
     { label: "General", path: "general" },
