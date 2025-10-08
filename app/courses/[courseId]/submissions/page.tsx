@@ -56,7 +56,6 @@ export default function Forum() {
 
       const contentsWithNoSection = (ch.contentsWithNoSection ?? [])
         .filter((c: any) => c?.__typename === "SubmissionAssessment")
-        // Nur hinzufügen, wenn sie nicht bereits in contents vorkommen
         .filter((c: any) => !contents.some((x: any) => x.id === c.id));
 
       return [...contents, ...contentsWithNoSection];
