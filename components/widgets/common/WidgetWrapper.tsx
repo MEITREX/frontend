@@ -1,4 +1,4 @@
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import Link from "next/link";
 import * as React from "react";
 
@@ -8,6 +8,7 @@ type WidgetWrapperProps = {
   linkLabel?: string;
   children: React.ReactNode;
   overflow?: string;
+  onButtonClick?: () => void;
 };
 
 export default function WidgetWrapper({
@@ -15,8 +16,25 @@ export default function WidgetWrapper({
   linkHref,
   linkLabel,
   children,
+  onButtonClick,
   overflow = "auto",
 }: WidgetWrapperProps) {
+  const baseButton = (
+    <Button
+      size="small"
+      variant="outlined"
+      sx={{
+        backgroundColor: "#009bde",
+        color: "white",
+        "&:hover": {
+          backgroundColor: "#3369ad",
+        },
+      }}
+    >
+      {linkLabel}
+    </Button>
+  );
+
   return (
     <Box
       sx={{
@@ -35,24 +53,14 @@ export default function WidgetWrapper({
         <Typography mt={1} ml={1} variant="h6">
           {title}
         </Typography>
-
-        {linkHref && linkLabel && (
-          <Link href={linkHref} passHref>
-            <Button
-              size="small"
-              variant="outlined"
-              sx={{
-                backgroundColor: "#009bde",
-                color: "white",
-                "&:hover": {
-                  backgroundColor: "#3369ad",
-                },
-              }}
-            >
-              {linkLabel}
-            </Button>
-          </Link>
-        )}
+        {linkLabel &&
+          (onButtonClick ? (
+            <Button {...baseButton.props} onClick={onButtonClick} />
+          ) : linkHref ? (
+            <Link href={linkHref} passHref>
+              {baseButton}
+            </Link>
+          ) : null)}
       </Box>
       {children}
     </Box>
