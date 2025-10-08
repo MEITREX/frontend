@@ -18,6 +18,8 @@ import { useEffect, useState } from "react";
 import { graphql, useMutation } from "react-relay";
 import { PlayerTypes } from "../types";
 import { questions } from "./questions";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
+import { useAuth } from "react-oidc-context";
 
 type Answer = {
   question: string;
@@ -28,6 +30,10 @@ type Answer = {
 };
 
 const SurveyPopup = ({ id }: { id: string }) => {
+  const auth = useAuth();
+  const isGamificationDisabled =
+    auth.user?.profile?.gamification_type === "none";
+
   const [open, setOpen] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Answer | null>>({});
@@ -93,7 +99,10 @@ const SurveyPopup = ({ id }: { id: string }) => {
     PlayerTypeSurveyCalcScoresMutation({
       variables: {
         id: id,
-        input: { questions: input },
+        input: {
+          noNotification: isGamificationDisabled,
+          questions: input,
+        },
       },
       onError() {
         setIsErrorScreen(true);
@@ -206,7 +215,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
     return `${adj}${dino}${number}`;
   }
 
-  const handlSubmitNickname = (nickname: string) => {
+  const handleSubmitNickname = (nickname: string) => {
     PlayerTypeSurveySetNicknameMutation({
       variables: {
         nickname: nickname,
@@ -217,7 +226,11 @@ const SurveyPopup = ({ id }: { id: string }) => {
       onCompleted() {
         console.log("Set nickname successfully");
         setIsNicknameScreen(false);
-        setIsStartScreen(true);
+        if (isGamificationDisabled) {
+          handleFinishSurvey([]);
+        } else {
+          setIsStartScreen(true);
+        }
       },
     });
   };
@@ -286,7 +299,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
           <Button
             variant="contained"
             onClick={() => {
-              handlSubmitNickname(nickname);
+              handleSubmitNickname(nickname);
             }}
           >
             Continue
@@ -298,69 +311,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
 
   if (isSkippedScreen) {
     return (
-      <Dialog open={open} maxWidth="md" fullWidth>
-        <Box
-          sx={{
-            position: "sticky",
-            top: 0,
-            zIndex: 1,
-            backgroundColor: "white",
-          }}
-        >
-          <LinearProgress
-            variant="determinate"
-            value={100}
-            sx={{
-              height: 6,
-              borderRadius: 2,
-              backgroundColor: "#eee",
-              "& .MuiLinearProgress-bar": {
-                backgroundColor: "#2196f3",
-              },
-            }}
-          />
-        </Box>
-        <DialogTitle>
-          <Button
-            onClick={() => setConfirmSkipOpen(true)}
-            disabled={true}
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-              minWidth: "auto",
-              padding: 1,
-              color: "grey.600",
-            }}
-          >
-            <CloseIcon />
-          </Button>
-        </DialogTitle>
-        <DialogContent>
-          <Box textAlign="center" py={6}>
-            <Box fontSize={60}>🚫</Box>
-            <Typography variant="h5" fontWeight="bold" mt={2}>
-              Survey skipped
-            </Typography>
-            <Typography mt={1}>
-              Default settings have been applied. They’ll automatically adapt
-              over time based on your interactions to provide a more
-              personalized experience.
-            </Typography>
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ px: 3 }}>
-          <Button onClick={() => setOpen(false)} variant="contained">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
-  }
-
-  if (isStartScreen) {
-    return (
-      <>
+      <GamificationGuard>
         <Dialog open={open} maxWidth="md" fullWidth>
           <Box
             sx={{
@@ -372,7 +323,7 @@ const SurveyPopup = ({ id }: { id: string }) => {
           >
             <LinearProgress
               variant="determinate"
-              value={0}
+              value={100}
               sx={{
                 height: 6,
                 borderRadius: 2,
@@ -384,64 +335,133 @@ const SurveyPopup = ({ id }: { id: string }) => {
             />
           </Box>
           <DialogTitle>
-            {/* Fortschrittsanzeige oben rechts */}
-            <Box
+            <Button
+              onClick={() => setConfirmSkipOpen(true)}
+              disabled={true}
               sx={{
                 position: "absolute",
-                right: 16,
+                right: 8,
                 top: 8,
-                fontSize: "1.2rem",
-                fontWeight: "bold",
-                color: "primary.main",
+                minWidth: "auto",
+                padding: 1,
+                color: "grey.600",
               }}
             >
-              2 / 2
-            </Box>
+              <CloseIcon />
+            </Button>
           </DialogTitle>
           <DialogContent>
             <Box textAlign="center" py={6}>
-              <Box fontSize={60}>📖</Box>
+              <Box fontSize={60}>🚫</Box>
               <Typography variant="h5" fontWeight="bold" mt={2}>
-                Welcome to the Player Type survey
+                Survey skipped
               </Typography>
               <Typography mt={1}>
-                This survey determines your Player Type, enabling us to adapt
-                gamification elements in a way that keeps you engaged and
-                personalizes your experience.
+                Default settings have been applied. They’ll automatically adapt
+                over time based on your interactions to provide a more
+                personalized experience.
               </Typography>
             </Box>
           </DialogContent>
           <DialogActions sx={{ px: 3 }}>
-            <Button variant="contained" onClick={() => setIsStartScreen(false)}>
-              Start Survey
+            <Button onClick={() => setOpen(false)} variant="contained">
+              Close
             </Button>
           </DialogActions>
         </Dialog>
+      </GamificationGuard>
+    );
+  }
 
-        <Dialog
-          open={confirmSkipOpen}
-          onClose={() => setConfirmSkipOpen(false)}
-        >
-          <DialogTitle>Are you sure you want to quit the survey?</DialogTitle>
-          <DialogContent>
-            <Typography>
-              All your answers will be lost and there will be no chance to re-do
-              the survey.
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => handleSkipSurveyConfirm()}>
-              Quit and skip survey
-            </Button>
-            <Button
-              color="info"
-              variant="contained"
-              onClick={() => setConfirmSkipOpen(false)}
+  if (isStartScreen) {
+    return (
+      <>
+        <GamificationGuard>
+          <Dialog open={open} maxWidth="md" fullWidth>
+            <Box
+              sx={{
+                position: "sticky",
+                top: 0,
+                zIndex: 1,
+                backgroundColor: "white",
+              }}
             >
-              Back to survey
-            </Button>
-          </DialogActions>
-        </Dialog>
+              <LinearProgress
+                variant="determinate"
+                value={0}
+                sx={{
+                  height: 6,
+                  borderRadius: 2,
+                  backgroundColor: "#eee",
+                  "& .MuiLinearProgress-bar": {
+                    backgroundColor: "#2196f3",
+                  },
+                }}
+              />
+            </Box>
+            <DialogTitle>
+              {/* Fortschrittsanzeige oben rechts */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  right: 16,
+                  top: 8,
+                  fontSize: "1.2rem",
+                  fontWeight: "bold",
+                  color: "primary.main",
+                }}
+              >
+                2 / 2
+              </Box>
+            </DialogTitle>
+            <DialogContent>
+              <Box textAlign="center" py={6}>
+                <Box fontSize={60}>📖</Box>
+                <Typography variant="h5" fontWeight="bold" mt={2}>
+                  Welcome to the Player Type survey
+                </Typography>
+                <Typography mt={1}>
+                  This survey determines your Player Type, enabling us to adapt
+                  gamification elements in a way that keeps you engaged and
+                  personalizes your experience.
+                </Typography>
+              </Box>
+            </DialogContent>
+            <DialogActions sx={{ px: 3 }}>
+              <Button
+                variant="contained"
+                onClick={() => setIsStartScreen(false)}
+              >
+                Start Survey
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog
+            open={confirmSkipOpen}
+            onClose={() => setConfirmSkipOpen(false)}
+          >
+            <DialogTitle>Are you sure you want to quit the survey?</DialogTitle>
+            <DialogContent>
+              <Typography>
+                All your answers will be lost and there will be no chance to
+                re-do the survey.
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => handleSkipSurveyConfirm()}>
+                Quit and skip survey
+              </Button>
+              <Button
+                color="info"
+                variant="contained"
+                onClick={() => setConfirmSkipOpen(false)}
+              >
+                Back to survey
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </GamificationGuard>
       </>
     );
   }

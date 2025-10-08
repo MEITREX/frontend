@@ -95,7 +95,6 @@ const GetSubmission = graphql`
         result {
           id
           results {
-            number
             score
             itemId
           }
