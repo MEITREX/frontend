@@ -97,7 +97,6 @@ export function SubmissionExerciseModal({
               result {
                 id
                 results {
-                  number
                   score
                   itemId
                 }
