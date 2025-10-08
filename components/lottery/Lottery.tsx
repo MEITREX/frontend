@@ -188,7 +188,7 @@ export default function Lottery() {
     setIsOpening(false);
     setCurrentFrame(0);
     setEquip(false);
-    item.lotteryRun.sellCompensation
+    item.lotteryRun.sold
       ? setPoints(points + item.lotteryRun.sellCompensation)
       : "";
   };
