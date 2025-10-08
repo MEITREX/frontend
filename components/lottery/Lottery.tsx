@@ -384,7 +384,7 @@ export default function Lottery() {
             borderWidth: 2,
             borderStyle: "solid",
             borderColor: rarityMap[rarity as Rarity]?.border ?? grey[300],
-            background: rarityMap[rarity as Rarity].bg,
+            background: rarityMap[rarity as Rarity]?.bg ?? grey[300],
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
