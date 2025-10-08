@@ -258,7 +258,7 @@ export function VideoSide({
               variables: { id: currentRecord!.id },
               onError: setError,
               onCompleted() {
-                  setIsMarkedLocally(true)
+                setIsMarkedLocally(true);
               },
             })
           }

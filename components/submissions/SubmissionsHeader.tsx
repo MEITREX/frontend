@@ -77,7 +77,8 @@ export default function SubmissionsHeader({
                 if (
                   await confirm({
                     title: "Delete Submission",
-                    message: "Do you really want to delete this submission? This can't be undone."
+                    message:
+                      "Do you really want to delete this submission? This can't be undone.",
                   })
                 )
                   deleteSubmission();

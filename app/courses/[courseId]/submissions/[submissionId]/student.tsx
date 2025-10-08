@@ -308,7 +308,8 @@ export default function StudentSubmissionView() {
     if (
       await confirm({
         title: "Delete submitted File",
-        message: "Are you sure you want to delete this file? This cannot be undone."
+        message:
+          "Are you sure you want to delete this file? This cannot be undone.",
       })
     ) {
       commitDeleteFile({

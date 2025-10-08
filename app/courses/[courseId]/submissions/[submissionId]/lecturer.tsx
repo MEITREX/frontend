@@ -409,10 +409,11 @@ export default function LecturerSubmission() {
 
     if (!assessmentId || !itemId) return;
     if (
-      !await confirm({
+      !(await confirm({
         title: "Delete Task",
-        message: "Do you really want to delete this task? This can't be undone.",
-      })
+        message:
+          "Do you really want to delete this task? This can't be undone.",
+      }))
     )
       return;
 
@@ -448,10 +449,11 @@ export default function LecturerSubmission() {
     if (!assessmentId || !fileId) return;
 
     if (
-      !await confirm({
+      !(await confirm({
         title: "Delete File",
-        message: "Do you really want to delete this file? This can't be undone.",
-      })
+        message:
+          "Do you really want to delete this file? This can't be undone.",
+      }))
     ) {
       return;
     }

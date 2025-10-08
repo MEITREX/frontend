@@ -30,8 +30,15 @@ export function ConfirmationDialog({
         <DialogContentText>{message}</DialogContentText>
       </DialogContent>
       <DialogActions className="inline-grid justify-between p-6">
-        <Button onClick={onCancel} color="error">Cancel</Button>
-        <Button onClick={onConfirm} variant="contained" color="primary" autoFocus>
+        <Button onClick={onCancel} color="error">
+          Cancel
+        </Button>
+        <Button
+          onClick={onConfirm}
+          variant="contained"
+          color="primary"
+          autoFocus
+        >
           Confirm
         </Button>
       </DialogActions>
