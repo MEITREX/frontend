@@ -10,7 +10,7 @@ import {
 import { useMutation, graphql } from "react-relay";
 import UserSettings from "./UserSettings";
 import { NotificationSettings } from "./types";
-import  GamificationGuard  from "@/components/gamification-guard/GamificationGuard"
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 
 type Props = {
   userId: string;
@@ -95,7 +95,10 @@ export default function NotificationSettingsPage({ userId }: Props) {
               }
               label="Gamification Notifications"
             />
-            <Typography variant="caption" sx={{ ml: 4, color: "text.secondary" }}>
+            <Typography
+              variant="caption"
+              sx={{ ml: 4, color: "text.secondary" }}
+            >
               Get updates related to Gamification such as new badges,
               leaderboards, or games.
             </Typography>

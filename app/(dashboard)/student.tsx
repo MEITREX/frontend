@@ -157,8 +157,8 @@ export default function StudentPage() {
       }
     }, [searchParams, router, pathname]);
 
-    if(forceOnce || !data.PlayerHexadScoreExists) {
-      return <SurveyPopup id={userId} />
+    if (forceOnce || !data.PlayerHexadScoreExists) {
+      return <SurveyPopup id={userId} />;
     }
     return null;
   }

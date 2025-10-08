@@ -665,47 +665,47 @@ function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
         {/* Top row: avatar + name + settings + logout */}
         <ListItem
           secondaryAction={
-          <>
-            <Tooltip title="Notifications" placement="left">
-              <IconButton onClick={handleOpenNotifications}>
-                <Badge
-                  badgeContent={unreadCount}
-                  color="error"
-                  max={99}
-                  overlap="circular"
-                  sx={{
-                    zIndex: 2,
+            <>
+              <Tooltip title="Notifications" placement="left">
+                <IconButton onClick={handleOpenNotifications}>
+                  <Badge
+                    badgeContent={unreadCount}
+                    color="error"
+                    max={99}
+                    overlap="circular"
+                    sx={{
+                      zIndex: 2,
+                    }}
+                  >
+                    <Notifications />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Settings" placement="left">
+                <Link href="/settings/notification">
+                  <IconButton>
+                    <Settings />
+                  </IconButton>
+                </Link>
+              </Tooltip>
+              <Tooltip title="Logout" placement="left">
+                <IconButton
+                  edge="end"
+                  aria-label="logout"
+                  onClick={() => {
+                    window.localStorage.removeItem("meitrex-welcome-shown");
+                    clearChat();
+                    auth.signoutRedirect({
+                      post_logout_redirect_uri:
+                        process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ??
+                        "http://localhost:3005",
+                    });
                   }}
                 >
-                  <Notifications />
-                </Badge>
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Settings" placement="left">
-              <Link href="/settings/notification">
-                <IconButton>
-                  <Settings />
+                  <Logout />
                 </IconButton>
-              </Link>
-            </Tooltip>
-            <Tooltip title="Logout" placement="left">
-              <IconButton
-                edge="end"
-                aria-label="logout"
-                onClick={() => {
-                  window.localStorage.removeItem("meitrex-welcome-shown");
-                  clearChat();
-                  auth.signoutRedirect({
-                    post_logout_redirect_uri:
-                      process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ??
-                      "http://localhost:3005",
-                  });
-                }}
-              >
-                <Logout />
-              </IconButton>
-            </Tooltip>
-          </>
+              </Tooltip>
+            </>
           }
         >
           <GamificationGuard>

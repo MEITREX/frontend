@@ -6,7 +6,7 @@ import { WidgetApiItemInventoryForUserQuery } from "@/__generated__/WidgetApiIte
 import { widgetApiItemInventoryForUserQuery } from "@/components/widgets/api/WidgetApi";
 import { Box } from "@mui/material";
 import { useAuth } from "react-oidc-context";
-import  logo  from "@/assets/logo.svg"
+import logo from "@/assets/logo.svg";
 
 export default function TutorAvatar() {
   const auth = useAuth();
