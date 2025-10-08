@@ -212,7 +212,7 @@ export function SubmissionExerciseModal({
 
           if (!chapterRecord || !newRecord) return;
 
-          // Update the linked records of the chapter contents
+          // Update the linked records of chapter contents
           const contentRecords =
             chapterRecord.getLinkedRecords("contents") ?? [];
           chapterRecord.setLinkedRecords(
