@@ -127,6 +127,7 @@ export function LecturerSection({
         </Stage>
         {newStageId && (
           <EditContentModal
+            key={newStageId}   
             sectionId={section.id}
             courseId={section.courseId}
             stageId={newStageId}
@@ -136,6 +137,7 @@ export function LecturerSection({
             optionalRecords={[]}
             requiredRecords={[]}
             autoOpen={true}
+            onClose={() => setNewStageId(null)}
           />
         )}
       </SectionContent>

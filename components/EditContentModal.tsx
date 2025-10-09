@@ -42,6 +42,7 @@ export function EditContentModal({
   requiredRecords: _requiredRecords,
   courseId,
   autoOpen = false,
+  onClose,
 }: {
   chapterId: string;
   sectionId: string;
@@ -52,6 +53,7 @@ export function EditContentModal({
   requiredRecords: string[];
   courseId: string;
   autoOpen?: boolean;
+  onClose?: () => void;
 }) {
   const [openMediaModal, setOpenMediaModal] = useState(false);
   const [openFlashcardModal, setOpenFlashcardModal] = useState(false);
