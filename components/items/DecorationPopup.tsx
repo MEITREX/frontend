@@ -318,8 +318,8 @@ const DecorationPopup: React.FC<Props> = ({
                   />
                 </>
               )
-            ) : ((category === "tutors" && equipped) ||
-              (category === "profilePics" && equipped)) ? (
+            ) : (category === "tutors" && equipped) ||
+              (category === "profilePics" && equipped) ? (
               "Tutors and profile pictures can not be unequipped. Equip other items to unequip this one"
             ) : equipped ? (
               "Unequip"
