@@ -164,7 +164,7 @@ export default function AddTaskDialog({
   ]);
 
   return (
-    <Dialog open={open} onClose={onClose} keepMounted fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={onClose} keepMounted fullWidth maxWidth="md">
       <DialogTitle>Add new tasks</DialogTitle>
       <DialogContent>
         <ItemFormSection
