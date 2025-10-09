@@ -127,7 +127,7 @@ export function LecturerSection({
         </Stage>
         {newStageId && (
           <EditContentModal
-            key={newStageId}   
+            key={newStageId}
             sectionId={section.id}
             courseId={section.courseId}
             stageId={newStageId}
