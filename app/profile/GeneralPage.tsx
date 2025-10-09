@@ -2,7 +2,7 @@ import { GeneralPageSetNicknameMutation } from "@/__generated__/GeneralPageSetNi
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
-import { Avatar, Box, Button, IconButton, TextField } from "@mui/material";
+import { Box, Button, IconButton, TextField } from "@mui/material";
 import { useState } from "react";
 import { graphql, useMutation } from "react-relay";
 
@@ -105,21 +105,21 @@ export default function GeneralPage({ studentData }: GeneralPageProps) {
           value={newStudentData.firstName}
           onChange={handleChange("firstName")}
           fullWidth
-          disabled={!editMode}
+          disabled={true}
         />
         <TextField
           label="Last Name"
           value={newStudentData.lastName}
           onChange={handleChange("lastName")}
           fullWidth
-          disabled={!editMode}
+          disabled={true}
         />
         <TextField
           label="Username"
           value={newStudentData.userName}
           onChange={handleChange("userName")}
           fullWidth
-          disabled={!editMode}
+          disabled={true}
         />
         <Box display="flex" alignItems="center" gap={1}>
           <TextField
