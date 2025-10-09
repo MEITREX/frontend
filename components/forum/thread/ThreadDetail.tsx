@@ -67,7 +67,6 @@ export default function ThreadDetail() {
 
   const handleSubmit = () => {
     const replyTextTrimmed = replyText.trim();
-    if (replyTextTrimmed === "") return;
 
     const post: InputPost = {
       content: replyTextTrimmed,

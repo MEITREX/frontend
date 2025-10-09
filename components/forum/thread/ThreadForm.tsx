@@ -97,8 +97,8 @@ export default function ThreadForm() {
     if (trimmedContent === "") {
       setContentError("Content is required.");
       valid = false;
-    } else if (trimmedContent.length > 500) {
-      setContentError("Content must be under 500 characters.");
+    } else if (trimmedContent.length > 30000) {
+      setContentError("Content must be under 30000 characters.");
       valid = false;
     }
 
