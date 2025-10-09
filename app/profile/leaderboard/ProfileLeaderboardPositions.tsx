@@ -262,7 +262,7 @@ const CourseQuery = graphql`
         id
         score
         user {
-          id
+          refUserID
           name
         }
       }
@@ -277,7 +277,7 @@ const CourseQuery = graphql`
         id
         score
         user {
-          id
+          refUserID
           name
         }
       }
@@ -292,7 +292,7 @@ const CourseQuery = graphql`
         id
         score
         user {
-          id
+          refUserID
           name
         }
       }
@@ -1321,13 +1321,25 @@ function CourseLeaderboardsForCourse({
       allTimeDate: monthStartISO,
     }
   );
+  const mapUser = (u: any): PublicUserInfo => ({
+    id: u.refUserID ?? u.id, // Nutze refUserID falls vorhanden, sonst id
+    name: u.name ?? "Unknown",
+  });
 
-  const weekly = (data.weekly?.[0]?.userScores ?? []) as unknown as UserScore[];
-  const monthly = (data.monthly?.[0]?.userScores ??
-    []) as unknown as UserScore[];
-  const allTime = (data.allTime?.[0]?.userScores ??
-    []) as unknown as UserScore[];
+  const weekly = (data.weekly?.[0]?.userScores ?? []).map((s: any) => ({
+    ...s,
+    user: mapUser(s.user),
+  })) as UserScore[];
 
+  const monthly = (data.monthly?.[0]?.userScores ?? []).map((s: any) => ({
+    ...s,
+    user: mapUser(s.user),
+  })) as UserScore[];
+
+  const allTime = (data.allTime?.[0]?.userScores ?? []).map((s: any) => ({
+    ...s,
+    user: mapUser(s.user),
+  })) as UserScore[];
   // Compute set of user IDs missing names
   const allScores = [...weekly, ...monthly, ...allTime];
   const idsNeedingName = Array.from(

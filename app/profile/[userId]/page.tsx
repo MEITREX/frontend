@@ -27,6 +27,7 @@ import { fetchQuery, useLazyLoadQuery, useRelayEnvironment } from "react-relay";
 
 import { pagePublicProfileUserXPQuery } from "@/__generated__/pagePublicProfileUserXPQuery.graphql";
 import { graphql } from "relay-runtime";
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 
 const GRAPHQL_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
@@ -52,7 +53,7 @@ function startOfMonth(d: Date): Date {
 const PublicProfileUserXPQueryGQL = graphql`
   query pagePublicProfileUserXPQuery($userID: ID!) {
     getUser(userID: $userID) {
-      id
+      refUserID
       xpValue
       requiredXP
       exceedingXP
@@ -80,7 +81,7 @@ const PagePublicProfileCourseLBQueryGQL = graphql`
         id
         score
         user {
-          id
+          refUserID
           name
         }
       }
@@ -130,7 +131,9 @@ const PagePublicProfileManyUserInfosQueryGQL = graphql`
     }
   }
 `;
-
+function mapUserId(user: any): string {
+  return user?.refUserID ?? user?.id ?? "";
+}
 /** Build id -> display name map (prefer explicit user.name if present; otherwise nickname from public info). */
 function buildNameMap(
   fromScores: Array<any>[],
@@ -139,7 +142,7 @@ function buildNameMap(
   const map: Record<string, string> = {};
   for (const arr of fromScores) {
     for (const s of arr ?? []) {
-      const id = s?.user?.id;
+      const id = mapUserId(s?.user);
       const nm = s?.user?.name;
       if (id && nm) map[id] = nm;
     }
@@ -157,12 +160,13 @@ function enrichScoresWithNames(
   nameById: Record<string, string>
 ) {
   return (scores ?? []).map((s) => {
-    const id = s?.user?.id;
+    // verwende gemappte ID
+    const id = mapUserId(s?.user);
     const existing = s?.user?.name;
     const name = existing ?? (id ? nameById[id] : undefined) ?? "Unknown";
     return {
       ...s,
-      user: { ...(s?.user ?? {}), name },
+      user: { id, name }, // NEU: erstelle normalisiertes User-Objekt
     };
   });
 }
@@ -172,7 +176,7 @@ export default function PublicProfilePage() {
 
   const auth = useAuth();
   const isGamificationDisabled =
-    auth.user?.profile.gamification_type === "none";
+    auth.user?.profile?.gamification_type === "none";
 
   const baseTabs = [
     { label: "General", path: "general" },
@@ -334,7 +338,8 @@ export default function PublicProfilePage() {
         const idSet = new Set<string>();
         for (const board of [...weeklyRaw, ...monthlyRaw, ...allTimeRaw]) {
           for (const s of board?.userScores ?? []) {
-            if (s?.user?.id) idSet.add(s.user.id);
+            const id = mapUserId(s?.user);
+            if (id) idSet.add(id);
           }
         }
 
@@ -412,43 +417,47 @@ export default function PublicProfilePage() {
         Back
       </Button>
 
-      <UserProfileCustomHeader
-        displayName={userInfos.findUserInfos[0]?.nickname as string}
-      />
-
-      {/* XP / Level overview for viewed user */}
-      <Box
-        sx={{ mt: 2, mb: 2, display: "flex", alignItems: "center", gap: 1.5 }}
-      >
-        <img
-          src={levelIconSrc}
-          alt={`Level ${level}`}
-          width={44}
-          height={44}
-          style={{ display: "block" }}
-          onError={(e) => {
-            const el = e.currentTarget as HTMLImageElement;
-            el.src = "/levels/level_0.svg";
-          }}
+      <GamificationGuard>
+        <UserProfileCustomHeader
+          displayName={userInfos.findUserInfos[0]?.nickname as string}
         />
-        <Box sx={{ flexGrow: 1 }}>
-          <LinearProgress
-            variant="determinate"
-            value={xpPercent}
-            sx={{ height: 8, borderRadius: 999 }}
+      </GamificationGuard>
+
+      <GamificationGuard>
+        {/* XP / Level overview for viewed user */}
+        <Box
+          sx={{ mt: 2, mb: 2, display: "flex", alignItems: "center", gap: 1.5 }}
+        >
+          <img
+            src={levelIconSrc}
+            alt={`Level ${level}`}
+            width={44}
+            height={44}
+            style={{ display: "block" }}
+            onError={(e) => {
+              const el = e.currentTarget as HTMLImageElement;
+              el.src = "/levels/level_0.svg";
+            }}
           />
-          <Typography variant="caption" sx={{ mt: 0.5, display: "block" }}>
-            {fmtInt(xpInLevel)} / {fmtInt(xpRequired)} XP
+          <Box sx={{ flexGrow: 1 }}>
+            <LinearProgress
+              variant="determinate"
+              value={xpPercent}
+              sx={{ height: 8, borderRadius: 999 }}
+            />
+            <Typography variant="caption" sx={{ mt: 0.5, display: "block" }}>
+              {fmtInt(xpInLevel)} / {fmtInt(xpRequired)} XP
+            </Typography>
+          </Box>
+          <Typography
+            variant="body2"
+            fontWeight={700}
+            sx={{ minWidth: 64, textAlign: "right" }}
+          >
+            Level {fmtInt(level)}
           </Typography>
         </Box>
-        <Typography
-          variant="body2"
-          fontWeight={700}
-          sx={{ minWidth: 64, textAlign: "right" }}
-        >
-          Level {fmtInt(level)}
-        </Typography>
-      </Box>
+      </GamificationGuard>
 
       {/* Tabs */}
       <Tabs

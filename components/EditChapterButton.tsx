@@ -9,6 +9,7 @@ import { EditChapterButtonMutation } from "@/__generated__/EditChapterButtonMuta
 import { EditChapterButtonDeleteMutation } from "@/__generated__/EditChapterButtonDeleteMutation.graphql";
 import { EditChapterButtonFragment$key } from "@/__generated__/EditChapterButtonFragment.graphql";
 import { DialogBase } from "./DialogBase";
+import ConfirmationDialog from "./ConfirmationDialog";
 import { dialogSections, validationSchema } from "./dialogs/chapterDialog";
 
 export default function EditChapterButton({
@@ -68,6 +69,24 @@ export default function EditChapterButton({
     [chapter.course]
   );
 
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  function handleDelete() {
+    setShowDeleteConfirmation(false);
+    deleteChapter({
+      variables: { id: chapter.id },
+      onCompleted: () => setOpen(false),
+      onError: setError,
+      updater(store) {
+        const root = store.get(courseId)?.getLinkedRecord("chapters");
+        if (!root) return;
+        const sections = root?.getLinkedRecords("elements") ?? [];
+        root.setLinkedRecords(
+          sections.filter((x) => x.getDataID() !== chapter.id),
+          "elements"
+        );
+      },
+    });
+  }
   return (
     <>
       <IconButton onClick={() => setOpen(true)}>
@@ -97,23 +116,6 @@ export default function EditChapterButton({
             onError: setError,
           })
         }
-        onDelete={() => {
-          deleteChapter({
-            variables: { id: chapter.id },
-            onCompleted: () => setOpen(false),
-            onError: setError,
-            updater(store) {
-              const root = store.get(courseId)?.getLinkedRecord("chapters");
-              if (!root) return;
-
-              const sections = root?.getLinkedRecords("elements") ?? [];
-              root.setLinkedRecords(
-                sections.filter((x) => x.getDataID() !== chapter.id),
-                "elements"
-              );
-            },
-          });
-        }}
         initialValues={{
           ...chapter,
           startDate: dayjs(chapter.startDate),
@@ -122,7 +124,16 @@ export default function EditChapterButton({
         }}
         validationSchema={schema}
         onClose={() => setOpen(false)}
+        onDelete={() => setShowDeleteConfirmation(true)}
         error={error}
+      />
+      <ConfirmationDialog
+        open={showDeleteConfirmation}
+        title="Kapitel löschen"
+        message={`Möchtest du das Kapitel "${chapter.title}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`}
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteConfirmation(false)}
+        confirmText="Löschen"
       />
     </>
   );

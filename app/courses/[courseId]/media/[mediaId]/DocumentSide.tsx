@@ -3,7 +3,7 @@ import { DocumentSideLogProgressMutation } from "@/__generated__/DocumentSideLog
 import { Check, ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { Button, MenuItem, Select } from "@mui/material";
 import { differenceInHours } from "date-fns";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
 
 import { Document, Page, pdfjs, Thumbnail } from "react-pdf";
@@ -66,6 +66,7 @@ export function DocumentSide({
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
+  const [isMarkedLocally, setIsMarkedLocally] = useState(false);
   const [numPages, setNumPages] = useState<number>();
   const [pageNumber, setPageNumber] = useState<number>(
     searchParams.get("page") ? Number(searchParams.get("page")) : 1
@@ -90,7 +91,7 @@ export function DocumentSide({
         new Date(),
         new Date(currentRecord?.userProgressData.dateWorkedOn ?? "")
       )
-    ) < 24;
+    ) < 24 || isMarkedLocally;
 
   const { width = 0 } = useResizeObserver({
     ref,
@@ -220,6 +221,9 @@ export function DocumentSide({
             mediaRecordWorkedOn({
               variables: { id: currentRecord!.id },
               onError: setError ? (err) => setError(err) : undefined,
+              onCompleted() {
+                setIsMarkedLocally(true);
+              },
             })
           }
         >

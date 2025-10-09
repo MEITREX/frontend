@@ -1235,10 +1235,12 @@ enum Period {
 }
 
 input PlayerAnswerInput {
+  noNotification: Boolean
   questions: [QuestionInput!]!
 }
 
 type PlayerHexadScore {
+  defaultInput: Boolean!
   scores: [PlayerTypeScore!]!
 }
 
@@ -1770,7 +1772,6 @@ type TaskOutput {
 
 type TaskResult {
   itemId: UUID!
-  number: Int!
   score: Int!
 }
 
@@ -1930,6 +1931,7 @@ type User {
   id: UUID!
   level: Int!
   name: String
+  refUserID: UUID
   requiredXP: Float!
   xpValue: Int!
 }

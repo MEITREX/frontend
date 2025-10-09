@@ -85,6 +85,7 @@ export function VideoSide({
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const [isMarkedLocally, setIsMarkedLocally] = useState(false);
 
   const videos = content.mediaRecords.filter((x) => x.type === "VIDEO");
 
@@ -114,7 +115,7 @@ export function VideoSide({
         new Date(),
         new Date(currentRecord?.userProgressData.dateWorkedOn ?? "")
       )
-    ) < 24;
+    ) < 24 || isMarkedLocally;
 
   const [duration, setDuration] = useState(0);
   const segments = orderBy(currentRecord.segments, (x) => x.startTime, "asc");
@@ -256,6 +257,9 @@ export function VideoSide({
             mediaRecordWorkedOn({
               variables: { id: currentRecord!.id },
               onError: setError,
+              onCompleted() {
+                setIsMarkedLocally(true);
+              },
             })
           }
         >

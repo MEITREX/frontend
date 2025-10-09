@@ -6,10 +6,10 @@ import { ContentTags } from "@/components/ContentTags";
 import { Heading } from "@/components/Heading";
 import { MediaContentModal } from "@/components/MediaContentModal";
 import { PageError } from "@/components/PageError";
+import { useConfirmation } from "@/src/useConfirmation";
 import { Delete, Edit, Forum as ForumIcon } from "@mui/icons-material";
 import {
   Alert,
-  Box,
   Button,
   CircularProgress,
   IconButton,
@@ -29,6 +29,7 @@ import { DownloadButton } from "./student";
 export default function LecturerMediaPage() {
   const { mediaId, courseId } = useParams();
   const router = useRouter();
+  const confirm = useConfirmation();
 
   const pathname = usePathname();
   const isForumActive = pathname.includes("/forum");
@@ -136,11 +137,13 @@ export default function LecturerMediaPage() {
             <Button
               sx={{ color: "text.secondary" }}
               startIcon={deleting ? <CircularProgress size={16} /> : <Delete />}
-              onClick={() => {
+              onClick={async () => {
                 if (
-                  confirm(
-                    "Do you really want to delete this content? This can't be undone."
-                  )
+                  await confirm({
+                    title: "Confirm Deletion",
+                    message:
+                      "Do you really want to delete this content? This can't be undone.",
+                  })
                 ) {
                   del({
                     variables: { id: content.id },
