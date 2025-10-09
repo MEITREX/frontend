@@ -2,6 +2,7 @@
 import { LecturerSectionFragment$key } from "@/__generated__/LecturerSectionFragment.graphql";
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { AddStageButton } from "@/components/AddStageButton";
+import { useState } from "react";
 import { DeleteStageButton } from "@/components/DeleteStageButton";
 import { EditContentModal } from "@/components/EditContentModal";
 import EditSectionButton from "@/components/EditSectionButton";
@@ -64,6 +65,12 @@ export function LecturerSection({
     _section
   );
 
+  const [newStageId, setNewStageId] = useState<string | null>(null);
+
+  const handleStageCreated = (stageId: string) => {
+    setNewStageId(stageId);
+  };
+
   return (
     <Section key={section.id}>
       <SectionHeader
@@ -113,8 +120,26 @@ export function LecturerSection({
           </Stage>
         ))}
         <Stage progress={0}>
-          <AddStageButton sectionId={section.id} />
+          <AddStageButton
+            sectionId={section.id}
+            onStageCreated={handleStageCreated}
+          />
         </Stage>
+        {newStageId && (
+          <EditContentModal
+            key={newStageId}
+            sectionId={section.id}
+            courseId={section.courseId}
+            stageId={newStageId}
+            chapterId={section.chapterId}
+            _mediaRecords={_mediaRecords}
+            _chapter={section.chapter}
+            optionalRecords={[]}
+            requiredRecords={[]}
+            autoOpen={true}
+            onClose={() => setNewStageId(null)}
+          />
+        )}
       </SectionContent>
     </Section>
   );

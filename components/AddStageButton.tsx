@@ -6,10 +6,10 @@ import { graphql, useMutation } from "react-relay";
 
 export function AddStageButton({
   sectionId,
-  onCreated,
+  onStageCreated,
 }: {
   sectionId: string;
-  onCreated?: (id: string) => void;
+  onStageCreated?: (stageId: string) => void;
 }) {
   const [addStage] = useMutation<AddStageButtonMutation>(graphql`
     mutation AddStageButtonMutation($id: UUID!) {
@@ -45,7 +45,9 @@ export function AddStageButton({
             onError: setError,
             onCompleted(data) {
               const newId = data?.mutateSection?.createStage?.id;
-              if (newId && onCreated) onCreated(newId);
+              if (newId && onStageCreated) {
+                onStageCreated(newId);
+              }
             },
             updater(store, data) {
               const section = store.get(sectionId);

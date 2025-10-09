@@ -41,16 +41,19 @@ export function EditContentModal({
   optionalRecords: _optionalRecords,
   requiredRecords: _requiredRecords,
   courseId,
+  autoOpen = false,
+  onClose,
 }: {
   chapterId: string;
   sectionId: string;
   stageId: string;
   _mediaRecords: MediaRecordSelector$key;
   _chapter: EditContentModalFragment$key;
-
   optionalRecords: string[];
   requiredRecords: string[];
   courseId: string;
+  autoOpen?: boolean;
+  onClose?: () => void;
 }) {
   const [openMediaModal, setOpenMediaModal] = useState(false);
   const [openFlashcardModal, setOpenFlashcardModal] = useState(false);
@@ -60,7 +63,7 @@ export function EditContentModal({
   const [openSubmissionExerciseModal, setOpenSubmissionExerciseModal] =
     useState(false);
 
-  const [openModal, setOpenModal] = useState(false);
+  const [openModal, setOpenModal] = useState(autoOpen);
 
   const [allSkillsQueryRef, loadAllSkillsQuery] =
     useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
