@@ -6,6 +6,7 @@ import { EditSectionButtonMutation } from "@/__generated__/EditSectionButtonMuta
 import { useMutation } from "react-relay";
 import { graphql } from "relay-runtime";
 import { DialogBase } from "./DialogBase";
+import ConfirmationDialog from "./ConfirmationDialog";
 import { dialogSections, validationSchema } from "./dialogs/sectionDialog";
 import { EditSectionButtonDeleteMutation } from "@/__generated__/EditSectionButtonDeleteMutation.graphql";
 
@@ -37,6 +38,24 @@ export default function EditSectionButton({
   `);
   const [error, setError] = useState<any>(null);
 
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  function handleDelete() {
+    setShowDeleteConfirmation(false);
+    deleteSection({
+      variables: { sectionId },
+      onCompleted: () => setOpen(false),
+      onError: setError,
+      updater(store) {
+        const root = store.get(chapterId);
+        if (!root) return;
+        const sections = root.getLinkedRecords("sections") ?? [];
+        root.setLinkedRecords(
+          sections.filter((x) => x.getDataID() !== sectionId),
+          "sections"
+        );
+      },
+    });
+  }
   return (
     <>
       <IconButton onClick={() => setOpen(true)}>
@@ -58,23 +77,15 @@ export default function EditSectionButton({
         initialValues={{ name }}
         validationSchema={validationSchema}
         onClose={() => setOpen(false)}
-        onDelete={() =>
-          deleteSection({
-            variables: { sectionId },
-            onCompleted: () => setOpen(false),
-            onError: setError,
-            updater(store) {
-              const root = store.get(chapterId);
-              if (!root) return;
-
-              const sections = root.getLinkedRecords("sections") ?? [];
-              root.setLinkedRecords(
-                sections.filter((x) => x.getDataID() !== sectionId),
-                "sections"
-              );
-            },
-          })
-        }
+        onDelete={() => setShowDeleteConfirmation(true)}
+      />
+      <ConfirmationDialog
+        open={showDeleteConfirmation}
+        title="Abschnitt löschen"
+        message={`Möchtest du den Abschnitt "${name}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`}
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteConfirmation(false)}
+        confirmText="Löschen"
       />
     </>
   );

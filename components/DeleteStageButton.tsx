@@ -3,6 +3,7 @@ import { Delete } from "@mui/icons-material";
 import { Alert, Button } from "@mui/material";
 import { useState } from "react";
 import { graphql, useMutation } from "react-relay";
+import ConfirmationDialog from "./ConfirmationDialog";
 
 export function DeleteStageButton({
   sectionId,
@@ -20,6 +21,24 @@ export function DeleteStageButton({
   `);
 
   const [error, setError] = useState<any>(null);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
+  function handleDelete() {
+    setShowDeleteConfirmation(false);
+    deleteStage({
+      variables: { id: stageId, sectionId },
+      onError: setError,
+      updater(store, data) {
+        const section = store.get(sectionId);
+        const stages = section?.getLinkedRecords("stages");
+        if (!section || !stages) return;
+        section.setLinkedRecords(
+          stages.filter((x) => x.getDataID() !== stageId),
+          "stages"
+        );
+      },
+    });
+  }
 
   return (
     <>
@@ -35,26 +54,25 @@ export function DeleteStageButton({
       ))}
 
       <Button
-        onClick={() =>
-          deleteStage({
-            variables: { id: stageId, sectionId },
-            onError: setError,
-            updater(store, data) {
-              const section = store.get(sectionId);
-              const stages = section?.getLinkedRecords("stages");
-              if (!section || !stages) return;
-              section.setLinkedRecords(
-                stages.filter((x) => x.getDataID() !== stageId),
-                "stages"
-              );
-            },
-          })
-        }
+        onClick={() => setShowDeleteConfirmation(true)}
         color="warning"
         startIcon={<Delete />}
       >
         Delete stage
       </Button>
+
+      <ConfirmationDialog
+        open={showDeleteConfirmation}
+        title="Delete Stage"
+        message={
+          "Do you really want to delete this stage? This action cannot be undone."
+        }
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteConfirmation(false)}
+        confirmText="Delete"
+        cancelText="Cancel"
+        severity="error"
+      />
     </>
   );
 }
