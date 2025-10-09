@@ -45,7 +45,9 @@ export function AddStageButton({
             onError: setError,
             onCompleted(data) {
               const newId = data?.mutateSection?.createStage?.id;
-              if (newId && onCreated) onCreated(newId);
+              if (newId && onStageCreated) {
+                onStageCreated(newId);
+              }
             },
             updater(store, data) {
               const section = store.get(sectionId);
@@ -55,11 +57,6 @@ export function AddStageButton({
                 [...stages, store.get(data.mutateSection.createStage.id)!],
                 "stages"
               );
-            },
-            onCompleted(data) {
-              if (onStageCreated) {
-                onStageCreated(data.mutateSection.createStage.id);
-              }
             },
           })
         }
