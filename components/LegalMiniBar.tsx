@@ -1,7 +1,7 @@
 "use client";
 
-import NextLink from "next/link";
 import { Box, Link, useTheme } from "@mui/material";
+import NextLink from "next/link";
 
 export default function LegalMiniBar() {
   const theme = useTheme();
@@ -15,9 +15,10 @@ export default function LegalMiniBar() {
         borderRadius: 2,
         px: 1.25,
         py: 0.5,
-        bgcolor: "grey.50",
+        bgcolor: "rgba(255, 255, 255, 0.03)",
+        backdropFilter: "blur(6px)",
         border: "1px solid",
-        borderColor: "divider",
+        borderColor: "rgba(255, 255, 255, 0.1)",
         display: { xs: "none", md: "flex" },
         gap: 1.5,
         justifyContent: "space-between",
