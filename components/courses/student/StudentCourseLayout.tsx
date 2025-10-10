@@ -120,8 +120,8 @@ export default function CourseLayout({
   const confirm = useConfirmation();
 
   const pathname = usePathname();
-  const noNavbarPaths = ["/quiz", "/media", "/quiz", "/submissions"];
-  const hideNavbar = noNavbarPaths.some((path) => pathname?.includes(path));
+  const noContentPaths = ["/quiz", "/media", "/quiz", "/submissions"];
+  const hideContent = noContentPaths.some((path) => pathname?.includes(path));
 
   const data = useLazyLoadQuery<StudentCourseLayoutCourseIdQuery>(
     studentCourseIdQuery,
@@ -214,20 +214,23 @@ export default function CourseLayout({
           )}
         </div>
 
-        <GamificationGuard>
-          {/* Quest */}
-          <Box marginBottom={2} marginTop={2}>
-            <QuestList
-              questsProp={course.dailyQuests.quests}
-              streak={course.dailyQuests.rewardMultiplier}
-            />
-          </Box>
-        </GamificationGuard>
+        {!hideContent && (
+          <GamificationGuard>
+            {/* Quest */}
+            <Box marginBottom={2} marginTop={2}>
+              <QuestList
+                questsProp={course.dailyQuests.quests}
+                streak={course.dailyQuests.rewardMultiplier}
+              />
+            </Box>
+          </GamificationGuard>
+        )}
 
         {/* Navbar */}
-        {!hideNavbar && (
+        {!hideContent && (
           <StudentCourseNavigation courseId={courseId as string} />
         )}
+
         {/* Navbar-Content */}
         <div className="mt-4">{children}</div>
       </main>
