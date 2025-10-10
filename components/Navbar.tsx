@@ -23,15 +23,13 @@ import { PageView, usePageView } from "@/src/currentView";
 import { useAITutorStore } from "@/stores/aiTutorStore";
 
 import {
-  BookOnline,
   CollectionsBookmark,
   Dashboard,
   Logout,
   ManageSearch,
   Notifications,
-  PrivacyTip,
   Search,
-  Settings,
+  Settings
 } from "@mui/icons-material";
 
 import {
@@ -85,6 +83,7 @@ import {
   useRelayEnvironment,
   useSubscription,
 } from "react-relay";
+import LegalMiniBar from "./LegalMiniBar";
 import NotificationsWithArrow from "./navbar/notifications/NotificationsWithArrow";
 
 const NAVBAR_NOTIFICATIONS_QUERY = graphql`
@@ -328,6 +327,7 @@ function NavbarBase({
   }
 
   return (
+    <Box marginBottom={6}>
     <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
       <div className="text-center mt-8 text-3xl font-medium tracking-wider sticky">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -422,6 +422,7 @@ function NavbarBase({
 
       {children}
     </div>
+    </Box>
   );
 }
 
@@ -890,6 +891,7 @@ export function Navbar() {
   const tutor = useIsTutor(currentUserInfo);
 
   return (
+    <>
     <NavbarBase tutor={tutor} userId={currentUserInfo.id}>
       {filtered.length > 0 ? (
         <NavbarSection
@@ -909,5 +911,7 @@ export function Navbar() {
         </NavbarSection>
       ) : null}
     </NavbarBase>
+      <LegalMiniBar/>
+    </>
   );
 }
