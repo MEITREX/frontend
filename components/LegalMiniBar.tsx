@@ -22,7 +22,7 @@ export default function LegalMiniBar() {
         gap: 1.5,
         justifyContent: "space-between",
         alignItems: "center",
-        marginTop: 3
+        marginTop: 3,
       }}
     >
       <Link
