@@ -23,7 +23,6 @@ export default function ForumPage() {
 
   const gamificationTabs = [
     { label: "Achievements", path: "achievements" },
-    { label: "Badges", path: "badges" },
     { label: "Leaderboards", path: "leaderboard" },
   ];
 
