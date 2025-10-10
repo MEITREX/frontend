@@ -13,9 +13,8 @@ import XpOverview from "../xpoverview/XpOverview";
 
 const tabs = [
   { label: "General", path: "general" },
-  { label: "Achievements", path: "achievements" },
   { label: "Forum", path: "forum" },
-  { label: "Badges", path: "badges" },
+  { label: "Achievements", path: "achievements" },
   { label: "Leaderboards", path: "leaderboard" },
 ];
 
