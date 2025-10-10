@@ -4,7 +4,6 @@ import { NavbarIsTutor$key } from "@/__generated__/NavbarIsTutor.graphql";
 import { NavbarSemanticSearchQuery } from "@/__generated__/NavbarSemanticSearchQuery.graphql";
 import { NavbarStudentQuery } from "@/__generated__/NavbarStudentQuery.graphql";
 import { WidgetApiItemInventoryForUserQuery } from "@/__generated__/WidgetApiItemInventoryForUserQuery.graphql";
-
 import logo from "@/assets/logo.svg";
 import StoreIcon from "@mui/icons-material/Store";
 import coins from "assets/lottery/coins.png";
@@ -24,11 +23,13 @@ import { PageView, usePageView } from "@/src/currentView";
 import { useAITutorStore } from "@/stores/aiTutorStore";
 
 import {
+  BookOnline,
   CollectionsBookmark,
   Dashboard,
   Logout,
   ManageSearch,
   Notifications,
+  PrivacyTip,
   Search,
   Settings,
 } from "@mui/icons-material";
