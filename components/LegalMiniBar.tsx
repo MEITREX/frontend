@@ -11,7 +11,6 @@ export default function LegalMiniBar() {
         position: "fixed",
         left: 16,
         bottom: 8,
-        width: "var(--sidebar-width, 260px)",
         borderRadius: 2,
         px: 1.25,
         py: 0.5,
@@ -23,7 +22,7 @@ export default function LegalMiniBar() {
         gap: 1.5,
         justifyContent: "space-between",
         alignItems: "center",
-        zIndex: theme.zIndex.appBar - 1,
+        marginTop: 3,
       }}
     >
       <Link
@@ -33,7 +32,7 @@ export default function LegalMiniBar() {
         color="text.secondary"
         sx={{ fontSize: 12, fontWeight: 500 }}
       >
-        Datenschutzerklärung
+        Privacy Policy
       </Link>
 
       <Box component="span" sx={{ color: "text.disabled", fontSize: 12 }}>
@@ -47,7 +46,7 @@ export default function LegalMiniBar() {
         color="text.secondary"
         sx={{ fontSize: 12, fontWeight: 500 }}
       >
-        Impressum
+        Imprint
       </Link>
     </Box>
   );

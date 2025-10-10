@@ -23,13 +23,11 @@ import { PageView, usePageView } from "@/src/currentView";
 import { useAITutorStore } from "@/stores/aiTutorStore";
 
 import {
-  BookOnline,
   CollectionsBookmark,
   Dashboard,
   Logout,
   ManageSearch,
   Notifications,
-  PrivacyTip,
   Search,
   Settings,
 } from "@mui/icons-material";
@@ -85,6 +83,7 @@ import {
   useRelayEnvironment,
   useSubscription,
 } from "react-relay";
+import LegalMiniBar from "./LegalMiniBar";
 import NotificationsWithArrow from "./navbar/notifications/NotificationsWithArrow";
 
 const NAVBAR_NOTIFICATIONS_QUERY = graphql`
@@ -328,100 +327,107 @@ function NavbarBase({
   }
 
   return (
-    <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
-      <div className="text-center mt-8 text-3xl font-medium tracking-wider sticky">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logo.src} alt="GITS logo" className="w-24 m-auto" />
-        <Typography
-          sx={{
-            fontFamily: "'Quicksand', sans-serif",
-            fontSize: "2.5rem",
-            fontWeight: "bold",
-            color: "#089CDC",
-            marginTop: "4px",
-            textAlign: "center",
-          }}
-        >
-          MEITREX
-        </Typography>
-      </div>
-      <UserInfo tutor={tutor} userId={userId} />
-      <NavbarSection>
-        <Autocomplete<SearchResultType, false, false, true>
-          freeSolo
-          size="small"
-          className="mx-2 mb-2"
-          clearOnBlur
-          blurOnSelect
-          autoHighlight
-          open={isSearchPopupOpen}
-          value={null}
-          getOptionLabel={(x) => (typeof x === "string" ? x : x?.title ?? "")}
-          onChange={(_, newVal) => {
-            if (typeof newVal == "string") {
-              router.push(`/search?query=${newVal}`);
-            } else if (newVal) {
-              setSearchPopupOpen(false);
-              router.push(newVal.url);
-            }
-          }}
-          filterOptions={(x) => x}
-          renderOption={(
-            props,
-            option,
-            _state: AutocompleteRenderOptionState,
-            _owner: AutocompleteOwnerState<any, any, any, any>
-          ) => (
-            <li {...props}>
-              <div>
-                <div className="text-[10px] text-slate-500">
-                  {option.breadcrumbs}
-                </div>
-                {option.title}
-                {option.position && (
-                  <div className="text-[10px] text-slate-400">
-                    {option.position}
+    <Box marginBottom={6}>
+      <div className="shrink-0 bg-slate-200 h-full px-8 flex flex-col gap-6 w-72 xl:w-96 overflow-auto thin-scrollbar">
+        <div className="text-center mt-8 text-3xl font-medium tracking-wider sticky">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={logo.src} alt="GITS logo" className="w-24 m-auto" />
+          <Typography
+            sx={{
+              fontFamily: "'Quicksand', sans-serif",
+              fontSize: "2.5rem",
+              fontWeight: "bold",
+              color: "#089CDC",
+              marginTop: "4px",
+              textAlign: "center",
+            }}
+          >
+            MEITREX
+          </Typography>
+        </div>
+        <UserInfo tutor={tutor} userId={userId} />
+        <NavbarSection>
+          <Autocomplete<SearchResultType, false, false, true>
+            freeSolo
+            size="small"
+            className="mx-2 mb-2"
+            clearOnBlur
+            blurOnSelect
+            autoHighlight
+            open={isSearchPopupOpen}
+            value={null}
+            getOptionLabel={(x) => (typeof x === "string" ? x : x?.title ?? "")}
+            onChange={(_, newVal) => {
+              if (typeof newVal == "string") {
+                router.push(`/search?query=${newVal}`);
+              } else if (newVal) {
+                setSearchPopupOpen(false);
+                router.push(newVal.url);
+              }
+            }}
+            filterOptions={(x) => x}
+            renderOption={(
+              props,
+              option,
+              _state: AutocompleteRenderOptionState,
+              _owner: AutocompleteOwnerState<any, any, any, any>
+            ) => (
+              <li {...props}>
+                <div>
+                  <div className="text-[10px] text-slate-500">
+                    {option.breadcrumbs}
                   </div>
-                )}
-              </div>
-            </li>
-          )}
-          options={
-            term.length >= 3
-              ? (results as SearchResultType[])
-              : ([] as SearchResultType[])
-          }
-          onInputChange={(_, value) => value && debouncedSetter(value)}
-          renderInput={(params): React.ReactNode => (
-            <TextField
-              {...params}
-              onClick={() => setSearchPopupOpen(true)}
-              InputProps={{
-                ...params.InputProps,
-                startAdornment: (
-                  <InputAdornment position="start" className="ml-0.5">
-                    {isPending ? <CircularProgress size={24} /> : <Search />}
-                  </InputAdornment>
-                ),
-              }}
+                  {option.title}
+                  {option.position && (
+                    <div className="text-[10px] text-slate-400">
+                      {option.position}
+                    </div>
+                  )}
+                </div>
+              </li>
+            )}
+            options={
+              term.length >= 3
+                ? (results as SearchResultType[])
+                : ([] as SearchResultType[])
+            }
+            onInputChange={(_, value) => value && debouncedSetter(value)}
+            renderInput={(params): React.ReactNode => (
+              <TextField
+                {...params}
+                onClick={() => setSearchPopupOpen(true)}
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <InputAdornment position="start" className="ml-0.5">
+                      {isPending ? <CircularProgress size={24} /> : <Search />}
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
+            PaperComponent={SearchPopupPaper}
+          />
+          <NavbarLink title="Dashboard" icon={<Dashboard />} href="/" exact />
+          <NavbarLink
+            title="Course Catalog"
+            icon={<CollectionsBookmark />}
+            href="/courses"
+            exact
+          />
+          <GamificationGuard>
+            <NavbarLink
+              title="Items"
+              icon={<StoreIcon />}
+              href="/items"
+              exact
             />
-          )}
-          PaperComponent={SearchPopupPaper}
-        />
-        <NavbarLink title="Dashboard" icon={<Dashboard />} href="/" exact />
-        <NavbarLink
-          title="Course Catalog"
-          icon={<CollectionsBookmark />}
-          href="/courses"
-          exact
-        />
-        <GamificationGuard>
-          <NavbarLink title="Items" icon={<StoreIcon />} href="/items" exact />
-        </GamificationGuard>
-      </NavbarSection>
+          </GamificationGuard>
+        </NavbarSection>
 
-      {children}
-    </div>
+        {children}
+      </div>
+    </Box>
   );
 }
 
@@ -890,24 +896,27 @@ export function Navbar() {
   const tutor = useIsTutor(currentUserInfo);
 
   return (
-    <NavbarBase tutor={tutor} userId={currentUserInfo.id}>
-      {filtered.length > 0 ? (
-        <NavbarSection
-          title={
-            pageView === PageView.Lecturer
-              ? "Courses I'm teaching this semester"
-              : "Courses I'm attending this semester"
-          }
-        >
-          {filtered.map(({ course }) => (
-            <NavbarLink
-              key={course.id}
-              title={course.title}
-              href={`/courses/${course.id}`}
-            />
-          ))}
-        </NavbarSection>
-      ) : null}
-    </NavbarBase>
+    <>
+      <NavbarBase tutor={tutor} userId={currentUserInfo.id}>
+        {filtered.length > 0 ? (
+          <NavbarSection
+            title={
+              pageView === PageView.Lecturer
+                ? "Courses I'm teaching this semester"
+                : "Courses I'm attending this semester"
+            }
+          >
+            {filtered.map(({ course }) => (
+              <NavbarLink
+                key={course.id}
+                title={course.title}
+                href={`/courses/${course.id}`}
+              />
+            ))}
+          </NavbarSection>
+        ) : null}
+      </NavbarBase>
+      <LegalMiniBar />
+    </>
   );
 }

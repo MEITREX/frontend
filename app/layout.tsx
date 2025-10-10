@@ -4,7 +4,6 @@ import "@/styles/globals.css";
 import React, { useEffect, useMemo } from "react";
 
 import { ClientToaster } from "@/components/ClientToaster";
-import LegalMiniBar from "@/components/LegalMiniBar";
 import { PageLayout } from "@/components/PageLayout";
 import CurrencyHydrator from "@/components/currency/CurrencyHydrator";
 import { GamificationRouteGuard } from "@/components/gamification-guard/GamificationRouteGuard";
@@ -176,7 +175,7 @@ function SigninContent({ children }: { children: React.ReactNode }) {
             <CurrencyProvider>
               <ClientToaster />
               <CurrencyHydrator />
-              <LegalMiniBar />
+
               {children}
             </CurrencyProvider>
           </ConfirmationProvider>
