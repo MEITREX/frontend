@@ -4,7 +4,13 @@ import { Alert, Button } from "@mui/material";
 import { useState } from "react";
 import { graphql, useMutation } from "react-relay";
 
-export function AddStageButton({ sectionId }: { sectionId: string }) {
+export function AddStageButton({
+  sectionId,
+  onStageCreated,
+}: {
+  sectionId: string;
+  onStageCreated?: (stageId: string) => void;
+}) {
   const [addStage] = useMutation<AddStageButtonMutation>(graphql`
     mutation AddStageButtonMutation($id: UUID!) {
       mutateSection(sectionId: $id) {
@@ -21,7 +27,7 @@ export function AddStageButton({ sectionId }: { sectionId: string }) {
 
   return (
     <>
-      {error?.source.errors.map((err: any, i: number) => (
+      {error?.source?.errors?.map((err: any, i: number) => (
         <Alert
           key={i}
           severity="error"
@@ -37,6 +43,12 @@ export function AddStageButton({ sectionId }: { sectionId: string }) {
           addStage({
             variables: { id: sectionId },
             onError: setError,
+            onCompleted(data) {
+              const newId = data?.mutateSection?.createStage?.id;
+              if (newId && onStageCreated) {
+                onStageCreated(newId);
+              }
+            },
             updater(store, data) {
               const section = store.get(sectionId);
               const stages = section?.getLinkedRecords("stages");

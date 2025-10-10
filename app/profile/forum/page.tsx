@@ -3,20 +3,34 @@
 import { pagePrivateProfileStudentForumQuery } from "@/__generated__/pagePrivateProfileStudentForumQuery.graphql";
 import ProfileForumActivity from "@/components/profile/forum/ProfileForumActivity";
 import { Box, Tab, Tabs, Typography } from "@mui/material";
+import XpOverview from "../xpoverview/XpOverview";
 import { usePathname, useRouter } from "next/navigation";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "relay-runtime";
 import OwnProfileCustomHeader from "@/components/profile/header/OwnProfileCustomHeader";
-
-const tabs = [
-  { label: "General", path: "general" },
-  { label: "Achievements", path: "achievements" },
-  { label: "Forum", path: "forum" },
-  { label: "Badges", path: "badges" },
-  { label: "Leaderboards", path: "leaderboard" },
-];
+import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
+import { useAuth } from "react-oidc-context";
 
 export default function ForumPage() {
+  const auth = useAuth();
+  const isGamificationDisabled =
+    auth.user?.profile?.gamification_type === "none";
+
+  const baseTabs = [
+    { label: "General", path: "general" },
+    { label: "Forum", path: "forum" },
+  ];
+
+  const gamificationTabs = [
+    { label: "Achievements", path: "achievements" },
+    { label: "Badges", path: "badges" },
+    { label: "Leaderboards", path: "leaderboard" },
+  ];
+
+  const tabs = isGamificationDisabled
+    ? baseTabs
+    : [...baseTabs, ...gamificationTabs];
+
   const router = useRouter();
   const pathname = usePathname();
   const section = (pathname.split("/profile/")[1] || "").split("/")[0];
@@ -45,7 +59,13 @@ export default function ForumPage() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
+      <GamificationGuard>
+        <OwnProfileCustomHeader displayName={currentUserInfo.nickname} />
+      </GamificationGuard>
+
+      <GamificationGuard>
+        <XpOverview userId={currentUserInfo.id} />
+      </GamificationGuard>
 
       <Tabs
         value={activeIndex}

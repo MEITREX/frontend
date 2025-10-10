@@ -30,6 +30,7 @@ import { graphql, useFragment, useMutation, useQueryLoader } from "react-relay";
 import { AddCodeAssignmentModal } from "./AddCodeAssignmentModal";
 import { MediaContentModal } from "./MediaContentModal";
 import { QuizModal } from "./QuizModal";
+import { SubmissionExerciseModal } from "./SubmissionExerciseModal";
 
 export function EditContentModal({
   chapterId,
@@ -40,23 +41,29 @@ export function EditContentModal({
   optionalRecords: _optionalRecords,
   requiredRecords: _requiredRecords,
   courseId,
+  autoOpen = false,
+  onClose,
 }: {
   chapterId: string;
   sectionId: string;
   stageId: string;
   _mediaRecords: MediaRecordSelector$key;
   _chapter: EditContentModalFragment$key;
-
   optionalRecords: string[];
   requiredRecords: string[];
   courseId: string;
+  autoOpen?: boolean;
+  onClose?: () => void;
 }) {
   const [openMediaModal, setOpenMediaModal] = useState(false);
   const [openFlashcardModal, setOpenFlashcardModal] = useState(false);
   const [openAddQuizModal, setOpenAddQuizModal] = useState(false);
+  const [quizModalKey, setQuizModalKey] = useState(0);
   const [openCodeAssignmentModal, setOpenCodeAssignmentModal] = useState(false);
+  const [openSubmissionExerciseModal, setOpenSubmissionExerciseModal] =
+    useState(false);
 
-  const [openModal, setOpenModal] = useState(false);
+  const [openModal, setOpenModal] = useState(autoOpen);
 
   const [allSkillsQueryRef, loadAllSkillsQuery] =
     useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
@@ -89,6 +96,9 @@ export function EditContentModal({
             __typename
           }
           ... on QuizAssessment {
+            __typename
+          }
+          ... on SubmissionAssessment {
             __typename
           }
           ... on AssignmentAssessment {
@@ -172,12 +182,18 @@ export function EditContentModal({
     });
   };
 
+  const openAndResetQuizModal = () => {
+    setQuizModalKey((prev) => prev + 1);
+    setOpenAddQuizModal(true);
+  };
+
   const openCodeAssignment = () => {
     if (!allSkillsQueryRef) {
       loadAllSkillsQuery({ courseId });
     }
     setOpenCodeAssignmentModal(true);
   };
+
   return (
     <>
       <Button startIcon={<EditNote />} onClick={() => setOpenModal(true)}>
@@ -269,6 +285,8 @@ export function EditContentModal({
                           router.push(
                             content.__typename === "FlashcardSetAssessment"
                               ? `/courses/${courseId}/flashcards/${content.id}`
+                              : content.__typename === "SubmissionAssessment"
+                              ? `/courses/${courseId}/submissions/${content.id}`
                               : content.__typename === "MediaContent"
                               ? `/courses/${courseId}/media/${content.id}`
                               : content.__typename === "QuizAssessment"
@@ -333,7 +351,7 @@ export function EditContentModal({
             Add Media
           </Button>
           <Button
-            onClick={() => setOpenAddQuizModal(true)}
+            onClick={openAndResetQuizModal}
             variant="text"
             className="mt-4"
             startIcon={<Add />}
@@ -347,6 +365,14 @@ export function EditContentModal({
             startIcon={<Add />}
           >
             Add Code Assignment
+          </Button>
+          <Button
+            onClick={() => setOpenSubmissionExerciseModal(true)}
+            variant="text"
+            className="mt-4"
+            startIcon={<Add />}
+          >
+            Add Submission Exercise
           </Button>
         </DialogContent>
         <DialogActions>
@@ -363,6 +389,7 @@ export function EditContentModal({
         _mediaRecords={_mediaRecords}
       />
       <QuizModal
+        key={quizModalKey}
         isOpen={openAddQuizModal}
         onClose={() => setOpenAddQuizModal(false)}
         chapterId={chapterId}
@@ -382,6 +409,13 @@ export function EditContentModal({
           allSkillsQueryRef={allSkillsQueryRef}
         />
       )}
+      <SubmissionExerciseModal
+        isOpen={openSubmissionExerciseModal}
+        onClose={() => setOpenSubmissionExerciseModal(false)}
+        chapterId={chapterId}
+        _existingSubmission={null}
+        tasks={[]}
+      />
     </>
   );
 }

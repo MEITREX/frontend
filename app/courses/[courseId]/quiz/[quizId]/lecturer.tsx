@@ -6,6 +6,7 @@ import { QuizModal } from "@/components/QuizModal";
 import { AddQuestionButton } from "@/components/quiz/AddQuestionButton";
 import QuestionPreview from "@/components/quiz/QuestionPreview";
 import QuizHeader from "@/components/quiz/QuizHeader";
+import { Alert, AlertTitle } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { graphql, useLazyLoadQuery, useQueryLoader } from "react-relay";
@@ -37,6 +38,10 @@ const RootQuery = graphql`
             ...AssociationQuestionPreviewFragment
           }
           ...QuizModalFragment
+
+          requiredCorrectAnswers
+          numberOfRandomlySelectedQuestions
+          questionPoolingMode
         }
         items {
           id
@@ -57,6 +62,7 @@ export default function LecturerQuiz() {
   const { quizId, courseId } = useParams();
   const [error, setError] = useState<ES2022Error | null>(null);
   const errorContext = useMemo(() => ({ error, setError }), [error, setError]);
+  const [quizModalKey, setQuizModalKey] = useState(0);
 
   const { contentsByIds, ...mediaSelectorQuery } =
     useLazyLoadQuery<lecturerEditQuizQuery>(RootQuery, {
@@ -76,6 +82,12 @@ export default function LecturerQuiz() {
   const content = contentsByIds[0];
   const quiz = content.quiz;
 
+  const openAndResetQuizModal = () => {
+    console.log("Attempting to open modal with new key:", quizModalKey + 1);
+    setQuizModalKey((prev) => prev + 1);
+    setEditSetModalOpen(true);
+  };
+
   if (!quiz) {
     return (
       <PageError
@@ -84,13 +96,47 @@ export default function LecturerQuiz() {
       />
     );
   }
+
+  const totalQuestions = quiz.questionPool.length;
+
+  const notEnoughToPass = totalQuestions < quiz.requiredCorrectAnswers;
+
+  const notEnoughForRandom =
+    quiz.questionPoolingMode === "RANDOM" &&
+    totalQuestions < quiz.numberOfRandomlySelectedQuestions!;
+
   return (
     <main>
       <ErrorContext.Provider value={errorContext}>
         <QuizHeader
-          openEditQuizModal={() => setEditSetModalOpen(true)}
+          openEditQuizModal={openAndResetQuizModal}
           content={content}
         />
+
+        <>
+          {(notEnoughToPass || notEnoughForRandom) && (
+            <Alert severity="error">
+              <AlertTitle>Configuration Warning</AlertTitle>
+              <ul>
+                {notEnoughToPass && (
+                  <li>
+                    <strong>A student can never pass this quiz.</strong> The
+                    number of available questions is less than the required
+                    correct answers to pass ({quiz.requiredCorrectAnswers}{" "}
+                    questions needed).
+                  </li>
+                )}
+                {notEnoughForRandom && (
+                  <li>
+                    This quiz is set to randomly select{" "}
+                    {quiz.numberOfRandomlySelectedQuestions} questions, but only{" "}
+                    {totalQuestions} are available in the question pool.
+                  </li>
+                )}
+              </ul>
+            </Alert>
+          )}
+        </>
 
         <div className="mt-8 flex flex-col items-stretch">
           {quiz.questionPool.map((question, i) => (
@@ -112,6 +158,7 @@ export default function LecturerQuiz() {
         />
 
         <QuizModal
+          key={quizModalKey}
           onClose={() => setEditSetModalOpen(false)}
           isOpen={isEditSetModalOpen}
           _existingQuiz={quiz}

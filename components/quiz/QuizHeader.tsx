@@ -1,6 +1,7 @@
 import { QuizHeaderDeleteQuizMutation } from "@/__generated__/QuizHeaderDeleteQuizMutation.graphql";
 import { QuizHeaderFragment$key } from "@/__generated__/QuizHeaderFragment.graphql";
 import { updaterSetDelete } from "@/src/relay-helpers/common";
+import { useConfirmation } from "@/src/useConfirmation";
 import { Delete, Edit } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
@@ -37,6 +38,7 @@ interface Props {
 const QuizHeader = ({ content, openEditQuizModal }: Props) => {
   const { courseId, quizId } = useParams();
   const router = useRouter();
+  const confirm = useConfirmation();
 
   const { error, setError } = useError();
 
@@ -80,11 +82,13 @@ const QuizHeader = ({ content, openEditQuizModal }: Props) => {
                   <Delete />
                 )
               }
-              onClick={() => {
+              onClick={async () => {
                 if (
-                  confirm(
-                    "Do you really want to delete this quiz? This can't be undone."
-                  )
+                  await confirm({
+                    title: "Confirm Deletion",
+                    message:
+                      "Do you really want to delete this quiz? This can't be undone.",
+                  })
                 )
                   deleteQuiz();
               }}

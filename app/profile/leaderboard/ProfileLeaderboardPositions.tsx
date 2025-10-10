@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   Avatar,
   Box,
@@ -21,11 +21,19 @@ import {
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import { graphql, useLazyLoadQuery } from "react-relay";
+import {
+  graphql,
+  useLazyLoadQuery,
+  useRelayEnvironment,
+  fetchQuery,
+} from "react-relay";
 //import type { ProfileLeaderboardPositionsUserQuery } from "./__generated__/ProfileLeaderboardPositionsUserQuery.graphql";
 import type { ProfileLeaderboardPositionsUserQuery } from "@/__generated__/ProfileLeaderboardPositionsUserQuery.graphql";
 import type { ProfileLeaderboardPositionsCourseQuery } from "@/__generated__/ProfileLeaderboardPositionsCourseQuery.graphql";
-
+import type { LeaderboardRowInventoryByUserQuery } from "@/__generated__/LeaderboardRowInventoryByUserQuery.graphql";
+import type { LeaderboardRowPublicInfoQuery } from "@/__generated__/LeaderboardRowPublicInfoQuery.graphql";
+import defaultUserImage from "@/assets/logo.svg";
+import { getPublicProfileItemsMergedCustomID } from "@/components/items/logic/GetItems";
 const designTrophies = [
   // Gold
   <svg key="gold" width="30" height="30" viewBox="0 0 36 36">
@@ -124,6 +132,19 @@ const designTrophies = [
 type PublicUserInfo = { id: string; name: string };
 type UserScore = { score: number; user: PublicUserInfo };
 
+type Asset = { id: string; url?: string | null; equipped?: boolean };
+type ColorTheme = {
+  id: string;
+  backColor?: string | null;
+  foreColor?: string | null;
+  equipped?: boolean;
+};
+type PatternTheme = {
+  id: string;
+  url?: string | null;
+  foreColor?: string | null;
+  equipped?: boolean;
+};
 // New: CourseLeaderboardPayload type
 export type CourseLeaderboardPayload = {
   weekly: { userScores: UserScore[] }[];
@@ -241,7 +262,7 @@ const CourseQuery = graphql`
         id
         score
         user {
-          id
+          refUserID
           name
         }
       }
@@ -256,7 +277,7 @@ const CourseQuery = graphql`
         id
         score
         user {
-          id
+          refUserID
           name
         }
       }
@@ -271,7 +292,7 @@ const CourseQuery = graphql`
         id
         score
         user {
-          id
+          refUserID
           name
         }
       }
@@ -388,6 +409,18 @@ function ScoreBar({
       </Typography>
     </Box>
   );
+}
+function assetSrc(
+  a?: { url?: string | null; id?: string } | null,
+  fallback?: string
+) {
+  const raw = a?.url ?? a?.id;
+  if (!raw) return fallback;
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
 }
 
 function UserRow({
@@ -611,11 +644,7 @@ function CombinedLeaderboardCard({
   viewerUserId?: string;
 }) {
   const [tab, setTab] = useState<0 | 1 | 2>(0);
-  const handleTab = (_: React.SyntheticEvent, v: number) =>
-    setTab(v as 0 | 1 | 2);
 
-  const timeframeLabel =
-    tab === 0 ? "This Week" : tab === 1 ? "This Month" : "All Time";
   const scores = useMemo(() => {
     const base = tab === 0 ? weekly : tab === 1 ? monthly : allTime;
     if (!limitToUserIds || limitToUserIds.length === 0) return base;
@@ -627,6 +656,7 @@ function CombinedLeaderboardCard({
     () => [...scores].sort((a, b) => b.score - a.score),
     [scores]
   );
+
   const myRank = useMemo(
     () => rankOf(scores, currentUserId),
     [scores, currentUserId]
@@ -635,7 +665,164 @@ function CombinedLeaderboardCard({
     topSorted.find((s) => s.user.id === currentUserId)?.score ?? 0;
   const best = topSorted[0]?.score ?? 0;
 
-  // Score bar perspective
+  // Item System State
+  const [userProfilePics, setUserProfilePics] = useState<
+    Record<string, Asset | null>
+  >({});
+  const [userProfileFrames, setUserProfileFrames] = useState<
+    Record<string, Asset | null>
+  >({});
+  const [userColorThemes, setUserColorThemes] = useState<
+    Record<string, ColorTheme | null>
+  >({});
+  const [userPatternThemes, setUserPatternThemes] = useState<
+    Record<string, PatternTheme | null>
+  >({});
+  const [userNickname, setUserNickname] = useState<
+    Record<string, string | null>
+  >({});
+
+  const env = useRelayEnvironment();
+  const idsMemo = useMemo(() => {
+    return Array.from(new Set(scores.map((s) => s.user.id).filter(Boolean)));
+  }, [scores]);
+
+  useEffect(() => {
+    const ids = idsMemo;
+    if (ids.length === 0) {
+      setUserProfilePics({});
+      setUserProfileFrames({});
+      setUserColorThemes({});
+      setUserPatternThemes({});
+      setUserNickname({});
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const results = await Promise.all(
+          ids.map(async (userId) => {
+            const invRes = await fetchQuery<LeaderboardRowInventoryByUserQuery>(
+              env,
+              graphql`
+                query ProfileLeaderboardPositionsInventoryQuery(
+                  $userIds: [UUID!]!
+                ) {
+                  inventoriesForUsers(userIds: $userIds) {
+                    items {
+                      equipped
+                      catalogItemId: id
+                      uniqueDescription
+                      unlocked
+                      unlockedTime
+                    }
+                    unspentPoints
+                    userId
+                  }
+                }
+              `,
+              { userIds: [userId] }
+            ).toPromise();
+
+            const dataNick = await fetchQuery<LeaderboardRowPublicInfoQuery>(
+              env,
+              graphql`
+                query ProfileLeaderboardPositionsPublicInfoQuery(
+                  $id: [UUID!]!
+                ) {
+                  findUserInfos(ids: $id) {
+                    nickname
+                  }
+                }
+              `,
+              { id: [userId] }
+            ).toPromise();
+
+            const nick = dataNick?.findUserInfos?.[0]?.nickname ?? null;
+            const items = invRes?.inventoriesForUsers?.[0]?.items ?? [];
+
+            const pics = getPublicProfileItemsMergedCustomID(
+              items,
+              "profilePics"
+            );
+            const frames = getPublicProfileItemsMergedCustomID(
+              items,
+              "profilePicFrames"
+            );
+            const colors = getPublicProfileItemsMergedCustomID(
+              items,
+              "colorThemes"
+            );
+            const patterns = getPublicProfileItemsMergedCustomID(
+              items,
+              "patternThemes"
+            );
+
+            const pic = pics.find((it: any) => it.equipped) ?? null;
+            const frame = frames.find((it: any) => it.equipped) ?? null;
+            const color = colors.find((it: any) => it.equipped) ?? null;
+            const pattern = patterns.find((it: any) => it.equipped) ?? null;
+
+            return [userId, pic, frame, color, pattern, nick] as const;
+          })
+        );
+
+        if (!cancelled) {
+          const picsMap: Record<string, Asset | null> = {};
+          const framesMap: Record<string, Asset | null> = {};
+          const colorsMap: Record<string, ColorTheme | null> = {};
+          const patternsMap: Record<string, PatternTheme | null> = {};
+          const nicksMap: Record<string, string | null> = {};
+
+          for (const [id, pic, frame, color, pattern, nick] of results) {
+            picsMap[id] = pic;
+            framesMap[id] = frame;
+            colorsMap[id] = color;
+            patternsMap[id] = pattern;
+            nicksMap[id] = nick;
+          }
+
+          setUserProfilePics(picsMap);
+          setUserProfileFrames(framesMap);
+          setUserColorThemes(colorsMap);
+          setUserPatternThemes(patternsMap);
+          setUserNickname(nicksMap);
+        }
+      } catch (e) {
+        console.warn("[LeaderboardCard] per-user inventory fetch failed:", e);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [idsMemo, env]);
+
+  function userCardStyle(
+    userId: string,
+    base: React.CSSProperties = {}
+  ): React.CSSProperties {
+    const col = userColorThemes[userId];
+    const pat = userPatternThemes[userId];
+
+    const style: React.CSSProperties = { ...base };
+
+    if (col?.backColor) style.backgroundColor = col.backColor;
+
+    const patUrl = assetSrc(pat);
+    if (patUrl) {
+      style.backgroundImage = `url(${patUrl})`;
+      style.backgroundRepeat = "repeat";
+      style.backgroundSize = "100%";
+    }
+
+    const fg = col?.foreColor ?? pat?.foreColor;
+    if (fg) style.color = fg;
+
+    return style;
+  }
+
   let scoreBarMe = myScore;
   let scoreBarTop = best;
   let scoreBarLabel = `Your score vs. course best (${myScore} / ${best})`;
@@ -653,7 +840,6 @@ function CombinedLeaderboardCard({
     scoreBarFullIfGreater = true;
   }
 
-  // Date label (nur für Anzeige)
   const rangeLabel = useMemo(() => {
     if (tab === 0) {
       const today = new Date();
@@ -676,6 +862,9 @@ function CombinedLeaderboardCard({
     return undefined;
   }, [tab]);
 
+  const timeframeLabel =
+    tab === 0 ? "This Week" : tab === 1 ? "This Month" : "All Time";
+
   return (
     <Box
       sx={{
@@ -691,7 +880,6 @@ function CombinedLeaderboardCard({
         flexDirection: "column",
       }}
     >
-      {/* Header */}
       <Box
         sx={{
           display: "flex",
@@ -741,7 +929,6 @@ function CombinedLeaderboardCard({
         </Box>
       </Box>
 
-      {/* Zeitraum-Buttons */}
       <Box sx={{ display: "flex", justifyContent: "center", gap: 1, mb: 1.5 }}>
         <Button
           onClick={() => setTab(0)}
@@ -802,61 +989,19 @@ function CombinedLeaderboardCard({
         </Button>
       </Box>
 
-      {/* Stats + Scorebar */}
       <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", mb: 1 }}>
-        <RankChip
-          label="Rank"
-          value={useMemo(
-            () => rankOf(scores, currentUserId),
-            [scores, currentUserId]
-          )}
-        />
+        <RankChip label="Rank" value={myRank} />
         <Chip size="small" label={`Players: ${scores.length}`} />
-        <Chip
-          size="small"
-          label={`Best: ${useMemo(
-            () => [...scores].sort((a, b) => b.score - a.score)[0]?.score ?? 0,
-            [scores]
-          )}`}
-        />
+        <Chip size="small" label={`Best: ${best}`} />
       </Stack>
-      {(() => {
-        const topSorted = [...scores].sort((a, b) => b.score - a.score);
-        const myScore =
-          topSorted.find((s) => s.user.id === currentUserId)?.score ?? 0;
-        const best = topSorted[0]?.score ?? 0;
+      <ScoreBar
+        me={scoreBarMe}
+        top={scoreBarTop}
+        label={scoreBarLabel}
+        fullIfGreater={scoreBarFullIfGreater}
+      />
 
-        // default
-        let scoreBarMe = myScore;
-        let scoreBarTop = best;
-        let scoreBarLabel = `Your score vs. course best (${myScore} / ${best})`;
-        let scoreBarFullIfGreater = false;
-
-        if (scoreCompareMode === "vsCurrentPlayer" && viewerUserId) {
-          const viewerScore =
-            topSorted.find((s) => s.user.id === viewerUserId)?.score ?? 0;
-          const currentEntry = topSorted.find(
-            (s) => s.user.id === currentUserId
-          );
-          const currentScore = currentEntry?.score ?? 0;
-          const currentName = currentEntry?.user?.name ?? "player";
-          scoreBarMe = viewerScore;
-          scoreBarTop = currentScore;
-          scoreBarLabel = `Your score vs. ${currentName} (${viewerScore} / ${currentScore})`;
-          scoreBarFullIfGreater = true;
-        }
-
-        return (
-          <ScoreBar
-            me={scoreBarMe}
-            top={scoreBarTop}
-            label={scoreBarLabel}
-            fullIfGreater={scoreBarFullIfGreater}
-          />
-        );
-      })()}
-
-      {/* Top 3 */}
+      {/* Top 3 with Items */}
       <Box
         sx={{
           display: "flex",
@@ -868,91 +1013,127 @@ function CombinedLeaderboardCard({
           boxShadow: "0 8px 32px -4px rgba(80,80,120,0.13)",
         }}
       >
-        {[...scores]
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 3)
-          .map((s, idx) => {
-            const isCurrent = s.user.id === currentUserId;
-            const bg =
-              idx === 0
-                ? "linear-gradient(90deg,#f9f9f9 60%,#fff4cc 100%)"
-                : idx === 1
-                ? "linear-gradient(90deg,#f0f0f0 60%,#e0e0e0 100%)"
-                : "linear-gradient(90deg,#e6e6e6 60%,#e4d0c1 100%)";
-            return (
+        {topSorted.slice(0, 3).map((s, idx) => {
+          const isCurrent = s.user.id === currentUserId;
+          const bg =
+            idx === 0
+              ? "linear-gradient(90deg,#f9f9f9 60%,#fff4cc 100%)"
+              : idx === 1
+              ? "linear-gradient(90deg,#f0f0f0 60%,#e0e0e0 100%)"
+              : "linear-gradient(90deg,#e6e6e6 60%,#e4d0c1 100%)";
+
+          return (
+            <Box
+              key={s.user.id}
+              sx={userCardStyle(s.user.id, {
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                borderRadius: "14px",
+                padding: "8px 18px",
+                minHeight: 60,
+                fontSize: 18,
+                background: bg,
+                border: isCurrent ? "3px solid #222" : "2px solid #e1e6ea",
+                fontWeight: isCurrent ? 900 : 700,
+                boxShadow: isCurrent
+                  ? "0 2px 12px rgba(40,40,40,0.13)"
+                  : undefined,
+              })}
+            >
               <Box
-                key={s.user.id}
                 sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  borderRadius: "14px",
-                  p: "8px 18px",
-                  minHeight: 60,
+                  minWidth: 24,
+                  textAlign: "center",
                   fontSize: 18,
-                  background: bg,
-                  border: isCurrent ? "3px solid #222" : "2px solid #e1e6ea",
                   fontWeight: isCurrent ? 900 : 700,
-                  boxShadow: isCurrent
-                    ? "0 2px 12px rgba(40,40,40,0.13)"
-                    : undefined,
+                  color: userCardStyle(s.user.id).color,
                 }}
               >
-                <Box
-                  sx={{
-                    minWidth: 24,
-                    textAlign: "center",
-                    fontSize: 18,
-                    fontWeight: isCurrent ? 900 : 700,
-                  }}
-                >
-                  {idx + 1}.
-                </Box>
-                <Box sx={{ mr: 1.5 }}>
-                  <Avatar
-                    sx={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: 2,
-                      border: isCurrent ? "3px solid #222" : "2px solid #ddd",
-                      boxShadow: "0 1px 5px #0001",
-                    }}
-                  >
-                    {s.user.name?.slice(0, 1)}
-                  </Avatar>
-                </Box>
-                <Box
-                  sx={{
-                    flex: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 0.75,
-                    fontWeight: isCurrent ? 900 : 700,
-                    color: isCurrent ? "#0b0b0b" : "#2f3541",
-                    fontSize: 18,
-                    letterSpacing: ".5px",
-                  }}
-                >
-                  {designTrophies[idx]} {s.user.name}
-                </Box>
-                <Box
-                  sx={{
-                    minWidth: 80,
-                    textAlign: "right",
-                    color: isCurrent ? "#222" : "#79869a",
-                    fontWeight: isCurrent ? 900 : 700,
-                    fontSize: 18,
-                  }}
-                >
-                  {s.score} points
-                </Box>
+                {idx + 1}.
               </Box>
-            );
-          })}
+
+              <Box
+                sx={{
+                  position: "relative",
+                  width: 48,
+                  height: 48,
+                  margin: "0 auto 10px",
+                  border: isCurrent ? "3px solid #222" : "0px solid #ddd",
+                  objectFit: "cover",
+                  boxShadow: "0 1px 5px #0001",
+                }}
+              >
+                {assetSrc(userProfileFrames[s.user.id]) && (
+                  <img
+                    src={assetSrc(userProfileFrames[s.user.id])}
+                    alt={s.user.id}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 10,
+                      objectFit: "cover",
+                      boxShadow: "0 2px 8px #0001",
+                      zIndex: 1,
+                    }}
+                  />
+                )}
+
+                <img
+                  src={
+                    assetSrc(userProfilePics[s.user.id], defaultUserImage.src)!
+                  }
+                  alt={s.user.id}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: 10,
+                    objectFit: "cover",
+                    boxShadow: "0 2px 8px #0001",
+                    zIndex: 0,
+                  }}
+                />
+              </Box>
+
+              <Box
+                sx={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 0.75,
+                  fontWeight: isCurrent ? 900 : 700,
+                  color: userCardStyle(s.user.id).color,
+                  fontSize: 18,
+                  letterSpacing: ".5px",
+                }}
+              >
+                {designTrophies[idx]} {userNickname[s.user.id] ?? s.user.name}
+              </Box>
+
+              <Box
+                sx={{
+                  minWidth: 80,
+                  textAlign: "right",
+                  color: userCardStyle(s.user.id).color,
+                  fontWeight: isCurrent ? 900 : 700,
+                  fontSize: 18,
+                }}
+              >
+                {s.score} points
+              </Box>
+            </Box>
+          );
+        })}
       </Box>
 
-      {/* Kontext (Rank-1/Rank/Rank+1) falls >3 */}
+      {/* Context ranks with Items */}
       {(() => {
         const sorted = [...scores].sort((a, b) => b.score - a.score);
         const myRank = rankOf(scores, currentUserId);
@@ -984,12 +1165,12 @@ function CombinedLeaderboardCard({
                 return (
                   <Box
                     key={item.user.id}
-                    sx={{
+                    sx={userCardStyle(item.user.id, {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
                       borderRadius: 2,
-                      p: "8px 16px",
+                      padding: "8px 16px",
                       minHeight: 52,
                       fontSize: 18,
                       background: "#fff",
@@ -1000,7 +1181,7 @@ function CombinedLeaderboardCard({
                       boxShadow: isCurrent
                         ? "0 2px 8px rgba(60,60,60,0.11)"
                         : undefined,
-                    }}
+                    })}
                   >
                     <Box
                       sx={{
@@ -1010,40 +1191,85 @@ function CombinedLeaderboardCard({
                         gap: 0.5,
                       }}
                     >
-                      <Typography sx={{ fontSize: 18 }}>{rank}.</Typography>
-                    </Box>
-                    <Box sx={{ mr: 1.5 }}>
-                      <Avatar
+                      <Typography
                         sx={{
-                          width: 38,
-                          height: 38,
-                          borderRadius: 2,
-                          border: isCurrent
-                            ? "2.5px solid #222"
-                            : "2.5px solid #ddd",
-                          boxShadow: "0 1px 4px #0001",
+                          fontSize: 18,
+                          color: userCardStyle(item.user.id).color,
                         }}
                       >
-                        {item.user.name?.slice(0, 1)}
-                      </Avatar>
+                        {rank}.
+                      </Typography>
                     </Box>
+
+                    <Box
+                      sx={{
+                        position: "relative",
+                        width: 48,
+                        height: 48,
+                        margin: "0 auto 10px",
+                        border: isCurrent ? "3px solid #222" : "0px solid #ddd",
+                        objectFit: "cover",
+                        boxShadow: "0 1px 5px #0001",
+                      }}
+                    >
+                      {assetSrc(userProfileFrames[item.user.id]) && (
+                        <img
+                          src={assetSrc(userProfileFrames[item.user.id])}
+                          alt={item.user.id}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            borderRadius: 10,
+                            objectFit: "cover",
+                            boxShadow: "0 2px 8px #0001",
+                            zIndex: 1,
+                          }}
+                        />
+                      )}
+
+                      <img
+                        src={
+                          assetSrc(
+                            userProfilePics[item.user.id],
+                            defaultUserImage.src
+                          )!
+                        }
+                        alt={item.user.id}
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: 10,
+                          objectFit: "cover",
+                          boxShadow: "0 2px 8px #0001",
+                          zIndex: 0,
+                        }}
+                      />
+                    </Box>
+
                     <Box
                       sx={{
                         flex: 1,
                         textAlign: "center",
                         fontWeight: isCurrent ? 800 : 600,
-                        color: isCurrent ? "#000" : "#21262b",
+                        color: userCardStyle(item.user.id).color,
                         fontSize: 18,
                         letterSpacing: ".5px",
                       }}
                     >
-                      {item.user.name}
+                      {userNickname[item.user.id] ?? item.user.name}
                     </Box>
+
                     <Box
                       sx={{
                         minWidth: 80,
                         textAlign: "right",
-                        color: isCurrent ? "#222" : "#79869a",
+                        color: userCardStyle(item.user.id).color,
                         fontWeight: isCurrent ? 800 : 600,
                         fontSize: 18,
                       }}
@@ -1095,13 +1321,25 @@ function CourseLeaderboardsForCourse({
       allTimeDate: monthStartISO,
     }
   );
+  const mapUser = (u: any): PublicUserInfo => ({
+    id: u.refUserID ?? u.id, // Nutze refUserID falls vorhanden, sonst id
+    name: u.name ?? "Unknown",
+  });
 
-  const weekly = (data.weekly?.[0]?.userScores ?? []) as unknown as UserScore[];
-  const monthly = (data.monthly?.[0]?.userScores ??
-    []) as unknown as UserScore[];
-  const allTime = (data.allTime?.[0]?.userScores ??
-    []) as unknown as UserScore[];
+  const weekly = (data.weekly?.[0]?.userScores ?? []).map((s: any) => ({
+    ...s,
+    user: mapUser(s.user),
+  })) as UserScore[];
 
+  const monthly = (data.monthly?.[0]?.userScores ?? []).map((s: any) => ({
+    ...s,
+    user: mapUser(s.user),
+  })) as UserScore[];
+
+  const allTime = (data.allTime?.[0]?.userScores ?? []).map((s: any) => ({
+    ...s,
+    user: mapUser(s.user),
+  })) as UserScore[];
   // Compute set of user IDs missing names
   const allScores = [...weekly, ...monthly, ...allTime];
   const idsNeedingName = Array.from(

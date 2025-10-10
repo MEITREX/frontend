@@ -1,3 +1,5 @@
+"use client";
+
 import {
   ForumApiAddPostMutation,
   InputPost,
@@ -20,13 +22,14 @@ import { useLazyLoadQuery, useMutation } from "react-relay";
 import PostsContext from "../context/PostsContext";
 import PostList from "../post/PostList";
 import ThreadStatusIcons from "./ThreadStatusIcons";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
-type Props = {
-  threadId: string;
-  redirect: () => void;
-};
+export default function ThreadDetail() {
+  const { threadId, courseId } = useParams();
+  const router = useRouter();
 
-export default function ThreadDetail({ threadId, redirect }: Props) {
   const data = useLazyLoadQuery<ForumApiThreadDetailQuery>(
     forumApiThreadDetailQuery,
     { id: threadId },
@@ -40,6 +43,8 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
   const [replyText, setReplyText] = useState("");
 
   const [displayTextEditor, setDisplayTextEditor] = useState(false);
+
+  const [replyingToPostId, setReplyingToPostId] = useState<string | null>(null);
 
   const [commitPost] = useMutation<ForumApiAddPostMutation>(
     forumApiAddPostMutation
@@ -55,22 +60,28 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
     );
   };
 
+  const handleOpenReplyEditor = (postId: string) => {
+    setReplyingToPostId(postId);
+    setDisplayTextEditor(true);
+  };
+
   const handleSubmit = () => {
     const replyTextTrimmed = replyText.trim();
-    if (replyTextTrimmed === "") return;
 
     const post: InputPost = {
       content: replyTextTrimmed,
       threadId: thread?.id,
+      reference: replyingToPostId,
     };
 
     commitPost({
       variables: { post: post },
-      onCompleted(data) {
-        const newPost = data.addPost;
+      onCompleted(dataThread) {
+        const newPost = dataThread.addPost;
         if (newPost) {
           setLocalPosts([...localPosts, newPost as Post]);
           setDisplayTextEditor(false);
+          setReplyingToPostId(null);
         }
       },
       onError(error) {
@@ -80,16 +91,24 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
     setReplyText("");
   };
 
+  const handleCancel = () => {
+    setDisplayTextEditor(!displayTextEditor);
+    setReplyingToPostId(null);
+  };
+
   if (!thread) {
     return <PageError message={`No Thread with ID: ${threadId}.`} />;
   }
 
   return (
-    <PostsContext.Provider value={{ deletePostContext: deletePostFromState }}>
+    <PostsContext.Provider
+      value={{
+        deletePostContext: deletePostFromState,
+        openReplyEditor: handleOpenReplyEditor,
+      }}
+    >
       <Button
-        onClick={() => {
-          redirect();
-        }}
+        onClick={() => router.push(`../forum`)}
         variant="text"
         startIcon={<ArrowBackIcon />}
         sx={{ mb: 2 }}
@@ -107,8 +126,48 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
           position: "relative",
         }}
       >
+        {/* Content Reference */}
+        {thread.threadContentReference && (
+          <Link
+            href={`/courses/${courseId}/media/${thread.threadContentReference.contentId}/forum/${thread.id}`}
+            passHref
+            style={{ textDecoration: "none" }}
+          >
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              sx={{
+                color: "success.main",
+                mb: 2,
+                cursor: "pointer",
+                "&:hover": {
+                  textDecoration: "underline",
+                  color: "success.dark",
+                },
+              }}
+            >
+              <InfoOutlinedIcon fontSize="small" />
+              <Typography
+                variant="body2"
+                component="span"
+                sx={{ color: "inherit" }}
+              >
+                This Thread is related to this content:{" "}
+                {thread.threadContentReference.contentId}
+              </Typography>
+            </Stack>
+          </Link>
+        )}
+
+        {/*Question/Information Thread*/}
         <Stack
-          sx={{ backgroundColor: "#f5f7fa", borderRadius: 2, p: 2 }}
+          sx={{
+            backgroundColor: "#f5f7fa",
+            borderRadius: 2,
+            p: 2,
+            overflowX: "hidden",
+          }}
           direction="row"
           spacing={2}
         >
@@ -130,6 +189,7 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
 
             <Box sx={{ mb: 1 }}>
               <EditableContent
+                isThread={true}
                 authorId={thread.question?.authorId ?? thread.info?.authorId!}
                 initialContent={
                   thread.question?.content ?? thread.info?.content!
@@ -157,8 +217,10 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
 
         <Divider sx={{ my: 2 }} />
 
+        {/*Postings*/}
         <PostList
           bestAnswerId={thread?.selectedAnswer}
+          markPostAnswerId={replyingToPostId}
           threadCreatorId={thread?.creatorId}
           posts={localPosts ?? []}
         ></PostList>
@@ -171,6 +233,7 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
             alignItems: "start",
           }}
         >
+          {/*Answer*/}
           <Button
             onClick={() => setDisplayTextEditor(!displayTextEditor)}
             variant="text"
@@ -180,6 +243,23 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
           </Button>
           {displayTextEditor && (
             <Box sx={{ width: "100%" }}>
+              {/*Reply to Post*/}
+              {replyingToPostId && (
+                <Box
+                  sx={{
+                    backgroundColor: "#f2f3f5",
+                    borderLeft: "4px solid #5865f2",
+                    padding: "8px 12px",
+                    marginBottom: "8px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: "#4f5660" }}>
+                    Replying to post
+                  </Typography>
+                </Box>
+              )}
+              {/*Editor*/}
               <TextEditor onContentChange={(html) => setReplyText(html)} />
               <Box
                 sx={{
@@ -192,7 +272,7 @@ export default function ThreadDetail({ threadId, redirect }: Props) {
                 <Button
                   color="warning"
                   variant="contained"
-                  onClick={() => setDisplayTextEditor(!displayTextEditor)}
+                  onClick={handleCancel}
                   sx={{ height: "fit-content" }}
                 >
                   Cancel

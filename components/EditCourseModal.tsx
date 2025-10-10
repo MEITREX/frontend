@@ -15,11 +15,11 @@ import dayjs, { Dayjs } from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { graphql, useFragment, useMutation } from "react-relay";
-
 import { EditCourseModalDeleteMutation } from "@/__generated__/EditCourseModalDeleteMutation.graphql";
 import { EditCourseModalFragment$key } from "@/__generated__/EditCourseModalFragment.graphql";
 import { EditCourseModalMutation } from "@/__generated__/EditCourseModalMutation.graphql";
 import { Form, FormSection } from "./Form";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export function EditCourseModal({
   _course,
@@ -68,7 +68,7 @@ export function EditCourseModal({
   );
   const [endDate, setEndDate] = useState<Dayjs | null>(dayjs(course.endDate));
   const [publish, setPublish] = useState(course.published);
-
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [error, setError] = useState<any>(null);
   const valid =
     title !== "" &&
@@ -108,6 +108,7 @@ export function EditCourseModal({
   }
 
   function handleDelete() {
+    setShowDeleteConfirmation(false);
     deleteCourse({
       variables: { id: course.id },
       onError(error) {
@@ -207,7 +208,11 @@ export function EditCourseModal({
           </Backdrop>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDelete} variant="contained" color="error">
+          <Button
+            onClick={() => setShowDeleteConfirmation(true)}
+            variant="contained"
+            color="error"
+          >
             Delete
           </Button>
           <Button onClick={handleReset} variant="outlined">
@@ -218,6 +223,13 @@ export function EditCourseModal({
           </Button>
         </DialogActions>
       </Dialog>
+      <ConfirmationDialog
+        open={showDeleteConfirmation}
+        title="Delete Course"
+        message={`Do you really want to delete the course "${title}"? This action cannot be undone.`}
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteConfirmation(false)}
+      />
     </>
   );
 }

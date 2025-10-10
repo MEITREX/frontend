@@ -1,7 +1,17 @@
 "use client";
 import { ChapterHeaderFragment$key } from "@/__generated__/ChapterHeaderFragment.graphql";
-import { DoneRounded, ExpandLess, ExpandMore } from "@mui/icons-material";
-import { CircularProgress, IconButton, Typography } from "@mui/material";
+import {
+  DoneRounded,
+  ExpandLess,
+  ExpandMore,
+  Warning,
+} from "@mui/icons-material";
+import {
+  CircularProgress,
+  IconButton,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import dayjs from "dayjs";
 import { ReactNode } from "react";
 import { graphql, useFragment } from "react-relay";
@@ -74,22 +84,56 @@ export function ChapterHeader({
     _chapter
   );
 
+  const getWarningMessage = () => {
+    const missingItems = [];
+    if (!chapter.suggestedStartDate) {
+      missingItems.push("start date");
+    }
+    if (!chapter.suggestedEndDate) {
+      missingItems.push("end date");
+    }
+
+    if (missingItems.length > 0) {
+      return `Missing chapter configuration: ${missingItems.join(" and ")}.`;
+    }
+    return null;
+  };
+
+  const warningMessage = getWarningMessage();
+
   return (
-    <div className="flex flex-row justify-start items-center py-4 pr-4 rounded-3xl gap-16">
-      <div className="flex flex-row items-center justify-center flex-grow">
+    <div className="flex flex-row items-center justify-between py-4 pr-4 rounded-3xl gap-4">
+      <div className="flex flex-row items-center gap-2 flex-grow">
         {(expandable === undefined || expandable) && expanded !== undefined && (
           <IconButton className="ml-4 mr-2" onClick={onExpandClick}>
             {expanded ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         )}
-        <div className="flex flex-col items-start flex-grow gap-5">
-          <div className="flex flex-row flex-grow gap-1">
-            <Typography variant="h2" onClick={(e) => e.stopPropagation()}>
-              {chapter.title}
-            </Typography>
-            {action}
-          </div>
-        </div>
+        <Typography
+          variant="h2"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onExpandClick) onExpandClick();
+          }}
+          sx={{ cursor: expandable !== false ? "pointer" : "default" }}
+        >
+          {chapter.title}
+        </Typography>
+        {!student && warningMessage && (
+          <Tooltip
+            title={warningMessage}
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  fontSize: "0.85rem",
+                },
+              },
+            }}
+          >
+            <Warning color="warning" />
+          </Tooltip>
+        )}
+        {action}
       </div>
       {chapter.suggestedEndDate && chapter.suggestedStartDate && (
         <div className="min-w-[200px] justify-start">

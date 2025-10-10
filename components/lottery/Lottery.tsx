@@ -32,6 +32,7 @@ import {
 import { LotteryApiLotteryRunMutation } from "@/__generated__/LotteryApiLotteryRunMutation.graphql";
 import { LotteryApiLotteryEquipItemMutation } from "@/__generated__/LotteryApiLotteryEquipItemMutation.graphql";
 import { Rarity, rarityMap } from "@/components/items/types/Types";
+import { grey } from "@mui/material/colors";
 
 export interface LotteryRun {
   id: string;
@@ -187,7 +188,7 @@ export default function Lottery() {
     setIsOpening(false);
     setCurrentFrame(0);
     setEquip(false);
-    item.lotteryRun.sellCompensation
+    item.lotteryRun.sold
       ? setPoints(points + item.lotteryRun.sellCompensation)
       : "";
   };
@@ -382,8 +383,8 @@ export default function Lottery() {
             overflow: "hidden",
             borderWidth: 2,
             borderStyle: "solid",
-            borderColor: rarityMap[rarity as Rarity].border,
-            background: rarityMap[rarity as Rarity].bg,
+            borderColor: rarityMap[rarity as Rarity]?.border ?? grey[300],
+            background: rarityMap[rarity as Rarity]?.bg ?? grey[300],
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>

@@ -2,12 +2,24 @@
 
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { useState } from "react";
-import { Box, Button, IconButton, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Stack,
+  Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import ModeEditOutlineRoundedIcon from "@mui/icons-material/ModeEditOutlineRounded";
 import TextEditor from "./TextEditor";
 import {
   forumApiDeletePostMutation,
+  forumApiDeleteThreadMutation,
   forumApiUpdatePostMutation,
   forumApiUserInfoQuery,
 } from "@/components/forum/api/ForumApi";
@@ -21,12 +33,17 @@ import MenuItem from "@mui/material/MenuItem";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import { ForumApiDeleteThreadMutation } from "@/__generated__/ForumApiDeleteThreadMutation.graphql";
+import { useParams, useRouter } from "next/navigation";
+import ReplyIcon from "@mui/icons-material/Reply";
 
 type Props = {
   initialContent: string;
   postId: string;
   authorId: string;
   contentIsEdited?: boolean;
+  isThread?: boolean;
+  isPost?: boolean;
 };
 
 export default function EditableContent({
@@ -34,13 +51,19 @@ export default function EditableContent({
   postId,
   authorId,
   contentIsEdited,
+  isThread,
+  isPost,
 }: Props) {
   const user = useLazyLoadQuery<ForumApiUserInfoQuery>(
     forumApiUserInfoQuery,
     {}
   );
 
-  const { deletePostContext } = usePostsActions();
+  const router = useRouter();
+
+  const { threadId } = useParams();
+
+  const { openReplyEditor, deletePostContext } = usePostsActions();
 
   const isAuthor = user.currentUserInfo.id === authorId;
 
@@ -52,6 +75,8 @@ export default function EditableContent({
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const handleMenuOpen = (event: any) => {
     setAnchorEl(event.currentTarget);
@@ -71,6 +96,10 @@ export default function EditableContent({
 
   const [deletePost] = useMutation<ForumApiDeletePostMutation>(
     forumApiDeletePostMutation
+  );
+
+  const [deleteThread] = useMutation<ForumApiDeleteThreadMutation>(
+    forumApiDeleteThreadMutation
   );
 
   const handleSave = () => {
@@ -98,6 +127,14 @@ export default function EditableContent({
   };
 
   const handleDelete = () => {
+    if (isPost) {
+      handleDeletePost();
+    } else if (isThread) {
+      setIsDeleteDialogOpen(true);
+    }
+  };
+
+  const handleDeletePost = () => {
     deletePost({
       variables: {
         postId: postId,
@@ -110,6 +147,33 @@ export default function EditableContent({
         console.error("Post delete failed!", error);
       },
     });
+  };
+
+  const handleDeleteThread = () => {
+    deleteThread({
+      variables: {
+        threadId: threadId,
+      },
+      onCompleted(data) {
+        router.push(`../forum`);
+        console.log("Thread was deleted!");
+      },
+      onError(error) {
+        console.error("Thread delete failed!", error);
+      },
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    handleDeleteThread();
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleReplyClick = () => {
+    if (isPost) {
+      handleMenuClose();
+      openReplyEditor(postId);
+    }
   };
 
   return (
@@ -159,6 +223,14 @@ export default function EditableContent({
                 anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                 transformOrigin={{ vertical: "top", horizontal: "right" }}
               >
+                {isPost && (
+                  <MenuItem onClick={handleReplyClick}>
+                    <ListItemIcon>
+                      <ReplyIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Reply</ListItemText>
+                  </MenuItem>
+                )}
                 <MenuItem onClick={handleEditClick}>
                   <ListItemIcon>
                     <ModeEditOutlineRoundedIcon fontSize="small" />
@@ -176,6 +248,27 @@ export default function EditableContent({
           )}
         </>
       )}
+
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Delete Thread?"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete this thread? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} autoFocus color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

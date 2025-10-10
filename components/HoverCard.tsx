@@ -1,8 +1,10 @@
+"use client";
+
 import React, { ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 type HoverCardProps = {
-  children: ReactNode;
+  children?: ReactNode;
   position?: "bottom" | "top" | "left" | "right";
   cardStyle?: React.CSSProperties;
   background: string | null;
@@ -192,9 +194,6 @@ export function HoverCard({
                   }}
                 >
                   {nickname}
-                </div>
-                <div style={{ fontSize: 15, color: "#a1a6b2", marginTop: 8 }}>
-                  Profilinfos folgen…
                 </div>
               </div>
             </div>

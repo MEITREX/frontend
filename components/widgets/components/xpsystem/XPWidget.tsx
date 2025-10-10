@@ -101,7 +101,7 @@ const XPWidgetQuery = graphql`
 const XPWidgetGetUserXPQuery = graphql`
   query XPWidgetGetUserXPQuery($userID: ID!) {
     getUser(userID: $userID) {
-      id
+      refUserID
       name
       email
       xpValue
@@ -174,10 +174,12 @@ export default function XPWidget({ openFeedback, category }: Props) {
   }, [userId, relayEnv]);
 
   const level = levelInfo?.level ?? 0;
+  // XP wie in Navbar: XP im aktuellen Level / XP für Level-Up
   const currentXP = levelInfo?.exceedingXP ?? 0;
   const requiredXP = levelInfo?.requiredXP ?? 1;
   const currentXPRounded = Math.round(currentXP);
   const requiredXPRounded = Math.round(requiredXP);
+  // Progressbar: Anteil der XP im Level
   const progress = Math.max(
     0,
     Math.min(100, (currentXP / Math.max(1, requiredXP)) * 100)
@@ -216,7 +218,7 @@ export default function XPWidget({ openFeedback, category }: Props) {
           variant="caption"
           sx={{ minWidth: 50, fontSize: "0.85rem", lineHeight: 1.1 }}
         >
-          {loadingLevel ? "…" : `${currentXPRounded} / ${requiredXPRounded}`}
+          {loadingLevel ? "…" : `${currentXPRounded} / ${requiredXPRounded} XP`}
         </Typography>
       </Box>
 
