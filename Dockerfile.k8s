@@ -16,10 +16,10 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED 1
-ARG NEXT_PUBLIC_BACKEND_URL="https://dev.meitrex.de/graphql"
-ARG NEXT_PUBLIC_OAUTH_REDIRECT_URL="https://dev.meitrex.de"
+ARG NEXT_PUBLIC_BACKEND_URL="https://meitrex.de/graphql"
+ARG NEXT_PUBLIC_OAUTH_REDIRECT_URL="https://meitrex.de"
 ARG NEXT_PUBLIC_OAUTH_CLIENT_ID="frontend"
-ARG NEXT_PUBLIC_OAUTH_AUTHORITY="https://dev.meitrex.de/keycloak/realms/GITS"
+ARG NEXT_PUBLIC_OAUTH_AUTHORITY="https://meitrex.de/keycloak/realms/GITS"
 ARG NEXT_PUBLIC_GITHUB_CLIENT_ID="Iv23li4YaE8QambyYkY8"
 
 RUN yarn global add pnpm@latest-8  \
