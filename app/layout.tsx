@@ -176,7 +176,7 @@ function SigninContent({ children }: { children: React.ReactNode }) {
             <CurrencyProvider>
               <ClientToaster />
               <CurrencyHydrator />
-              <LegalMiniBar/>
+              <LegalMiniBar />
               {children}
             </CurrencyProvider>
           </ConfirmationProvider>

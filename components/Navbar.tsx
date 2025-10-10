@@ -420,8 +420,6 @@ function NavbarBase({
         </GamificationGuard>
       </NavbarSection>
 
-
-
       {children}
     </div>
   );

@@ -9,37 +9,50 @@ export default function Imprint() {
         Impressum
       </Typography>
 
-      <Typography paragraph>
-        Angaben gemäß § 5 TMG:
-      </Typography>
+      <Typography paragraph>Angaben gemäß § 5 TMG:</Typography>
 
       <Typography paragraph>
-        Universität Stuttgart<br />
-        Institut für Softwaretechnik (ISTE)<br />
-        Abteilung Softwarequalität und -architektur<br />
-        Universitätsstraße 38<br />
-        70569 Stuttgart<br />
+        Universität Stuttgart
+        <br />
+        Institut für Softwaretechnik (ISTE)
+        <br />
+        Abteilung Softwarequalität und -architektur
+        <br />
+        Universitätsstraße 38
+        <br />
+        70569 Stuttgart
+        <br />
         Deutschland
       </Typography>
 
       <Typography paragraph>
         Web:{" "}
-        <Link href="https://www.iste.uni-stuttgart.de/sqa/" target="_blank" rel="noopener">
+        <Link
+          href="https://www.iste.uni-stuttgart.de/sqa/"
+          target="_blank"
+          rel="noopener"
+        >
           https://www.iste.uni-stuttgart.de/sqa/
         </Link>
       </Typography>
 
       <Typography paragraph>
-        Gesetzlich vertreten durch:<br />
+        Gesetzlich vertreten durch:
+        <br />
         den Rektor, Prof. Dr.-Ing. Peter Middendorf
       </Typography>
 
       <Typography paragraph>
-        Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV:<br />
-        Niklas Meißner<br />
-        Institut für Softwaretechnik (ISTE)<br />
-        Universitätsstraße 38<br />
-        70569 Stuttgart<br />
+        Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV:
+        <br />
+        Niklas Meißner
+        <br />
+        Institut für Softwaretechnik (ISTE)
+        <br />
+        Universitätsstraße 38
+        <br />
+        70569 Stuttgart
+        <br />
         E-Mail:{" "}
         <Link href="mailto:niklas.meissner@iste.uni-stuttgart.de">
           niklas.meissner@iste.uni-stuttgart.de

@@ -36,10 +36,7 @@ export default function LegalMiniBar() {
         Datenschutzerklärung
       </Link>
 
-      <Box
-        component="span"
-        sx={{ color: "text.disabled", fontSize: 12 }}
-      >
+      <Box component="span" sx={{ color: "text.disabled", fontSize: 12 }}>
         •
       </Box>
 
