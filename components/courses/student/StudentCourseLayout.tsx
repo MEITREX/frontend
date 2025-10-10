@@ -12,7 +12,7 @@ import { PageError } from "@/components/PageError";
 import { useConfirmation } from "@/src/useConfirmation";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import { Box, Button, Typography } from "@mui/material";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
@@ -119,6 +119,10 @@ export default function CourseLayout({
   const [error, setError] = useState<any>(null);
   const confirm = useConfirmation();
 
+  const pathname = usePathname();
+  const noContentPaths = ["/quiz", "/media", "/quiz", "/submissions"];
+  const hideContent = noContentPaths.some((path) => pathname?.includes(path));
+
   const data = useLazyLoadQuery<StudentCourseLayoutCourseIdQuery>(
     studentCourseIdQuery,
     { id: courseId }
@@ -210,18 +214,22 @@ export default function CourseLayout({
           )}
         </div>
 
-        <GamificationGuard>
-          {/* Quest */}
-          <Box marginBottom={2} marginTop={2}>
-            <QuestList
-              questsProp={course.dailyQuests.quests}
-              streak={course.dailyQuests.rewardMultiplier}
-            />
-          </Box>
-        </GamificationGuard>
+        {!hideContent && (
+          <GamificationGuard>
+            {/* Quest */}
+            <Box marginBottom={2} marginTop={2}>
+              <QuestList
+                questsProp={course.dailyQuests.quests}
+                streak={course.dailyQuests.rewardMultiplier}
+              />
+            </Box>
+          </GamificationGuard>
+        )}
 
         {/* Navbar */}
-        <StudentCourseNavigation courseId={courseId as string} />
+        {!hideContent && (
+          <StudentCourseNavigation courseId={courseId as string} />
+        )}
 
         {/* Navbar-Content */}
         <div className="mt-4">{children}</div>
