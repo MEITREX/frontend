@@ -178,15 +178,13 @@ export default function PublicProfilePage() {
   const isGamificationDisabled =
     auth.user?.profile?.gamification_type === "none";
 
-  const baseTabs = [
-    { label: "General", path: "general" },
-    { label: "Forum", path: "forum" },
-  ];
+  // TODO: This should be an Layout component and then use children for navigating....
+  const baseTabs = [{ label: "Forum", path: "forum" }];
 
   const gamificationTabs = [
     { label: "Achievements", path: "achievements" },
-    { label: "Badges", path: "badges" },
-    { label: "Leaderboards", path: "leaderboard" },
+    { label: "Leaderboard", path: "leaderboard" },
+    { label: "Items", path: "items" },
   ];
 
   const tabs = isGamificationDisabled
@@ -499,24 +497,15 @@ export default function PublicProfilePage() {
 
       {/* Tab-Inhalte */}
       <Box>
-        {tabIndex === 0 && (
+        {tabIndex === 0 && <OtherUserProfileForumActivity />}
+
+        {tabIndex === 1 && (
           <AchievementList
             achievements={mutableAchievements}
             profileTypeSortString={"achieved"}
           />
         )}
-
-        {tabIndex === 1 && <OtherUserProfileForumActivity />}
         {tabIndex === 2 && (
-          // Badges placeholder
-          <Box sx={{ p: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              No badges to display yet.
-            </Typography>
-          </Box>
-        )}
-
-        {tabIndex === 3 && (
           <Box sx={{ mt: 2 }}>
             {loadingLB && (
               <Typography variant="body2">Loading leaderboards…</Typography>
@@ -557,8 +546,7 @@ export default function PublicProfilePage() {
             </Grid>
           </Box>
         )}
-
-        {tabIndex === 4 && (
+        {tabIndex === 3 && (
           <SortProvider>
             <ProfileInventorySection userId={userId} />
           </SortProvider>
