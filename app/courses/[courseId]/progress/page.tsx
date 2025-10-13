@@ -75,23 +75,6 @@ export default function LearningProgress() {
   };
   return (
     <div className="flex flex-col gap-12">
-      <div className="grid grid-cols-2 items-start gap-4">
-        <div className="object-cover flex flex-col gap-2">
-          <div className="p-4 border-4 border-slate-200 rounded-3xl">
-            <RewardScores _scores={course.rewardScores} courseId={course.id} />
-          </div>
-          <div className="mx-4 flex items-center gap-8">
-            <RewardScoresHelpButton />
-            <Button
-              endIcon={<NavigateNextIcon />}
-              onClick={() => router.push(`/courses/${id}/statistics`)}
-            >
-              Full history
-            </Button>
-          </div>
-        </div>
-      </div>
-
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-4">
           <Typography variant="h2">Skill progress</Typography>
