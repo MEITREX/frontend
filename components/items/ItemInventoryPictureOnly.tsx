@@ -1,8 +1,8 @@
 import { Box } from "@mui/material";
 
 interface ItemInventoryPictureOnlyProps {
-  url: string | null; // encoded URL deines Bildes
-  id: string; // ID des Items
+  url: string | null;
+  id: string; 
 }
 
 // Picture in list card if tutor, profile picture of frame
