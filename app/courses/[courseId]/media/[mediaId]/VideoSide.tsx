@@ -131,7 +131,7 @@ export function VideoSide({
 
   const currentSegment = segments.find(
     (x, idx) =>
-      segments.length - 2 === idx ||
+      !segments[idx + 1] ||
       (segments[idx + 1].startTime ?? 0) > playbackPosition
   );
 
