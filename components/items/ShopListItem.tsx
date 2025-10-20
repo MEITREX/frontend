@@ -185,10 +185,10 @@ export default function ShopListItem({ itemStringType }: ShopListItemProps) {
                       fontSize: "0.75rem",
                       fontWeight: "bold",
                       borderRadius: 1,
-                      height: 20, // etwas kompakter
+                      height: 20,
                       "& .MuiChip-label": {
-                        px: 1.2, // horizontal padding im Label
-                        py: 0, // vertikal ausgleichen
+                        px: 1.2,
+                        py: 0,
                       },
                     }}
                   />
