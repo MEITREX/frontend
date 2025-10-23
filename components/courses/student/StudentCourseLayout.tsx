@@ -133,6 +133,11 @@ export default function CourseLayout({
   const course = data.coursesByIds?.[0];
   const userId = data.currentUserInfo.id;
 
+  // Force a layout remount to refetch data when navigating back.
+  // In Next.js, layouts stay mounted between subpages, so their data requests aren't re-run.
+  // This simple refresh ensures updated data (e.g. course progress).
+  // The clean solution would be to move data fetching into the subpages,
+  // so data refetches automatically when those components are mounted.
   useEffect(() => {
     const chaptersPageRegex = /^\/courses\/[^\/]+(\/chapters)?$/;
     const coursePageRegex = /^\/courses\/[^\/]+$/;
