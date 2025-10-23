@@ -17,94 +17,15 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
-const studentCourseIdQuery = graphql`
+export const studentCourseIdQuery = graphql`
   query StudentCourseLayoutCourseIdQuery($id: UUID!) {
-    scoreboard(courseId: $id) {
-      user {
-        id
-        userName
-      }
-      powerScore
-    }
     currentUserInfo {
       id
     }
     coursesByIds(ids: [$id]) {
-      ...ChapterOverviewFragment
-      suggestions(amount: 4) {
-        ...SuggestionFragment
-        content {
-          id
-        }
-      }
       id
       title
       description
-      dailyQuests {
-        forDay
-        id
-        name
-        quests {
-          completed
-          completedCount
-          courseId
-          description
-          id
-          name
-          requiredCount
-          rewardPoints
-          trackingEndTime
-          trackingStartTime
-          userId
-        }
-        rewardMultiplier
-      }
-      rewardScores {
-        ...RewardScoresFragment
-      }
-      chapters {
-        elements {
-          id
-          number
-          startDate
-          ...StudentChapterFragment
-          contents {
-            ...ContentLinkFragment
-            userProgressData {
-              nextLearnDate
-              lastLearnDate
-            }
-            id
-            metadata {
-              type
-            }
-          }
-        }
-      }
-      skills {
-        skillName
-        skillCategory
-        skillLevels {
-          remember {
-            value
-          }
-          understand {
-            value
-          }
-          apply {
-            value
-          }
-          analyze {
-            value
-          }
-          evaluate {
-            value
-          }
-          create {
-            value
-          }
-        }
-      }
     }
   }
 `;
@@ -213,18 +134,6 @@ export default function CourseLayout({
             </Typography>
           )}
         </div>
-
-        {!hideContent && (
-          <GamificationGuard>
-            {/* Quest */}
-            <Box marginBottom={2} marginTop={2}>
-              <QuestList
-                questsProp={course.dailyQuests.quests}
-                streak={course.dailyQuests.rewardMultiplier}
-              />
-            </Box>
-          </GamificationGuard>
-        )}
 
         {/* Navbar */}
         {!hideContent && (

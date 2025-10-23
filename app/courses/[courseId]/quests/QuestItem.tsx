@@ -14,6 +14,11 @@ import {
 import coins from "assets/lottery/coins.png";
 import Image from "next/image";
 import { useState } from "react";
+import { useParams } from "next/navigation";
+import { graphql, useLazyLoadQuery } from "react-relay";
+import { StudentCourseLayoutCourseIdQuery } from "@/__generated__/StudentCourseLayoutCourseIdQuery.graphql";
+import { studentCourseIdQuery } from "@/components/courses/student/StudentCourseLayout";
+import { QuestItemQuery } from "@/__generated__/QuestItemQuery.graphql";
 
 type Quest = {
   completed: boolean;
@@ -337,15 +342,51 @@ function QuestDialog({
   );
 }
 
-export default function QuestList({
-  questsProp,
-  streak,
-}: {
-  questsProp: ReadonlyArray<Quest>;
-  streak: number;
-}) {
+const questItemQuery = graphql`
+  query QuestItemQuery($id: UUID!) {
+    coursesByIds(ids: [$id]) {
+      dailyQuests {
+        forDay
+        id
+        name
+        quests {
+          completed
+          completedCount
+          courseId
+          description
+          id
+          name
+          requiredCount
+          rewardPoints
+          trackingEndTime
+          trackingStartTime
+          userId
+        }
+        rewardMultiplier
+      }
+    }
+  }
+`;
+
+
+export default function QuestList() {
+  const { courseId } = useParams();
+
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Quest | null>(null);
+
+  const data = useLazyLoadQuery<QuestItemQuery>(
+    questItemQuery,
+    { id: courseId },
+    { fetchPolicy: "network-only" }
+  );
+
+  const course = data.coursesByIds?.[0];
+
+  const dailyQuest = course?.dailyQuests;
+
+  const questsProp: ReadonlyArray<Quest> = dailyQuest?.quests ?? [];
+  const streak: number = dailyQuest?.rewardMultiplier ?? 1;
 
   const openDialog = (q: Quest) => {
     setSelected(q);

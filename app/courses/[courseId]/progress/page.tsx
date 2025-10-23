@@ -2,29 +2,64 @@
 
 import { useState } from "react";
 import * as React from "react";
-import { RewardScores } from "@/components/RewardScores";
-import { RewardScoresHelpButton } from "@/components/RewardScoresHelpButton";
-import { Button, IconButton, Typography } from "@mui/material";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import { IconButton, Typography } from "@mui/material";
 import { LightTooltip } from "@/components/LightTooltip";
 import { Info } from "@mui/icons-material";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import CompetencyProgressbar from "@/components/CompetencyProgressbar";
 import { stringToColor } from "@/components/ChapterHeader";
-import { useCourseData } from "../../../../components/courses/context/CourseDataContext";
-import { useRouter } from "next/navigation";
-import { StudentCourseLayoutCourseIdQuery$data } from "@/__generated__/StudentCourseLayoutCourseIdQuery.graphql";
+import { useParams, useRouter } from "next/navigation";
+import { graphql, useLazyLoadQuery } from "react-relay";
+import { pageSkillQuery } from "@/__generated__/pageSkillQuery.graphql";
+
+const PageSkillQuery = graphql`
+  query pageSkillQuery($id: UUID!) {
+    coursesByIds(ids: [$id]) {
+      skills {
+        skillName
+        skillCategory
+        skillLevels {
+          remember {
+            value
+          }
+          understand {
+            value
+          }
+          apply {
+            value
+          }
+          analyze {
+            value
+          }
+          evaluate {
+            value
+          }
+          create {
+            value
+          }
+        }
+      }
+    }
+  }
+`;
 
 export default function LearningProgress() {
   const router = useRouter();
+  const { courseId } = useParams();
 
-  // Get data from context
-  const data = useCourseData() as StudentCourseLayoutCourseIdQuery$data;
+  const data = useLazyLoadQuery<pageSkillQuery>(
+    PageSkillQuery,
+    { id: courseId },
+    { fetchPolicy: "network-only" }
+  );
+
   const course = data.coursesByIds[0];
-  const id = course.id;
-
   const [currentPage, setCurrentPage] = useState(0);
+
+  if (!course) {
+    return <p>Loading course data...</p>;
+  }
 
   const categoriesPerPage = 3;
   const uniqueSkillCategories = Array.from(
