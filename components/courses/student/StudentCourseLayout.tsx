@@ -118,6 +118,7 @@ export default function CourseLayout({
   const router = useRouter();
   const [error, setError] = useState<any>(null);
   const confirm = useConfirmation();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const pathname = usePathname();
   const noContentPaths = ["/quiz", "/media", "/quiz", "/submissions"];
@@ -125,10 +126,20 @@ export default function CourseLayout({
 
   const data = useLazyLoadQuery<StudentCourseLayoutCourseIdQuery>(
     studentCourseIdQuery,
-    { id: courseId }
+    { id: courseId },
+    { fetchPolicy: "network-only", fetchKey: refreshKey }
   );
+
   const course = data.coursesByIds?.[0];
   const userId = data.currentUserInfo.id;
+
+  useEffect(() => {
+    const chaptersPageRegex = /^\/courses\/[^\/]+(\/chapters)?$/;
+    const coursePageRegex = /^\/courses\/[^\/]+$/;
+    if (coursePageRegex.test(pathname) || chaptersPageRegex.test(pathname)) {
+      setRefreshKey((prev) => prev + 1);
+    }
+  }, [pathname]);
 
   const [leave] = useMutation<StudentCourseLayoutLeaveMutation>(graphql`
     mutation StudentCourseLayoutLeaveMutation($courseId: UUID!) {
