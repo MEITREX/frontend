@@ -14,7 +14,7 @@ import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import { Box, Button, Typography } from "@mui/material";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
 
 const studentCourseIdQuery = graphql`
@@ -138,12 +138,25 @@ export default function CourseLayout({
   // This simple refresh ensures updated data (e.g. course progress).
   // The clean solution would be to move data fetching into the subpages,
   // so data refetches automatically when those components are mounted.
+  const prevPathname = useRef(pathname);
+
   useEffect(() => {
-    const chaptersPageRegex = /^\/courses\/[^\/]+(\/chapters)?$/;
-    const coursePageRegex = /^\/courses\/[^\/]+$/;
-    if (coursePageRegex.test(pathname) || chaptersPageRegex.test(pathname)) {
+    const subPages = [
+      /^\/courses\/[^\/]+\/forum$/,
+      /^\/courses\/[^\/]+\/progress$/,
+      /^\/courses\/[^\/]+\/quests$/,
+      /^\/courses\/[^\/]+\/leaderboard$/,
+      /^\/courses\/[^\/]+\/chapters$/,
+      /^\/courses\/[^\/]+$/,
+    ];
+
+    const wasSubPage = subPages.some((regex) => regex.test(prevPathname.current));
+
+    if ((!wasSubPage && (pathname.match(/^\/courses\/[^\/]+$/)) || (!wasSubPage && (pathname.match(/^\/courses\/[^\/]+\/chapters$/))))) {
       setRefreshKey((prev) => prev + 1);
     }
+
+    prevPathname.current = pathname;
   }, [pathname]);
 
   const [leave] = useMutation<StudentCourseLayoutLeaveMutation>(graphql`
