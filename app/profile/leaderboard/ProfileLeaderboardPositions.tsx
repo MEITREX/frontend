@@ -197,7 +197,7 @@ export async function fetchCourseLeaderboards(
         title
         userScores { id score user { id name } }
       }
-      allTime: getAllTimeCourseLeaderboards(courseID: $courseID, date: $date) {
+      allTime: getAllTimeCourseLeaderboards(courseID: $courseID, date: "1970-01-01") {
         id
         title
         userScores { id score user { id name } }
@@ -1318,7 +1318,7 @@ function CourseLeaderboardsForCourse({
       courseID: courseId,
       weeklyDate: weeklyDateISO,
       monthlyDate: monthStartISO,
-      allTimeDate: monthStartISO,
+      allTimeDate: "1970-01-01",
     }
   );
   const mapUser = (u: any): PublicUserInfo => ({

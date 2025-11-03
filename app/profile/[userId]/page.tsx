@@ -312,7 +312,7 @@ export default function PublicProfilePage() {
       const now = new Date();
       const weeklyDateISO = toLocalISODate(startOfWeekMonday(now));
       const monthlyDateISO = toLocalISODate(startOfMonth(now));
-      const allTimeDateISO = monthlyDateISO; // AllTime initial an Monatsersten binden
+      const allTimeDateISO = "1970-01-01"; // AllTime initial an Monatsersten binden
 
       const result: Record<string, any> = {};
 
