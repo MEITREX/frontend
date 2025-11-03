@@ -216,7 +216,7 @@ export default function Leaderboard({
           }
         }
       }
-      allTime: getAllTimeCourseLeaderboards(courseID: $courseID, date: $date) {
+      allTime: getAllTimeCourseLeaderboards(courseID: $courseID, date: "1970-01-01") {
         id
         title
         startDate
