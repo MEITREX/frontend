@@ -33,6 +33,7 @@ import {
 import { RelayEnvironmentProvider } from "react-relay";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
 import PageLoading from "./loading";
+import { LspProvider } from "@/components/uml-assessment/lspPlugin";
 
 dayjs.extend(isBetween);
 
@@ -90,11 +91,13 @@ function Body({ children }: { children: React.ReactNode }) {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DndProvider backend={HTML5Backend}>
           <SigninContent>
-            <PageViewProvider>
-              <GamificationRouteGuard>
-                <InnerLayout>{children}</InnerLayout>
-              </GamificationRouteGuard>
-            </PageViewProvider>
+            <LspProvider>
+              <PageViewProvider>
+                <GamificationRouteGuard>
+                  <InnerLayout>{children}</InnerLayout>
+                </GamificationRouteGuard>
+              </PageViewProvider>
+            </LspProvider>
           </SigninContent>
         </DndProvider>
       </LocalizationProvider>
