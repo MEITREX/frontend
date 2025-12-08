@@ -1,10 +1,15 @@
 "use client";
 
 import { Box } from "@mui/material";
+import dynamic from "next/dynamic";
 import Split from "react-split";
 
-export const HyLiMoEditor = () => {
+const HylimoEditor = dynamic(() => import('../../components/hylimo/HylimoEditor'), {
+  ssr: false,
+  loading: () => <p>Lade Editor...</p>
+});
 
+const HyLiMoEditor: React.FC = () => {
   return (
     <Box
       sx={{
@@ -22,13 +27,13 @@ export const HyLiMoEditor = () => {
     >
       <Split className="split" sizes={[50, 50]} minSize={100} gutterSize={10}>
         {/* LEFT: Monaco Editor */}
-        <div style={{ height: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-          <Box p={2}> Monaco </Box>
+        <div style={{ height: "100%", overflow: "hidden" }}>
+          <HylimoEditor />
         </div>
 
         {/* RIGHT: Sprotty */}
         <div style={{ height: "100%", overflow: "hidden" }}>
-          <Box p={2}> Sprotty </Box>
+          <Box p={2}>Sprotty</Box>
         </div>
       </Split>
     </Box>
