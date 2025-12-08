@@ -4,7 +4,7 @@ import { Box } from "@mui/material";
 import dynamic from "next/dynamic";
 import Split from "react-split";
 
-const HylimoEditor = dynamic(() => import('../../components/hylimo/HylimoEditor'), {
+const MonacoEditor = dynamic(() => import('../../components/hylimo/MonacoEditor'), {
   ssr: false,
   loading: () => <p>Lade Editor...</p>
 });
@@ -28,7 +28,7 @@ const HyLiMoEditor: React.FC = () => {
       <Split className="split" sizes={[50, 50]} minSize={100} gutterSize={10}>
         {/* LEFT: Monaco Editor */}
         <div style={{ height: "100%", overflow: "hidden" }}>
-          <HylimoEditor />
+          <MonacoEditor />
         </div>
 
         {/* RIGHT: Sprotty */}
