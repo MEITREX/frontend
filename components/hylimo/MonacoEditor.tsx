@@ -6,7 +6,8 @@ import type { LanguageClientConfig } from 'monaco-languageclient/lcwrapper';
 import type { MonacoVscodeApiConfig } from 'monaco-languageclient/vscodeApiWrapper';
 import { configureDefaultWorkerFactory } from 'monaco-languageclient/workerFactory';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import * as vscode from 'vscode';
+import { URI } from 'vscode-uri';
+
 import { setupLSPConnection } from './lspPlugin';
 
 configureDefaultWorkerFactory();
@@ -29,6 +30,7 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
     const secondaryWorkerRef = useRef<Worker | null>(null);
 
     const [workersReady, setWorkersReady] = useState(false);
+    const languageId = 'syncscript';
 
     // Initialize Web Workers
     useEffect(() => {
@@ -64,7 +66,6 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
             return {} as any;
         }
 
-        const languageId = 'syncscript';
         const uriString = `diagram-${id}.hyl`;
         const codeUri = `/workspace/${uriString}`;
 
@@ -73,7 +74,7 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
             viewsConfig: { $type: 'EditorService' },
             userConfiguration: {
                 json: JSON.stringify({
-                    'workbench.colorTheme': 'Default Dark Modern',
+                    'workbench.colorTheme': 'Default Dark Modern', // Ggf. später anpassen auf 'custom-dark'
                     'editor.wordBasedSuggestions': 'off'
                 })
             }
@@ -92,7 +93,7 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
                 workspaceFolder: {
                     index: 0,
                     name: 'workspace',
-                    uri: vscode.Uri.file('/workspace')
+                    uri: URI.file('/workspace')
                 }
             }
         };
@@ -100,6 +101,7 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
         const editorAppConfig: EditorAppConfig = {
             editorOptions: {
                 language: languageId,
+                theme: 'custom-dark',
                 fixedOverflowWidgets: true,
                 hover: { above: false },
                 suggest: { snippetsPreventQuickSuggestions: false },
@@ -119,7 +121,7 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
         };
 
         return { vscodeApiConfig, editorAppConfig, languageClientConfig };
-    }, [id, workersReady]);
+    }, [id, workersReady, code]);
 
 
     if (!workersReady) {
@@ -138,14 +140,19 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
 
                 // Establish Connection
                 onLanguageClientsStartDone={async (manager) => {
-                    console.log("✅ Client Manager connected. Setting up Hylimo...");
+                    console.log("Client Manager connected. Setting up Hylimo...");
 
                     const client = await manager.getLanguageClient('syncscript');
 
                     if (client && secondaryWorkerRef.current) {
                         await setupLSPConnection(client, secondaryWorkerRef.current);
 
-                        console.log("🚀 Hylimo System fully operational.");
+                        // Notify parent that everything is ready
+                        if (onEditorReady) {
+                            onEditorReady(client, null, null);
+                        }
+
+                        console.log("Hylimo System fully operational.");
                     }
                 }}
 

@@ -26,24 +26,20 @@ export const defaultEditorConfig = {
 };
 
 /**
- * This function corresponds to the logic part of 'setupLanguageClient' from the original Vue file.
- * It connects the Main Client (Editor) and the Secondary Worker (Diagram).
- * * @param client The already started MonacoLanguageClient (Main)
+ * Connects the Main Client (Editor) and the Secondary Worker (Diagram).
+ * @param client The already started MonacoLanguageClient (Main)
  * @param secondaryWorker The worker instance for the diagram (Secondary)
  */
 export async function setupLSPConnection(client: any, secondaryWorker: Worker) {
     console.log("🔧 Setup LSP Connection (Main <-> Secondary)...");
 
     // 1. Establish secondary connection
-    // (Exactly like in Vue: setupLanguageClient line 166)
     const reader = new BrowserMessageReader(secondaryWorker);
     const writer = new BrowserMessageWriter(secondaryWorker);
     const secondaryConnection = createProtocolConnection(reader, writer);
     secondaryConnection.listen();
 
     // 2. Forward Notifications & Requests (The Bridge)
-    // (Exactly like in Vue: setupLanguageClient lines 199 - 210)
-
     // Main -> Secondary
     client.onNotification(RemoteNotification.type, (message: any) => {
         secondaryConnection.sendNotification(RemoteNotification.type, message);
@@ -65,17 +61,13 @@ export async function setupLSPConnection(client: any, secondaryWorker: Worker) {
     });
 
     // 3. Send initial configuration
-    // (Exactly like in Vue: setupLanguageClient line 212 + Config logic)
-
     secondaryConnection.sendNotification(SetLanguageServerIdNotification.type, 1);
 
-    // We simulate the 'watchThrottled' behavior from Vue here
-    // by sending the config directly once during setup.
     await client.sendNotification(ConfigNotification.type, {
         diagramConfig: defaultDiagramConfig,
         editorConfig: defaultEditorConfig,
         settings: {}
     });
 
-    console.log("✅ LSP Connection established & Config sent.");
+    console.log("LSP Connection established & Config sent.");
 }
