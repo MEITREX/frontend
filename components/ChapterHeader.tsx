@@ -29,7 +29,7 @@ export function stringToColor(string: string): string {
     "Networking and Communication": "#E0FFFF", // light cyan
     "Operating Systems": "#AEC6CF", // pastel blue
     "Parallel and Distributed Computing": "#FFDAB9", // pastel peach
-    Security: "#FDFD96", // pastel yellow
+    "Security": "#FDFD96", // pastel yellow
     "Society, Ethics, and the Profession": "#FFFACD", // pastel lemon
     "Software Development Fundamentals": "#D5E8D4", // pastel mint
     "Software Engineering": "#C1E1C1", // pastel light green
