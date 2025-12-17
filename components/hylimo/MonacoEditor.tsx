@@ -1,48 +1,65 @@
 "use client";
 
+import { ConfigNotification } from '@hylimo/diagram-protocol';
 import { MonacoEditorReactComp } from '@typefox/monaco-editor-react';
+import * as monaco from "monaco-editor";
 import type { EditorAppConfig } from 'monaco-languageclient/editorApp';
 import type { LanguageClientConfig } from 'monaco-languageclient/lcwrapper';
 import type { MonacoVscodeApiConfig } from 'monaco-languageclient/vscodeApiWrapper';
-import { configureDefaultWorkerFactory } from 'monaco-languageclient/workerFactory';
+import { useWorkerFactory } from 'monaco-languageclient/workerFactory';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { URI } from 'vscode-uri';
+import { LogLevel } from 'vscode';
+import { CloseAction, ErrorAction } from "vscode-languageclient";
+import { LanguageClientProxy, setupLanguageClientConnection, setupLanguageSupport } from './lspPlugin';
 
-import { setupLSPConnection } from './lspPlugin';
+const defaultDiagramConfig = {
+    theme: "light",
+    primaryColor: "#000000",
+    backgroundColor: "#ffffff",
+    enableFontSubsetting: true,
+    enableExternalFonts: false
+};
 
-configureDefaultWorkerFactory();
+const defaultEditorConfig = {
+    toolboxEnabled: true,
+    snappingEnabled: true,
+    gridEnabled: true
+};
+
 
 interface MonacoEditorProps {
     code?: string;
     id?: string;
     onCodeChange?: (newCode: string) => void;
     onEditorReady?: (client: any, editor: any, model: any) => void;
+    onClientReady: (client: any) => void;
 }
 
 const MonacoEditor: React.FC<MonacoEditorProps> = ({
     code = '',
     id = '1',
     onCodeChange,
-    onEditorReady
+    onEditorReady,
+    onClientReady
 }) => {
     // Refs for the workers
-    const mainWorkerRef = useRef<Worker | null>(null);
-    const secondaryWorkerRef = useRef<Worker | null>(null);
+    const worker = useRef<Worker | null>(null);
+    const secondaryWorker = useRef<Worker | null>(null);
 
     const [workersReady, setWorkersReady] = useState(false);
     const languageId = 'syncscript';
 
-    // Initialize Web Workers
+    /* Initialize two Web Workers*/
     useEffect(() => {
-        if (!mainWorkerRef.current) {
-            // A. Start Main Worker (for Editor / Syntax)
-            mainWorkerRef.current = new Worker(
+        if (!worker.current) {
+            // A. worker: Monaco
+            worker.current = new Worker(
                 new URL('./languageServer.ts', import.meta.url),
                 { type: 'module' }
             );
 
-            // B. Start Secondary Worker (for Diagram / Sprotty)
-            secondaryWorkerRef.current = new Worker(
+            // B. secondaryWorker: Sprotty
+            secondaryWorker.current = new Worker(
                 new URL('./languageServer.ts', import.meta.url),
                 { type: 'module' }
             );
@@ -52,56 +69,64 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
 
         // Cleanup
         return () => {
-            mainWorkerRef.current?.terminate();
-            secondaryWorkerRef.current?.terminate();
-            mainWorkerRef.current = null;
-            secondaryWorkerRef.current = null;
+            worker.current?.terminate();
+            secondaryWorker.current?.terminate();
+            worker.current = null;
+            secondaryWorker.current = null;
         };
     }, []);
 
     // Configuration for MonacoEditorReactComp
     const { vscodeApiConfig, editorAppConfig, languageClientConfig } = useMemo(() => {
         // Wait until workers are ready
-        if (!workersReady || !mainWorkerRef.current) {
+        if (!workersReady || !worker.current) {
             return {} as any;
         }
 
         const uriString = `diagram-${id}.hyl`;
-        const codeUri = `/workspace/${uriString}`;
+        const codeUri = `diagram-1.hyl`;
+
+
 
         const vscodeApiConfig: MonacoVscodeApiConfig = {
-            $type: 'extended',
-            viewsConfig: { $type: 'EditorService' },
-            userConfiguration: {
-                json: JSON.stringify({
-                    'workbench.colorTheme': 'Default Dark Modern', // Ggf. später anpassen auf 'custom-dark'
-                    'editor.wordBasedSuggestions': 'off'
+            $type: 'classic',
+            viewsConfig: {
+                $type: 'EditorService'
+            },
+            logLevel: LogLevel.Warning,
+            monacoWorkerFactory: () => {
+                useWorkerFactory({
+                    workerLoaders: {
+                        TextEditorWorker:() => new Worker(
+                            new URL('monaco-editor/esm/vs/editor/editor.worker.js', import.meta.url)
+                        )
+                    }
                 })
             }
         };
+
 
         const languageClientConfig: LanguageClientConfig = {
             languageId,
             connection: {
                 options: {
                     $type: 'WorkerDirect',
-                    worker: mainWorkerRef.current
+                    worker: worker.current
                 }
             },
+
             clientOptions: {
                 documentSelector: [languageId],
-                workspaceFolder: {
-                    index: 0,
-                    name: 'workspace',
-                    uri: URI.file('/workspace')
-                }
+                   errorHandler: {
+                error: () => ({ action: ErrorAction.Continue }),
+                closed: () => ({ action: CloseAction.DoNotRestart })
+                },
             }
         };
 
         const editorAppConfig: EditorAppConfig = {
             editorOptions: {
                 language: languageId,
-                theme: 'custom-dark',
                 fixedOverflowWidgets: true,
                 hover: { above: false },
                 suggest: { snippetsPreventQuickSuggestions: false },
@@ -136,21 +161,28 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
                 languageClientConfig={languageClientConfig}
                 style={{ height: '100%', width: '100%' }}
 
-                onEditorStartDone={(editorApp) => {}}
+                onEditorStartDone={async (editorApp) => {
+                    setupLanguageSupport(monaco);
+                    console.log(editorApp?.getEditor()?.getModel());
+                }}
 
                 // Establish Connection
                 onLanguageClientsStartDone={async (manager) => {
-                    console.log("Client Manager connected. Setting up Hylimo...");
+                    console.log("Client Manager connected. Setting up Hylimo");
 
-                    const client = await manager.getLanguageClient('syncscript');
+                    const client = await manager.getLanguageClient(languageId);
 
-                    if (client && secondaryWorkerRef.current) {
-                        await setupLSPConnection(client, secondaryWorkerRef.current);
+                    if (client && secondaryWorker.current) {
+                        await setupLanguageClientConnection(client, secondaryWorker.current);
 
-                        // Notify parent that everything is ready
-                        if (onEditorReady) {
-                            onEditorReady(client, null, null);
-                        }
+                        client.sendNotification(ConfigNotification.type, {
+                            diagramConfig: defaultDiagramConfig,
+                            editorConfig: defaultEditorConfig,
+                            settings: {}
+                        });
+
+                        const proxy = new LanguageClientProxy(client as any);
+                        onClientReady(proxy);
 
                         console.log("Hylimo System fully operational.");
                     }

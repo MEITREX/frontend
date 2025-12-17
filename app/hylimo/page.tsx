@@ -1,7 +1,9 @@
 "use client";
 
+import SprottyDiagram from "@/components/hylimo/SprottyDiagram";
 import { Box } from "@mui/material";
 import dynamic from "next/dynamic";
+import { useState } from "react";
 import Split from "react-split";
 
 const MonacoEditor = dynamic(() => import('../../components/hylimo/MonacoEditor'), {
@@ -9,7 +11,20 @@ const MonacoEditor = dynamic(() => import('../../components/hylimo/MonacoEditor'
   loading: () => <p>Lade Editor...</p>
 });
 
+
 const HyLiMoEditor: React.FC = () => {
+
+  const [languageClient, setLanguageClient] = useState<any>(null);
+
+  const handleClientReady = (client: any) => {
+      console.log("✅ [DEBUG Step 1 SUCCESS] HyLiMoEditor has received the client object!", client);
+      setLanguageClient(client);
+  };
+
+    const handleOnDiagramUpdate = (msg: any) => {
+      console.log(msg)
+  };
+
   return (
     <Box
       sx={{
@@ -28,12 +43,12 @@ const HyLiMoEditor: React.FC = () => {
       <Split className="split" sizes={[50, 50]} minSize={100} gutterSize={10}>
         {/* LEFT: Monaco Editor */}
         <div style={{ height: "100%", overflow: "hidden" }}>
-          <MonacoEditor />
+          <MonacoEditor onClientReady={handleClientReady}/>
         </div>
 
         {/* RIGHT: Sprotty */}
         <div style={{ height: "100%", overflow: "hidden" }}>
-          <Box p={2}>Sprotty</Box>
+          <SprottyDiagram languageClient={languageClient} />
         </div>
       </Split>
     </Box>
