@@ -1,0 +1,58 @@
+.sprotty-wrapper {
+    width: 100%;
+    height: 100%;
+    container-type: size;
+    container-name: sprotty;
+}
+
+.sprotty {
+    width: 100%;
+    height: 100%;
+}
+
+.sprotty-hidden {
+    height: 0px !important;
+}
+
+.sprotty svg {
+    width: 100%;
+    height: 100%;
+    border-style: none;
+    border-width: 0px;
+    outline: none;
+}
+
+.sprotty .toolbox * {
+    font-variant-ligatures: no-contextual;
+}
+
+@container sprotty (width < 350px) or (height < 350px) {
+    .hylimo.toolbox-wrapper {
+        visibility: collapse;
+    }
+}
+
+:root {
+    --diagram-layout-color: #606770;
+    --diagram-layout-color-selected: var(--vp-c-brand-1);
+    --diagram-layout-color-snap: var(--vp-c-green-2);
+    --diagram-grid: #bbb;
+    --editor-background: #ffffff;
+    --toolbox-background: var(--vp-c-bg);
+    --toolbox-primary: var(--vp-c-brand-1);
+    --toolbox-box-shadow: var(--vp-shadow-4);
+    --toolbox-background-1: var(--vp-c-gray-1);
+    --toolbox-background-2: var(--vp-c-gray-2);
+    --toolbox-background-3: var(--vp-c-gray-3);
+    --toolbox-scrollbar-thumb-background: var(--vp-c-text-3);
+    --toolbox-error-background: var(--vp-c-danger-soft);
+    --toolbox-error-color: var(--vp-c-danger-1);
+}
+
+.dark {
+    --diagram-layout-color: #dadde1;
+    --diagram-layout-color-snap: var(--vp-c-warning-2);
+    --diagram-grid: #444;
+    --editor-background: #1e1e1e;
+    --toolbox-background: var(--vp-c-bg-alt);
+}
