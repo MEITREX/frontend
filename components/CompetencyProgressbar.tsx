@@ -1,33 +1,33 @@
-import Box from "@mui/material/Box";
+import { Box, useTheme } from "@mui/material";
 import LinearProgress from "@mui/material/LinearProgress";
 import { useEffect, useState } from "react";
 
-type CompetencyProgressbarProps = {
+export default function CompetencyProgressbar({
+  competencyName,
+  startProgress,
+  endProgress,
+  height,
+  color,
+  onClick,
+  isSelected,
+  disabled,
+}: {
   competencyName: string;
-  startProgress?:number;
+  startProgress: number;
   endProgress: number;
   height: number;
   color: string;
   onClick?: () => void;
-};
-
-export default function CompetencyProgressbar(
-  props: CompetencyProgressbarProps
-) {
-  const { competencyName } = props;
-  const { startProgress } = props;
-  const { endProgress } = props;
-  const { height } = props;
-  const { color } = props;
-  const { onClick } = props;
-
-  const [progress, setProgress] = useState(startProgress ?? endProgress);
+  isSelected: boolean;
+  disabled?: boolean;
+}) {
+  const [progress, setProgress] = useState(startProgress);
 
   useEffect(() => {
-    if (startProgress == null || startProgress === endProgress) return;
+    if (startProgress === endProgress) return;
 
-    const steps = 25;
-    const totalMs = 500;
+    const steps = 60;
+    const totalMs = 3000;
     const intervalMs = Math.floor(totalMs / steps);
     const increment = (endProgress - startProgress) / steps;
 
@@ -45,21 +45,54 @@ export default function CompetencyProgressbar(
     return () => clearInterval(timer);
   }, [startProgress, endProgress]);
 
+  const theme = useTheme();
+
   return (
-    <Box sx={{ width: "95%" }} onClick={onClick}>
-      <label>{competencyName}</label>
-      <LinearProgress
-        variant="determinate"
-        value={progress}
+    <Box
+      onClick={!disabled ? onClick : undefined}
+      sx={{
+        width: "95%",
+        p: 2,
+        mb: 1,
+        borderRadius: "14px",
+        cursor: "pointer",
+        outline: !disabled
+          ? isSelected
+            ? "4px solid" + color
+            : "2px solid #E5E7EB"
+          : "2px solid #E5E7EB",
+        backgroundColor: "#FFFFFF",
+      }}
+    >
+      <Box
         sx={{
-          height: height,
-          borderRadius: "20px",
-          "& .MuiLinearProgress-bar": {
-            backgroundColor: color, // Setzt die Farbe der gefüllten Progressbar
-          },
-          backgroundColor: "#e0e0e0", // Setzt die Hintergrundfarbe der Progressbar
+          display: "flex",
+          alignItems: "center",
+          mb: 1,
+          fontWeight: !disabled ? (isSelected ? 700 : 450) : 450,
+          color: disabled
+            ? theme.palette.text.disabled
+            : theme.palette.text.primary,
         }}
-      />
+      >
+        {competencyName + " - " + Math.floor(progress) + "%"}
+      </Box>
+      {!disabled ? (
+        "No progress possible yet."
+      ) : (
+        <LinearProgress
+          variant="determinate"
+          value={progress}
+          sx={{
+            height: height,
+            borderRadius: "20px",
+            backgroundColor: "#E5E7EB",
+            "& .MuiLinearProgress-bar": {
+              backgroundColor: color,
+            },
+          }}
+        />
+      )}
     </Box>
   );
 }
