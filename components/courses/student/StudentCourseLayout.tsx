@@ -9,6 +9,7 @@ import { StudentCourseNavigation } from "@/components/courses/student/StudentCou
 import { FormErrors } from "@/components/FormErrors";
 import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 import { PageError } from "@/components/PageError";
+import { useFetchProactiveFeedback } from "@/src/feedbackUtils";
 import { useConfirmation } from "@/src/useConfirmation";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import { Box, Button, Typography } from "@mui/material";
@@ -16,7 +17,6 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
-import { useFetchProactiveFeedback } from "@/src/feedbackUtils";
 
 const studentCourseIdQuery = graphql`
   query StudentCourseLayoutCourseIdQuery($id: UUID!) {
@@ -135,7 +135,7 @@ export default function CourseLayout({
   const userId = data.currentUserInfo.id;
   const { sendMessage } = useFetchProactiveFeedback();
 
-  // Regularly polls for proactive feedback every 30 seconds while in a course
+  // Regularly polls for proactive feedback every 10 seconds while in a course
   // Stops automatically when the user leaves the course
   // Restarts when the user joins another course
   useEffect(() => {
