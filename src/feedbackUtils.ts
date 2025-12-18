@@ -16,7 +16,7 @@ export function useFetchProactiveFeedback() {
   const showProactiveFeedback = useAITutorStore((state) => state.showProactiveFeedback);
   
   const sendMessage = (courseId?: string) => {
-    return new Promise((resolve, reject) => {
+    return new Promise<{success: boolean}>((resolve, reject) => {
       commit({
         variables: {
           userInput: "proactivefeedback",
@@ -27,9 +27,13 @@ export function useFetchProactiveFeedback() {
           if (answer) {
             if (answer !== "No proactive feedback available at the moment.") {
                 showProactiveFeedback(answer);
+                resolve({success: true});
+            } else {
+                resolve({success: false});
             }
+          } else {
+            resolve({success: false});
           }
-          resolve(response);
         },
         onError: (err:any) => reject(err),
       });

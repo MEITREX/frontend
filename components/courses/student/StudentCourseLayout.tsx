@@ -16,6 +16,7 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { graphql, useLazyLoadQuery, useMutation } from "react-relay";
+import { useFetchProactiveFeedback } from "@/src/feedbackUtils";
 
 const studentCourseIdQuery = graphql`
   query StudentCourseLayoutCourseIdQuery($id: UUID!) {
@@ -132,6 +133,34 @@ export default function CourseLayout({
 
   const course = data.coursesByIds?.[0];
   const userId = data.currentUserInfo.id;
+  const { sendMessage } = useFetchProactiveFeedback();
+
+  // Fecthes proactive feedback after 30 seconds
+  // If no feedback is available, retries after another 20 seconds
+  // Reasoning: The tutor might need some time to answer
+  // The timers are cleared if the component unmounts
+  useEffect(() => {
+    let firstTimer: NodeJS.Timeout;
+    let retryTimer: NodeJS.Timeout;
+
+    firstTimer = setTimeout(() => {
+      sendMessage(course?.id)
+        .then((result) => {
+          if (!result.success) {
+            // Retry after 20 seconds if no feedback was available
+            retryTimer = setTimeout(() => {
+              sendMessage(course?.id).catch(() => {});
+            }, 20000);
+          }
+        })
+        .catch(() => {});
+    }, 30000);
+
+    return () => {
+      clearTimeout(firstTimer);
+      if (retryTimer) clearTimeout(retryTimer);
+    };
+  }, [sendMessage, course?.id]);
 
   // Force a layout remount to refetch data when navigating back.
   // In Next.js, layouts stay mounted between subpages, so their data requests aren't re-run.
