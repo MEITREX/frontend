@@ -135,7 +135,7 @@ export default function CourseLayout({
   const userId = data.currentUserInfo.id;
   const { sendMessage } = useFetchProactiveFeedback();
 
-  // Fecthes proactive feedback after 30 seconds
+  // Fetches proactive feedback after 30 seconds
   // If no feedback is available, retries after another 20 seconds
   // Reasoning: The tutor might need some time to answer
   // The timers are cleared if the component unmounts
