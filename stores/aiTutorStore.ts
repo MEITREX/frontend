@@ -11,6 +11,7 @@ interface TutorState {
   addMessage: (messsage: Message) => void;
   changeLatestMessage: (message: Message) => void;
   showHint: (hint: string) => void;
+  showProactiveFeedback: (feedback: string) => void;
 }
 
 export type Message = {
@@ -51,6 +52,17 @@ export const useAITutorStore = create<TutorState>()(
               sender: "bot",
               sources: [],
               text: "Hint: \n" + hint,
+            },
+          ],
+        }),
+      showProactiveFeedback: (feedback: string) =>
+        set({
+          showChat: true,
+          currentChat: [
+            {
+              sender: "bot",
+              sources: [],
+              text: "Proactive Feedback: \n" + feedback,
             },
           ],
         }),
