@@ -135,31 +135,17 @@ export default function CourseLayout({
   const userId = data.currentUserInfo.id;
   const { sendMessage } = useFetchProactiveFeedback();
 
-  // Fetches proactive feedback after 30 seconds
-  // If no feedback is available, retries after another 20 seconds
-  // Reasoning: The tutor might need some time to answer
-  // The timers are cleared if the component unmounts
+  // Regularly polls for proactive feedback every 30 seconds while in a course
+  // Stops automatically when the user leaves the course
+  // Restarts when the user joins another course
   useEffect(() => {
-    let firstTimer: NodeJS.Timeout;
-    let retryTimer: NodeJS.Timeout;
+    if (!course?.id) return;
 
-    firstTimer = setTimeout(() => {
-      sendMessage(course?.id)
-        .then((result) => {
-          if (!result.success) {
-            // Retry after 20 seconds if no feedback was available
-            retryTimer = setTimeout(() => {
-              sendMessage(course?.id).catch(() => {});
-            }, 20000);
-          }
-        })
-        .catch(() => {});
-    }, 30000);
+    const pollInterval = setInterval(() => {
+      sendMessage(course.id).catch(() => {});
+    }, 10000);
 
-    return () => {
-      clearTimeout(firstTimer);
-      if (retryTimer) clearTimeout(retryTimer);
-    };
+    return () => clearInterval(pollInterval);
   }, [sendMessage, course?.id]);
 
   // Force a layout remount to refetch data when navigating back.
