@@ -719,6 +719,7 @@ function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
                   edge="end"
                   aria-label="logout"
                   onClick={() => {
+                    sessionStorage.clear();
                     window.localStorage.removeItem("meitrex-welcome-shown");
                     clearChat();
                     auth.signoutRedirect({
