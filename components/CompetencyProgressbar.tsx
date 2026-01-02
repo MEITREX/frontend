@@ -6,6 +6,7 @@ export default function CompetencyProgressbar({
   competencyName,
   startProgress,
   endProgress,
+  averageProgress,
   height,
   color,
   onClick,
@@ -16,6 +17,7 @@ export default function CompetencyProgressbar({
   competencyName: string;
   startProgress: number;
   endProgress: number;
+  averageProgress?: number;
   height: number;
   color: string;
   onClick?: () => void;
@@ -28,17 +30,15 @@ export default function CompetencyProgressbar({
   const [isMoving, setMoving] = useState(startProgress !== endProgress);
 
   useEffect(() => {
-    if (startProgress !== endProgress) {
-      setProgress(endProgress);
+    setProgress(endProgress);
+    if (startProgress !== endProgress && endProgress - startProgress > 1) {
       setMoving(true);
       setShowBar(true);
     } else {
-      setProgress(endProgress);
       setMoving(false);
       setShowBar(endProgress !== 100);
     }
   }, [startProgress, endProgress]);
-
 
   const theme = useTheme();
 
@@ -51,9 +51,7 @@ export default function CompetencyProgressbar({
         mb: 1,
         borderRadius: "14px",
         cursor: "pointer",
-        outline: isSelected
-            ? `4px solid ${color}`
-            : "2px solid #E5E7EB",
+        outline: isSelected ? `4px solid ${color}` : "2px solid #E5E7EB",
         backgroundColor: "#FFFFFF",
         boxShadow: isUrgent ? "0 0 15px rgba(211, 47, 47, 0.7)" : "none",
         animation: isUrgent ? "pulse-red 2s infinite" : "none",
@@ -82,21 +80,20 @@ export default function CompetencyProgressbar({
             : theme.palette.text.primary,
         }}
       >
-        <span>{competencyName} {!isDisabled && "-"}</span>
+        <span>
+          {competencyName} {!isDisabled && "-"}
+        </span>
 
-        {isMoving && (
-          <span>{`${startProgress}% →`}</span>
-        )}
+        {isMoving && <span>{`${startProgress}% →`}</span>}
 
         {!isDisabled && (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, transition: "margin-left 0.5s ease",}}>
             <span>{endProgress}%</span>
             {!showBar && (
               <EmojiEventsIcon fontSize="large" sx={{ color: "#F59E0B" }} />
             )}
           </Box>
         )}
-
       </Box>
 
       {isDisabled ? (
@@ -120,11 +117,16 @@ export default function CompetencyProgressbar({
               borderColor: "gold",
             }}
             onTransitionEnd={(e) => {
-              if (e.propertyName === "transform" && (e.target as HTMLElement).classList.contains("MuiLinearProgress-bar")) {
-                  setMoving(false);
-                  if (endProgress === 100) {
-                    setShowBar(false);
-                  }
+              if (
+                e.propertyName === "transform" &&
+                (e.target as HTMLElement).classList.contains(
+                  "MuiLinearProgress-bar"
+                )
+              ) {
+                setMoving(false);
+                if (endProgress === 100) {
+                  setShowBar(false);
+                }
               }
             }}
           />

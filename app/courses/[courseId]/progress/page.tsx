@@ -1,5 +1,6 @@
 "use client";
 
+import { pageAverageSkillValuesQuery } from "@/__generated__/pageAverageSkillValuesQuery.graphql";
 import { pageLearningProgressQuery } from "@/__generated__/pageLearningProgressQuery.graphql";
 import { stringToColor } from "@/components/ChapterHeader";
 import CompetencyProgressbar from "@/components/CompetencyProgressbar";
@@ -51,6 +52,7 @@ export default function LearningProgress() {
             }
           }
           skills {
+            id
             skillName
             skillCategory
             skillLevels {
@@ -81,6 +83,31 @@ export default function LearningProgress() {
   );
 
   const course = data.coursesByIds[0];
+
+  const skillIds = useMemo(() => {
+    return course.skills.map(skill => skill.id).filter((id) => id !== undefined);
+  }, [course.skills]);
+
+  console.log(skillIds);
+  console.log(course.skills.map((skill) => skill.id));
+
+  const averageData = useLazyLoadQuery<pageAverageSkillValuesQuery>(
+    graphql`
+      query pageAverageSkillValuesQuery($skillIds: [UUID!]!) {
+        averageSkillValues(skillIds: $skillIds) {
+          skillId
+          averageValue
+        }
+      }
+    `,
+    { skillIds: skillIds}
+  );
+
+  const averageSkillValues = useMemo(() => {
+    return new Map(averageData.averageSkillValues.map(v => [v.skillId, v.averageValue]));
+  }, [averageData]);
+
+  averageSkillValues.forEach((value, skillId) => console.log(`${skillId} ${value} ${course.skills.filter((skill)=> skill.id === skillId).map((skill)=> skill.skillName)}`));
 
   const skillsByCategory = useMemo(() => {
     return course.skills.reduce<
@@ -196,21 +223,19 @@ export default function LearningProgress() {
     if (typeof window === "undefined") return new Map();
 
     const stored = sessionStorage.getItem("previousProgress");
-    return stored
-      ? new Map<string, number>(JSON.parse(stored))
-      : new Map();
+    return stored ? new Map<string, number>(JSON.parse(stored)) : new Map();
   });
 
   useEffect(() => {
     if (uniqueCategories.length === 0) return;
 
-    const tempMap = new Map<string,number>();
+    const tempMap = new Map<string, number>();
 
     progressBySkill.forEach((progressValue, skill) => {
-      if(!progressValue) return;
-      const tempProgress = progressValue[0] / progressValue[1] * 100;
+      if (!progressValue) return;
+      const tempProgress = (progressValue[0] / progressValue[1]) * 100;
       tempMap.set(skill, tempProgress);
-    })
+    });
 
     sessionStorage.setItem("previousProgress", JSON.stringify([...tempMap]));
   }, [progressBySkill, uniqueCategories.length]);
@@ -287,12 +312,16 @@ export default function LearningProgress() {
             const categoryProgressValue =
               (progressSum / uniqueSkillsInCategory.length) * 100;
 
-            const tempSumPreviousProgress = uniqueSkillsInCategory.reduce((sum, skill) =>
-              sum + (previousProgress.get(skill.skillName) ?? 0),
+            const tempSumPreviousProgress = uniqueSkillsInCategory.reduce(
+              (sum, skill) =>
+                sum + (previousProgress.get(skill.skillName) ?? 0),
               0
             );
 
-            const previousCategoryProgressValue = previousProgress.size === 0 ? categoryProgressValue : tempSumPreviousProgress / uniqueSkillsInCategory.length;
+            const previousCategoryProgressValue =
+              previousProgress.size === 0
+                ? categoryProgressValue
+                : tempSumPreviousProgress / uniqueSkillsInCategory.length;
 
             return (
               <div key={category}>
@@ -379,12 +408,14 @@ export default function LearningProgress() {
             const tuple = progressBySkill.get(currentSkill.skillName) ?? [0, 1];
             const skillProgressValue = (tuple[0] / tuple[1]) * 100;
 
-            const previousSkillProgressValue = previousProgress.get(currentSkill.skillName) ?? skillProgressValue;
+            const previousSkillProgressValue =
+              previousProgress.get(currentSkill.skillName) ??
+              skillProgressValue;
 
             return (
               <div key={currentSkill.skillName}>
                 <CompetencyProgressbar
-                  competencyName={currentSkill.skillName}
+                  competencyName={currentSkill.skillName + currentSkill.id}
                   height={10}
                   startProgress={Math.floor(previousSkillProgressValue)}
                   endProgress={Math.floor(skillProgressValue)}
