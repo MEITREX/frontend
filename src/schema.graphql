@@ -299,6 +299,7 @@ type Course {
   id: UUID!
   mediaRecords: [MediaRecord!]!
   memberships: [CourseMembership!]!
+  numberOfCourseMemberships: Int!
   published: Boolean!
   rewardScores: RewardScores!
   scoreboard: [ScoreboardItem!]!
@@ -1302,7 +1303,6 @@ type Query {
   achievementsByCourseId(courseId: UUID!): [Achievement!]!
   achievementsByUserId(userId: UUID): [Achievement!]!
   allProactiveFeedback: [ProactiveFeedback!]!
-  averageSkillValues(skillIds: [UUID!]!): [SkillAverageValue!]!
   contentsByChapterIds(chapterIds: [UUID!]!): [[Content!]!]!
   contentsByCourseIds(courseIds: [UUID!]!): [[Content!]!]
   contentsByIds(ids: [UUID!]!): [Content!]!
@@ -1604,14 +1604,18 @@ directive @Size(min: Int = 0, max: Int = 2147483647, message: String = "graphql.
 type Skill {
   id: UUID!
   isCustomSkill: Boolean!
+  skillAllUsersStats: SkillAllUsersStats!
   skillCategory: String!
   skillLevels: SkillLevels
   skillName: String!
+  skillValue: Float!
 }
 
-type SkillAverageValue {
-  averageValue: Float!
+type SkillAllUsersStats {
+  averageSkillValue: Float!
+  participantCount: Int!
   skillId: UUID!
+  skillValueSum: Float!
 }
 
 input SkillInput {
@@ -1653,6 +1657,11 @@ enum SkillType {
   EVALUATE
   REMEMBER
   UNDERSTAND
+}
+
+type SkillValue {
+  skillId: UUID!
+  skillValue: Float!
 }
 
 enum SortDirection {
