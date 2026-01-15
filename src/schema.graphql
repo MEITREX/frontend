@@ -299,6 +299,7 @@ type Course {
   id: UUID!
   mediaRecords: [MediaRecord!]!
   memberships: [CourseMembership!]!
+  numberOfCourseMemberships: Int!
   published: Boolean!
   rewardScores: RewardScores!
   scoreboard: [ScoreboardItem!]!
@@ -1273,6 +1274,15 @@ type Post {
   upvotedByUsers: [UUID]!
 }
 
+type ProactiveFeedback {
+  assessmentId: UUID!
+  correctness: Float!
+  createdAt: DateTime!
+  feedbackText: String!
+  id: UUID!
+  success: Boolean!
+}
+
 type ProgressLogItem {
   correctness: Float!
   hintsUsed: Int!
@@ -1292,6 +1302,7 @@ type Query {
   _empty: String
   achievementsByCourseId(courseId: UUID!): [Achievement!]!
   achievementsByUserId(userId: UUID): [Achievement!]!
+  allProactiveFeedback: [ProactiveFeedback!]!
   contentsByChapterIds(chapterIds: [UUID!]!): [[Content!]!]!
   contentsByCourseIds(courseIds: [UUID!]!): [[Content!]!]
   contentsByIds(ids: [UUID!]!): [Content!]!
@@ -1340,6 +1351,7 @@ type Query {
   openQuestionByCourseId(id: UUID!): [Thread!]!
   otherUserForumActivityByUserId(otherUserId: UUID!): [ForumActivityEntry!]!
   PlayerHexadScoreExists(userId: UUID!): Boolean!
+  proactiveFeedback(assessmentId: UUID!): ProactiveFeedback
   scoreboard(courseId: UUID!): [ScoreboardItem!]!
   semanticSearch(count: Int! = 10, courseWhitelist: [UUID!], queryText: String!): [SemanticSearchResult!]!
   submissionExerciseByUser(assessmentId: UUID!): SubmissionExercise!
@@ -1592,9 +1604,18 @@ directive @Size(min: Int = 0, max: Int = 2147483647, message: String = "graphql.
 type Skill {
   id: UUID!
   isCustomSkill: Boolean!
+  skillAllUsersStats: SkillAllUsersStats!
   skillCategory: String!
   skillLevels: SkillLevels
   skillName: String!
+  skillValue: Float!
+}
+
+type SkillAllUsersStats {
+  averageSkillValue: Float!
+  participantCount: Int!
+  skillId: UUID!
+  skillValueSum: Float!
 }
 
 input SkillInput {
@@ -1636,6 +1657,11 @@ enum SkillType {
   EVALUATE
   REMEMBER
   UNDERSTAND
+}
+
+type SkillValue {
+  skillId: UUID!
+  skillValue: Float!
 }
 
 enum SortDirection {
@@ -1744,6 +1770,7 @@ type SubmissionSolution {
 
 type Subscription {
   notificationAdded(userId: UUID!): NotificationData!
+  proactiveFeedbackAdded(userId: UUID!): ProactiveFeedback!
 }
 
 type Suggestion {
