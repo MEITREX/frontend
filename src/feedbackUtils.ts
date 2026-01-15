@@ -1,47 +1,41 @@
-import { graphql, useMutation } from "react-relay";
+import { graphql, fetchQuery, useRelayEnvironment } from "react-relay";
 
 import { useAITutorStore } from '@/stores/aiTutorStore';
-import { feedbackUtilsSendMessageMutation, feedbackUtilsSendMessageMutation$variables } from "@/__generated__/feedbackUtilsSendMessageMutation.graphql";
+import { feedbackUtilsLatestProactiveFeedbackQuery } from "@/__generated__/feedbackUtilsLatestProactiveFeedbackQuery.graphql";
 
-const sendMessageMutation = graphql`
-  mutation feedbackUtilsSendMessageMutation($userInput: String!, $courseId: UUID) {
-    sendMessage(userInput: $userInput, courseId: $courseId) {
-      answer
-    }
+const latestProactiveFeedbackQuery = graphql`
+  query feedbackUtilsLatestProactiveFeedbackQuery {
+    latestProactiveFeedback
   }
 `;
 
 export function useFetchProactiveFeedback() {
-  const [commit, isInFlight] = useMutation<feedbackUtilsSendMessageMutation>(sendMessageMutation);
+  const environment = useRelayEnvironment();
   const showProactiveFeedback = useAITutorStore((state) => state.showProactiveFeedback);
   
-  const sendMessage = (courseId?: string) => {
+  const fetchFeedback = (courseId?: string) => {
     return new Promise<{success: boolean}>((resolve, reject) => {
-      commit({
-        variables: {
-          userInput: "proactivefeedback",
-          courseId,
-        } as feedbackUtilsSendMessageMutation$variables,
-        onCompleted: (response:any, errors:any) => {
-          const answer = response?.sendMessage?.answer;
-          if (answer) {
-            if (answer !== "No proactive feedback available at the moment.") {
-                showProactiveFeedback(answer);
-                resolve({success: true});
-            } else {
-                resolve({success: false});
-            }
+      fetchQuery<feedbackUtilsLatestProactiveFeedbackQuery>(
+        environment,
+        latestProactiveFeedbackQuery,
+        {}
+      ).subscribe({
+        next: (data) => {
+          const feedback = data?.latestProactiveFeedback;
+          if (feedback) {
+            showProactiveFeedback(feedback);
+            resolve({success: true});
           } else {
             resolve({success: false});
           }
         },
-        onError: (err:any) => reject(err),
+        error: (err: any) => reject(err),
       });
     });
   };
 
   return {
-    sendMessage,
-    isInFlight
+    sendMessage: fetchFeedback,
+    isInFlight: false
   };
 }
