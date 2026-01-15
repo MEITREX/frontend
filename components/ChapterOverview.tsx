@@ -9,12 +9,6 @@ import { StudentChapter } from "./StudentChapter";
 const ChapterFragment = graphql`
   fragment ChapterOverviewFragment on Course {
     id
-    suggestions(amount: 4) {
-      ...SuggestionFragment
-      content {
-        id
-      }
-    }
     chapters {
       elements {
         id

@@ -266,7 +266,7 @@ export function ContentLink({
         }}
       >
         <div
-          className={`${frameSize} relative flex justify-center items-center group-hover:group-enabled:scale-105`}
+          className={`${frameSize} relative flex flex-shrink-0 justify-center items-center group-hover:group-enabled:scale-105`}
         >
           <ProgressFrame
             color={
@@ -281,7 +281,7 @@ export function ContentLink({
             {icon}
           </div>
         </div>
-        <div className="group-hover:group-enabled:translate-x-0.5">
+        <div className="flex flex-col min-w-0 group-hover:group-enabled:translate-x-0.5">
           <div
             className={`flex pb-1 items-center ${
               size == "small" ? "gap-1 -ml-0.5" : "gap-1.5 -ml-1"
@@ -299,6 +299,11 @@ export function ContentLink({
           <Typography
             variant="body2"
             color={disabled ? "text.disabled" : "text.secondary"}
+            style={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
           >
             {content.metadata.name}
           </Typography>

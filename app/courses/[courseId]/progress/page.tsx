@@ -1,91 +1,206 @@
 "use client";
 
-import { useState } from "react";
-import * as React from "react";
-import { RewardScores } from "@/components/RewardScores";
-import { RewardScoresHelpButton } from "@/components/RewardScoresHelpButton";
-import { Button, IconButton, Typography } from "@mui/material";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import { LightTooltip } from "@/components/LightTooltip";
-import { Info } from "@mui/icons-material";
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import CompetencyProgressbar from "@/components/CompetencyProgressbar";
+import { pageLearningProgressQuery } from "@/__generated__/pageLearningProgressQuery.graphql";
 import { stringToColor } from "@/components/ChapterHeader";
-import { useCourseData } from "../../../../components/courses/context/CourseDataContext";
-import { useRouter } from "next/navigation";
-import { StudentCourseLayoutCourseIdQuery$data } from "@/__generated__/StudentCourseLayoutCourseIdQuery.graphql";
+import CompetencyProgressbar from "@/components/CompetencyProgressbar";
+import { LightTooltip } from "@/components/LightTooltip";
+import { Suggestion } from "@/components/Suggestion";
+import { Info } from "@mui/icons-material";
+import {
+  Checkbox,
+  Chip,
+  FormControlLabel,
+  IconButton,
+  Slide,
+  Typography,
+  useTheme,
+} from "@mui/material";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { graphql, useLazyLoadQuery } from "react-relay";
 
 export default function LearningProgress() {
-  const router = useRouter();
-
-  // Get data from context
-  const data = useCourseData() as StudentCourseLayoutCourseIdQuery$data;
-  const course = data.coursesByIds[0];
-  const id = course.id;
-
-  const [currentPage, setCurrentPage] = useState(0);
-
-  const categoriesPerPage = 3;
-  const uniqueSkillCategories = Array.from(
-    new Map(course.skills.map((skill) => [skill.skillCategory, skill])).values()
+  const { courseId } = useParams();
+  const data = useLazyLoadQuery<pageLearningProgressQuery>(
+    graphql`
+      query pageLearningProgressQuery($id: UUID!) {
+        coursesByIds(ids: [$id]) {
+          id
+          numberOfCourseMemberships
+          suggestions(amount: 100) {
+            ...SuggestionFragment
+            content {
+              id
+              ... on Assessment {
+                items {
+                  associatedSkills {
+                    skillName
+                    skillCategory
+                  }
+                }
+              }
+              metadata {
+                chapter {
+                  id
+                }
+              }
+            }
+          }
+          chapters {
+            elements {
+              id
+              suggestedStartDate
+              suggestedEndDate
+              startDate
+              endDate
+              skills {
+                skillName
+                skillCategory
+              }
+            }
+          }
+          skills {
+            skillName
+            skillCategory
+            skillValue
+            skillAllUsersStats {
+              skillValueSum
+              participantCount
+              averageSkillValue
+            }
+          }
+        }
+      }
+    `,
+    { id: courseId }
   );
 
-  // Sort categories by total progress
-  const sortedSkillCategories = [...uniqueSkillCategories].sort((a, b) => {
-    const getTotalProgress = (category: typeof a) => {
-      const skillsInCategory = course.skills.filter(
-        (skill) => skill.skillCategory === category.skillCategory
+  const course = data.coursesByIds[0];
+
+  const skillsByCategory = useMemo(() => {
+    return course.skills.reduce<
+      Record<string, (typeof course.skills)[number][]>
+    >((acc, skill) => {
+      acc[skill.skillCategory] ??= [];
+      acc[skill.skillCategory].push(skill);
+      return acc;
+    }, {});
+  }, [course]);
+
+  const uniqueCategories = Object.keys(skillsByCategory);
+
+  const [selectedCategory, setSelectedCategory] = useState<number>(0);
+  const [selectedSkill, setSelectedSkill] = useState<number | null>(null);
+
+  const [showAverageProgress, setAverageProgress] = useState<boolean>(false);
+
+  const sortedCategories = useMemo(() => {
+    if (uniqueCategories.length === 0) return [];
+    return [...uniqueCategories].sort((a, b) => {
+      const getTotalProgress = (category: typeof a) => {
+        const uniqueSkillsInCategory = Array.from(
+          new Map(
+            skillsByCategory[category].map((skill) => [skill.skillName, skill])
+          ).values()
+        );
+        const progressSum = uniqueSkillsInCategory.reduce((sum, skill) => {
+          const progress = skill.skillValue;
+          return sum + progress;
+        }, 0);
+        return (progressSum / uniqueSkillsInCategory.length) * 100;
+      };
+      return getTotalProgress(b) - getTotalProgress(a);
+    });
+  }, [skillsByCategory, uniqueCategories]);
+
+  const currentUniqueSkills = useMemo(() => {
+    if (sortedCategories.length === 0) return [];
+    return skillsByCategory[sortedCategories[selectedCategory]]
+      .reduce((acc, skillA) => {
+        if (!acc.some((skillB) => skillA.skillName === skillB.skillName)) {
+          acc.push(skillA);
+        }
+        return acc;
+      }, [] as (typeof skillsByCategory)[string])
+      .sort((skillA, skillB) => {
+        return skillB.skillValue - skillA.skillValue;
+      });
+  }, [selectedCategory, skillsByCategory, sortedCategories]);
+
+  const urgentChapters = useMemo(() => {
+    return course.chapters.elements.filter((chapter) => {
+      const suggestedEndDate = Date.parse(
+        chapter.suggestedEndDate ?? chapter.endDate
       );
-      const uniqueSkills = Array.from(
-        new Map(skillsInCategory.map((s) => [s.skillName, s])).values()
-      );
-      return uniqueSkills.reduce(
-        (acc, skill) =>
-          acc +
-          Object.values(skill.skillLevels || {}).reduce(
-            (sum, level) => sum + (level?.value || 0),
-            0
-          ),
-        0
-      );
-    };
-    return getTotalProgress(b) - getTotalProgress(a);
+      return suggestedEndDate.valueOf() < Date.now();
+    });
+  }, [course.chapters.elements]);
+
+  const lockedChapters = useMemo(() => {
+    return course.chapters.elements.filter((chapter) => {
+      const startDate = Date.parse(chapter.startDate);
+      return startDate.valueOf() > Date.now();
+    });
+  }, [course.chapters.elements]);
+
+  const filteredSuggestionsByCategory = (category: string) => {
+    return (course.suggestions ?? []).filter((suggestion) =>
+      suggestion.content.items?.some((item) =>
+        item.associatedSkills.some((skill) => skill.skillCategory === category)
+      )
+    );
+  };
+
+  const filteredSuggestionsBySkill = (skillName: string) => {
+    return (course.suggestions ?? []).filter((suggestion) =>
+      suggestion.content.items?.some((item) =>
+        item.associatedSkills.some((skill) => skill.skillName === skillName)
+      )
+    );
+  };
+
+  const [previousProgress] = useState<Map<string, number>>(() => {
+    if (typeof window === "undefined") return new Map();
+
+    const stored = sessionStorage.getItem("previousProgress");
+    return stored ? new Map<string, number>(JSON.parse(stored)) : new Map();
   });
 
-  const totalPages = Math.ceil(
-    sortedSkillCategories.length / categoriesPerPage
-  );
+  useEffect(() => {
+    if (uniqueCategories.length === 0) return;
 
-  const currentCategorySlice = sortedSkillCategories.slice(
-    currentPage * categoriesPerPage,
-    (currentPage + 1) * categoriesPerPage
-  );
+    const tempMap = new Map<string, number>();
 
-  const handlePrevPage = () => {
-    if (currentPage > 0) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
+    course.skills.forEach((skill) => {
+      tempMap.set(skill.skillName, skill.skillValue * 100);
+    });
 
-  const handleNextPage = () => {
-    if (currentPage < totalPages - 1) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
+    sessionStorage.setItem("previousProgress", JSON.stringify([...tempMap]));
+  }, [course.skills, uniqueCategories.length]);
+
+  const theme = useTheme();
+
+  if (uniqueCategories.length === 0) {
+    return (
+      <Typography variant="body1">
+        {" "}
+        No Skills in this course to display progress.
+      </Typography>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-12">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-4">
-          <Typography variant="h2">Skill progress</Typography>
-
+    <div className="grid grid-cols-[4fr_3fr_2fr] gap-4">
+      <div className="flex flex-col max-h-[50vh] min-w-0">
+        <div className="flex items-center gap-3">
+          <Typography variant="h2">Knowledge Area</Typography>
           <LightTooltip
             title={
               <>
-                <p className="text-slate-600 mb-1">Information Skillprogress</p>
+                <p className="text-slate-600 mb-1">Knowledge Area</p>
                 <p>
                   {
-                    "Here you can see your personal progress for this course, splitted up in every skill category that is assigned to this course. Every skill category consists of unique skills. These skills are assigned to the different exercises. If you complete an exercise your skill progress will increase."
+                    "A knowledge area is defined as a thematic field of study that groups together related competencies in order to represent the fundamental knowledge of a given subject area."
                   }
                 </p>
               </>
@@ -95,93 +210,326 @@ export default function LearningProgress() {
               <Info />
             </IconButton>
           </LightTooltip>
-
-          {totalPages > 1 && (
-            <div className="flex gap-2 items-center ml-12">
-              <IconButton onClick={handlePrevPage} disabled={currentPage === 0}>
-                <ArrowBackIosNewIcon />
-              </IconButton>
-              <span>
-                {currentPage + 1} / {totalPages}
-              </span>
-              <IconButton
-                onClick={handleNextPage}
-                disabled={currentPage >= totalPages - 1}
-              >
-                <ArrowForwardIosIcon />
-              </IconButton>
-            </div>
-          )}
+          <div className="ml-8">
+            <FormControlLabel
+              className="text-slate-500"
+              control={
+                <Checkbox
+                  size="small"
+                  color="default"
+                  checked={showAverageProgress}
+                  onChange={() => setAverageProgress(!showAverageProgress)}
+                />
+              }
+              label="show average Progress"
+            />
+          </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {currentCategorySlice.map((uniqueSkill) => {
-            const skillsInCategory = course.skills.filter(
-              (skill) => skill.skillCategory === uniqueSkill.skillCategory
-            );
+        <div className="flex flex-col gap-2 overflow-y-auto thin-scrollbar p-2">
+          {sortedCategories.map((category) => {
             const uniqueSkillsInCategory = Array.from(
               new Map(
-                skillsInCategory.map((skill) => [skill.skillName, skill])
+                skillsByCategory[category].map((skill) => [
+                  skill.skillName,
+                  skill,
+                ])
               ).values()
             );
 
-            const totalCategoryProgress = uniqueSkillsInCategory.reduce(
-              (acc, skill) =>
-                acc +
-                Object.values(skill.skillLevels || {}).reduce(
-                  (sum, level) => sum + (level?.value || 0),
-                  0
-                ),
+            const chaptersWithThisCategory = course.chapters.elements.filter(
+              (chapter) => {
+                return chapter.skills?.some(
+                  (skill) => skill?.skillCategory === category
+                );
+              }
+            );
+
+            const disabled = chaptersWithThisCategory.every((chapter) =>
+              lockedChapters.includes(chapter)
+            );
+
+            const urgent = filteredSuggestionsByCategory(category).some(
+              (suggestion) =>
+                urgentChapters.some(
+                  (chapter) =>
+                    chapter.id === suggestion.content.metadata.chapter.id
+                )
+            );
+
+            const progressSum = uniqueSkillsInCategory.reduce((sum, skill) => {
+              const progress = skill.skillValue * 100;
+              return sum + progress;
+            }, 0);
+
+            const averageProgressSum = uniqueSkillsInCategory.reduce(
+              (sum, skill) => {
+                const averageProgress =
+                  skill.skillAllUsersStats.averageSkillValue * 100;
+                return sum + averageProgress;
+              },
               0
             );
-            const categoryProgressValue = Math.floor(
-              Math.min(
-                (totalCategoryProgress * 100) / uniqueSkillsInCategory.length,
-                100
+
+            const maxParticipantCountForaSkill = Math.max(
+              ...uniqueSkillsInCategory.map(
+                (skill) => skill.skillAllUsersStats.participantCount
               )
             );
 
-            return (
-              <div key={uniqueSkill.skillCategory} className="mb-4 w-full">
-                <div className="flex items-center gap-2 w-full mb-2">
-                  <CompetencyProgressbar
-                    competencyName={`${
-                      uniqueSkill.skillCategory
-                    } - ${Math.floor(categoryProgressValue)}%`}
-                    heightValue={15}
-                    progressValue={categoryProgressValue}
-                    color={stringToColor(uniqueSkill.skillCategory)}
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  {uniqueSkillsInCategory.map((skill) => {
-                    const rawValue = Object.values(
-                      skill?.skillLevels || {}
-                    ).reduce((sum, level) => sum + (level?.value || 0), 0);
-                    const clamped = Math.min(rawValue, 1);
-                    const skillProgressPercent = Math.floor(clamped * 100);
+            const categoryProgressValue =
+              progressSum / uniqueSkillsInCategory.length;
+            const categoryAverageProgressValue =
+              averageProgressSum / uniqueSkillsInCategory.length;
 
-                    return (
-                      <div key={skill.skillName} className="pl-8 w-full">
-                        <CompetencyProgressbar
-                          competencyName={
-                            skill.skillName +
-                            " - " +
-                            Math.floor(skillProgressPercent) +
-                            "%"
-                          }
-                          heightValue={10}
-                          progressValue={skillProgressPercent}
-                          color={stringToColor(uniqueSkill.skillCategory)}
-                        />
-                      </div>
-                    );
-                  })}
+            const tempSumPreviousProgress = uniqueSkillsInCategory.reduce(
+              (sum, skill) =>
+                sum + (previousProgress.get(skill.skillName) ?? 0),
+              0
+            );
+
+            const previousCategoryProgressValue =
+              previousProgress.size === 0
+                ? categoryProgressValue
+                : tempSumPreviousProgress / uniqueSkillsInCategory.length;
+
+            return (
+              <div key={category}>
+                <div className="flex items-center">
+                  <CompetencyProgressbar
+                    competencyName={category}
+                    startProgress={Math.floor(previousCategoryProgressValue)}
+                    endProgress={Math.floor(categoryProgressValue)}
+                    averageProgress={Math.floor(categoryAverageProgressValue)}
+                    color={stringToColor(category)}
+                    onClick={() => {
+                      setSelectedCategory(
+                        sortedCategories.findIndex((c) => c === category)
+                      );
+                      setSelectedSkill(null);
+                    }}
+                    isDisabled={disabled}
+                    isSelected={category === sortedCategories[selectedCategory]}
+                    isUrgent={urgent}
+                    showAverageProgress={showAverageProgress}
+                    participantCount={maxParticipantCountForaSkill}
+                    courseMemberCount={course.numberOfCourseMemberships}
+                    openTaskCount={
+                      filteredSuggestionsByCategory(category).length
+                    }
+                  />
                 </div>
               </div>
             );
           })}
         </div>
+      </div>
+
+      <div className="flex flex-col max-h-[50vh] mt-8 min-w-0">
+        <div className="flex items-center gap-2">
+          <Typography variant="h2">Competencies</Typography>
+          <Chip
+            sx={{
+              fontSize: "0.75rem",
+              height: "1.5rem",
+              maxWidth: "250px",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              backgroundColor: stringToColor(
+                sortedCategories[selectedCategory]
+              ),
+            }}
+            label={sortedCategories[selectedCategory]}
+          />
+          <LightTooltip
+            title={
+              <>
+                <p className="text-slate-600 mb-1">Competency</p>
+                <p>
+                  {
+                    "Each task has assigned Competencies to represent the content of the task. The following competencies are part of the selected Knowledge Area."
+                  }
+                </p>
+              </>
+            }
+          >
+            <IconButton>
+              <Info />
+            </IconButton>
+          </LightTooltip>
+        </div>
+        <div className="flex flex-col gap-2 overflow-y-auto thin-scrollbar p-2">
+          {currentUniqueSkills.map((currentSkill) => {
+            const chaptersWithThisSkill = course.chapters.elements.filter(
+              (chapter) => {
+                return chapter.skills?.some(
+                  (skill) => skill?.skillName === currentSkill.skillName
+                );
+              }
+            );
+
+            const disabled = chaptersWithThisSkill.every((chapter) =>
+              lockedChapters.includes(chapter)
+            );
+
+            const urgent = filteredSuggestionsBySkill(
+              currentSkill.skillName
+            ).some((suggestion) =>
+              urgentChapters.some(
+                (chapter) =>
+                  chapter.id === suggestion.content.metadata.chapter.id
+              )
+            );
+
+            const skillProgressValue = currentSkill.skillValue * 100;
+            const skillAverageProgressValue =
+              currentSkill.skillAllUsersStats.averageSkillValue * 100;
+
+            const previousSkillProgressValue =
+              previousProgress.get(currentSkill.skillName) ??
+              skillProgressValue;
+
+            return (
+              <Slide
+                key={currentSkill.skillName}
+                in
+                direction="right"
+                timeout={500}
+              >
+                <div>
+                  <CompetencyProgressbar
+                    competencyName={currentSkill.skillName}
+                    small={true}
+                    startProgress={Math.floor(previousSkillProgressValue)}
+                    endProgress={Math.floor(skillProgressValue)}
+                    averageProgress={Math.floor(skillAverageProgressValue)}
+                    color={stringToColor(currentSkill.skillCategory)}
+                    onClick={() => {
+                      const currentIndex = currentUniqueSkills.findIndex(
+                        (skill) => skill === currentSkill
+                      );
+                      currentIndex === selectedSkill
+                        ? setSelectedSkill(null)
+                        : setSelectedSkill(currentIndex);
+                    }}
+                    isDisabled={disabled}
+                    isSelected={
+                      selectedSkill === null
+                        ? false
+                        : currentUniqueSkills.at(selectedSkill) === currentSkill
+                    }
+                    isUrgent={urgent}
+                    showAverageProgress={showAverageProgress}
+                    participantCount={
+                      currentSkill.skillAllUsersStats.participantCount
+                    }
+                    courseMemberCount={course.numberOfCourseMemberships}
+                    openTaskCount={
+                      filteredSuggestionsBySkill(currentSkill.skillName).length
+                    }
+                  />
+                </div>
+              </Slide>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2 max-h-[50vh] mt-8 min-w-0">
+        <div className="flex items-center gap-2">
+          <Typography variant="h2">Task Recommendation</Typography>
+
+          <LightTooltip
+            title={
+              <>
+                <p className="text-slate-600 mb-1">Task Recommendation</p>
+                <p>
+                  {
+                    "Here are some recommended tasks to improve your progress in the selected Knowledge Area."
+                  }
+                </p>
+              </>
+            }
+          >
+            <IconButton>
+              <Info />
+            </IconButton>
+          </LightTooltip>
+        </div>
+        {selectedSkill === null ? (
+          <div className="flex flex-col gap-2 overflow-y-auto thin-scrollbar pb-2">
+            {filteredSuggestionsByCategory(sortedCategories[selectedCategory])
+              .length > 0 ? (
+              filteredSuggestionsByCategory(
+                sortedCategories[selectedCategory]
+              ).map((suggestion) => (
+                <Slide
+                  key={suggestion.content.id}
+                  in
+                  direction="right"
+                  timeout={700}
+                >
+                  <div>
+                    <Suggestion
+                      courseId={course.id}
+                      key={suggestion.content.id}
+                      _suggestion={suggestion}
+                    />
+                  </div>
+                </Slide>
+              ))
+            ) : (
+              <Typography variant="body2">
+                {" "}
+                No task recommendations available for this knowledge area.
+              </Typography>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2 overflow-y-auto">
+            <Typography variant="subtitle2"> Urgent Tasks: </Typography>
+            <div className="flex flex-col overflow-y-auto thin-scrollbar pb-2">
+              {filteredSuggestionsBySkill(
+                currentUniqueSkills.at(selectedSkill)!.skillName
+              )
+                .filter((suggestion) =>
+                  urgentChapters.some(
+                    (urgentChapter) =>
+                      urgentChapter.id ===
+                      suggestion.content.metadata.chapter.id
+                  )
+                )
+                .map((urgentSuggestion) => (
+                  <Suggestion
+                    courseId={course.id}
+                    key={urgentSuggestion.content.id}
+                    _suggestion={urgentSuggestion}
+                  />
+                ))}
+            </div>
+            <Typography variant="subtitle2"> Other Tasks: </Typography>
+            <div className="flex flex-col overflow-y-auto thin-scrollbar pb-2">
+              {filteredSuggestionsBySkill(
+                currentUniqueSkills.at(selectedSkill)!.skillName
+              )
+                .filter(
+                  (suggestion) =>
+                    !urgentChapters.some(
+                      (urgentChapter) =>
+                        urgentChapter.id ===
+                        suggestion.content.metadata.chapter.id
+                    )
+                )
+                .map((notUrgentSuggestion) => (
+                  <Suggestion
+                    courseId={course.id}
+                    key={notUrgentSuggestion.content.id}
+                    _suggestion={notUrgentSuggestion}
+                  />
+                ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
