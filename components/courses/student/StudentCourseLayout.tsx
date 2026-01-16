@@ -9,6 +9,7 @@ import { StudentCourseNavigation } from "@/components/courses/student/StudentCou
 import { FormErrors } from "@/components/FormErrors";
 import GamificationGuard from "@/components/gamification-guard/GamificationGuard";
 import { PageError } from "@/components/PageError";
+import { useFetchProactiveFeedback } from "@/src/feedbackUtils";
 import { useConfirmation } from "@/src/useConfirmation";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import { Box, Button, Typography } from "@mui/material";
@@ -132,6 +133,20 @@ export default function CourseLayout({
 
   const course = data.coursesByIds?.[0];
   const userId = data.currentUserInfo.id;
+  const { sendMessage } = useFetchProactiveFeedback();
+
+  // Regularly polls for proactive feedback every 10 seconds while in a course
+  // Stops automatically when the user leaves the course
+  // Restarts when the user joins another course
+  useEffect(() => {
+    if (!course?.id) return;
+
+    const pollInterval = setInterval(() => {
+      sendMessage(course.id).catch(() => {});
+    }, 10000);
+
+    return () => clearInterval(pollInterval);
+  }, [sendMessage, course?.id]);
 
   // Force a layout remount to refetch data when navigating back.
   // In Next.js, layouts stay mounted between subpages, so their data requests aren't re-run.
