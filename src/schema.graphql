@@ -1342,6 +1342,7 @@ type Query {
   inventoryForUser: Inventory!
   isAccessTokenAvailable(provider: ExternalServiceProviderDto!): Boolean!
   itemsByUserId(userId: UUID!): [UserItem!]!
+  latestProactiveFeedback: String
   mediaRecords: [MediaRecord!]! @deprecated(reason: "In production there should probably be no way to get all media records of the system.")
   mediaRecordsByContentIds(contentIds: [UUID!]!): [[MediaRecord!]!]!
   mediaRecordsByIds(ids: [UUID!]!): [MediaRecord!]!
@@ -1360,12 +1361,6 @@ type Query {
   thread(id: UUID!): Thread
   threadsByContentId(id: UUID!): [Thread!]!
   tutorImmersiveWidgetSpeechContent(courseId: UUID!): String!
-  """
-  Retrieves the latest proactive feedback for the current user (any assessment).
-  The feedback is deleted after retrieval and must be less than 30 minutes old.
-  Returns the feedback text or null if no feedback is available.
-  """
-  latestProactiveFeedback: String
   userCourseRewardScores(courseId: UUID!): RewardScores!
   userMediaRecords: [MediaRecord!]!
 }
