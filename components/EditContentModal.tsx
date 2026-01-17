@@ -31,6 +31,7 @@ import { AddCodeAssignmentModal } from "./AddCodeAssignmentModal";
 import { MediaContentModal } from "./MediaContentModal";
 import { QuizModal } from "./QuizModal";
 import { SubmissionExerciseModal } from "./SubmissionExerciseModal";
+import { AddUMLAssignmentModal } from "@/components/uml-assignment/AddUMLAssignmentModal";
 
 export function EditContentModal({
   chapterId,
@@ -55,6 +56,7 @@ export function EditContentModal({
   autoOpen?: boolean;
   onClose?: () => void;
 }) {
+  const [openUMLAssignmentModal, setOpenUMLAssignmentModal] = useState(false);
   const [openMediaModal, setOpenMediaModal] = useState(false);
   const [openFlashcardModal, setOpenFlashcardModal] = useState(false);
   const [openAddQuizModal, setOpenAddQuizModal] = useState(false);
@@ -374,6 +376,14 @@ export function EditContentModal({
           >
             Add Submission Exercise
           </Button>
+          <Button
+            onClick={() => setOpenUMLAssignmentModal(true)}
+            variant="text"
+            className="mt-4"
+            startIcon={<Add />}
+          >
+            Add UML Assignment
+          </Button>
         </DialogContent>
         <DialogActions>
           <LoadingButton loading={loading} onClick={submit}>
@@ -416,6 +426,13 @@ export function EditContentModal({
         _existingSubmission={null}
         tasks={[]}
       />
+      {openUMLAssignmentModal && (
+        <AddUMLAssignmentModal
+          open={openUMLAssignmentModal}
+          onClose={() => setOpenUMLAssignmentModal(false)}
+        />
+      )}
+
     </>
   );
 }
