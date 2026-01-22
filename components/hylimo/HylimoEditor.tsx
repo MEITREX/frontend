@@ -10,12 +10,14 @@ import { DiagramActionNotification, DiagramOpenNotification } from "@hylimo/diag
 import { createContainer, DiagramServerProxy, ResetCanvasBoundsAction, TYPES } from "@hylimo/diagram-ui";
 import type { ActionHandlerRegistry, IActionDispatcher } from "sprotty";
 import { RequestModelAction, type ActionMessage } from "sprotty-protocol";
-import { Root } from "@hylimo/diagram-common";
-import * as monaco from "@codingame/monaco-vscode-editor-api";
-import { EditorModel } from "@codingame/monaco-vscode-api/vscode/vs/workbench/common/editor/editorModel";
 import type { ActionHandlerRegistry, IActionDispatcher } from "sprotty";
-import "./sprotty.css";
-import "./hylimo.css"
+
+import "./style.css";
+import "@hylimo/diagram-ui/css/hylimo.css";
+import "@hylimo/diagram-ui/css/toolbox.css";
+
+
+
 
 let globalLanguageClientPromise: Promise<LanguageClientProxy> | null = null;
 function getLanguageClient() {
@@ -157,9 +159,7 @@ export default function HylimoEditor() {
 
         {/* RIGHT: Sprotty */}
         <div style={{ height: "100%", width: "100%" }}>
-          <div ref={sprottyWrapper} className="sprot
-
-          ty-wrapper">
+          <div ref={sprottyWrapper} className="sprotty-wrapper">
             <div id="sprotty-container-1"></div>
           </div>
         </div>
