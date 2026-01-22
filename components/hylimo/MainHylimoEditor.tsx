@@ -1,10 +1,21 @@
 ﻿"use client";
 
 import dynamic from "next/dynamic";
+import { Box, CircularProgress } from "@mui/material";
 
 const HylimoEditor = dynamic(() => import('../../components/hylimo/HylimoEditor'), {
   ssr: false,
-  loading: () => <p>Load Editor...</p>
+  loading: () =>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '450px'
+      }}
+    >
+      <CircularProgress />
+    </Box>
 });
 
 
