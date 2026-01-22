@@ -5,7 +5,6 @@ import {
   BrowserMessageWriter,
   createProtocolConnection
 } from "vscode-languageserver-protocol/browser.js";
-import { MonacoVscodeApiWrapper, type MonacoVscodeApiConfig } from "monaco-languageclient/vscodeApiWrapper";
 import { LogLevel } from "@codingame/monaco-vscode-api";
 import { useWorkerFactory } from "monaco-languageclient/workerFactory";
 import * as monaco from "monaco-editor";
@@ -23,6 +22,11 @@ import {
   RemoteRequest,
   SetLanguageServerIdNotification
 } from "@hylimo/diagram-protocol";
+import {
+  getEnhancedMonacoEnvironment,
+  MonacoVscodeApiWrapper,
+  type MonacoVscodeApiConfig
+} from "monaco-languageclient/vscodeApiWrapper";
 
 export const defaultDiagramConfig = {
   theme: "light",
@@ -68,13 +72,17 @@ export async function setupLanguageClient() {
     },
     logLevel: LogLevel.Warning,
     monacoWorkerFactory: () => {
-      useWorkerFactory({
-        workerLoaders: {
-          TextEditorWorker:() => new Worker(
-            new URL('monaco-editor/esm/vs/editor/editor.worker.js', import.meta.url)
-          )
+      const envEnhanced = getEnhancedMonacoEnvironment();
+      envEnhanced.getWorker = (workerId, label) => {
+        if (label === "editorWorkerService") {
+          return new Worker(
+            new URL("@codingame/monaco-vscode-editor-api/esm/vs/editor/editor.worker.js", import.meta.url),
+            { type: "module" }
+          );
+        } else {
+          throw new Error(`Unknown worker label: ${label}`);
         }
-      });
+      };
     }
   };
 
