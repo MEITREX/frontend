@@ -428,6 +428,7 @@ export function EditContentModal({
       />
       {openUMLAssignmentModal && (
         <AddUMLAssignmentModal
+          chapterId={chapterId}
           open={openUMLAssignmentModal}
           onClose={() => setOpenUMLAssignmentModal(false)}
         />
