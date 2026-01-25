@@ -565,6 +565,15 @@ input CreateSubexerciseInput {
   totalSubexerciseCredits: Float!
 }
 
+input CreateUmlExerciseInput {
+  courseId: UUID!
+  description: String!
+  requiredPercentage: Float! = 0.5
+  showSolution: Boolean! = false
+  totalPoints: Int!
+  tutorSolution: String
+}
+
 scalar Date
 
 scalar DateTime
@@ -1110,6 +1119,7 @@ type Mutation {
   createSection(input: CreateSectionInput!): Section!
   createSolutionFile(assessmentId: UUID!, name: String!, solutionId: UUID!): File
   createSubmissionAssessment(assessmentInput: CreateAssessmentInput!, submissionExerciseInput: InputSubmissionExercise!): SubmissionAssessment!
+  createUMLAssessment(assessmentInput: CreateAssessmentInput!, createUmlExerciseInput: CreateUmlExerciseInput!): Assessment!
   currencyReward(points: Int!): Inventory
   defaultSettings(userId: UUID!): Settings!
   deleteAllNotifications(userId: UUID!): Int!
@@ -1146,6 +1156,7 @@ type Mutation {
   mutateQuiz(assessmentId: UUID!): QuizMutation!
   mutateSection(sectionId: UUID!): SectionMutation!
   mutateSubmission(assessmentId: UUID!): SubmissionMutation!
+  mutateUmlExercise(assessmentId: UUID!): UmlExerciseMutation!
   recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
   recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
   saveStudentMappings(courseId: UUID!, studentMappingInputs: [StudentMappingInput!]!): [String]!
@@ -1325,6 +1336,7 @@ type Query {
   getMonthlyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
   getPlayerHexadScoreById(userId: UUID!): PlayerHexadScore!
   getSemanticallySimilarEntities(count: Int! = 10, courseWhitelist: [UUID!], excludeEntitiesWithSameParent: Boolean, segmentId: UUID!): [SemanticSearchResult!]!
+  getUmlExerciseByAssessmentId(assessmentId: UUID!): UmlExercise!
   getUser(userID: ID!): [User!]
   getWeeklyCourseLeaderboards(courseID: ID!, date: String!): [Leaderboard!]
   inventoriesForUsers(userIds: [UUID!]!): [Inventory!]!
@@ -1507,6 +1519,7 @@ enum RewardChangeReason {
   CONTENT_DUE_FOR_LEARNING
   CONTENT_DUE_FOR_REPETITION
   CONTENT_REVIEWED
+  UML_EXERCISE
 }
 
 type RewardLogItem {
@@ -1793,6 +1806,55 @@ type ThreadContentReference {
 }
 
 scalar Time
+
+type UmlAssessment implements Assessment & Content {
+  _internal_noauth_isAvailableToBeWorkedOnForUser(userId: UUID!): Boolean!
+  assessmentMetadata: AssessmentMetadata!
+  id: UUID!
+  isAvailableToBeWorkedOn: Boolean!
+  items: [Item!]!
+  metadata: ContentMetadata!
+  progressDataForUser(userId: UUID!): UserProgressData!
+  required: Boolean!
+  userProgressData: UserProgressData!
+}
+
+type UmlExercise {
+  assessmentId: UUID!
+  courseId: UUID!
+  description: String!
+  id: UUID!
+  requiredPercentage: Float
+  showSolution: Boolean!
+  studentSubmissions: [UmlStudentSubmission!]!
+  totalPoints: Int!
+  tutorSolution: String!
+}
+
+type UmlExerciseMutation {
+  assessmentId: UUID!
+  submitStudentSolution(diagram: String!, studentId: UUID!): UmlStudentSolution
+  updateTutorSolution(tutorSolution: String!): UmlExercise!
+}
+
+type UmlFeedback {
+  comment: String!
+  id: UUID!
+  points: Int!
+}
+
+type UmlStudentSolution {
+  diagram: String!
+  feedback: UmlFeedback
+  id: UUID!
+  submittedAt: DateTime!
+}
+
+type UmlStudentSubmission {
+  id: UUID!
+  solutions: [UmlStudentSolution!]!
+  studentId: UUID!
+}
 
 type UnfinishedGrading {
   assignmentId: UUID!
