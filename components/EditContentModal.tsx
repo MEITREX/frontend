@@ -5,6 +5,7 @@ import { lecturerAllSkillsQuery } from "@/__generated__/lecturerAllSkillsQuery.g
 import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.graphql";
 import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import { AddFlashcardSetModal } from "@/components/AddFlashcardSetModal";
+import { AddUMLAssignmentModal } from "@/components/uml-assignment/AddUMLAssignmentModal";
 import { Add, Edit, EditNote } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
 import {
@@ -31,7 +32,6 @@ import { AddCodeAssignmentModal } from "./AddCodeAssignmentModal";
 import { MediaContentModal } from "./MediaContentModal";
 import { QuizModal } from "./QuizModal";
 import { SubmissionExerciseModal } from "./SubmissionExerciseModal";
-import { AddUMLAssignmentModal } from "@/components/uml-assignment/AddUMLAssignmentModal";
 
 export function EditContentModal({
   chapterId,
@@ -103,6 +103,9 @@ export function EditContentModal({
           ... on SubmissionAssessment {
             __typename
           }
+            ... on UmlAssessment {
+            __typename
+          }
           ... on AssignmentAssessment {
             __typename
             assignment {
@@ -117,6 +120,8 @@ export function EditContentModal({
     `,
     _chapter
   );
+
+  console.log(chapter );
 
   const [optionalRecords, setOptionalRecords] = useState(_optionalRecords);
   const [requiredRecords, setRequiredRecords] = useState(_requiredRecords);
