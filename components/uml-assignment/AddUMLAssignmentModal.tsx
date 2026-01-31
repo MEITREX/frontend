@@ -1,23 +1,41 @@
 ﻿"use client";
 
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button, Typography, Paper, Stack, TextField, Box, IconButton, Container, AppBar, Toolbar, Slide,
-} from "@mui/material";
-import * as React from "react";
-import OpenInFullIcon from "@mui/icons-material/OpenInFull";
+import { ContentType } from "@/__generated__/AddCodeAssignmentModalMutation.graphql";
+import { UmlApiCreateAssessmentMutation } from "@/__generated__/UmlApiCreateAssessmentMutation.graphql";
+import { AssessmentMetadataFormSection, AssessmentMetadataPayload } from "@/components/AssessmentMetadataFormSection";
+import { ContentMetadataFormSection, ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
+import { umlApiCreateAssessmentMutation } from "@/components/hylimo/api/UmlApi";
 import MainHylimoEditor from "@/components/hylimo/MainHylimoEditor";
 import CloseIcon from "@mui/icons-material/Close";
 import InfoIcon from "@mui/icons-material/Info";
-import { useMutation } from "react-relay";
-import { umlApiCreateAssessmentMutation } from "@/components/hylimo/api/UmlApi";
-import { ContentMetadataFormSection, ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
-import { AssessmentMetadataFormSection, AssessmentMetadataPayload } from "@/components/AssessmentMetadataFormSection";
-import { UmlApiCreateAssessmentMutation } from "@/__generated__/UmlApiCreateAssessmentMutation.graphql";
+import OpenInFullIcon from "@mui/icons-material/OpenInFull";
+import {
+  AppBar,
+  Box,
+  Button,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  IconButton,
+  Paper,
+  Slide,
+  Stack, TextField,
+  Toolbar,
+  Typography
+} from "@mui/material";
 import { useParams } from "next/navigation";
+import * as React from "react";
+import { useMutation } from "react-relay";
+import TextEditor from "../forum/richTextEditor/TextEditor";
+
+const defaultValue = `classDiagram {
+    class("HelloWorld") {
+        public {
+            hello : string
+        }
+    }
+}`;
 
 export function AddUMLAssignmentModal({
                                         open,
@@ -34,7 +52,8 @@ export function AddUMLAssignmentModal({
 
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
-  const [solution, setSolution] = React.useState("");
+  const [diagramCode, setDiagramCode] = React.useState("");
+
 
   const [fullscreen, setFullscreen] = React.useState(false);
   const [showInfo, setShowInfo] = React.useState(false);
@@ -58,19 +77,21 @@ export function AddUMLAssignmentModal({
 
   const Editor = (
     <Box sx={{ height: "100%", width: "100%" }}>
-      <MainHylimoEditor />
+      <MainHylimoEditor
+        initialValue={defaultValue}
+        onChange={(value) => setDiagramCode(value)}
+      />
     </Box>
   );
 
-  function handleSubmit() {
+function handleSubmit() {
     if (!metadata || !assessmentMetadata) return;
-
     createUmlAssessment({
       variables: {
         assessmentInput: {
           metadata: {
             ...metadata,
-            type: "UML" as any,
+            type: "UML_EXERCISE" as ContentType,
             chapterId: chapterId,
           },
           assessmentMetadata: {
@@ -83,10 +104,26 @@ export function AddUMLAssignmentModal({
           requiredPercentage: 0.5,
           showSolution: true,
           totalPoints: 100,
+          tutorSolution: diagramCode
         }
       },
       onCompleted() {
         onClose();
+      },
+      updater(store, data) {
+        const chapter = store.get(chapterId);
+        if (!chapter) return;
+
+        const newRecord = store.get(data?.createUMLAssessment?.id);
+
+        if (newRecord) {
+          const linkedRecords = chapter.getLinkedRecords("contents");
+
+          chapter.setLinkedRecords(
+            [...(linkedRecords ?? []), newRecord],
+            "contents"
+          );
+        }
       },
       onError: (error) => {
         console.error(error);
@@ -95,7 +132,7 @@ export function AddUMLAssignmentModal({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogContent>
         <Container maxWidth="lg" sx={{ py: 6 }}>
           <Stack spacing={4}>
@@ -114,25 +151,9 @@ export function AddUMLAssignmentModal({
               </Typography>
 
               <Stack spacing={3}>
-                <TextField
-                  label="Title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  fullWidth
-                  required
-                  variant="outlined"
-                />
-
-                <TextField
-                  label="Description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  fullWidth
-                  multiline
-                  minRows={4}
-                  required
-                  variant="outlined"
-                />
+                <TextEditor
+                  onContentChange={(html) => setDescription(html)}>
+                </TextEditor>
 
                 <Box>
                   <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
@@ -237,14 +258,9 @@ export function AddUMLAssignmentModal({
                   onChange={(e) => setTitle(e.target.value)}
                   fullWidth
                 />
-                <TextField
-                  label="Description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  fullWidth
-                  multiline
-                  minRows={3}
-                />
+                   <TextEditor
+                  onContentChange={(html) => setDescription(html)}
+                ></TextEditor>
               </Stack>
             </Paper>
           </Slide>
