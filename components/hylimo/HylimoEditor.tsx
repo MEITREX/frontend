@@ -1,23 +1,19 @@
 ﻿"use client";
 
-import { Box } from "@mui/material";
-import Split from "react-split";
-import { useEffect, useRef } from "react";
-import { LanguageClientProxy, setupLanguageClient, language } from "@/components/hylimo/lspPlugin";
-import { EditorApp, type EditorAppConfig } from "monaco-languageclient/editorApp";
-import type { Disposable } from "vscode-languageserver-protocol";
+import { language, LanguageClientProxy, setupLanguageClient } from "@/components/hylimo/lspPlugin";
 import { DiagramActionNotification, DiagramOpenNotification } from "@hylimo/diagram-protocol";
-import { createContainer, DiagramServerProxy, ResetCanvasBoundsAction, TYPES } from "@hylimo/diagram-ui";
+import { createContainer, DiagramServerProxy, TYPES } from "@hylimo/diagram-ui";
+import { Box } from "@mui/material";
+import { EditorApp, type EditorAppConfig } from "monaco-languageclient/editorApp";
+import { useEffect, useRef } from "react";
+import Split from "react-split";
 import type { ActionHandlerRegistry, IActionDispatcher } from "sprotty";
-import { RequestModelAction, type ActionMessage } from "sprotty-protocol";
-import type { ActionHandlerRegistry, IActionDispatcher } from "sprotty";
+import { RequestModelAction } from "sprotty-protocol";
+import type { Disposable } from "vscode-languageserver-protocol";
 
-import "./style.css";
 import "@hylimo/diagram-ui/css/hylimo.css";
 import "@hylimo/diagram-ui/css/toolbox.css";
-
-
-
+import "./style.css";
 
 let globalLanguageClientPromise: Promise<LanguageClientProxy> | null = null;
 function getLanguageClient() {
@@ -27,13 +23,20 @@ function getLanguageClient() {
   return globalLanguageClientPromise;
 }
 
-export default function HylimoEditor() {
-  const editorElement = useRef<HTMLDivElement | null>(null);
+export default function HylimoEditor({
+  initialValue,
+  onChange,
+  readOnly = false
+}: {
+  initialValue: string;
+  onChange (value: string): void;
+  readOnly?: boolean;
+}) {
+   const editorElement = useRef<HTMLDivElement | null>(null);
   const sprottyWrapper = useRef<HTMLDivElement | null>(null);
 
   const disposablesRef = useRef<(Disposable)[]>([]);
   const languageClientRef = useRef<Promise<LanguageClientProxy> | null>(null);
-
 
   const editorStartedRef = useRef(false);
 
@@ -54,6 +57,8 @@ export default function HylimoEditor() {
       const editorAppConfig: EditorAppConfig = {
         editorOptions: {
           language,
+          readOnly: readOnly,
+          domReadOnly: readOnly,
           fixedOverflowWidgets: true,
           hover: { above: false },
           suggest: { snippetsPreventQuickSuggestions: false },
@@ -63,13 +68,7 @@ export default function HylimoEditor() {
         },
         codeResources: {
           modified: {
-            text: "classDiagram {\n"+
-              "    class(\"HelloWorld\") {\n"+
-              "        public {\n"+
-              "            hello : string\n"+
-              "        }\n"+
-              "    }\n"+
-              "}",
+            text: initialValue,
             uri: `diagram.hyl`,
             enforceLanguageId: language
           }
@@ -82,10 +81,15 @@ export default function HylimoEditor() {
       await editorApp.start(editorElement.current!);
 
       const monacoEditor = editorApp.getEditor()!;
+
+      const changeDisposable = monacoEditor.onDidChangeModelContent(() => {
+        if (!readOnly) { // <--- CHANGED (Prevent logic execution if readOnly)
+          const currentText = monacoEditor.getValue();
+          onChange(currentText);
+        }
+      });
+
       monacoEditor.layout();
-
-
-      disposablesRef.current.push(editorApp);
 
       const uri = monacoEditor.getModel()?.uri?.toString();
 
@@ -108,7 +112,10 @@ export default function HylimoEditor() {
           });
         }
         protected override sendMessage(msg: any): void {
-          currentLanguageClient.sendNotification(DiagramActionNotification.type, msg);
+          // Optional: Prevent diagram actions if readOnly
+          if (!readOnly) { // <--- CHANGED
+            currentLanguageClient.sendNotification(DiagramActionNotification.type, msg);
+          }
         }
         protected handleUndo(): void {}
         protected handleRedo(): void {}
@@ -120,7 +127,7 @@ export default function HylimoEditor() {
       container.bind(LspDiagramServerProxy).toSelf().inSingletonScope();
       container.bind(TYPES.ModelSource).toService(LspDiagramServerProxy);
       const currentActionDispatcher = container.get<IActionDispatcher>(TYPES.IActionDispatcher);
-      //actionDispatcher.value = currentActionDispatcher;
+
       currentActionDispatcher.request(RequestModelAction.create()).then((response) => {
         currentActionDispatcher.dispatch(response);
       });
@@ -132,16 +139,18 @@ export default function HylimoEditor() {
           d.dispose?.();
         } catch {}
       });
+      editorStartedRef.current = false;
       }
 
-  }, []);
-
+  }, [readOnly]);
   return (
     <Box
       sx={{
         height: "100%",
         width: "100%",
         overflow: "hidden",
+        opacity: readOnly ? 0.8 : 1,
+        pointerEvents: "auto",
         "& .split": { display: "flex", height: "100%" },
         "& .gutter": {
           backgroundColor: "action.hover",
@@ -152,12 +161,10 @@ export default function HylimoEditor() {
       }}
     >
       <Split className="split" sizes={[50, 50]} minSize={100} gutterSize={10}>
-        {/* LEFT: Monaco Editor */}
         <div>
           <div ref={editorElement} className="editor-element" style={{ width: "100%", height: "100%" }} />
         </div>
 
-        {/* RIGHT: Sprotty */}
         <div style={{ height: "100%", width: "100%" }}>
           <div ref={sprottyWrapper} className="sprotty-wrapper">
             <div id="sprotty-container-1"></div>

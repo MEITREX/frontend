@@ -1,7 +1,7 @@
 ﻿"use client";
 
-import dynamic from "next/dynamic";
 import { Box, CircularProgress } from "@mui/material";
+import dynamic from "next/dynamic";
 
 const HylimoEditor = dynamic(() => import('../../components/hylimo/HylimoEditor'), {
   ssr: false,
@@ -19,11 +19,20 @@ const HylimoEditor = dynamic(() => import('../../components/hylimo/HylimoEditor'
 });
 
 
-export default function MainHylimoEditor ()  {
-
-
+export default function MainHylimoEditor({
+  initialValue,
+  onChange,
+  readOnly = false
+}: {
+  initialValue: string;
+  onChange(value: string): void;
+  readOnly?: boolean;
+}) {
   return (
-    <HylimoEditor/>
+    <HylimoEditor
+      initialValue={initialValue}
+      onChange={onChange}
+      readOnly={readOnly}
+    />
   );
 };
-
