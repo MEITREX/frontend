@@ -42,6 +42,8 @@ const defaultValue = `classDiagram {
         public {
             hello : string
         }
+    } layout {
+        pos = apos(-2.61699216012469, 36.637890241745)
     }
 }`;
 
@@ -75,7 +77,10 @@ export default function StudentUMLAssignment() {
   // Fetch attempts
   const data = useLazyLoadQuery<UmlApiGetStudentSolutionsQuery>(
     umlApiGetStudentSolutionsQuery,
-    { assessmentId: umlId, studentId: userId }
+    { assessmentId: umlId, studentId: userId },
+    {
+    fetchPolicy: "network-only"
+  }
   );
 
   const exercise = data.getUmlExerciseByAssessmentId;
@@ -197,10 +202,9 @@ export default function StudentUMLAssignment() {
   const Editor = (
     <Box sx={{ height: "100%", width: "100%" }}>
       <MainHylimoEditor
-        key={currentAttempt}
+        key={`${currentAttempt}-${attempt.uuid || 'loading'}`}
         initialValue={diagramCode}
         onChange={setDiagramCode}
-        readOnly={attempts[currentAttempt]?.submitted}
 />
     </Box>
   );
