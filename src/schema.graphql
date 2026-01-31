@@ -289,6 +289,7 @@ enum ContentType {
   MEDIA
   QUIZ
   SUBMISSION
+  UML_EXERCISE
 }
 
 type Course {
@@ -1519,7 +1520,6 @@ enum RewardChangeReason {
   CONTENT_DUE_FOR_LEARNING
   CONTENT_DUE_FOR_REPETITION
   CONTENT_REVIEWED
-  UML_EXERCISE
 }
 
 type RewardLogItem {
@@ -1824,8 +1824,10 @@ type UmlExercise {
   courseId: UUID!
   description: String!
   id: UUID!
+  latestSolution(studentId: UUID!): UmlStudentSolution
   requiredPercentage: Float
   showSolution: Boolean!
+  solutionsByStudent(studentId: UUID!): [UmlStudentSolution!]!
   studentSubmissions: [UmlStudentSubmission!]!
   totalPoints: Int!
   tutorSolution: String!
@@ -1833,7 +1835,9 @@ type UmlExercise {
 
 type UmlExerciseMutation {
   assessmentId: UUID!
-  submitStudentSolution(diagram: String!, studentId: UUID!): UmlStudentSolution
+  createUmlSolution(createFromPrevious: Boolean!, studentId: UUID!): UmlStudentSolution!
+  evaluateLatestSolution(assessmentId: UUID!, studentId: UUID!): UmlStudentSolution!
+  saveStudentSolution(diagram: String!, solutionId: UUID, studentId: UUID!, submit: Boolean!): UmlStudentSolution
   updateTutorSolution(tutorSolution: String!): UmlExercise!
 }
 
@@ -1847,7 +1851,7 @@ type UmlStudentSolution {
   diagram: String!
   feedback: UmlFeedback
   id: UUID!
-  submittedAt: DateTime!
+  submittedAt: DateTime
 }
 
 type UmlStudentSubmission {
