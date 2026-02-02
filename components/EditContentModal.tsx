@@ -6,10 +6,16 @@ import { MediaRecordSelector$key } from "@/__generated__/MediaRecordSelector.gra
 import { AllSkillQuery } from "@/app/courses/[courseId]/flashcards/[flashcardSetId]/lecturer";
 import { AddFlashcardSetModal } from "@/components/AddFlashcardSetModal";
 import { AddUMLAssignmentModal } from "@/components/uml-assignment/AddUMLAssignmentModal";
-import { Add, Edit, EditNote } from "@mui/icons-material";
+import {
+  Add,
+  Edit,
+  EditNote,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+} from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
 import {
-  Alert,
+  Box,
   Button,
   Checkbox,
   Dialog,
@@ -23,15 +29,28 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Menu,
+  MenuItem,
+  Stack,
   Switch,
+  Typography,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { graphql, useFragment, useMutation, useQueryLoader } from "react-relay";
 import { AddCodeAssignmentModal } from "./AddCodeAssignmentModal";
 import { MediaContentModal } from "./MediaContentModal";
 import { QuizModal } from "./QuizModal";
 import { SubmissionExerciseModal } from "./SubmissionExerciseModal";
+
+const CONTENT_TYPE_LABELS: Record<string, string> = {
+  FlashcardSetAssessment: "Flashcards",
+  MediaContent: "Media",
+  QuizAssessment: "Quizzes",
+  SubmissionAssessment: "Submissions",
+  UmlAssessment: "UML Assignments",
+  AssignmentAssessment: "Code Assignments",
+};
 
 export function EditContentModal({
   chapterId,
@@ -56,16 +75,21 @@ export function EditContentModal({
   autoOpen?: boolean;
   onClose?: () => void;
 }) {
-  const [openUMLAssignmentModal, setOpenUMLAssignmentModal] = useState(false);
-  const [openMediaModal, setOpenMediaModal] = useState(false);
-  const [openFlashcardModal, setOpenFlashcardModal] = useState(false);
-  const [openAddQuizModal, setOpenAddQuizModal] = useState(false);
-  const [quizModalKey, setQuizModalKey] = useState(0);
-  const [openCodeAssignmentModal, setOpenCodeAssignmentModal] = useState(false);
-  const [openSubmissionExerciseModal, setOpenSubmissionExerciseModal] =
-    useState(false);
+  const router = useRouter();
+  const [openUML, setOpenUML] = useState(false);
+  const [openMedia, setOpenMedia] = useState(false);
+  const [openFlash, setOpenFlash] = useState(false);
+  const [openQuiz, setOpenQuiz] = useState(false);
+  const [openCode, setOpenCode] = useState(false);
+  const [openSub, setOpenSub] = useState(false);
 
   const [openModal, setOpenModal] = useState(autoOpen);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [hideAssigned, setHideAssigned] = useState(false);
+
+  const [collapsedGroups, setCollapsedGroups] = useState<
+    Record<string, boolean>
+  >({});
 
   const [allSkillsQueryRef, loadAllSkillsQuery] =
     useQueryLoader<lecturerAllSkillsQuery>(AllSkillQuery);
@@ -88,26 +112,11 @@ export function EditContentModal({
         }
         contents {
           id
+          __typename
           metadata {
             name
           }
-          ... on FlashcardSetAssessment {
-            __typename
-          }
-          ... on MediaContent {
-            __typename
-          }
-          ... on QuizAssessment {
-            __typename
-          }
-          ... on SubmissionAssessment {
-            __typename
-          }
-            ... on UmlAssessment {
-            __typename
-          }
           ... on AssignmentAssessment {
-            __typename
             assignment {
               assignmentType
             }
@@ -120,8 +129,6 @@ export function EditContentModal({
     `,
     _chapter
   );
-
-  console.log(chapter );
 
   const [optionalRecords, setOptionalRecords] = useState(_optionalRecords);
   const [requiredRecords, setRequiredRecords] = useState(_requiredRecords);
@@ -141,17 +148,58 @@ export function EditContentModal({
       }
     `);
 
-  useEffect(() => {
-    setOptionalRecords(_optionalRecords);
-  }, [_optionalRecords]);
+  const groupedContents = useMemo(() => {
+    const groups: Record<string, any[]> = {};
+    chapter.contents.forEach((content: any) => {
+      const isAssigned =
+        optionalRecords.includes(content.id) ||
+        requiredRecords.includes(content.id);
+      if (hideAssigned && isAssigned) return;
 
-  useEffect(() => {
-    setRequiredRecords(_requiredRecords);
-  }, [_requiredRecords]);
+      const type = content.__typename;
+      if (!groups[type]) groups[type] = [];
+      groups[type].push(content);
+    });
+    return groups;
+  }, [chapter.contents, optionalRecords, requiredRecords, hideAssigned]);
 
-  const router = useRouter();
+  const toggleGroup = (type: string) => {
+    setCollapsedGroups((prev) => ({ ...prev, [type]: !prev[type] }));
+  };
 
-  const [error, setError] = useState<any>(null);
+  const toggleContent = (id: string, isCurrentlySelected: boolean) => {
+    if (isCurrentlySelected) {
+      setOptionalRecords(optionalRecords.filter((x: string) => x !== id));
+      setRequiredRecords(requiredRecords.filter((x: string) => x !== id));
+    } else {
+      setRequiredRecords([...requiredRecords, id]);
+    }
+  };
+
+  const getEditPath = (content: any) => {
+    switch (content.__typename) {
+      case "FlashcardSetAssessment":
+        return `/courses/${courseId}/flashcards/${content.id}`;
+      case "SubmissionAssessment":
+        return `/courses/${courseId}/submissions/${content.id}`;
+      case "MediaContent":
+        return `/courses/${courseId}/media/${content.id}`;
+      case "QuizAssessment":
+        return `/courses/${courseId}/quiz/${content.id}`;
+      case "UmlAssessment":
+        return `/courses/${courseId}/uml/${content.id}`;
+      case "AssignmentAssessment":
+        return content.assignment?.assignmentType === "CODE_ASSIGNMENT"
+          ? `/courses/${courseId}/assignment/${content.id}`
+          : "";
+      default:
+        return "";
+    }
+  };
+
+  const handleActionMenuClick = (event: React.MouseEvent<HTMLButtonElement>) =>
+    setAnchorEl(event.currentTarget);
+  const handleActionMenuClose = () => setAnchorEl(null);
 
   const submit = () => {
     updateStage({
@@ -163,42 +211,8 @@ export function EditContentModal({
           optionalContents: optionalRecords,
         },
       },
-      onError: setError,
-      onCompleted() {
-        setOpenModal(false);
-      },
-      updater(store) {
-        const root = store.get(chapterId);
-        if (!root) return;
-
-        const prevOther = chapter.contentsWithNoSection.map((x) => x.id);
-        const prevSelected = [..._optionalRecords, ..._requiredRecords];
-        const newSelected = [...optionalRecords, ...requiredRecords];
-
-        const toAdd = prevSelected.filter((x) => !newSelected.includes(x));
-        const toRemove = prevOther.filter((x) => newSelected.includes(x));
-
-        const contents = root?.getLinkedRecords("contentsWithNoSection") ?? [];
-        const newContents = [
-          ...contents.filter((x) => !toRemove.includes(x.getDataID())),
-          ...toAdd.map((x) => store.get(x)!),
-        ];
-
-        root.setLinkedRecords(newContents, "contentsWithNoSection");
-      },
+      onCompleted: () => setOpenModal(false),
     });
-  };
-
-  const openAndResetQuizModal = () => {
-    setQuizModalKey((prev) => prev + 1);
-    setOpenAddQuizModal(true);
-  };
-
-  const openCodeAssignment = () => {
-    if (!allSkillsQueryRef) {
-      loadAllSkillsQuery({ courseId });
-    }
-    setOpenCodeAssignmentModal(true);
   };
 
   return (
@@ -208,237 +222,281 @@ export function EditContentModal({
       </Button>
 
       <Dialog
-        maxWidth="lg"
+        maxWidth="md"
+        fullWidth
         open={openModal}
         onClose={() => setOpenModal(false)}
       >
-        <DialogTitle>Select content</DialogTitle>
-        <DialogContent sx={{ paddingX: 0 }}>
-          {error?.source.errors.map((err: any, i: number) => (
-            <Alert
-              key={i}
-              severity="error"
-              sx={{ minWidth: 400, maxWidth: 800, width: "fit-content" }}
-              onClose={() => setError(null)}
-            >
-              {err.message}
-            </Alert>
-          ))}
+        <DialogTitle>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography variant="h5" fontWeight="bold">
+              Select Content
+            </Typography>
+            <FormControlLabel
+              control={
+                <Switch
+                  size="small"
+                  checked={hideAssigned}
+                  onChange={(e) => setHideAssigned(e.target.checked)}
+                />
+              }
+              label={<Typography variant="body1">Hide selected</Typography>}
+            />
+          </Stack>
+        </DialogTitle>
 
-          <List className="min-w-[500px]">
-            {chapter.contents.map((content) => {
-              const optional = optionalRecords.find((x) => x === content.id);
-              const required = requiredRecords.find((x) => x === content.id);
-
-              const partOfOtherStage = chapter.sections
-                .flatMap((s) => s.stages)
-                .filter((s) => s.id !== stageId)
-                .some(
-                  (s) =>
-                    s.optionalContents.some((c) => c.id === content.id) ||
-                    s.requiredContents.some((c) => c.id === content.id)
-                );
-
-              const toggle =
-                optional || required
-                  ? () => {
-                      setOptionalRecords(
-                        optionalRecords.filter((x) => x !== content.id)
-                      );
-                      setRequiredRecords(
-                        requiredRecords.filter((x) => x !== content.id)
-                      );
-                    }
-                  : () => {
-                      setRequiredRecords([...requiredRecords, content.id]);
-                    };
-
-              const checked = optional || required;
-
-              const toggleOptional = optional
-                ? () => {
-                    setOptionalRecords(
-                      optionalRecords.filter((x) => x !== content.id)
-                    );
-                    setRequiredRecords([...requiredRecords, content.id]);
-                  }
-                : () => {
-                    setOptionalRecords([...optionalRecords, content.id]);
-                    setRequiredRecords(
-                      requiredRecords.filter((x) => x !== content.id)
-                    );
-                  };
-
-              return (
-                <ListItem
-                  key={content.id}
-                  secondaryAction={
-                    <div className="mr-2 flex gap-x-3">
-                      {checked && (
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={!!required}
-                              onClick={toggleOptional}
-                            />
-                          }
-                          label={required ? "Required" : "Optional"}
-                        />
-                      )}
-
-                      <IconButton
-                        edge="end"
-                        onClick={() =>
-                          router.push(
-                            content.__typename === "FlashcardSetAssessment"
-                              ? `/courses/${courseId}/flashcards/${content.id}`
-                              : content.__typename === "SubmissionAssessment"
-                              ? `/courses/${courseId}/submissions/${content.id}`
-                              : content.__typename === "MediaContent"
-                              ? `/courses/${courseId}/media/${content.id}`
-                              : content.__typename === "QuizAssessment"
-                              ? `/courses/${courseId}/quiz/${content.id}`
-                              : content.__typename === "AssignmentAssessment" &&
-                                content.assignment?.assignmentType ===
-                                  "CODE_ASSIGNMENT"
-                              ? `/courses/${courseId}/assignment/${content.id}`
-                              : ""
-                          )
-                        }
-                      >
-                        <Edit fontSize="small" />
-                      </IconButton>
-                    </div>
-                  }
-                  disablePadding
+        <DialogContent dividers sx={{ p: 0 }}>
+          {Object.entries(groupedContents).map(([type, items]) => {
+            const isCollapsed = !!collapsedGroups[type];
+            return (
+              <Box
+                key={type}
+                sx={{ borderBottom: "1px solid", borderColor: "divider" }}
+              >
+                <Box
+                  onClick={() => toggleGroup(type)}
+                  sx={{
+                    py: 1.5,
+                    px: 2,
+                    display: "flex",
+                    alignItems: "center",
+                    cursor: "pointer",
+                    bgcolor: "action.hover",
+                    "&:hover": { bgcolor: "action.selected" },
+                  }}
                 >
-                  <ListItemButton
-                    onClick={toggle}
-                    disabled={partOfOtherStage}
-                    className="!pl-6"
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      flexGrow: 1,
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                    }}
                   >
-                    <ListItemIcon>
-                      <Checkbox
-                        edge="start"
-                        checked={!!checked}
-                        tabIndex={-1}
-                        disableRipple
-                      />
-                    </ListItemIcon>
+                    {CONTENT_TYPE_LABELS[type] || type} ({items.length})
+                  </Typography>
+                  {isCollapsed ? <KeyboardArrowDown /> : <KeyboardArrowUp />}
+                </Box>
 
-                    <ListItemText
-                      primary={content.metadata.name}
-                      secondary={
-                        partOfOtherStage ? "Already part of another stage" : ""
-                      }
-                    />
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
-          </List>
+                {!isCollapsed && (
+                  <List disablePadding>
+                    {items.map((content) => {
+                      const optional = optionalRecords.includes(content.id);
+                      const required = requiredRecords.includes(content.id);
+                      const isSelected = optional || required;
+
+                      return (
+                        <ListItem
+                          key={content.id}
+                          divider
+                          secondaryAction={
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                            >
+                              {isSelected && (
+                                <FormControlLabel
+                                  control={
+                                    <Switch
+                                      size="small"
+                                      checked={required}
+                                      onChange={() => {
+                                        if (required) {
+                                          setRequiredRecords(
+                                            requiredRecords.filter(
+                                              (x: string) => x !== content.id
+                                            )
+                                          );
+                                          setOptionalRecords([
+                                            ...optionalRecords,
+                                            content.id,
+                                          ]);
+                                        } else {
+                                          setOptionalRecords(
+                                            optionalRecords.filter(
+                                              (x: string) => x !== content.id
+                                            )
+                                          );
+                                          setRequiredRecords([
+                                            ...requiredRecords,
+                                            content.id,
+                                          ]);
+                                        }
+                                      }}
+                                    />
+                                  }
+                                  label={
+                                    <Typography variant="body2">
+                                      {required ? "Required" : "Optional"}
+                                    </Typography>
+                                  }
+                                />
+                              )}
+                              <IconButton
+                                onClick={() =>
+                                  router.push(getEditPath(content))
+                                }
+                              >
+                                <Edit fontSize="small" />
+                              </IconButton>
+                            </Stack>
+                          }
+                        >
+                          <ListItemButton
+                            onClick={() =>
+                              toggleContent(content.id, isSelected)
+                            }
+                            sx={{ py: 0.5 }}
+                          >
+                            <ListItemIcon>
+                              <Checkbox
+                                edge="start"
+                                checked={isSelected}
+                                disableRipple
+                              />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={content.metadata.name}
+                              primaryTypographyProps={{ variant: "body1" }}
+                            />
+                          </ListItemButton>
+                        </ListItem>
+                      );
+                    })}
+                  </List>
+                )}
+              </Box>
+            );
+          })}
         </DialogContent>
 
-        <DialogContent>
-          {/* add flashcard button */}
-          <Button
-            onClick={() => setOpenFlashcardModal(true)}
-            variant="text"
-            className="mt-4"
-            startIcon={<Add />}
-          >
-            Add Flashcards
-          </Button>
-          <Button
-            onClick={() => setOpenMediaModal(true)}
-            variant="text"
-            className="mt-4"
-            startIcon={<Add />}
-          >
-            Add Media
-          </Button>
-          <Button
-            onClick={openAndResetQuizModal}
-            variant="text"
-            className="mt-4"
-            startIcon={<Add />}
-          >
-            Add Quiz
-          </Button>
-          <Button
-            onClick={openCodeAssignment}
-            variant="text"
-            className="mt-4"
-            startIcon={<Add />}
-          >
-            Add Code Assignment
-          </Button>
-          <Button
-            onClick={() => setOpenSubmissionExerciseModal(true)}
-            variant="text"
-            className="mt-4"
-            startIcon={<Add />}
-          >
-            Add Submission Exercise
-          </Button>
-          <Button
-            onClick={() => setOpenUMLAssignmentModal(true)}
-            variant="text"
-            className="mt-4"
-            startIcon={<Add />}
-          >
-            Add UML Assignment
-          </Button>
-        </DialogContent>
-        <DialogActions>
-          <LoadingButton loading={loading} onClick={submit}>
-            Ok
-          </LoadingButton>
+        <DialogActions sx={{ justifyContent: "space-between", p: 2 }}>
+          <Box>
+            <Button
+              variant="outlined"
+              startIcon={<Add />}
+              endIcon={<KeyboardArrowDown />}
+              onClick={handleActionMenuClick}
+            >
+              Create New...
+            </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleActionMenuClose}
+            >
+              <MenuItem
+                onClick={() => {
+                  setOpenFlash(true);
+                  handleActionMenuClose();
+                }}
+              >
+                Flashcards
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  setOpenMedia(true);
+                  handleActionMenuClose();
+                }}
+              >
+                Media
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  setOpenQuiz(true);
+                  handleActionMenuClose();
+                }}
+              >
+                Quiz
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  if (!allSkillsQueryRef) loadAllSkillsQuery({ courseId });
+                  setOpenCode(true);
+                  handleActionMenuClose();
+                }}
+              >
+                Code Assignment
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  setOpenSub(true);
+                  handleActionMenuClose();
+                }}
+              >
+                Submission Exercise
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  setOpenUML(true);
+                  handleActionMenuClose();
+                }}
+              >
+                UML Assignment
+              </MenuItem>
+            </Menu>
+          </Box>
+          <Stack direction="row" spacing={1}>
+            <Button onClick={() => setOpenModal(false)} color="inherit">
+              Cancel
+            </Button>
+            <LoadingButton
+              loading={loading}
+              variant="contained"
+              onClick={submit}
+            >
+              Save Changes
+            </LoadingButton>
+          </Stack>
         </DialogActions>
       </Dialog>
 
+      {/* Modals for creation */}
       <MediaContentModal
         chapterId={chapterId}
-        isOpen={openMediaModal}
-        onClose={() => setOpenMediaModal(false)}
+        isOpen={openMedia}
+        onClose={() => setOpenMedia(false)}
         _mediaRecords={_mediaRecords}
       />
       <QuizModal
-        key={quizModalKey}
-        isOpen={openAddQuizModal}
-        onClose={() => setOpenAddQuizModal(false)}
+        isOpen={openQuiz}
+        onClose={() => setOpenQuiz(false)}
         chapterId={chapterId}
         _existingQuiz={null}
       />
-      {openFlashcardModal && (
+      {openFlash && (
         <AddFlashcardSetModal
-          onClose={() => setOpenFlashcardModal(false)}
+          onClose={() => setOpenFlash(false)}
           _chapter={chapter}
         />
       )}
-      {openCodeAssignmentModal && allSkillsQueryRef && (
+      {openCode && allSkillsQueryRef && (
         <AddCodeAssignmentModal
-          onClose={() => setOpenCodeAssignmentModal(false)}
+          onClose={() => setOpenCode(false)}
           chapterId={chapterId}
           courseId={courseId}
           allSkillsQueryRef={allSkillsQueryRef}
         />
       )}
       <SubmissionExerciseModal
-        isOpen={openSubmissionExerciseModal}
-        onClose={() => setOpenSubmissionExerciseModal(false)}
+        isOpen={openSub}
+        onClose={() => setOpenSub(false)}
         chapterId={chapterId}
         _existingSubmission={null}
         tasks={[]}
       />
-      {openUMLAssignmentModal && (
+      {openUML && (
         <AddUMLAssignmentModal
           chapterId={chapterId}
-          open={openUMLAssignmentModal}
-          onClose={() => setOpenUMLAssignmentModal(false)}
+          open={openUML}
+          onClose={() => setOpenUML(false)}
         />
       )}
-
     </>
   );
 }
