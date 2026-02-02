@@ -1836,7 +1836,7 @@ type UmlExercise {
 type UmlExerciseMutation {
   assessmentId: UUID!
   createUmlSolution(createFromPrevious: Boolean!, studentId: UUID!): UmlStudentSolution!
-  evaluateLatestSolution(assessmentId: UUID!, studentId: UUID!): UmlStudentSolution!
+  evaluateLatestSolution(semanticModel: String!, studentId: UUID!): UmlStudentSolution!
   saveStudentSolution(diagram: String!, solutionId: UUID, studentId: UUID!, submit: Boolean!): UmlStudentSolution
   updateTutorSolution(tutorSolution: String!): UmlExercise!
 }

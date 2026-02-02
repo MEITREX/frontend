@@ -80,12 +80,14 @@ export const umlApiUpdateTutorSolutionMutation = graphql`
 
 export const umlApiGetStudentSolutionsQuery = graphql`
   query UmlApiGetStudentSolutionsQuery(
-    $assessmentId: UUID!,
+    $assessmentId: UUID!
     $studentId: UUID!
   ) {
     getUmlExerciseByAssessmentId(assessmentId: $assessmentId) {
       id
       description
+      totalPoints
+      requiredPercentage
       solutionsByStudent(studentId: $studentId) {
         id
         diagram
@@ -94,6 +96,70 @@ export const umlApiGetStudentSolutionsQuery = graphql`
           id
           comment
           points
+        }
+      }
+    }
+  }
+`;
+
+export const umlApiEvaluateLatestSolutionMutation = graphql`
+  mutation UmlApiEvaluateLatestSolutionMutation(
+    $assessmentId: UUID!
+    $studentId: UUID!
+    $semanticModel: String!
+  ) {
+    mutateUmlExercise(assessmentId: $assessmentId) {
+      evaluateLatestSolution(
+        studentId: $studentId
+        semanticModel: $semanticModel
+      ) {
+        feedback {
+          comment
+          points
+        }
+      }
+    }
+  }
+`;
+
+export const umlApiCreateUmlSolutionMutation = graphql`
+  mutation UmlApiCreateUmlSolutionMutation(
+    $assessmentId: UUID!
+    $studentId: UUID!
+    $createFromPrevious: Boolean!
+  ) {
+    mutateUmlExercise(assessmentId: $assessmentId) {
+      createUmlSolution(
+        studentId: $studentId
+        createFromPrevious: $createFromPrevious
+      ) {
+        id
+        diagram
+        submittedAt
+      }
+    }
+  }
+`;
+
+export const umlApiGetLecturerExerciseOverviewQuery = graphql`
+  query UmlApiGetLecturerExerciseOverviewQuery($assessmentId: UUID!) {
+    getUmlExerciseByAssessmentId(assessmentId: $assessmentId) {
+      id
+      description
+      showSolution
+      tutorSolution
+      totalPoints
+      requiredPercentage
+      studentSubmissions {
+        studentId
+        solutions {
+          id
+          submittedAt
+          diagram
+          feedback {
+            points
+            comment
+          }
         }
       }
     }
