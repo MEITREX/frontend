@@ -64,7 +64,7 @@ export default function StudentUMLAssignment() {
   useEffect(() => {
     if (!exercise?.solutionsByStudent) return;
 
-    const mapped = exercise.solutionsByStudent.map((sol: any, idx: number) => ({
+    let mapped = exercise.solutionsByStudent.map((sol: any, idx: number) => ({
       id: idx + 1,
       uuid: sol.id,
       date: sol.submittedAt || new Date().toISOString(),
@@ -73,6 +73,19 @@ export default function StudentUMLAssignment() {
       feedback: sol.feedback?.comment,
       diagram: sol.diagram ?? defaultValue,
     }));
+
+
+    if (mapped.length === 0) {
+      mapped = [{
+        id: 1,
+        uuid: null,
+        date: new Date().toISOString(),
+        submitted: false,
+        score: undefined,
+        feedback: undefined,
+        diagram: defaultValue,
+      }];
+    }
 
     setAttempts(mapped);
 
