@@ -4,7 +4,6 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import {
-  alpha,
   Box,
   Button,
   Chip,
@@ -122,7 +121,6 @@ export default function StudentRow({ sub, exercise }: StudentRowProps) {
             <Box
               sx={{
                 margin: 2,
-                bgcolor: alpha(theme.palette.action.hover, 0.4),
                 borderRadius: 2,
                 p: 3,
               }}
