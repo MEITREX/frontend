@@ -42,6 +42,9 @@ export default function StudentUMLAssignment() {
   const [attempts, setAttempts] = useState<any[]>([]);
   const [currentAttempt, setCurrentAttempt] = useState(0);
   const [diagramCode, setDiagramCode] = useState<string>(defaultValue);
+  const [hasLoadedInitially, setHasLoadedInitially] = useState(false);
+
+
 
   const [saveSolution, isSaving] = useMutation(
     umlApiSubmitStudentSolutionMutation
@@ -89,12 +92,19 @@ export default function StudentUMLAssignment() {
 
     setAttempts(mapped);
 
-    const targetIdx = mapped.findIndex((a: any) => !a.submitted);
-    const finalIdx = targetIdx === -1 ? mapped.length - 1 : targetIdx;
+    if (!hasLoadedInitially && mapped.length > 0) {
+      const targetIdx = mapped.findIndex((a: any) => !a.submitted);
+      const finalIdx = targetIdx === -1 ? mapped.length - 1 : targetIdx;
 
-    setCurrentAttempt(finalIdx);
-    setDiagramCode(mapped[finalIdx]?.diagram ?? defaultValue);
-  }, [exercise]);
+      setCurrentAttempt(finalIdx);
+      setDiagramCode(mapped[finalIdx]?.diagram ?? defaultValue);
+      setHasLoadedInitially(true);
+    }
+  }, [exercise, hasLoadedInitially]);
+
+  useEffect(() => {
+
+  }, [])
 
   const attempt = attempts[currentAttempt] || {
     submitted: false,
@@ -117,44 +127,36 @@ export default function StudentUMLAssignment() {
     );
   };
 
-  const onHandleNavigation = (dir: "prev" | "next") => {
-    const nextIdx =
-      dir === "prev"
-        ? currentAttempt > 0
-          ? currentAttempt - 1
-          : attempts.length - 1
-        : currentAttempt < attempts.length - 1
-        ? currentAttempt + 1
-        : 0;
-
-    setCurrentAttempt(nextIdx);
-    setDiagramCode(attempts[nextIdx].diagram);
-  };
-
-  const onHandleAction = (type: "save" | "submit") => {
+  const onHandleAction = (type: "save" | "submit", codeToSave = diagramCode) => {
     const isSubmit = type === "submit";
+
+    if (!isSubmit && codeToSave === attempts[currentAttempt]?.diagram) {
+      return;
+    }
+
     setIsSubmittingMode(isSubmit);
 
-    saveSolution({
-      variables: {
-        assessmentId: umlId,
-        diagram: diagramCode,
-        solutionId: attempt.uuid,
-        studentId: userId,
-        submit: isSubmit,
-      },
-      onCompleted: (res: any) => {
-        const saved = res.mutateUmlExercise?.saveStudentSolution;
+    const performSave = (idToSave: string) => {
+      saveSolution({
+        variables: {
+          assessmentId: umlId,
+          diagram: codeToSave,
+          solutionId: idToSave,
+          studentId: userId,
+          submit: isSubmit,
+        },
+        onCompleted: (res: any) => {
+          const saved = res.mutateUmlExercise?.saveStudentSolution;
 
-        if (isSubmit) {
-          evaluate({
-            variables: {
-              assessmentId: umlId,
-              studentId: userId,
+          if (isSubmit) {
+            evaluate({
+              variables: {
+                assessmentId: umlId,
+                 studentId: userId,
               semanticModel: "TemporalModelPlaceholder",
             },
-            onCompleted: (evalRes: any) => {
-              const result = evalRes.mutateUmlExercise?.evaluateLatestSolution;
+             onCompleted: (evalRes: any) => {
+                const result = evalRes.mutateUmlExercise?.evaluateLatestSolution;
               updateAttemptInState(
                 saved.id,
                 saved.diagram,
@@ -162,15 +164,41 @@ export default function StudentUMLAssignment() {
                 result.feedback?.comment,
                 result.feedback?.points
               );
-              setSnackbar({ open: true, message: "Submitted successfully!" });
-            },
-          });
-        } else {
-          updateAttemptInState(saved.id, saved.diagram, false);
-          setSnackbar({ open: true, message: "Saved successfully!" });
-        }
-      },
-    });
+                setSnackbar({ open: true, message: "Submitted successfully!" });
+              },
+            });
+          } else {
+            updateAttemptInState(saved.id, saved.diagram, false);
+            setSnackbar({ open: true, message: "Saved successfully!" });
+          }
+        },
+      });
+    };
+
+    if (!attempt.uuid) {
+      createSolution({
+        variables: { assessmentId: umlId, studentId: userId, createFromPrevious: false },
+        onCompleted: (res: any) => {
+          const newSol = res.mutateUmlExercise.createUmlSolution;
+          performSave(newSol.id);
+        },
+      });
+    } else {
+      performSave(attempt.uuid);
+    }
+  };
+
+  const onHandleNavigation = (dir: "prev" | "next") => {
+    if (diagramCode !== attempt.diagram && !attempt.submitted) {
+      onHandleAction("save", diagramCode);
+    }
+
+    const nextIdx = dir === "prev"
+        ? currentAttempt > 0 ? currentAttempt - 1 : attempts.length - 1
+        : currentAttempt < attempts.length - 1 ? currentAttempt + 1 : 0;
+
+    setCurrentAttempt(nextIdx);
+    setDiagramCode(attempts[nextIdx].diagram);
   };
 
   const onHandleCreate = (fromPrevious: boolean) => {
