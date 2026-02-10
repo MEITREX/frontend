@@ -13,6 +13,7 @@ import MainHylimoEditor from "@/components/hylimo/MainHylimoEditor";
 import AssignmentResult from "@/components/uml-assignment/AssignmentResult";
 import AttemptSelectionHeader from "@/components/uml-assignment/AttemptSelectionHeader";
 import {
+  Alert,
   Box,
   Container,
   Paper,
@@ -43,8 +44,6 @@ export default function StudentUMLAssignment() {
   const [currentAttempt, setCurrentAttempt] = useState(0);
   const [diagramCode, setDiagramCode] = useState<string>(defaultValue);
   const [hasLoadedInitially, setHasLoadedInitially] = useState(false);
-
-
 
   const [saveSolution, isSaving] = useMutation(
     umlApiSubmitStudentSolutionMutation
@@ -77,17 +76,18 @@ export default function StudentUMLAssignment() {
       diagram: sol.diagram ?? defaultValue,
     }));
 
-
     if (mapped.length === 0) {
-      mapped = [{
-        id: 1,
-        uuid: null,
-        date: new Date().toISOString(),
-        submitted: false,
-        score: undefined,
-        feedback: undefined,
-        diagram: defaultValue,
-      }];
+      mapped = [
+        {
+          id: 1,
+          uuid: null,
+          date: new Date().toISOString(),
+          submitted: false,
+          score: undefined,
+          feedback: undefined,
+          diagram: defaultValue,
+        },
+      ];
     }
 
     setAttempts(mapped);
@@ -102,9 +102,7 @@ export default function StudentUMLAssignment() {
     }
   }, [exercise, hasLoadedInitially]);
 
-  useEffect(() => {
-
-  }, [])
+  useEffect(() => {}, []);
 
   const attempt = attempts[currentAttempt] || {
     submitted: false,
@@ -127,7 +125,10 @@ export default function StudentUMLAssignment() {
     );
   };
 
-  const onHandleAction = (type: "save" | "submit", codeToSave = diagramCode) => {
+  const onHandleAction = (
+    type: "save" | "submit",
+    codeToSave = diagramCode
+  ) => {
     const isSubmit = type === "submit";
 
     if (!isSubmit && codeToSave === attempts[currentAttempt]?.diagram) {
@@ -152,18 +153,19 @@ export default function StudentUMLAssignment() {
             evaluate({
               variables: {
                 assessmentId: umlId,
-                 studentId: userId,
-              semanticModel: "TemporalModelPlaceholder",
-            },
-             onCompleted: (evalRes: any) => {
-                const result = evalRes.mutateUmlExercise?.evaluateLatestSolution;
-              updateAttemptInState(
-                saved.id,
-                saved.diagram,
-                true,
-                result.feedback?.comment,
-                result.feedback?.points
-              );
+                studentId: userId,
+                semanticModel: "TemporalModelPlaceholder",
+              },
+              onCompleted: (evalRes: any) => {
+                const result =
+                  evalRes.mutateUmlExercise?.evaluateLatestSolution;
+                updateAttemptInState(
+                  saved.id,
+                  saved.diagram,
+                  true,
+                  result.feedback?.comment,
+                  result.feedback?.points
+                );
                 setSnackbar({ open: true, message: "Submitted successfully!" });
               },
             });
@@ -177,7 +179,11 @@ export default function StudentUMLAssignment() {
 
     if (!attempt.uuid) {
       createSolution({
-        variables: { assessmentId: umlId, studentId: userId, createFromPrevious: false },
+        variables: {
+          assessmentId: umlId,
+          studentId: userId,
+          createFromPrevious: false,
+        },
         onCompleted: (res: any) => {
           const newSol = res.mutateUmlExercise.createUmlSolution;
           performSave(newSol.id);
@@ -193,9 +199,14 @@ export default function StudentUMLAssignment() {
       onHandleAction("save", diagramCode);
     }
 
-    const nextIdx = dir === "prev"
-        ? currentAttempt > 0 ? currentAttempt - 1 : attempts.length - 1
-        : currentAttempt < attempts.length - 1 ? currentAttempt + 1 : 0;
+    const nextIdx =
+      dir === "prev"
+        ? currentAttempt > 0
+          ? currentAttempt - 1
+          : attempts.length - 1
+        : currentAttempt < attempts.length - 1
+        ? currentAttempt + 1
+        : 0;
 
     setCurrentAttempt(nextIdx);
     setDiagramCode(attempts[nextIdx].diagram);
@@ -271,6 +282,25 @@ export default function StudentUMLAssignment() {
             />
           )}
 
+          {attempt.submitted && (
+            <Alert
+              severity="info"
+              variant="outlined"
+              sx={{
+                width: "100%",
+                borderRadius: 2,
+                borderWidth: "1px",
+                backgroundColor: "info.lighter",
+                "& .MuiAlert-message": {
+                  fontWeight: 500,
+                },
+              }}
+            >
+              <strong>Read-Only:</strong> This attempt has already been
+              submitted and can no longer be edited.
+            </Alert>
+          )}
+
           {/* Editor Area */}
           <Box
             sx={{
@@ -285,6 +315,7 @@ export default function StudentUMLAssignment() {
               key={`${currentAttempt}-${attempt.uuid}`}
               initialValue={diagramCode}
               onChange={setDiagramCode}
+              readOnly={attempt?.submitted}
             />
           </Box>
         </Stack>

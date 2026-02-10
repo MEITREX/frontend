@@ -8,7 +8,7 @@ import { EditorApp, type EditorAppConfig } from "monaco-languageclient/editorApp
 import { useEffect, useRef } from "react";
 import Split from "react-split";
 import type { ActionHandlerRegistry, IActionDispatcher } from "sprotty";
-import { RequestModelAction } from "sprotty-protocol";
+import { FitToScreenAction, RequestModelAction } from "sprotty-protocol";
 import type { Disposable } from "vscode-languageserver-protocol";
 
 import "@hylimo/diagram-ui/css/hylimo.css";
@@ -32,44 +32,34 @@ export default function HylimoEditor({
   onChange (value: string): void;
   readOnly?: boolean;
 }) {
-   const editorElement = useRef<HTMLDivElement | null>(null);
-  const sprottyWrapper = useRef<HTMLDivElement | null>(null);
-
+  const editorElement = useRef<HTMLDivElement | null>(null);
   const disposablesRef = useRef<(Disposable)[]>([]);
   const languageClientRef = useRef<Promise<LanguageClientProxy> | null>(null);
-
   const editorStartedRef = useRef(false);
 
   useEffect(() => {
     (async () => {
-
-      if (!editorElement.current) return;
-
-      if (editorStartedRef.current) return;
+      if (!editorElement.current || editorStartedRef.current) return;
       editorStartedRef.current = true;
 
       if (!languageClientRef.current) {
         languageClientRef.current = getLanguageClient();
       }
-
       const currentLanguageClient = await languageClientRef.current;
 
       const editorAppConfig: EditorAppConfig = {
         editorOptions: {
           language,
-          readOnly: readOnly,
+          readOnly,
           domReadOnly: readOnly,
           fixedOverflowWidgets: true,
-          hover: { above: false },
-          suggest: { snippetsPreventQuickSuggestions: false },
-          scrollbar: { alwaysConsumeMouseWheel: false },
           glyphMargin: false,
           editContext: false
         },
         codeResources: {
           modified: {
             text: initialValue,
-            uri: `diagram.hyl`,
+            uri: `file:///diagram.hyl`,
             enforceLanguageId: language
           }
         },
@@ -81,21 +71,14 @@ export default function HylimoEditor({
       await editorApp.start(editorElement.current!);
 
       const monacoEditor = editorApp.getEditor()!;
-
       const changeDisposable = monacoEditor.onDidChangeModelContent(() => {
-        if (!readOnly) { // <--- CHANGED (Prevent logic execution if readOnly)
-          const currentText = monacoEditor.getValue();
-          onChange(currentText);
-        }
+        if (!readOnly) onChange(monacoEditor.getValue());
       });
-
-      monacoEditor.layout();
+      disposablesRef.current.push(changeDisposable);
 
       const uri = monacoEditor.getModel()?.uri?.toString();
+      if (!uri) throw new Error("Missing editor or model");
 
-      if (uri == undefined) {
-        throw new Error("Missing editor or model");
-      }
       await currentLanguageClient.sendNotification(DiagramOpenNotification.type, {
         clientId: uri,
         diagramUri: uri
@@ -103,17 +86,24 @@ export default function HylimoEditor({
 
       class LspDiagramServerProxy extends DiagramServerProxy {
         override clientId = uri!;
-
         override initialize(registry: ActionHandlerRegistry): void {
           super.initialize(registry);
-
           currentLanguageClient.onNotification(DiagramActionNotification.type, (msg: any) => {
             if (msg.clientId === this.clientId) this.messageReceived(msg);
           });
         }
         protected override sendMessage(msg: any): void {
-          // Optional: Prevent diagram actions if readOnly
-          if (!readOnly) { // <--- CHANGED
+          const actionKind = msg.action?.kind || msg.kind;
+          const essentialActions = [
+            'requestModel',
+            'computedBounds',
+            'fitToScreen',
+            'center',
+            'setViewport'
+          ];
+
+          if (!readOnly || essentialActions.includes(actionKind)) {
+            msg.clientId = this.clientId;
             currentLanguageClient.sendNotification(DiagramActionNotification.type, msg);
           }
         }
@@ -128,47 +118,45 @@ export default function HylimoEditor({
       container.bind(TYPES.ModelSource).toService(LspDiagramServerProxy);
       const currentActionDispatcher = container.get<IActionDispatcher>(TYPES.IActionDispatcher);
 
-      currentActionDispatcher.request(RequestModelAction.create()).then((response) => {
-        currentActionDispatcher.dispatch(response);
-      });
+    currentActionDispatcher.request(RequestModelAction.create()).then((response) => {
+      currentActionDispatcher.dispatch(response);
 
+      setTimeout(() => {
+        currentActionDispatcher.dispatch(FitToScreenAction.create([]));
+        monacoEditor.layout();
+      }, 200);
+  });
     })();
-    return () => {
-      disposablesRef.current.forEach(d => {
-        try {
-          d.dispose?.();
-        } catch {}
-      });
-      editorStartedRef.current = false;
-      }
 
+    return () => {
+      disposablesRef.current.forEach(d => { try { d.dispose?.(); } catch {} });
+      disposablesRef.current = [];
+      editorStartedRef.current = false;
+    };
   }, [readOnly]);
+
   return (
     <Box
       sx={{
-        height: "100%",
-        width: "100%",
-        overflow: "hidden",
-        opacity: readOnly ? 0.8 : 1,
-        pointerEvents: "auto",
+        height: "100%", width: "100%", overflow: "hidden",
+        opacity: readOnly ? 0.95 : 1,
         "& .split": { display: "flex", height: "100%" },
-        "& .gutter": {
-          backgroundColor: "action.hover",
-          width: "10px !important",
-          cursor: "col-resize",
+        "& .gutter": { backgroundColor: "action.hover", width: "10px !important", cursor: "col-resize" },
+        "& .toolbox-wrapper, & .toolbox-root": {
+          display: readOnly ? "none !important" : "block"
         },
-        "& .gutter:hover": { backgroundColor: "primary.main" },
+        "& .selectable": {
+            pointerEvents: readOnly ? "none !important" : "all"
+        },
+        "& .sprotty-graph": {
+            pointerEvents: "all"
+        }
       }}
     >
       <Split className="split" sizes={[50, 50]} minSize={100} gutterSize={10}>
-        <div>
-          <div ref={editorElement} className="editor-element" style={{ width: "100%", height: "100%" }} />
-        </div>
-
-        <div style={{ height: "100%", width: "100%" }}>
-          <div ref={sprottyWrapper} className="sprotty-wrapper">
-            <div id="sprotty-container-1"></div>
-          </div>
+        <div ref={editorElement} style={{ width: "100%", height: "100%" }} />
+        <div className="sprotty-wrapper" style={{ height: "100%", width: "100%" }}>
+           <div id="sprotty-container-1"></div>
         </div>
       </Split>
     </Box>
