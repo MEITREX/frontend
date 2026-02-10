@@ -10,6 +10,7 @@ import {
   umlApiSubmitStudentSolutionMutation,
 } from "@/components/hylimo/api/UmlApi";
 import MainHylimoEditor from "@/components/hylimo/MainHylimoEditor";
+import { getSemanticModel } from "@/components/hylimo/semanticModelGenerator";
 import AssignmentResult from "@/components/uml-assignment/AssignmentResult";
 import AttemptSelectionHeader from "@/components/uml-assignment/AttemptSelectionHeader";
 import {
@@ -137,7 +138,10 @@ export default function StudentUMLAssignment() {
 
     setIsSubmittingMode(isSubmit);
 
-    const performSave = (idToSave: string) => {
+    const performSave = async (idToSave: string) => {
+      const semanticModelResult = await getSemanticModel(codeToSave);
+      const semanticModelJson = JSON.stringify(semanticModelResult);
+      console.log(semanticModelJson);
       saveSolution({
         variables: {
           assessmentId: umlId,
@@ -149,12 +153,14 @@ export default function StudentUMLAssignment() {
         onCompleted: (res: any) => {
           const saved = res.mutateUmlExercise?.saveStudentSolution;
 
+
           if (isSubmit) {
+
             evaluate({
               variables: {
                 assessmentId: umlId,
                 studentId: userId,
-                semanticModel: "TemporalModelPlaceholder",
+                semanticModel: semanticModelJson,
               },
               onCompleted: (evalRes: any) => {
                 const result =
