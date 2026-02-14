@@ -321,10 +321,10 @@ export default function StudentUMLAssignment() {
             }}
           >
             <MainHylimoEditor
-              key={`${currentAttempt}-${attempt.uuid}`}
               initialValue={diagramCode}
               onChange={setDiagramCode}
               readOnly={attempt?.submitted}
+              key={`student-editor`}
             />
           </Box>
         </Stack>
