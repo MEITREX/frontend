@@ -2,7 +2,7 @@
 
 import { language, LanguageClientProxy, setupLanguageClient } from "@/components/hylimo/lspPlugin";
 import { DiagramActionNotification, DiagramOpenNotification } from "@hylimo/diagram-protocol";
-import { createContainer, DiagramServerProxy, TYPES } from "@hylimo/diagram-ui";
+import { createContainer, DiagramServerProxy, ResetCanvasBoundsAction, TYPES } from "@hylimo/diagram-ui";
 import { Box } from "@mui/material";
 import { EditorApp, type EditorAppConfig } from "monaco-languageclient/editorApp";
 import { useEffect, useRef } from "react";
@@ -33,11 +33,14 @@ export default function HylimoEditor({
   readOnly?: boolean;
 }) {
   const editorElement = useRef<HTMLDivElement | null>(null);
+  const sprottyWrapperRef = useRef<HTMLDivElement | null>(null); // Ref für den ResizeObserver
   const disposablesRef = useRef<(Disposable)[]>([]);
   const languageClientRef = useRef<Promise<LanguageClientProxy> | null>(null);
   const editorStartedRef = useRef(false);
 
   useEffect(() => {
+    let resizeObserver: ResizeObserver | null = null;
+
     (async () => {
       if (!editorElement.current || editorStartedRef.current) return;
       editorStartedRef.current = true;
@@ -118,20 +121,32 @@ export default function HylimoEditor({
       container.bind(TYPES.ModelSource).toService(LspDiagramServerProxy);
       const currentActionDispatcher = container.get<IActionDispatcher>(TYPES.IActionDispatcher);
 
-    currentActionDispatcher.request(RequestModelAction.create()).then((response) => {
-      currentActionDispatcher.dispatch(response);
-
-      setTimeout(() => {
-        currentActionDispatcher.dispatch(FitToScreenAction.create([]));
+      resizeObserver = new ResizeObserver(() => {
         monacoEditor.layout();
-      }, 200);
-  });
+
+        currentActionDispatcher.dispatch({
+            kind: ResetCanvasBoundsAction.KIND
+        } as ResetCanvasBoundsAction);
+      });
+
+      if (editorElement.current) resizeObserver.observe(editorElement.current);
+      if (sprottyWrapperRef.current) resizeObserver.observe(sprottyWrapperRef.current);
+
+      currentActionDispatcher.request(RequestModelAction.create()).then((response) => {
+        currentActionDispatcher.dispatch(response);
+
+        setTimeout(() => {
+          currentActionDispatcher.dispatch(FitToScreenAction.create([]));
+          monacoEditor.layout();
+        }, 200);
+      });
     })();
 
     return () => {
       disposablesRef.current.forEach(d => { try { d.dispose?.(); } catch {} });
       disposablesRef.current = [];
       editorStartedRef.current = false;
+      if (resizeObserver) resizeObserver.disconnect();
     };
   }, [readOnly]);
 
@@ -155,7 +170,7 @@ export default function HylimoEditor({
     >
       <Split className="split" sizes={[50, 50]} minSize={100} gutterSize={10}>
         <div ref={editorElement} style={{ width: "100%", height: "100%" }} />
-        <div className="sprotty-wrapper" style={{ height: "100%", width: "100%" }}>
+        <div className="sprotty-wrapper" ref={sprottyWrapperRef} style={{ height: "100%", width: "100%" }}>
            <div id="sprotty-container-1"></div>
         </div>
       </Split>
