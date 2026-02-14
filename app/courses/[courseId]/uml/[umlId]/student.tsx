@@ -139,9 +139,13 @@ export default function StudentUMLAssignment() {
     setIsSubmittingMode(isSubmit);
 
     const performSave = async (idToSave: string) => {
-      const semanticModelResult = await getSemanticModel(codeToSave);
-      const semanticModelJson = JSON.stringify(semanticModelResult);
-      console.log(semanticModelJson);
+
+      let semanticModelJson: string | null = null
+      if(isSubmit) {
+        const semanticModelResult = await getSemanticModel(codeToSave);
+        semanticModelJson = JSON.stringify(semanticModelResult);
+      }
+
       saveSolution({
         variables: {
           assessmentId: umlId,
@@ -155,7 +159,6 @@ export default function StudentUMLAssignment() {
 
 
           if (isSubmit) {
-
             evaluate({
               variables: {
                 assessmentId: umlId,
