@@ -28,6 +28,7 @@ import { useParams } from "next/navigation";
 import * as React from "react";
 import { useMutation } from "react-relay";
 import TextEditor from "../forum/richTextEditor/TextEditor";
+import { getSemanticModel } from "../hylimo/semanticModelGenerator";
 
 const defaultValue = `classDiagram {
     class("HelloWorld") {
@@ -38,22 +39,20 @@ const defaultValue = `classDiagram {
 }`;
 
 export function AddUMLAssignmentModal({
-                                        open,
-                                        chapterId,
-                                        onClose,
-                                      }: {
+  open,
+  chapterId,
+  onClose,
+}: {
   open: boolean;
   chapterId: string;
   onClose: () => void;
 }) {
-
   const params = useParams();
   const courseId = params.courseId as string;
 
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [diagramCode, setDiagramCode] = React.useState("");
-
 
   const [fullscreen, setFullscreen] = React.useState(false);
   const [showInfo, setShowInfo] = React.useState(false);
@@ -65,11 +64,12 @@ export function AddUMLAssignmentModal({
     tagNames: [] as readonly string[],
   });
 
-  const [assessmentMetadata, setAssessmentMetadata] = React.useState<AssessmentMetadataPayload>({
-    skillPoints: 50,
-    skillTypes: [],
-    initialLearningInterval: 1,
-  })
+  const [assessmentMetadata, setAssessmentMetadata] =
+    React.useState<AssessmentMetadataPayload>({
+      skillPoints: 50,
+      skillTypes: [],
+      initialLearningInterval: 1,
+    });
 
   const [createUmlAssessment] = useMutation<UmlApiCreateAssessmentMutation>(
     umlApiCreateAssessmentMutation
@@ -84,8 +84,11 @@ export function AddUMLAssignmentModal({
     </Box>
   );
 
-function handleSubmit() {
+  async function handleSubmit() {
     if (!metadata || !assessmentMetadata) return;
+    let semanticModelJson: string | null = null;
+    const semanticModelResult = await getSemanticModel(diagramCode);
+    semanticModelJson = JSON.stringify(semanticModelResult);
     createUmlAssessment({
       variables: {
         assessmentInput: {
@@ -104,8 +107,11 @@ function handleSubmit() {
           requiredPercentage: 0.5,
           showSolution: true,
           totalPoints: 100,
-          tutorSolution: diagramCode
-        }
+          tutorSolution: {
+            diagramCode: diagramCode,
+            semanticModel: semanticModelJson,
+          },
+        },
       },
       onCompleted() {
         onClose();
@@ -127,7 +133,7 @@ function handleSubmit() {
       },
       onError: (error) => {
         console.error(error);
-      }
+      },
     });
   }
 
@@ -139,28 +145,49 @@ function handleSubmit() {
             <Box
               sx={{
                 p: 3,
-                bgcolor: 'background.paper',
+                bgcolor: "background.paper",
                 borderRadius: 2,
-                boxShadow: '0px 2px 4px rgba(0,0,0,0.05)',
-                border: '1px solid',
-                borderColor: 'divider'
+                boxShadow: "0px 2px 4px rgba(0,0,0,0.05)",
+                border: "1px solid",
+                borderColor: "divider",
               }}
             >
-              <Typography variant="h6" gutterBottom sx={{ borderBottom: '1px solid', borderColor: 'divider', pb: 1, mb: 3 }}>
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{
+                  borderBottom: "1px solid",
+                  borderColor: "divider",
+                  pb: 1,
+                  mb: 3,
+                }}
+              >
                 Create new UML assignment
               </Typography>
 
               <Stack spacing={3}>
                 <TextEditor
-                  onContentChange={(html) => setDescription(html)}>
-                </TextEditor>
+                  onContentChange={(html) => setDescription(html)}
+                ></TextEditor>
 
                 <Box>
-                  <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
-                    <Typography variant="subtitle2" color="text.secondary" fontWeight="bold">
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    mb={1}
+                  >
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      fontWeight="bold"
+                    >
                       HYLIMO EDITOR
                     </Typography>
-                    <IconButton onClick={() => setFullscreen(true)} size="small">
+                    <IconButton
+                      onClick={() => setFullscreen(true)}
+                      size="small"
+                    >
                       <OpenInFullIcon fontSize="small" />
                     </IconButton>
                   </Box>
@@ -170,10 +197,10 @@ function handleSubmit() {
                       height: "50vh",
                       minHeight: 400,
                       border: "1px solid",
-                      borderColor: 'divider',
+                      borderColor: "divider",
                       borderRadius: 2,
                       overflow: "hidden",
-                      bgcolor: "#f9f9f9"
+                      bgcolor: "#f9f9f9",
                     }}
                   >
                     {Editor}
@@ -185,17 +212,15 @@ function handleSubmit() {
             <Box
               sx={{
                 p: 3,
-                bgcolor: 'background.paper',
+                bgcolor: "background.paper",
                 borderRadius: 2,
-                boxShadow: '0px 2px 4px rgba(0,0,0,0.05)',
-                border: '1px solid',
-                borderColor: 'divider'
+                boxShadow: "0px 2px 4px rgba(0,0,0,0.05)",
+                border: "1px solid",
+                borderColor: "divider",
               }}
             >
               <Stack spacing={4}>
-                <Typography variant="h6">
-                  Metadata
-                </Typography>
+                <Typography variant="h6">Metadata</Typography>
                 <ContentMetadataFormSection
                   metadata={metadata}
                   onChange={setMetadata}
@@ -222,7 +247,11 @@ function handleSubmit() {
       <Dialog fullScreen open={fullscreen} onClose={() => setFullscreen(false)}>
         <AppBar sx={{ position: "relative" }}>
           <Toolbar>
-            <IconButton edge="start" color="inherit" onClick={() => setFullscreen(false)}>
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={() => setFullscreen(false)}
+            >
               <CloseIcon />
             </IconButton>
             <Typography sx={{ ml: 2, flex: 1 }} variant="h6">
@@ -258,7 +287,7 @@ function handleSubmit() {
                   onChange={(e) => setTitle(e.target.value)}
                   fullWidth
                 />
-                   <TextEditor
+                <TextEditor
                   onContentChange={(html) => setDescription(html)}
                 ></TextEditor>
               </Stack>

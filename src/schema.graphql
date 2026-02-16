@@ -572,7 +572,7 @@ input CreateUmlExerciseInput {
   requiredPercentage: Float! = 0.5
   showSolution: Boolean! = false
   totalPoints: Int!
-  tutorSolution: String
+  tutorSolution: UmlDiagramInput
 }
 
 scalar Date
@@ -1819,6 +1819,16 @@ type UmlAssessment implements Assessment & Content {
   userProgressData: UserProgressData!
 }
 
+type UmlDiagram {
+  diagramCode: String!
+  semanticModel: String
+}
+
+input UmlDiagramInput {
+  diagramCode: String!
+  semanticModel: String
+}
+
 type UmlExercise {
   assessmentId: UUID!
   courseId: UUID!
@@ -1830,15 +1840,15 @@ type UmlExercise {
   solutionsByStudent(studentId: UUID!): [UmlStudentSolution!]!
   studentSubmissions: [UmlStudentSubmission!]!
   totalPoints: Int!
-  tutorSolution: String!
+  tutorSolution: UmlDiagram
 }
 
 type UmlExerciseMutation {
   assessmentId: UUID!
   createUmlSolution(createFromPrevious: Boolean!, studentId: UUID!): UmlStudentSolution!
-  evaluateLatestSolution(semanticModel: String!, studentId: UUID!): UmlStudentSolution!
-  saveStudentSolution(diagram: String!, solutionId: UUID, studentId: UUID!, submit: Boolean!): UmlStudentSolution
-  updateTutorSolution(tutorSolution: String!): UmlExercise!
+  evaluateLatestSolution(studentId: UUID!): UmlStudentSolution!
+  saveStudentSolution(diagram: UmlDiagramInput!, solutionId: UUID, studentId: UUID!, submit: Boolean!): UmlStudentSolution
+  updateTutorSolution(tutorSolution: UmlDiagramInput!): UmlExercise!
 }
 
 type UmlFeedback {
@@ -1848,7 +1858,7 @@ type UmlFeedback {
 }
 
 type UmlStudentSolution {
-  diagram: String!
+  diagram: UmlDiagram!
   feedback: UmlFeedback
   id: UUID!
   submittedAt: DateTime

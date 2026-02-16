@@ -16,6 +16,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { useState } from "react";
+import ContentViewer from "../forum/richTextEditor/ContentViewer";
 
 type Input = {
   feedback: string;
@@ -126,12 +127,11 @@ export default function AssignmentResult({
               >
                 Automated Feedback
               </Typography>
-              <Typography
-                variant="body2"
-                sx={{ whiteSpace: "pre-line", color: "text.primary" }}
-              >
-                {feedback || "No specific feedback provided for this attempt."}
-              </Typography>
+              <ContentViewer
+                htmlContent={
+                  feedback || "No specific feedback provided for this attempt."
+                }
+              />
             </Paper>
           </Box>
         </Collapse>

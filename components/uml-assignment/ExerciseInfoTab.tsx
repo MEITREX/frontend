@@ -22,7 +22,9 @@ export default function ExerciseInfoTab({
   isUpdating,
 }: any) {
   const [editorExpanded, setEditorExpanded] = useState(false);
-  const [localTutorCode, setLocalTutorCode] = useState(exercise.tutorSolution);
+  const [localTutorCode, setLocalTutorCode] = useState(
+    exercise.tutorSolution.diagramCode
+  );
 
   return (
     <Stack spacing={3}>

@@ -19,6 +19,7 @@ import {
   umlApiGetLecturerExerciseOverviewQuery,
   umlApiUpdateTutorSolutionMutation,
 } from "@/components/hylimo/api/UmlApi";
+import { getSemanticModel } from "@/components/hylimo/semanticModelGenerator";
 import { AddUMLAssignmentModal } from "@/components/uml-assignment/AddUMLAssignmentModal";
 import ExerciseInfoTab from "@/components/uml-assignment/ExerciseInfoTab";
 import SubmissionsTab from "@/components/uml-assignment/SubmissionsTab";
@@ -42,9 +43,18 @@ export default function LecturerUmlAssignment() {
 
   const exercise = data?.getUmlExerciseByAssessmentId;
 
-  const handleUpdateTutorSolution = (newCode: string) => {
+  const handleUpdateTutorSolution = async (newCode: string) => {
+    let semanticModelJson: string | null = null;
+    const semanticModelResult = await getSemanticModel(newCode);
+    semanticModelJson = JSON.stringify(semanticModelResult);
     updateTutorSolution({
-      variables: { assessmentId: umlId, tutorSolution: newCode },
+      variables: {
+        assessmentId: umlId,
+        tutorSolution: {
+          diagramCode: newCode,
+          semanticModel: semanticModelJson,
+        },
+      },
       onCompleted: () =>
         setSnackbar({
           open: true,

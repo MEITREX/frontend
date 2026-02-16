@@ -29,18 +29,19 @@ export const umlApiGetUmlExerciseByAssessmentIdQuery = graphql`
         id
         description
         totalPoints
-        tutorSolution
+        tutorSolution {
+          diagramCode
+          semanticModel
+        }
       }
     }
   }
 `;
 
-
-
 export const umlApiSubmitStudentSolutionMutation = graphql`
   mutation UmlApiSubmitStudentSolutionMutation(
     $assessmentId: UUID!
-    $diagram: String!
+    $diagram: UmlDiagramInput!
     $studentId: UUID!
     $solutionId: UUID
     $submit: Boolean!
@@ -53,7 +54,10 @@ export const umlApiSubmitStudentSolutionMutation = graphql`
         solutionId: $solutionId
       ) {
         id
-        diagram
+        diagram {
+          diagramCode
+          semanticModel
+        }
         submittedAt
         feedback {
           comment
@@ -64,11 +68,10 @@ export const umlApiSubmitStudentSolutionMutation = graphql`
   }
 `;
 
-
 export const umlApiUpdateTutorSolutionMutation = graphql`
   mutation UmlApiUpdateTutorSolutionMutation(
-    $assessmentId: UUID!,
-    $tutorSolution: String!
+    $assessmentId: UUID!
+    $tutorSolution: UmlDiagramInput!
   ) {
     mutateUmlExercise(assessmentId: $assessmentId) {
       updateTutorSolution(tutorSolution: $tutorSolution) {
@@ -90,7 +93,10 @@ export const umlApiGetStudentSolutionsQuery = graphql`
       requiredPercentage
       solutionsByStudent(studentId: $studentId) {
         id
-        diagram
+        diagram {
+          diagramCode
+          semanticModel
+        }
         submittedAt
         feedback {
           id
@@ -106,13 +112,9 @@ export const umlApiEvaluateLatestSolutionMutation = graphql`
   mutation UmlApiEvaluateLatestSolutionMutation(
     $assessmentId: UUID!
     $studentId: UUID!
-    $semanticModel: String!
   ) {
     mutateUmlExercise(assessmentId: $assessmentId) {
-      evaluateLatestSolution(
-        studentId: $studentId
-        semanticModel: $semanticModel
-      ) {
+      evaluateLatestSolution(studentId: $studentId) {
         feedback {
           comment
           points
@@ -134,7 +136,10 @@ export const umlApiCreateUmlSolutionMutation = graphql`
         createFromPrevious: $createFromPrevious
       ) {
         id
-        diagram
+        diagram {
+          diagramCode
+          semanticModel
+        }
         submittedAt
       }
     }
@@ -147,7 +152,10 @@ export const umlApiGetLecturerExerciseOverviewQuery = graphql`
       id
       description
       showSolution
-      tutorSolution
+      tutorSolution {
+        diagramCode
+        semanticModel
+      }
       totalPoints
       requiredPercentage
       studentSubmissions {
@@ -155,7 +163,10 @@ export const umlApiGetLecturerExerciseOverviewQuery = graphql`
         solutions {
           id
           submittedAt
-          diagram
+          diagram {
+            diagramCode
+            semanticModel
+          }
           feedback {
             points
             comment

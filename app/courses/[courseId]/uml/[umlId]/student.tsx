@@ -74,7 +74,7 @@ export default function StudentUMLAssignment() {
       submitted: !!sol.submittedAt,
       score: sol.feedback?.points,
       feedback: sol.feedback?.comment,
-      diagram: sol.diagram ?? defaultValue,
+      diagram: sol.diagram?.diagramCode ?? defaultValue,
     }));
 
     if (mapped.length === 0) {
@@ -139,9 +139,8 @@ export default function StudentUMLAssignment() {
     setIsSubmittingMode(isSubmit);
 
     const performSave = async (idToSave: string) => {
-
-      let semanticModelJson: string | null = null
-      if(isSubmit) {
+      let semanticModelJson: string | null = null;
+      if (isSubmit) {
         const semanticModelResult = await getSemanticModel(codeToSave);
         semanticModelJson = JSON.stringify(semanticModelResult);
       }
@@ -149,7 +148,10 @@ export default function StudentUMLAssignment() {
       saveSolution({
         variables: {
           assessmentId: umlId,
-          diagram: codeToSave,
+          diagram: {
+            diagramCode: codeToSave,
+            semanticModel: semanticModelJson,
+          },
           solutionId: idToSave,
           studentId: userId,
           submit: isSubmit,
@@ -157,20 +159,18 @@ export default function StudentUMLAssignment() {
         onCompleted: (res: any) => {
           const saved = res.mutateUmlExercise?.saveStudentSolution;
 
-
           if (isSubmit) {
             evaluate({
               variables: {
                 assessmentId: umlId,
                 studentId: userId,
-                semanticModel: semanticModelJson,
               },
               onCompleted: (evalRes: any) => {
                 const result =
                   evalRes.mutateUmlExercise?.evaluateLatestSolution;
                 updateAttemptInState(
                   saved.id,
-                  saved.diagram,
+                  saved.diagram.diagramCode,
                   true,
                   result.feedback?.comment,
                   result.feedback?.points
@@ -179,7 +179,7 @@ export default function StudentUMLAssignment() {
               },
             });
           } else {
-            updateAttemptInState(saved.id, saved.diagram, false);
+            updateAttemptInState(saved.id, saved.diagram.diagramCode, false);
             setSnackbar({ open: true, message: "Saved successfully!" });
           }
         },
@@ -235,7 +235,7 @@ export default function StudentUMLAssignment() {
           uuid: newSol.id,
           date: new Date().toISOString(),
           submitted: false,
-          diagram: newSol.diagram ?? defaultValue,
+          diagram: newSol.diagram?.diagramCode ?? defaultValue,
         };
 
         setAttempts([...attempts, newA]);
