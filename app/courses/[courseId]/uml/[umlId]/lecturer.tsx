@@ -42,6 +42,7 @@ export default function LecturerUmlAssignment() {
   );
 
   const exercise = data?.getUmlExerciseByAssessmentId;
+  const content = data?.findContentsByIds?.[0];
 
   const handleUpdateTutorSolution = async (newCode: string) => {
     let semanticModelJson: string | null = null;
@@ -68,7 +69,7 @@ export default function LecturerUmlAssignment() {
     });
   };
 
-  if (!exercise)
+  if (!exercise || !content)
     return (
       <Box p={4} textAlign="center">
         <CircularProgress />
@@ -115,19 +116,27 @@ export default function LecturerUmlAssignment() {
           <SubmissionsTab exercise={exercise} />
         )}
       </Box>
-
-      {/* TODO:
-        1. Take intial value to change it
-        2. Change component name to EditUMLAssignmentModal
-        3. Use mutation to update existing exercise instead of creating a new one
-        4. Add other props in the dialog, such as totalPoints, requiredPercentage, etc.
-        5. Place metadata at the top
-        6. (optional) Creating tutorSolution optional in the Dialog?
-      */}
-      <AddUMLAssignmentModal
+        <AddUMLAssignmentModal
         open={isEditModalOpen}
-        chapterId={exercise.metadata?.chapterId}
         onClose={() => setIsEditModalOpen(false)}
+        assessmentId={umlId as string}
+        initialData={{
+          description: exercise.description,
+          diagramCode: exercise.tutorSolution?.diagramCode,
+          totalPoints: exercise.totalPoints,
+          requiredPercentage: exercise.requiredPercentage,
+          metadata: {
+            name: content.metadata?.name || "",
+            rewardPoints: content.metadata?.rewardPoints || 0,
+            suggestedDate: content.metadata?.suggestedDate,
+            tagNames: content.metadata?.tagNames || [],
+          },
+          assessmentMetadata: {
+            skillPoints: content.assessmentMetadata?.skillPoints || 0,
+            skillTypes: content.assessmentMetadata?.skillTypes || [],
+            initialLearningInterval: content.assessmentMetadata?.initialLearningInterval || 1,
+          }
+        }}
       />
 
       <Snackbar

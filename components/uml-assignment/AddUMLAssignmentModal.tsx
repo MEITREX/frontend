@@ -1,11 +1,9 @@
 ﻿"use client";
 
-import { ContentType } from "@/__generated__/AddCodeAssignmentModalMutation.graphql";
-import { UmlApiCreateAssessmentMutation } from "@/__generated__/UmlApiCreateAssessmentMutation.graphql";
-import { AssessmentMetadataFormSection, AssessmentMetadataPayload } from "@/components/AssessmentMetadataFormSection";
-import { ContentMetadataFormSection, ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
-import { umlApiCreateAssessmentMutation } from "@/components/hylimo/api/UmlApi";
-import MainHylimoEditor from "@/components/hylimo/MainHylimoEditor";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useMutation } from "react-relay";
+
 import {
   Box,
   Button,
@@ -19,13 +17,19 @@ import {
   TextField,
   Typography
 } from "@mui/material";
-import { useParams } from "next/navigation";
-import * as React from "react";
-import { useMutation } from "react-relay";
+
+import { ContentType } from "@/__generated__/AddCodeAssignmentModalMutation.graphql";
+import { UmlApiCreateAssessmentMutation } from "@/__generated__/UmlApiCreateAssessmentMutation.graphql";
+import type { AssessmentMetadataPayload } from "@/components/AssessmentMetadataFormSection";
+import { AssessmentMetadataFormSection } from "@/components/AssessmentMetadataFormSection";
+import type { ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
+import { ContentMetadataFormSection } from "@/components/ContentMetadataFormSection";
+import { umlApiCreateAssessmentMutation } from "@/components/hylimo/api/UmlApi";
+import MainHylimoEditor from "@/components/hylimo/MainHylimoEditor";
 import TextEditor from "../forum/richTextEditor/TextEditor";
 import { getSemanticModel } from "../hylimo/semanticModelGenerator";
 
-const defaultValue = `classDiagram {
+const DEFAULT_UML_CODE = `classDiagram {
     class("HelloWorld") {
         public {
             hello : string
@@ -33,73 +37,113 @@ const defaultValue = `classDiagram {
     }
 }`;
 
+interface AddUMLAssignmentModalProps {
+  open: boolean;
+  onClose: () => void;
+  chapterId?: string;
+  assessmentId?: string;
+  initialData?: {
+    description: string;
+    diagramCode: string;
+    totalPoints: number;
+    requiredPercentage: number;
+    metadata: ContentMetadataPayload;
+    assessmentMetadata: AssessmentMetadataPayload;
+  };
+}
+
 export function AddUMLAssignmentModal({
   open,
   chapterId,
+  assessmentId,
   onClose,
-}: {
-  open: boolean;
-  chapterId: string;
-  onClose: () => void;
-}) {
+  initialData,
+}: AddUMLAssignmentModalProps) {
   const params = useParams();
   const courseId = params.courseId as string;
+  const isEditMode = !!assessmentId;
 
-  const [description, setDescription] = React.useState("");
-  const [diagramCode, setDiagramCode] = React.useState(defaultValue);
+  const [description, setDescription] = useState("");
+  const [diagramCode, setDiagramCode] = useState(DEFAULT_UML_CODE);
+  const [totalPoints, setTotalPoints] = useState<number>(100);
+  const [requiredPercentage, setRequiredPercentage] = useState<number>(0.5);
 
-  // Bleibt intern dezimal (z.B. 0.5)
-  const [totalPoints, setTotalPoints] = React.useState<number>(100);
-  const [requiredPercentage, setRequiredPercentage] = React.useState<number>(0.5);
-
-  const [metadata, setMetadata] = React.useState<ContentMetadataPayload>({
+  const [metadata, setMetadata] = useState<ContentMetadataPayload>({
     name: "",
     rewardPoints: 50,
     suggestedDate: new Date().toISOString(),
     tagNames: [] as readonly string[],
   });
 
-  const [assessmentMetadata, setAssessmentMetadata] =
-    React.useState<AssessmentMetadataPayload>({
-      skillPoints: 50,
-      skillTypes: [],
-      initialLearningInterval: 1,
-    });
+  const [assessmentMetadata, setAssessmentMetadata] = useState<AssessmentMetadataPayload>({
+    skillPoints: 50,
+    skillTypes: [],
+    initialLearningInterval: 1,
+  });
+
+  useEffect(() => {
+    console.log("Initial Data:", initialData);
+    if (open && initialData) {
+      setDescription(initialData.description || "");
+      setDiagramCode(initialData.diagramCode || DEFAULT_UML_CODE);
+      setTotalPoints(initialData.totalPoints ?? 100);
+      setRequiredPercentage(initialData.requiredPercentage ?? 0.5);
+      setMetadata(initialData.metadata);
+      setAssessmentMetadata(initialData.assessmentMetadata);
+    } else if (open && !isEditMode) {
+      setDiagramCode(DEFAULT_UML_CODE);
+      setDescription("");
+      setTotalPoints(100);
+      setRequiredPercentage(0.5);
+    }
+  }, [open, initialData, isEditMode]);
 
   const [createUmlAssessment] = useMutation<UmlApiCreateAssessmentMutation>(
     umlApiCreateAssessmentMutation
   );
 
   async function handleSubmit() {
-    if (!metadata || !assessmentMetadata) return;
     const semanticModelResult = await getSemanticModel(diagramCode);
     const semanticModelJson = JSON.stringify(semanticModelResult);
 
-    createUmlAssessment({
-      variables: {
-        assessmentInput: {
-          metadata: {
-            ...metadata,
-            type: "UML_EXERCISE" as ContentType,
-            chapterId: chapterId,
+    if (isEditMode) {
+      console.log("MOCK UPDATE");
+      console.log("Data:", {
+        description,
+        totalPoints,
+        requiredPercentage,
+        diagramCode,
+        semanticModelJson
+      });
+
+      onClose();
+    } else {
+      createUmlAssessment({
+        variables: {
+          assessmentInput: {
+            metadata: {
+                ...metadata,
+                type: "UML_EXERCISE" as ContentType,
+                chapterId: chapterId!
+            },
+            assessmentMetadata: { ...assessmentMetadata },
           },
-          assessmentMetadata: { ...assessmentMetadata },
-        },
-        createUmlExerciseInput: {
-          courseId: courseId,
-          description: description,
-          requiredPercentage: requiredPercentage, // Wird als 0.5 gesendet
-          showSolution: true,
-          totalPoints: totalPoints,
-          tutorSolution: {
-            diagramCode: diagramCode,
-            semanticModel: semanticModelJson,
+          createUmlExerciseInput: {
+            courseId,
+            description,
+            requiredPercentage,
+            showSolution: true,
+            totalPoints,
+            tutorSolution: {
+                diagramCode,
+                semanticModel: semanticModelJson
+            },
           },
         },
-      },
-      onCompleted: () => onClose(),
-      onError: (err) => console.error(err),
-    });
+        onCompleted: () => onClose(),
+        onError: (err) => console.error("Error Creating UML Assignment:", err),
+      });
+    }
   }
 
   return (
@@ -112,98 +156,23 @@ export function AddUMLAssignmentModal({
     >
       <DialogContent sx={{ p: { xs: 2, md: 4 } }}>
         <Container maxWidth={false} disableGutters>
-          <Stack spacing={3}>
+          <Stack spacing={4}>
+            {/* Header */}
             <Box>
-              <Typography variant="h5" fontWeight="bold" gutterBottom>
-                Create New UML Assignment
+              <Typography variant="h5" fontWeight="bold">
+                {isEditMode ? "Edit UML Assignment" : "Create New UML Assignment"}
               </Typography>
-              <Divider sx={{ mb: 3 }} />
+              <Typography variant="body2" color="text.secondary">
+                {isEditMode
+                  ? "Update existing exercise details and tutor solution."
+                  : "Define a new exercise description and the reference diagram."}
+              </Typography>
+              <Divider sx={{ mt: 2 }} />
             </Box>
 
-            <Box
-              sx={{
-                p: 3,
-                bgcolor: "background.paper",
-                borderRadius: 2,
-                border: "1px solid",
-                borderColor: "divider",
-              }}
-            >
-              <Stack spacing={3}>
-                <Box>
-                  <Typography variant="subtitle1" fontWeight="600" mb={1}>
-                    Task Description
-                  </Typography>
-                  <TextEditor onContentChange={(html) => setDescription(html)} />
-                </Box>
-
-                <Box>
-                  <Typography variant="subtitle2" color="text.secondary" fontWeight="bold" mb={1}>
-                    HYLIMO EDITOR
-                  </Typography>
-
-                  <Box
-                    sx={{
-                      height: "55vh",
-                      minHeight: 450,
-                      border: "1px solid",
-                      borderColor: "divider",
-                      borderRadius: 1,
-                      overflow: "hidden",
-                      bgcolor: "#f9f9f9",
-                      mb: 2
-                    }}
-                  >
-                    <MainHylimoEditor
-                      initialValue={defaultValue}
-                      onChange={(value) => setDiagramCode(value)}
-                    />
-                  </Box>
-
-                  <Stack direction="row" spacing={3} alignItems="flex-start">
-                    <TextField
-                      label="Max Points"
-                      type="number"
-                      variant="outlined"
-                      value={totalPoints}
-                      onChange={(e) => setTotalPoints(Math.max(0, Number(e.target.value)))}
-                      helperText="Total achievable points"
-                      sx={{ width: 220 }}
-                    />
-                    <TextField
-                      label="Required Percentage"
-                      type="number"
-                      variant="outlined"
-                      // Anzeige in Prozent (z.B. 50)
-                      value={Math.round(requiredPercentage * 100)}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value);
-                        // Speichern als Dezimal (z.B. 0.5)
-                        const decimal = isNaN(val) ? 0 : val / 100;
-                        setRequiredPercentage(Math.min(1, Math.max(0, decimal)));
-                      }}
-                      InputProps={{
-                        endAdornment: <InputAdornment position="end">%</InputAdornment>,
-                      }}
-                      inputProps={{ min: 0, max: 100 }}
-                      helperText="Min. percentage to pass"
-                      sx={{ width: 220 }}
-                    />
-                  </Stack>
-                </Box>
-              </Stack>
-            </Box>
-
-            <Box
-              sx={{
-                p: 3,
-                bgcolor: "background.paper",
-                borderRadius: 2,
-                border: "1px solid",
-                borderColor: "divider",
-              }}
-            >
-              <Typography variant="h6" mb={2}>Metadata & Assessment Settings</Typography>
+            {/* Metadata */}
+            <Box sx={{ p: 3, bgcolor: "background.paper", borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
+              <Typography variant="h6" mb={2}>1. General Metadata</Typography>
               <Stack spacing={4}>
                 <ContentMetadataFormSection
                   metadata={metadata}
@@ -216,14 +185,78 @@ export function AddUMLAssignmentModal({
                 />
               </Stack>
             </Box>
+
+            {/* Editor and Rest */}
+            <Box sx={{ p: 3, bgcolor: "background.paper", borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
+              <Typography variant="h6" mb={2}>2. Exercise Content</Typography>
+              <Stack spacing={3}>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight="600" mb={1}>Task Description</Typography>
+                  <TextEditor
+                    initialContent={description}
+                    onContentChange={(html) => setDescription(html)}
+                  />
+                </Box>
+
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary" fontWeight="bold" mb={1}>
+                    HYLIMO EDITOR (TUTOR SOLUTION)
+                  </Typography>
+                  <Box sx={{
+                    height: "50vh",
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: 1,
+                    overflow: "hidden",
+                    mb: 2,
+                    bgcolor: "#fafafa"
+                  }}>
+                    <MainHylimoEditor
+                      key={assessmentId || ""}
+                      initialValue={diagramCode}
+                      onChange={(val) => setDiagramCode(val)}
+                    />
+                  </Box>
+
+                  <Stack direction="row" spacing={3}>
+                    <TextField
+                      label="Max Points"
+                      type="number"
+                      variant="outlined"
+                      value={totalPoints}
+                      onChange={(e) => setTotalPoints(Number(e.target.value))}
+                      sx={{ width: 200 }}
+                    />
+                    <TextField
+                      label="Required Percentage"
+                      type="number"
+                      variant="outlined"
+                      value={Math.round(requiredPercentage * 100)}
+                      onChange={(e) => setRequiredPercentage(Number(e.target.value) / 100)}
+                      InputProps={{
+                        endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                      }}
+                      sx={{ width: 220 }}
+                      helperText="Min. score to pass"
+                    />
+                  </Stack>
+                </Box>
+              </Stack>
+            </Box>
           </Stack>
         </Container>
       </DialogContent>
 
       <DialogActions sx={{ p: 3, borderTop: '1px solid', borderColor: 'divider' }}>
         <Button onClick={onClose} color="inherit">Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained" size="large" sx={{ px: 4 }}>
-          Save Assignment
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          size="large"
+          color="primary"
+          sx={{ px: 4 }}
+        >
+          {isEditMode ? "Update Exercise" : "Create Exercise"}
         </Button>
       </DialogActions>
     </Dialog>

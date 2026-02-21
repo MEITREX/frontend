@@ -151,26 +151,27 @@ export const umlApiGetLecturerExerciseOverviewQuery = graphql`
     getUmlExerciseByAssessmentId(assessmentId: $assessmentId) {
       id
       description
-      showSolution
+      totalPoints
+      requiredPercentage
       tutorSolution {
         diagramCode
         semanticModel
       }
-      totalPoints
-      requiredPercentage
-      studentSubmissions {
-        studentId
-        solutions {
-          id
-          submittedAt
-          diagram {
-            diagramCode
-            semanticModel
-          }
-          feedback {
-            points
-            comment
-          }
+    }
+
+    findContentsByIds(ids: [$assessmentId]) {
+      metadata {
+        name
+        rewardPoints
+        suggestedDate
+        tagNames
+        chapterId
+      }
+      ... on Assessment {
+        assessmentMetadata {
+          skillPoints
+          skillTypes
+          initialLearningInterval
         }
       }
     }
