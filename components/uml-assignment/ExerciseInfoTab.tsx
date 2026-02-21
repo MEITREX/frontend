@@ -22,9 +22,18 @@ export default function ExerciseInfoTab({
   isUpdating,
 }: any) {
   const [editorExpanded, setEditorExpanded] = useState(false);
-  const [localTutorCode, setLocalTutorCode] = useState(
-    exercise.tutorSolution.diagramCode
-  );
+  // Prefer tutorSolution, else use first student submission's diagramCode
+  let initialDiagramCode = "";
+  if (exercise.tutorSolution?.diagramCode) {
+    initialDiagramCode = exercise.tutorSolution.diagramCode;
+  } else if (
+    exercise.studentSubmissions?.length > 0 &&
+    exercise.studentSubmissions[0].solutions?.length > 0 &&
+    exercise.studentSubmissions[0].solutions[0].diagram?.diagramCode
+  ) {
+    initialDiagramCode = exercise.studentSubmissions[0].solutions[0].diagram.diagramCode;
+  }
+  const [localTutorCode, setLocalTutorCode] = useState(initialDiagramCode);
 
   return (
     <Stack spacing={3}>
