@@ -6,22 +6,17 @@ import { AssessmentMetadataFormSection, AssessmentMetadataPayload } from "@/comp
 import { ContentMetadataFormSection, ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
 import { umlApiCreateAssessmentMutation } from "@/components/hylimo/api/UmlApi";
 import MainHylimoEditor from "@/components/hylimo/MainHylimoEditor";
-import CloseIcon from "@mui/icons-material/Close";
-import InfoIcon from "@mui/icons-material/Info";
-import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import {
-  AppBar,
   Box,
   Button,
   Container,
   Dialog,
   DialogActions,
   DialogContent,
-  IconButton,
-  Paper,
-  Slide,
-  Stack, TextField,
-  Toolbar,
+  Divider,
+  InputAdornment,
+  Stack,
+  TextField,
   Typography
 } from "@mui/material";
 import { useParams } from "next/navigation";
@@ -50,12 +45,12 @@ export function AddUMLAssignmentModal({
   const params = useParams();
   const courseId = params.courseId as string;
 
-  const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
-  const [diagramCode, setDiagramCode] = React.useState("");
+  const [diagramCode, setDiagramCode] = React.useState(defaultValue);
 
-  const [fullscreen, setFullscreen] = React.useState(false);
-  const [showInfo, setShowInfo] = React.useState(false);
+  // Bleibt intern dezimal (z.B. 0.5)
+  const [totalPoints, setTotalPoints] = React.useState<number>(100);
+  const [requiredPercentage, setRequiredPercentage] = React.useState<number>(0.5);
 
   const [metadata, setMetadata] = React.useState<ContentMetadataPayload>({
     name: "",
@@ -75,20 +70,11 @@ export function AddUMLAssignmentModal({
     umlApiCreateAssessmentMutation
   );
 
-  const Editor = (
-    <Box sx={{ height: "100%", width: "100%" }}>
-      <MainHylimoEditor
-        initialValue={defaultValue}
-        onChange={(value) => setDiagramCode(value)}
-      />
-    </Box>
-  );
-
   async function handleSubmit() {
     if (!metadata || !assessmentMetadata) return;
-    let semanticModelJson: string | null = null;
     const semanticModelResult = await getSemanticModel(diagramCode);
-    semanticModelJson = JSON.stringify(semanticModelResult);
+    const semanticModelJson = JSON.stringify(semanticModelResult);
+
     createUmlAssessment({
       variables: {
         assessmentInput: {
@@ -97,114 +83,113 @@ export function AddUMLAssignmentModal({
             type: "UML_EXERCISE" as ContentType,
             chapterId: chapterId,
           },
-          assessmentMetadata: {
-            ...assessmentMetadata,
-          },
+          assessmentMetadata: { ...assessmentMetadata },
         },
         createUmlExerciseInput: {
           courseId: courseId,
           description: description,
-          requiredPercentage: 0.5,
+          requiredPercentage: requiredPercentage, // Wird als 0.5 gesendet
           showSolution: true,
-          totalPoints: 100,
+          totalPoints: totalPoints,
           tutorSolution: {
             diagramCode: diagramCode,
             semanticModel: semanticModelJson,
           },
         },
       },
-      onCompleted() {
-        onClose();
-      },
-      updater(store, data) {
-        const chapter = store.get(chapterId);
-        if (!chapter) return;
-
-        const newRecord = store.get(data?.createUMLAssessment?.id);
-
-        if (newRecord) {
-          const linkedRecords = chapter.getLinkedRecords("contents");
-
-          chapter.setLinkedRecords(
-            [...(linkedRecords ?? []), newRecord],
-            "contents"
-          );
-        }
-      },
-      onError: (error) => {
-        console.error(error);
-      },
+      onCompleted: () => onClose(),
+      onError: (err) => console.error(err),
     });
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogContent>
-        <Container maxWidth="lg" sx={{ py: 6 }}>
-          <Stack spacing={4}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="xl"
+      fullWidth
+      PaperProps={{ sx: { minHeight: '90vh' } }}
+    >
+      <DialogContent sx={{ p: { xs: 2, md: 4 } }}>
+        <Container maxWidth={false} disableGutters>
+          <Stack spacing={3}>
+            <Box>
+              <Typography variant="h5" fontWeight="bold" gutterBottom>
+                Create New UML Assignment
+              </Typography>
+              <Divider sx={{ mb: 3 }} />
+            </Box>
+
             <Box
               sx={{
                 p: 3,
                 bgcolor: "background.paper",
                 borderRadius: 2,
-                boxShadow: "0px 2px 4px rgba(0,0,0,0.05)",
                 border: "1px solid",
                 borderColor: "divider",
               }}
             >
-              <Typography
-                variant="h6"
-                gutterBottom
-                sx={{
-                  borderBottom: "1px solid",
-                  borderColor: "divider",
-                  pb: 1,
-                  mb: 3,
-                }}
-              >
-                Create new UML assignment
-              </Typography>
-
               <Stack spacing={3}>
-                <TextEditor
-                  onContentChange={(html) => setDescription(html)}
-                ></TextEditor>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight="600" mb={1}>
+                    Task Description
+                  </Typography>
+                  <TextEditor onContentChange={(html) => setDescription(html)} />
+                </Box>
 
                 <Box>
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    mb={1}
-                  >
-                    <Typography
-                      variant="subtitle2"
-                      color="text.secondary"
-                      fontWeight="bold"
-                    >
-                      HYLIMO EDITOR
-                    </Typography>
-                    <IconButton
-                      onClick={() => setFullscreen(true)}
-                      size="small"
-                    >
-                      <OpenInFullIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
+                  <Typography variant="subtitle2" color="text.secondary" fontWeight="bold" mb={1}>
+                    HYLIMO EDITOR
+                  </Typography>
 
                   <Box
                     sx={{
-                      height: "50vh",
-                      minHeight: 400,
+                      height: "55vh",
+                      minHeight: 450,
                       border: "1px solid",
                       borderColor: "divider",
-                      borderRadius: 2,
+                      borderRadius: 1,
                       overflow: "hidden",
                       bgcolor: "#f9f9f9",
+                      mb: 2
                     }}
                   >
-                    {Editor}
+                    <MainHylimoEditor
+                      initialValue={defaultValue}
+                      onChange={(value) => setDiagramCode(value)}
+                    />
                   </Box>
+
+                  <Stack direction="row" spacing={3} alignItems="flex-start">
+                    <TextField
+                      label="Max Points"
+                      type="number"
+                      variant="outlined"
+                      value={totalPoints}
+                      onChange={(e) => setTotalPoints(Math.max(0, Number(e.target.value)))}
+                      helperText="Total achievable points"
+                      sx={{ width: 220 }}
+                    />
+                    <TextField
+                      label="Required Percentage"
+                      type="number"
+                      variant="outlined"
+                      // Anzeige in Prozent (z.B. 50)
+                      value={Math.round(requiredPercentage * 100)}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        // Speichern als Dezimal (z.B. 0.5)
+                        const decimal = isNaN(val) ? 0 : val / 100;
+                        setRequiredPercentage(Math.min(1, Math.max(0, decimal)));
+                      }}
+                      InputProps={{
+                        endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                      }}
+                      inputProps={{ min: 0, max: 100 }}
+                      helperText="Min. percentage to pass"
+                      sx={{ width: 220 }}
+                    />
+                  </Stack>
                 </Box>
               </Stack>
             </Box>
@@ -214,13 +199,12 @@ export function AddUMLAssignmentModal({
                 p: 3,
                 bgcolor: "background.paper",
                 borderRadius: 2,
-                boxShadow: "0px 2px 4px rgba(0,0,0,0.05)",
                 border: "1px solid",
                 borderColor: "divider",
               }}
             >
+              <Typography variant="h6" mb={2}>Metadata & Assessment Settings</Typography>
               <Stack spacing={4}>
-                <Typography variant="h6">Metadata</Typography>
                 <ContentMetadataFormSection
                   metadata={metadata}
                   onChange={setMetadata}
@@ -236,68 +220,12 @@ export function AddUMLAssignmentModal({
         </Container>
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained" size="large">
-          Save
+      <DialogActions sx={{ p: 3, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Button onClick={onClose} color="inherit">Cancel</Button>
+        <Button onClick={handleSubmit} variant="contained" size="large" sx={{ px: 4 }}>
+          Save Assignment
         </Button>
       </DialogActions>
-
-      {/* Fullscreen Editor */}
-      <Dialog fullScreen open={fullscreen} onClose={() => setFullscreen(false)}>
-        <AppBar sx={{ position: "relative" }}>
-          <Toolbar>
-            <IconButton
-              edge="start"
-              color="inherit"
-              onClick={() => setFullscreen(false)}
-            >
-              <CloseIcon />
-            </IconButton>
-            <Typography sx={{ ml: 2, flex: 1 }} variant="h6">
-              HyLiMo Editor
-            </Typography>
-            <IconButton color="inherit" onClick={() => setShowInfo((v) => !v)}>
-              <InfoIcon />
-            </IconButton>
-          </Toolbar>
-        </AppBar>
-
-        <Box sx={{ position: "relative", height: "100%", width: "100%" }}>
-          {/* Info-Overlay absolut über dem Editor */}
-          <Slide direction="down" in={showInfo} mountOnEnter unmountOnExit>
-            <Paper
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                zIndex: 10,
-                p: 3,
-                borderBottom: "1px solid",
-                borderColor: "divider",
-                bgcolor: "background.paper",
-              }}
-            >
-              <Stack spacing={2}>
-                {/* Editable fields im Overlay */}
-                <TextField
-                  label="Title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  fullWidth
-                />
-                <TextEditor
-                  onContentChange={(html) => setDescription(html)}
-                ></TextEditor>
-              </Stack>
-            </Paper>
-          </Slide>
-
-          {/* Editor bleibt unter dem Overlay */}
-          <Box sx={{ height: "100%", width: "100%" }}>{Editor}</Box>
-        </Box>
-      </Dialog>
     </Dialog>
   );
 }
