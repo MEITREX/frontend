@@ -8,13 +8,19 @@ import type * as monaco from "monaco-editor";
 import { EditorApp, type EditorAppConfig } from "monaco-languageclient/editorApp";
 import { useEffect, useRef } from "react";
 import Split from "react-split";
-import type { ActionHandlerRegistry, IActionDispatcher } from "sprotty";
+import type { ActionHandlerRegistry, IActionDispatcher, IActionHandler } from "sprotty";
 import { FitToScreenAction, RequestModelAction } from "sprotty-protocol";
 import type { Disposable } from "vscode-languageserver-protocol";
 
 import "@hylimo/diagram-ui/css/hylimo.css";
 import "@hylimo/diagram-ui/css/toolbox.css";
 import "./style.css";
+
+enum TransactionState {
+    None,
+    InProgress,
+    Committed
+}
 
 let globalLanguageClientPromise: Promise<LanguageClientProxy> | null = null;
 function getLanguageClient() {
@@ -76,122 +82,151 @@ export default function HylimoEditor({
     let resizeObserver: ResizeObserver | null = null;
 
     (async () => {
-      if (!editorElement.current || editorStartedRef.current) return;
-      editorStartedRef.current = true;
+        if (!editorElement.current || editorStartedRef.current) return;
+        editorStartedRef.current = true;
 
-      if (!languageClientRef.current) {
-        languageClientRef.current = getLanguageClient();
-      }
-      const currentLanguageClient = await languageClientRef.current;
-
-      const editorAppConfig: EditorAppConfig = {
-        editorOptions: {
-          language,
-          readOnly: readOnlyRef.current,
-          domReadOnly: readOnlyRef.current,
-          fixedOverflowWidgets: true,
-          glyphMargin: false,
-          editContext: false,
-        },
-        codeResources: {
-          modified: {
-            text: initialValue,
-            uri: `file:///diagram.hyl`,
-            enforceLanguageId: language
-          }
-        },
-        overrideAutomaticLayout: false
-      };
-
-      const editorApp = new EditorApp(editorAppConfig);
-      disposablesRef.current.push(editorApp);
-      await editorApp.start(editorElement.current!);
-
-      const monacoEditor = editorApp.getEditor()!;
-      monacoEditorRef.current = monacoEditor;
-
-      const keyDownDisposable = monacoEditor.onKeyDown((e) => {
-        if (readOnlyRef.current) {
-          const isCopy = (e.ctrlKey || e.metaKey) && e.keyCode === 33;
-          const isNavKey = [1, 2, 15, 16, 17, 18, 19, 20].includes(e.keyCode);
-          if (!isCopy && !isNavKey) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
+        if (!languageClientRef.current) {
+            languageClientRef.current = getLanguageClient();
         }
-      });
-      disposablesRef.current.push(keyDownDisposable);
+        const currentLanguageClient = await languageClientRef.current;
 
-      const changeDisposable = monacoEditor.onDidChangeModelContent(() => {
-        if (!readOnlyRef.current && !isUpdatingModelRef.current) {
-          onChange(monacoEditor.getValue());
+        const editorAppConfig: EditorAppConfig = {
+            editorOptions: {
+                language,
+                readOnly: readOnlyRef.current,
+                domReadOnly: readOnlyRef.current,
+                fixedOverflowWidgets: true,
+                glyphMargin: false,
+                editContext: false,
+            },
+            codeResources: {
+                modified: {
+                    text: initialValue,
+                    uri: `file:///diagram.hyl`,
+                    enforceLanguageId: language
+                }
+            },
+            overrideAutomaticLayout: false
+        };
+
+        const editorApp = new EditorApp(editorAppConfig);
+        disposablesRef.current.push(editorApp);
+        await editorApp.start(editorElement.current!);
+
+        const monacoEditor = editorApp.getEditor()!;
+        monacoEditorRef.current = monacoEditor;
+
+        const editorModel = monacoEditor.getModel()!;
+        const transactionStatus = { state: TransactionState.None };
+
+        const originalPushStackElement = editorModel.pushStackElement.bind(editorModel);
+
+        editorModel.pushStackElement = () => {
+            if (transactionStatus.state === TransactionState.None) {
+                originalPushStackElement();
+            }
+        };
+
+        const keyDownDisposable = monacoEditor.onKeyDown((e) => {
+            if (readOnlyRef.current) {
+                const isCopy = (e.ctrlKey || e.metaKey) && e.keyCode === 33;
+                const isNavKey = [1, 2, 15, 16, 17, 18, 19, 20].includes(e.keyCode);
+                if (!isCopy && !isNavKey) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }
+        });
+        disposablesRef.current.push(keyDownDisposable);
+
+        const changeDisposable = monacoEditor.onDidChangeModelContent(() => {
+            if (!readOnlyRef.current && !isUpdatingModelRef.current) {
+                onChange(monacoEditor.getValue());
+
+                if (transactionStatus.state === TransactionState.Committed) {
+                    transactionStatus.state = TransactionState.None;
+                }
+            }
+        });
+        disposablesRef.current.push(changeDisposable);
+
+        const uri = monacoEditor.getModel()?.uri?.toString();
+        if (!uri) return;
+
+        await currentLanguageClient.sendNotification(DiagramOpenNotification.type, {
+            clientId: uri,
+            diagramUri: uri
+        });
+
+        class LspDiagramServerProxy extends DiagramServerProxy {
+            clientId = uri!;
+            initialize(registry: ActionHandlerRegistry): void {
+                super.initialize(registry);
+                registry.register('toolboxEditPredictionResponseAction', { handle: () => {} } as IActionHandler);
+                currentLanguageClient.onNotification(DiagramActionNotification.type, (msg: any) => {
+                    if (msg.clientId === this.clientId) this.messageReceived(msg);
+                });
+            }
+            protected sendMessage(msg: any): void {
+                const actionKind = msg.action?.kind || msg.kind;
+                const essential = ['requestModel', 'computedBounds', 'fitToScreen', 'center', 'setViewport'];
+                if (!readOnlyRef.current || essential.includes(actionKind)) {
+                    msg.clientId = this.clientId;
+                    currentLanguageClient.sendNotification(DiagramActionNotification.type, msg);
+                }
+            }
+            protected handleUndo(): void {
+                monacoEditor.focus();
+                monacoEditor.trigger("diagram", "undo", {});
+            }
+
+            protected handleRedo(): void {
+                monacoEditor.focus();
+                monacoEditor.trigger("diagram", "redo", {});
+            }
+
+            protected handleTransactionStart(): void {
+                originalPushStackElement();
+                transactionStatus.state = TransactionState.InProgress;
+            }
+
+            protected handleTransactionCommit(): void {
+                transactionStatus.state = TransactionState.Committed;
+            }
         }
-      });
-      disposablesRef.current.push(changeDisposable);
 
-      const uri = monacoEditor.getModel()?.uri?.toString();
-      if (!uri) return;
+        const container = createContainer(`sprotty-container-1`);
+        container.bind(LspDiagramServerProxy).toSelf().inSingletonScope();
+        container.bind(TYPES.ModelSource).toService(LspDiagramServerProxy);
 
-      await currentLanguageClient.sendNotification(DiagramOpenNotification.type, {
-        clientId: uri,
-        diagramUri: uri
-      });
+        const currentActionDispatcher = container.get<IActionDispatcher>(TYPES.IActionDispatcher);
+        actionDispatcherRef.current = currentActionDispatcher;
 
-      class LspDiagramServerProxy extends DiagramServerProxy {
-        override clientId = uri!;
-        override initialize(registry: ActionHandlerRegistry): void {
-          super.initialize(registry);
-          currentLanguageClient.onNotification(DiagramActionNotification.type, (msg: any) => {
-            if (msg.clientId === this.clientId) this.messageReceived(msg);
-          });
-        }
-        protected override sendMessage(msg: any): void {
-          const actionKind = msg.action?.kind || msg.kind;
-          const essential = ['requestModel', 'computedBounds', 'fitToScreen', 'center', 'setViewport'];
-          if (!readOnlyRef.current || essential.includes(actionKind)) {
-            msg.clientId = this.clientId;
-            currentLanguageClient.sendNotification(DiagramActionNotification.type, msg);
-          }
-        }
-        protected handleUndo(): void {}
-        protected handleRedo(): void {}
-        protected handleTransactionStart(): void {}
-        protected handleTransactionCommit(): void {}
-      }
+        resizeObserver = new ResizeObserver(() => {
+            monacoEditor.layout();
+            currentActionDispatcher.dispatch({ kind: ResetCanvasBoundsAction.KIND } as ResetCanvasBoundsAction);
+        });
 
-      const container = createContainer(`sprotty-container-1`);
-      container.bind(LspDiagramServerProxy).toSelf().inSingletonScope();
-      container.bind(TYPES.ModelSource).toService(LspDiagramServerProxy);
+        if (editorElement.current) resizeObserver.observe(editorElement.current);
+        if (sprottyWrapperRef.current) resizeObserver.observe(sprottyWrapperRef.current);
 
-      const currentActionDispatcher = container.get<IActionDispatcher>(TYPES.IActionDispatcher);
-
-      actionDispatcherRef.current = currentActionDispatcher;
-
-      resizeObserver = new ResizeObserver(() => {
-        monacoEditor.layout();
-        currentActionDispatcher.dispatch({ kind: ResetCanvasBoundsAction.KIND } as ResetCanvasBoundsAction);
-      });
-
-      if (editorElement.current) resizeObserver.observe(editorElement.current);
-      if (sprottyWrapperRef.current) resizeObserver.observe(sprottyWrapperRef.current);
-
-      currentActionDispatcher.request(RequestModelAction.create()).then((response) => {
-        currentActionDispatcher.dispatch(response);
-        setTimeout(() => {
-          currentActionDispatcher.dispatch(FitToScreenAction.create([]));
-          monacoEditor.layout();
-        }, 200);
-      });
+        currentActionDispatcher.request(RequestModelAction.create()).then((response: any) => {
+            currentActionDispatcher.dispatch(response);
+            setTimeout(() => {
+                currentActionDispatcher.dispatch(FitToScreenAction.create([]));
+                monacoEditor.layout();
+            }, 200);
+        });
     })();
 
     return () => {
-      disposablesRef.current.forEach(d => d.dispose?.());
-      disposablesRef.current = [];
-      editorStartedRef.current = false;
-      actionDispatcherRef.current = null;
-      if (resizeObserver) resizeObserver.disconnect();
+        disposablesRef.current.forEach(d => d.dispose?.());
+        disposablesRef.current = [];
+        editorStartedRef.current = false;
+        actionDispatcherRef.current = null;
+        if (resizeObserver) resizeObserver.disconnect();
     };
-  }, []);
+}, []);
 
   return (
     <Box
