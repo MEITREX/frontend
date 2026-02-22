@@ -122,9 +122,9 @@ export function AddUMLAssignmentModal({
         variables: {
           assessmentInput: {
             metadata: {
-                ...metadata,
-                type: "UML_EXERCISE" as ContentType,
-                chapterId: chapterId!
+              ...metadata,
+              type: "UML_EXERCISE" as ContentType,
+              chapterId: chapterId!
             },
             assessmentMetadata: { ...assessmentMetadata },
           },
@@ -135,10 +135,19 @@ export function AddUMLAssignmentModal({
             showSolution: true,
             totalPoints,
             tutorSolution: {
-                diagramCode,
-                semanticModel: semanticModelJson
+              diagramCode,
+              semanticModel: semanticModelJson
             },
           },
+        },
+        updater: (store, response) => {
+          if (!chapterId) return;
+          const chapterRecord = store.get(chapterId);
+          const newRecord = store.get(response?.createUMLAssessment?.id);
+          if (chapterRecord && newRecord) {
+            const contentRecords = chapterRecord.getLinkedRecords("contents") ?? [];
+            chapterRecord.setLinkedRecords([...contentRecords, newRecord], "contents");
+          }
         },
         onCompleted: () => onClose(),
         onError: (err) => console.error("Error Creating UML Assignment:", err),
