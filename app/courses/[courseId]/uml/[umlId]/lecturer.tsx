@@ -106,18 +106,19 @@ export default function LecturerUmlAssignment() {
 
       {/* Tab Content */}
       <Box mt={2}>
-        {tabIndex === 0 ? (
+        {tabIndex === 0 && !isEditModalOpen ? (
           <ExerciseInfoTab
             exercise={exercise}
             onUpdateTutorSolution={handleUpdateTutorSolution}
             isUpdating={isUpdating}
           />
-        ) : (
+        ) : tabIndex === 1 ? (
           <SubmissionsTab exercise={exercise} />
-        )}
+        ) : null}
       </Box>
       {isEditModalOpen && exercise && content && (
         <AddUMLAssignmentModal
+          key={umlId + '-' + String(isEditModalOpen)}
           open={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           assessmentId={umlId as string}

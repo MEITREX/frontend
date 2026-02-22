@@ -73,6 +73,7 @@ export default function ExerciseInfoTab({
               }}
             >
               <MainHylimoEditor
+                key={exercise.id || "readonly-hylimo"}
                 readOnly={true}
                 initialValue={localTutorCode}
                 onChange={(val) => setLocalTutorCode(val)}
