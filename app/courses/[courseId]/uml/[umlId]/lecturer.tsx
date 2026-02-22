@@ -116,28 +116,30 @@ export default function LecturerUmlAssignment() {
           <SubmissionsTab exercise={exercise} />
         )}
       </Box>
+      {isEditModalOpen && exercise && content && (
         <AddUMLAssignmentModal
-        open={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        assessmentId={umlId as string}
-        initialData={{
-          description: exercise.description,
-          diagramCode: exercise.tutorSolution?.diagramCode,
-          totalPoints: exercise.totalPoints,
-          requiredPercentage: exercise.requiredPercentage,
-          metadata: {
-            name: content.metadata?.name || "",
-            rewardPoints: content.metadata?.rewardPoints || 0,
-            suggestedDate: content.metadata?.suggestedDate,
-            tagNames: content.metadata?.tagNames || [],
-          },
-          assessmentMetadata: {
-            skillPoints: content.assessmentMetadata?.skillPoints || 0,
-            skillTypes: content.assessmentMetadata?.skillTypes || [],
-            initialLearningInterval: content.assessmentMetadata?.initialLearningInterval || 1,
-          }
-        }}
-      />
+          open={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          assessmentId={umlId as string}
+          initialData={{
+            description: exercise.description,
+            diagramCode: exercise.tutorSolution?.diagramCode,
+            totalPoints: exercise.totalPoints,
+            requiredPercentage: exercise.requiredPercentage,
+            metadata: {
+              name: content.metadata?.name || "",
+              rewardPoints: content.metadata?.rewardPoints || 0,
+              suggestedDate: content.metadata?.suggestedDate,
+              tagNames: content.metadata?.tagNames || [],
+            },
+            assessmentMetadata: {
+              skillPoints: content.assessmentMetadata?.skillPoints || 0,
+              skillTypes: content.assessmentMetadata?.skillTypes || [],
+              initialLearningInterval: content.assessmentMetadata?.initialLearningInterval || 1,
+            }
+          }}
+        />
+      )}
 
       <Snackbar
         open={snackbar.open}

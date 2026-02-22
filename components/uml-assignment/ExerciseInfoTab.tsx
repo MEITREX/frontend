@@ -1,10 +1,8 @@
 import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
 import MainHylimoEditor from "@/components/hylimo/MainHylimoEditor";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import SaveIcon from "@mui/icons-material/Save";
 import {
   Box,
-  Button,
   Collapse,
   IconButton,
   List,
@@ -12,7 +10,7 @@ import {
   ListItemText,
   Paper,
   Stack,
-  Typography,
+  Typography
 } from "@mui/material";
 import { useState } from "react";
 
@@ -22,17 +20,7 @@ export default function ExerciseInfoTab({
   isUpdating,
 }: any) {
   const [editorExpanded, setEditorExpanded] = useState(false);
-  // Prefer tutorSolution, else use first student submission's diagramCode
-  let initialDiagramCode = "";
-  if (exercise.tutorSolution?.diagramCode) {
-    initialDiagramCode = exercise.tutorSolution.diagramCode;
-  } else if (
-    exercise.studentSubmissions?.length > 0 &&
-    exercise.studentSubmissions[0].solutions?.length > 0 &&
-    exercise.studentSubmissions[0].solutions[0].diagram?.diagramCode
-  ) {
-    initialDiagramCode = exercise.studentSubmissions[0].solutions[0].diagram.diagramCode;
-  }
+  const initialDiagramCode = exercise.tutorSolution?.diagramCode || "";
   const [localTutorCode, setLocalTutorCode] = useState(initialDiagramCode);
 
   return (
@@ -85,20 +73,11 @@ export default function ExerciseInfoTab({
               }}
             >
               <MainHylimoEditor
+                readOnly={true}
                 initialValue={localTutorCode}
                 onChange={(val) => setLocalTutorCode(val)}
               />
             </Box>
-            <Stack direction="row" justifyContent="flex-end">
-              <Button
-                variant="contained"
-                startIcon={<SaveIcon />}
-                onClick={() => onUpdateTutorSolution(localTutorCode)}
-                disabled={isUpdating}
-              >
-                {isUpdating ? "Saving..." : "Update Tutor Solution"}
-              </Button>
-            </Stack>
           </Box>
         </Collapse>
       </Paper>
