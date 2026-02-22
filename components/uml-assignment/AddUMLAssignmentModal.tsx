@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "react-relay";
 
 import {
@@ -59,44 +59,28 @@ export function AddUMLAssignmentModal({
   onClose,
   initialData,
 }: AddUMLAssignmentModalProps) {
+  console.log("Data ", initialData);
   const params = useParams();
   const courseId = params.courseId as string;
   const isEditMode = !!assessmentId;
 
-  const [description, setDescription] = useState("");
-  const [diagramCode, setDiagramCode] = useState(DEFAULT_UML_CODE);
-  const [totalPoints, setTotalPoints] = useState<number>(100);
-  const [requiredPercentage, setRequiredPercentage] = useState<number>(0.5);
+  const [description, setDescription] = useState(initialData?.description || "");
+  const [diagramCode, setDiagramCode] = useState(initialData?.diagramCode || DEFAULT_UML_CODE);
+  const [totalPoints, setTotalPoints] = useState<number>(initialData?.totalPoints ?? 100);
+  const [requiredPercentage, setRequiredPercentage] = useState<number>(initialData?.requiredPercentage ?? 0.5);
 
-  const [metadata, setMetadata] = useState<ContentMetadataPayload>({
+  const [metadata, setMetadata] = useState<ContentMetadataPayload>(initialData?.metadata || {
     name: "",
     rewardPoints: 50,
     suggestedDate: new Date().toISOString(),
     tagNames: [] as readonly string[],
   });
 
-  const [assessmentMetadata, setAssessmentMetadata] = useState<AssessmentMetadataPayload>({
+  const [assessmentMetadata, setAssessmentMetadata] = useState<AssessmentMetadataPayload>(initialData?.assessmentMetadata || {
     skillPoints: 50,
     skillTypes: [],
     initialLearningInterval: 1,
   });
-
-  useEffect(() => {
-    console.log("Initial Data:", initialData);
-    if (open && initialData) {
-      setDescription(initialData.description || "");
-      setDiagramCode(initialData.diagramCode || DEFAULT_UML_CODE);
-      setTotalPoints(initialData.totalPoints ?? 100);
-      setRequiredPercentage(initialData.requiredPercentage ?? 0.5);
-      setMetadata(initialData.metadata);
-      setAssessmentMetadata(initialData.assessmentMetadata);
-    } else if (open && !isEditMode) {
-      setDiagramCode(DEFAULT_UML_CODE);
-      setDescription("");
-      setTotalPoints(100);
-      setRequiredPercentage(0.5);
-    }
-  }, [open, initialData, isEditMode]);
 
   const [createUmlAssessment] = useMutation<UmlApiCreateAssessmentMutation>(
     umlApiCreateAssessmentMutation
