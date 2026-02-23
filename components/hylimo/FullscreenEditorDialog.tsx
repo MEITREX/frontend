@@ -21,6 +21,7 @@ interface FullscreenEditorDialogProps {
   setShowInfo: (show: boolean) => void;
   infoContent?: React.ReactNode;
   children: React.ReactNode;
+  invisible?: boolean;
 }
 
 export default function FullscreenEditorDialog({
@@ -30,10 +31,19 @@ export default function FullscreenEditorDialog({
   showInfo,
   setShowInfo,
   infoContent,
-  children
+  children,
+  invisible = false
 }: FullscreenEditorDialogProps) {
   return (
-    <Dialog fullScreen open={open} onClose={onClose}>
+    <Dialog
+      fullScreen
+      open={open}
+      onClose={onClose}
+      BackdropProps={
+        invisible ? { sx: { backgroundColor: "transparent" } } : undefined
+      }
+      PaperProps={invisible ? { sx: { opacity: 0 } } : undefined}
+    >
       <AppBar sx={{ position: "fixed", zIndex: 1201 }}>
         <Toolbar>
           <IconButton edge="start" color="inherit" onClick={onClose}>

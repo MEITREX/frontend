@@ -15,7 +15,7 @@ import {
   Typography
 } from "@mui/material";
 import Button from "@mui/material/Button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function ExerciseInfoTab({
   exercise,
@@ -25,8 +25,30 @@ export default function ExerciseInfoTab({
   const [editorExpanded, setEditorExpanded] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [autoFullscreenHackActive, setAutoFullscreenHackActive] =
+    useState(false);
+  const [autoFullscreenHackDone, setAutoFullscreenHackDone] = useState(false);
   const initialDiagramCode = exercise.tutorSolution?.diagramCode || "";
   const [localTutorCode, setLocalTutorCode] = useState(initialDiagramCode);
+
+  useEffect(() => {
+    if (!editorExpanded || autoFullscreenHackDone) {
+      return;
+    }
+
+    setAutoFullscreenHackActive(true);
+    setFullscreen(true);
+
+    const closeTimer = window.setTimeout(() => {
+      setFullscreen(false);
+      setAutoFullscreenHackActive(false);
+      setAutoFullscreenHackDone(true);
+    }, 160);
+
+    return () => {
+      window.clearTimeout(closeTimer);
+    };
+  }, [editorExpanded, autoFullscreenHackDone]);
 
   return (
     <Stack spacing={3}>
@@ -91,9 +113,6 @@ export default function ExerciseInfoTab({
         </Stack>
         <Collapse in={editorExpanded}>
           <Box sx={{ p: 2, borderTop: "1px solid", borderColor: "divider" }}>
-              <Alert severity="warning" variant="outlined" sx={{ borderRadius: 2, mb: 2 }}>
-               Currently, Sprotty may not render correctly. Please select the full-screen option to resolve this issue.
-            </Alert>
             <Box
               sx={{
                 height: "50vh",
@@ -124,6 +143,7 @@ export default function ExerciseInfoTab({
         title="HyLiMo Editor (Tutor Solution)"
         showInfo={showInfo}
         setShowInfo={setShowInfo}
+        invisible={autoFullscreenHackActive && fullscreen}
         infoContent={
           <Box sx={{ bgcolor: "action.hover", p: 2, borderRadius: 1 }}>
             <ContentViewer htmlContent={exercise.description} />

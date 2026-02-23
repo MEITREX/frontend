@@ -49,6 +49,8 @@ export default function StudentUMLAssignment() {
   const [hasLoadedInitially, setHasLoadedInitially] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [autoFullscreenHackActive, setAutoFullscreenHackActive] =
+    useState(true);
 
   const [saveSolution, isSaving] = useMutation(
     umlApiSubmitStudentSolutionMutation
@@ -109,12 +111,30 @@ export default function StudentUMLAssignment() {
 
   useEffect(() => {}, []);
 
+  useEffect(() => {
+    if (!exercise || hasLoadedInitially === false || !autoFullscreenHackActive) {
+      return;
+    }
+
+    setFullscreen(true);
+
+    const closeTimer = window.setTimeout(() => {
+      setFullscreen(false);
+      setAutoFullscreenHackActive(false);
+    }, 160);
+
+    return () => {
+      window.clearTimeout(closeTimer);
+    };
+  }, [exercise, hasLoadedInitially, autoFullscreenHackActive]);
+
   const attempt = attempts[currentAttempt] || {
     submitted: false,
     date: new Date().toISOString(),
   };
 
   const updateAttemptInState = (
+    attemptIndex: number,
     uuid: string,
     diagram: string,
     submitted: boolean,
@@ -123,7 +143,7 @@ export default function StudentUMLAssignment() {
   ) => {
     setAttempts((prev) =>
       prev.map((a, i) =>
-        i === currentAttempt
+        i === attemptIndex
           ? { ...a, uuid, diagram, submitted, feedback, score }
           : a
       )
@@ -132,7 +152,8 @@ export default function StudentUMLAssignment() {
 
   const onHandleAction = (
     type: "save" | "submit",
-    codeToSave = diagramCode
+    codeToSave = diagramCode,
+    targetAttemptIndex = currentAttempt
   ) => {
     const isSubmit = type === "submit";
 
@@ -173,6 +194,7 @@ export default function StudentUMLAssignment() {
                 const result =
                   evalRes.mutateUmlExercise?.evaluateLatestSolution;
                 updateAttemptInState(
+                  targetAttemptIndex,
                   saved.id,
                   saved.diagram.diagramCode,
                   true,
@@ -183,7 +205,12 @@ export default function StudentUMLAssignment() {
               },
             });
           } else {
-            updateAttemptInState(saved.id, saved.diagram.diagramCode, false);
+            updateAttemptInState(
+              targetAttemptIndex,
+              saved.id,
+              saved.diagram.diagramCode,
+              false
+            );
             setSnackbar({ open: true, message: "Saved successfully!" });
           }
         },
@@ -209,7 +236,7 @@ export default function StudentUMLAssignment() {
 
   const onHandleNavigation = (dir: "prev" | "next") => {
     if (diagramCode !== attempt.diagram && !attempt.submitted) {
-      onHandleAction("save", diagramCode);
+      onHandleAction("save", diagramCode, currentAttempt);
     }
 
     const nextIdx =
@@ -308,10 +335,6 @@ return (
             </Button>
           </Box>
 
-            <Alert severity="warning" variant="outlined" sx={{ borderRadius: 2 }}>
-               Currently, Sprotty may not render correctly. Please select the full-screen option to resolve this issue.
-            </Alert>
-
           <Box
             sx={{
               height: "60vh",
@@ -340,6 +363,7 @@ return (
         title="HyLiMo Editor"
         showInfo={showInfo}
         setShowInfo={setShowInfo}
+        invisible={autoFullscreenHackActive && fullscreen}
         infoContent={
           <Box bgcolor="#e3f2fd" p={2}>
             <ContentViewer htmlContent={exercise.description} />
