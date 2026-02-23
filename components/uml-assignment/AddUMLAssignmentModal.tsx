@@ -12,7 +12,6 @@ import {
   DialogActions,
   DialogContent,
   Divider,
-  InputAdornment,
   Stack,
   TextField,
   Typography
@@ -25,6 +24,7 @@ import { AssessmentMetadataFormSection } from "@/components/AssessmentMetadataFo
 import type { ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
 import { ContentMetadataFormSection } from "@/components/ContentMetadataFormSection";
 import { umlApiCreateAssessmentMutation } from "@/components/hylimo/api/UmlApi";
+import FullscreenEditorDialog from "@/components/hylimo/FullscreenEditorDialog";
 import MainHylimoEditor from "@/components/hylimo/MainHylimoEditor";
 import TextEditor from "../forum/richTextEditor/TextEditor";
 import { getSemanticModel } from "../hylimo/semanticModelGenerator";
@@ -86,6 +86,9 @@ export function AddUMLAssignmentModal({
     umlApiCreateAssessmentMutation
   );
 
+  const [fullscreen, setFullscreen] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
+
   async function handleSubmit() {
     const semanticModelResult = await getSemanticModel(diagramCode);
     const semanticModelJson = JSON.stringify(semanticModelResult);
@@ -140,118 +143,139 @@ export function AddUMLAssignmentModal({
   }
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="xl"
-      fullWidth
-      PaperProps={{ sx: { minHeight: '90vh' } }}
-    >
-      <DialogContent sx={{ p: { xs: 2, md: 4 } }}>
-        <Container maxWidth={false} disableGutters>
-          <Stack spacing={4}>
-            {/* Header */}
-            <Box>
-              <Typography variant="h5" fontWeight="bold">
-                {isEditMode ? "Edit UML Assignment" : "Create New UML Assignment"}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {isEditMode
-                  ? "Update existing exercise details and tutor solution."
-                  : "Define a new exercise description and the reference diagram."}
-              </Typography>
-              <Divider sx={{ mt: 2 }} />
-            </Box>
+    <>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth="xl"
+        fullWidth
+        PaperProps={{ sx: { minHeight: '90vh' } }}
+      >
+        <DialogContent sx={{ p: { xs: 2, md: 4 } }}>
+          <Container maxWidth={false} disableGutters>
+            <Stack spacing={4}>
+              {/* Header */}
+              <Box>
+                <Typography variant="h5" fontWeight="bold">
+                  {isEditMode ? "Edit UML Assignment" : "Create New UML Assignment"}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {isEditMode
+                    ? "Update existing exercise details and tutor solution."
+                    : "Define a new exercise description and the reference diagram."}
+                </Typography>
+                <Divider sx={{ mt: 2 }} />
+              </Box>
 
-            {/* Metadata */}
-            <Box sx={{ p: 3, bgcolor: "background.paper", borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
-              <Typography variant="h6" mb={2}>1. General Metadata</Typography>
-              <Stack spacing={4}>
-                <ContentMetadataFormSection
-                  metadata={metadata}
-                  onChange={setMetadata}
-                  suggestedTags={[]}
-                />
-                <AssessmentMetadataFormSection
-                  metadata={assessmentMetadata}
-                  onChange={setAssessmentMetadata}
-                />
-              </Stack>
-            </Box>
-
-            {/* Editor and Rest */}
-            <Box sx={{ p: 3, bgcolor: "background.paper", borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
-              <Typography variant="h6" mb={2}>2. Exercise Content</Typography>
-              <Stack spacing={3}>
-                <Box>
-                  <Typography variant="subtitle1" fontWeight="600" mb={1}>Task Description</Typography>
-                  <TextEditor
-                    initialContent={description}
-                    onContentChange={(html) => setDescription(html)}
+              {/* Metadata */}
+              <Box sx={{ p: 3, bgcolor: "background.paper", borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
+                <Typography variant="h6" mb={2}>1. General Metadata</Typography>
+                <Stack spacing={4}>
+                  <ContentMetadataFormSection
+                    metadata={metadata}
+                    onChange={setMetadata}
+                    suggestedTags={[]}
                   />
-                </Box>
+                  <AssessmentMetadataFormSection
+                    metadata={assessmentMetadata}
+                    onChange={setAssessmentMetadata}
+                  />
+                </Stack>
+              </Box>
 
-                <Box>
-                  <Typography variant="subtitle2" color="text.secondary" fontWeight="bold" mb={1}>
-                    HYLIMO EDITOR (TUTOR SOLUTION)
-                  </Typography>
-                  <Box sx={{
-                    height: "50vh",
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 1,
-                    overflow: "hidden",
-                    mb: 2,
-                    bgcolor: "#fafafa"
-                  }}>
-                    <MainHylimoEditor
-                      key={assessmentId || ""}
-                      initialValue={diagramCode}
-                      onChange={(val) => setDiagramCode(val)}
+              {/* Editor and Rest */}
+              <Box sx={{ p: 3, bgcolor: "background.paper", borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
+                <Typography variant="h6" mb={2}>2. Exercise Content</Typography>
+                <Stack spacing={3}>
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight="600" mb={1}>Task Description</Typography>
+                    <TextEditor
+                      initialContent={description}
+                      onContentChange={(html) => setDescription(html)}
                     />
                   </Box>
 
-                  <Stack direction="row" spacing={3}>
-                    <TextField
-                      label="Max Points"
-                      type="number"
-                      variant="outlined"
-                      value={totalPoints}
-                      onChange={(e) => setTotalPoints(Number(e.target.value))}
-                      sx={{ width: 200 }}
-                    />
-                    <TextField
-                      label="Required Percentage"
-                      type="number"
-                      variant="outlined"
-                      value={Math.round(requiredPercentage * 100)}
-                      onChange={(e) => setRequiredPercentage(Number(e.target.value) / 100)}
-                      InputProps={{
-                        endAdornment: <InputAdornment position="end">%</InputAdornment>,
-                      }}
-                      sx={{ width: 220 }}
-                      helperText="Min. score to pass"
-                    />
-                  </Stack>
-                </Box>
-              </Stack>
-            </Box>
-          </Stack>
-        </Container>
-      </DialogContent>
-
-      <DialogActions sx={{ p: 3, borderTop: '1px solid', borderColor: 'divider' }}>
-        <Button onClick={onClose} color="inherit">Cancel</Button>
-        <Button
-          onClick={handleSubmit}
-          variant="contained"
-          size="large"
-          color="primary"
-          sx={{ px: 4 }}
-        >
-          {isEditMode ? "Update Exercise" : "Create Exercise"}
-        </Button>
-      </DialogActions>
-    </Dialog>
+                  <Box>
+                    <Box display="flex" alignItems="center" mb={1}>
+                      <Typography variant="subtitle2" color="text.secondary" fontWeight="bold" flex={1}>
+                        HYLIMO EDITOR (TUTOR SOLUTION)
+                      </Typography>
+                      <Button
+                        onClick={() => setFullscreen(true)}
+                        variant="outlined"
+                        size="small"
+                        sx={{ ml: 2 }}
+                        disabled={fullscreen}
+                      >
+                        Fullscreen
+                      </Button>
+                    </Box>
+                    <Box sx={{
+                      height: "50vh",
+                      border: "1px solid",
+                      borderColor: "divider",
+                      borderRadius: 1,
+                      overflow: "hidden",
+                      mb: 2,
+                      bgcolor: "#fafafa"
+                    }}>
+                      {!fullscreen && (
+                        <MainHylimoEditor
+                          key={assessmentId || "modal"}
+                          initialValue={diagramCode}
+                          onChange={(val) => setDiagramCode(val)}
+                        />
+                      )}
+                    </Box>
+                  </Box>
+                </Stack>
+              </Box>
+            </Stack>
+          </Container>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, borderTop: '1px solid', borderColor: 'divider' }}>
+          <Button onClick={onClose} color="inherit">Cancel</Button>
+          <Button
+            onClick={handleSubmit}
+            variant="contained"
+            size="large"
+            color="primary"
+            sx={{ px: 4 }}
+          >
+            {isEditMode ? "Update Exercise" : "Create Exercise"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Fullscreen Editor */}
+      <FullscreenEditorDialog
+        open={fullscreen}
+        onClose={() => setFullscreen(false)}
+        title="HyLiMo Editor"
+        showInfo={showInfo}
+        setShowInfo={setShowInfo}
+        infoContent={
+          <>
+            <TextField
+              label="Title"
+              value={metadata.name}
+              onChange={(e) => setMetadata({ ...metadata, name: e.target.value })}
+              fullWidth
+            />
+            <TextEditor
+              initialContent={description}
+              onContentChange={(html) => setDescription(html)}
+            />
+          </>
+        }
+      >
+        {fullscreen && (
+          <MainHylimoEditor
+            key={assessmentId || "fullscreen"}
+            initialValue={diagramCode}
+            onChange={(val) => setDiagramCode(val)}
+          />
+        )}
+      </FullscreenEditorDialog>
+    </>
   );
 }

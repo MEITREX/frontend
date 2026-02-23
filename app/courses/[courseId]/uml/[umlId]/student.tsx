@@ -9,6 +9,7 @@ import {
   umlApiGetStudentSolutionsQuery,
   umlApiSubmitStudentSolutionMutation,
 } from "@/components/hylimo/api/UmlApi";
+import FullscreenEditorDialog from "@/components/hylimo/FullscreenEditorDialog";
 import MainHylimoEditor from "@/components/hylimo/MainHylimoEditor";
 import { getSemanticModel } from "@/components/hylimo/semanticModelGenerator";
 import AssignmentResult from "@/components/uml-assignment/AssignmentResult";
@@ -16,6 +17,7 @@ import AttemptSelectionHeader from "@/components/uml-assignment/AttemptSelection
 import {
   Alert,
   Box,
+  Button,
   Container,
   Paper,
   Snackbar,
@@ -45,6 +47,8 @@ export default function StudentUMLAssignment() {
   const [currentAttempt, setCurrentAttempt] = useState(0);
   const [diagramCode, setDiagramCode] = useState<string>(defaultValue);
   const [hasLoadedInitially, setHasLoadedInitially] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   const [saveSolution, isSaving] = useMutation(
     umlApiSubmitStudentSolutionMutation
@@ -253,8 +257,8 @@ export default function StudentUMLAssignment() {
       </Box>
     );
 
-  return (
-    <Container maxWidth={false} sx={{ py: 2 }}>
+return (
+    <Container maxWidth={false} sx={{ py: 4 }}>
       <Typography variant="h4" fontWeight="bold" gutterBottom>
         UML Assignment
       </Typography>
@@ -265,7 +269,6 @@ export default function StudentUMLAssignment() {
 
       <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Stack spacing={3}>
-          {/* Attempt Selector & Action Buttons */}
           <AttemptSelectionHeader
             currentIdx={currentAttempt}
             totalAttempts={attempts.length}
@@ -281,7 +284,6 @@ export default function StudentUMLAssignment() {
             onCreate={onHandleCreate}
           />
 
-          {/* Collapsible Results Section */}
           {attempt.submitted && (
             <AssignmentResult
               feedback={attempt.feedback ?? ""}
@@ -292,25 +294,20 @@ export default function StudentUMLAssignment() {
           )}
 
           {attempt.submitted && (
-            <Alert
-              severity="info"
-              variant="outlined"
-              sx={{
-                width: "100%",
-                borderRadius: 2,
-                borderWidth: "1px",
-                backgroundColor: "info.lighter",
-                "& .MuiAlert-message": {
-                  fontWeight: 500,
-                },
-              }}
-            >
-              <strong>Read-Only:</strong> This attempt has already been
-              submitted and can no longer be edited.
+            <Alert severity="info" variant="outlined" sx={{ borderRadius: 2 }}>
+              <strong>Read-Only:</strong> This attempt has already been submitted.
             </Alert>
           )}
 
-          {/* Editor Area */}
+          <Box display="flex" alignItems="center">
+            <Typography variant="subtitle2" color="text.secondary" fontWeight="bold" flex={1}>
+              HYLIMO EDITOR
+            </Typography>
+            <Button onClick={() => setFullscreen(true)} variant="outlined" size="small">
+              Fullscreen
+            </Button>
+          </Box>
+
           <Box
             sx={{
               height: "60vh",
@@ -318,25 +315,50 @@ export default function StudentUMLAssignment() {
               border: "1px solid",
               borderColor: "divider",
               borderRadius: 2,
+              overflow: "hidden"
             }}
           >
-            <MainHylimoEditor
-              initialValue={diagramCode}
-              onChange={setDiagramCode}
-              readOnly={attempt?.submitted}
-              key={`student-editor`}
-            />
+            {!fullscreen && (
+              <MainHylimoEditor
+                initialValue={diagramCode}
+                onChange={setDiagramCode}
+                readOnly={attempt?.submitted}
+                key="student-regular-editor"
+              />
+            )}
           </Box>
         </Stack>
       </Paper>
 
+      <FullscreenEditorDialog
+        open={fullscreen}
+        onClose={() => setFullscreen(false)}
+        title="HyLiMo Editor"
+        showInfo={showInfo}
+        setShowInfo={setShowInfo}
+        infoContent={
+          <Box bgcolor="#e3f2fd" p={2}>
+            <ContentViewer htmlContent={exercise.description} />
+          </Box>
+        }
+      >
+        {fullscreen && (
+          <MainHylimoEditor
+            initialValue={diagramCode}
+            onChange={setDiagramCode}
+            readOnly={attempt?.submitted}
+            key="student-fullscreen-editor"
+          />
+        )}
+      </FullscreenEditorDialog>
+
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={3000}
+        autoHideDuration={4000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        message={snackbar.message}
-      />
+      >
+        <Alert severity="success">{snackbar.message}</Alert>
+      </Snackbar>
     </Container>
   );
 }
