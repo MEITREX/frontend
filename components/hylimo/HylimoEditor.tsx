@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { language, LanguageClientProxy, setupLanguageClient } from "@/components/hylimo/lspPlugin";
-import { DiagramActionNotification, DiagramOpenNotification } from "@hylimo/diagram-protocol";
+import { DiagramActionNotification, DiagramCloseNotification, DiagramOpenNotification } from "@hylimo/diagram-protocol";
 import { createContainer, DiagramServerProxy, ResetCanvasBoundsAction, TYPES } from "@hylimo/diagram-ui";
 import { Box } from "@mui/material";
 import type * as monaco from "monaco-editor";
@@ -49,6 +49,9 @@ export default function HylimoEditor({
   const readOnlyRef = useRef(readOnly);
   const isUpdatingModelRef = useRef(false);
   const actionDispatcherRef = useRef<IActionDispatcher | null>(null);
+  const modelUriRef = useRef(`file:///diagram-${Math.random().toString(36).slice(2)}.hyl`);
+  const sprottyContainerIdRef = useRef(`sprotty-container-${Math.random().toString(36).slice(2)}`);
+  const fitTimeoutRef = useRef<number | null>(null);
 
   // 1. Sync and Update
   useEffect(() => {
@@ -80,6 +83,7 @@ export default function HylimoEditor({
   // 2. Init
   useEffect(() => {
     let resizeObserver: ResizeObserver | null = null;
+    let isDisposed = false;
 
     (async () => {
         if (!editorElement.current || editorStartedRef.current) return;
@@ -89,6 +93,7 @@ export default function HylimoEditor({
             languageClientRef.current = getLanguageClient();
         }
         const currentLanguageClient = await languageClientRef.current;
+      if (isDisposed) return;
 
         const editorAppConfig: EditorAppConfig = {
             editorOptions: {
@@ -102,7 +107,7 @@ export default function HylimoEditor({
             codeResources: {
                 modified: {
                     text: initialValue,
-                    uri: `file:///diagram.hyl`,
+                uri: modelUriRef.current,
                     enforceLanguageId: language
                 }
             },
@@ -112,6 +117,7 @@ export default function HylimoEditor({
         const editorApp = new EditorApp(editorAppConfig);
         disposablesRef.current.push(editorApp);
         await editorApp.start(editorElement.current!);
+        if (isDisposed) return;
 
         const monacoEditor = editorApp.getEditor()!;
         monacoEditorRef.current = monacoEditor;
@@ -150,7 +156,7 @@ export default function HylimoEditor({
         });
         disposablesRef.current.push(changeDisposable);
 
-        const uri = monacoEditor.getModel()?.uri?.toString();
+        const uri = monacoEditor.getModel()?.uri?.toString() ?? modelUriRef.current;
         if (!uri) return;
 
         await currentLanguageClient.sendNotification(DiagramOpenNotification.type, {
@@ -163,9 +169,10 @@ export default function HylimoEditor({
             initialize(registry: ActionHandlerRegistry): void {
                 super.initialize(registry);
                 registry.register('toolboxEditPredictionResponseAction', { handle: () => {} } as IActionHandler);
-                currentLanguageClient.onNotification(DiagramActionNotification.type, (msg: any) => {
+            const notificationDisposable = currentLanguageClient.onNotification(DiagramActionNotification.type, (msg: any) => {
                     if (msg.clientId === this.clientId) this.messageReceived(msg);
                 });
+            disposablesRef.current.push(notificationDisposable);
             }
             protected sendMessage(msg: any): void {
                 const actionKind = msg.action?.kind || msg.kind;
@@ -195,35 +202,66 @@ export default function HylimoEditor({
             }
         }
 
-        const container = createContainer(`sprotty-container-1`);
+        const container = createContainer(sprottyContainerIdRef.current);
         container.bind(LspDiagramServerProxy).toSelf().inSingletonScope();
         container.bind(TYPES.ModelSource).toService(LspDiagramServerProxy);
 
         const currentActionDispatcher = container.get<IActionDispatcher>(TYPES.IActionDispatcher);
         actionDispatcherRef.current = currentActionDispatcher;
 
+        const scheduleFit = (delay = 120) => {
+          if (fitTimeoutRef.current !== null) {
+            window.clearTimeout(fitTimeoutRef.current);
+          }
+          fitTimeoutRef.current = window.setTimeout(() => {
+            if (isDisposed) return;
+            currentActionDispatcher.dispatch({ kind: ResetCanvasBoundsAction.KIND } as ResetCanvasBoundsAction);
+            currentActionDispatcher.dispatch(FitToScreenAction.create([]));
+            monacoEditor.layout();
+          }, delay);
+        };
+
         resizeObserver = new ResizeObserver(() => {
             monacoEditor.layout();
-            currentActionDispatcher.dispatch({ kind: ResetCanvasBoundsAction.KIND } as ResetCanvasBoundsAction);
+          scheduleFit(120);
         });
 
         if (editorElement.current) resizeObserver.observe(editorElement.current);
         if (sprottyWrapperRef.current) resizeObserver.observe(sprottyWrapperRef.current);
 
         currentActionDispatcher.request(RequestModelAction.create()).then((response: any) => {
+          if (isDisposed) return;
             currentActionDispatcher.dispatch(response);
+          requestAnimationFrame(() => scheduleFit(0));
             setTimeout(() => {
-                currentActionDispatcher.dispatch(FitToScreenAction.create([]));
-                monacoEditor.layout();
+            if (isDisposed) return;
+            scheduleFit(0);
             }, 200);
+          setTimeout(() => {
+            if (isDisposed) return;
+            scheduleFit(0);
+          }, 500);
         });
     })();
 
     return () => {
+        isDisposed = true;
+        const uri = monacoEditorRef.current?.getModel()?.uri?.toString() ?? modelUriRef.current;
+        const languageClientPromise = languageClientRef.current;
+        if (languageClientPromise) {
+          void languageClientPromise.then((client) => {
+            client.sendNotification(DiagramCloseNotification.type, uri);
+          });
+        }
+        if (fitTimeoutRef.current !== null) {
+            window.clearTimeout(fitTimeoutRef.current);
+            fitTimeoutRef.current = null;
+        }
         disposablesRef.current.forEach(d => d.dispose?.());
         disposablesRef.current = [];
         editorStartedRef.current = false;
         actionDispatcherRef.current = null;
+        monacoEditorRef.current = null;
         if (resizeObserver) resizeObserver.disconnect();
     };
 }, []);
@@ -253,7 +291,7 @@ export default function HylimoEditor({
           style={{ width: "100%", height: "100%" }}
         />
         <div className="sprotty-wrapper" ref={sprottyWrapperRef} style={{ height: "100%", width: "100%" }}>
-           <div id="sprotty-container-1"></div>
+           <div id={sprottyContainerIdRef.current}></div>
         </div>
       </Split>
     </Box>
