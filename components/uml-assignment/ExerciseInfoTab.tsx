@@ -3,16 +3,16 @@ import FullscreenEditorDialog from "@/components/hylimo/FullscreenEditorDialog";
 import MainHylimoEditor from "@/components/hylimo/MainHylimoEditor";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
-    Alert,
-    Box,
-    Collapse,
-    IconButton,
-    List,
-    ListItem,
-    ListItemText,
-    Paper,
-    Stack,
-    Typography
+  Alert,
+  Box,
+  Collapse,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
+  Stack,
+  Typography
 } from "@mui/material";
 import Button from "@mui/material/Button";
 import { useState } from "react";
@@ -91,6 +91,9 @@ export default function ExerciseInfoTab({
         </Stack>
         <Collapse in={editorExpanded}>
           <Box sx={{ p: 2, borderTop: "1px solid", borderColor: "divider" }}>
+              <Alert severity="warning" variant="outlined" sx={{ borderRadius: 2, mb: 2 }}>
+               Currently, Sprotty may not render correctly. Please select the full-screen option to resolve this issue.
+            </Alert>
             <Box
               sx={{
                 height: "50vh",

@@ -308,6 +308,10 @@ return (
             </Button>
           </Box>
 
+            <Alert severity="warning" variant="outlined" sx={{ borderRadius: 2 }}>
+               Currently, Sprotty may not render correctly. Please select the full-screen option to resolve this issue.
+            </Alert>
+
           <Box
             sx={{
               height: "60vh",
