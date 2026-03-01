@@ -29,12 +29,13 @@ export default function LecturerUmlAssignment() {
   const { umlId } = useParams();
   const [tabIndex, setTabIndex] = useState(0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
 
   const data = useLazyLoadQuery<any>(
     umlApiGetLecturerExerciseOverviewQuery,
     { assessmentId: umlId },
-    { fetchPolicy: "network-only" }
+    { fetchPolicy: "network-only", fetchKey: refreshKey }
   );
 
   const [updateTutorSolution, isUpdating] = useMutation(
@@ -121,7 +122,9 @@ export default function LecturerUmlAssignment() {
           key={umlId + '-' + String(isEditModalOpen)}
           open={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
+          onUpdated={() => setRefreshKey((prev) => prev + 1)}
           assessmentId={umlId as string}
+          chapterId={content.metadata?.chapterId}
           initialData={{
             description: exercise.description,
             diagramCode: exercise.tutorSolution?.diagramCode,

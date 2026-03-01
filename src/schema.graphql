@@ -1849,6 +1849,7 @@ type UmlExerciseMutation {
   evaluateLatestSolution(studentId: UUID!): UmlStudentSolution!
   saveStudentSolution(diagram: UmlDiagramInput!, solutionId: UUID, studentId: UUID!, submit: Boolean!): UmlStudentSolution
   updateTutorSolution(tutorSolution: UmlDiagramInput!): UmlExercise!
+  updateUmlExercise(input: UpdateUmlExerciseInput!): UmlExercise!
 }
 
 type UmlFeedback {
@@ -1997,6 +1998,14 @@ input UpdateSubexerciseInput {
   itemId: UUID!
   number: String
   totalSubexerciseCredits: Float!
+}
+
+input UpdateUmlExerciseInput {
+  description: String
+  requiredPercentage: Float
+  showSolution: Boolean
+  totalPoints: Int
+  tutorSolution: UmlDiagramInput
 }
 
 scalar Url

@@ -23,7 +23,10 @@ import type { AssessmentMetadataPayload } from "@/components/AssessmentMetadataF
 import { AssessmentMetadataFormSection } from "@/components/AssessmentMetadataFormSection";
 import type { ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
 import { ContentMetadataFormSection } from "@/components/ContentMetadataFormSection";
-import { umlApiCreateAssessmentMutation } from "@/components/hylimo/api/UmlApi";
+import {
+  umlApiCreateAssessmentMutation,
+  umlApiUpdateUmlAssignmentMutation,
+} from "@/components/hylimo/api/UmlApi";
 import FullscreenEditorDialog from "@/components/hylimo/FullscreenEditorDialog";
 import MainHylimoEditor from "@/components/hylimo/MainHylimoEditor";
 import TextEditor from "../forum/richTextEditor/TextEditor";
@@ -40,6 +43,7 @@ const DEFAULT_UML_CODE = `classDiagram {
 interface AddUMLAssignmentModalProps {
   open: boolean;
   onClose: () => void;
+  onUpdated?: () => void;
   chapterId?: string;
   assessmentId?: string;
   initialData?: {
@@ -57,6 +61,7 @@ export function AddUMLAssignmentModal({
   chapterId,
   assessmentId,
   onClose,
+  onUpdated,
   initialData,
 }: AddUMLAssignmentModalProps) {
   console.log("Data ", initialData);
@@ -85,6 +90,7 @@ export function AddUMLAssignmentModal({
   const [createUmlAssessment] = useMutation<UmlApiCreateAssessmentMutation>(
     umlApiCreateAssessmentMutation
   );
+  const [updateUmlAssignment] = useMutation(umlApiUpdateUmlAssignmentMutation);
 
   const [fullscreen, setFullscreen] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
@@ -94,16 +100,33 @@ export function AddUMLAssignmentModal({
     const semanticModelJson = JSON.stringify(semanticModelResult);
 
     if (isEditMode) {
-      console.log("MOCK UPDATE");
-      console.log("Data:", {
-        description,
-        totalPoints,
-        requiredPercentage,
-        diagramCode,
-        semanticModelJson
+      updateUmlAssignment({
+        variables: {
+          contentId: assessmentId!,
+          assessment: {
+            metadata: {
+              ...metadata,
+              chapterId: chapterId!,
+            },
+            assessmentMetadata: { ...assessmentMetadata },
+          },
+          assessmentId: assessmentId!,
+          umlExercise: {
+            description,
+            totalPoints,
+            requiredPercentage,
+            tutorSolution: {
+              diagramCode,
+              semanticModel: semanticModelJson,
+            },
+          },
+        },
+        onCompleted: () => {
+          onUpdated?.();
+          onClose();
+        },
+        onError: (err) => console.error("Error Updating UML Assessment:", err),
       });
-
-      onClose();
     } else {
       createUmlAssessment({
         variables: {
@@ -173,12 +196,20 @@ export function AddUMLAssignmentModal({
                 <Stack spacing={4}>
                   <ContentMetadataFormSection
                     metadata={metadata}
-                    onChange={setMetadata}
+                    onChange={(nextMetadata) => {
+                      if (nextMetadata != null) {
+                        setMetadata(nextMetadata);
+                      }
+                    }}
                     suggestedTags={[]}
                   />
                   <AssessmentMetadataFormSection
                     metadata={assessmentMetadata}
-                    onChange={setAssessmentMetadata}
+                    onChange={(nextAssessmentMetadata) => {
+                      if (nextAssessmentMetadata != null) {
+                        setAssessmentMetadata(nextAssessmentMetadata);
+                      }
+                    }}
                   />
                 </Stack>
               </Box>

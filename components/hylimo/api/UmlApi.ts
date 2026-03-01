@@ -81,6 +81,46 @@ export const umlApiUpdateTutorSolutionMutation = graphql`
   }
 `;
 
+export const umlApiUpdateUmlAssignmentMutation = graphql`
+  mutation UmlApiUpdateUmlAssignmentMutation(
+    $contentId: UUID!
+    $assessment: UpdateAssessmentInput!
+    $assessmentId: UUID!
+    $umlExercise: UpdateUmlExerciseInput!
+  ) {
+    mutateContent(contentId: $contentId) {
+      updateAssessment(input: $assessment) {
+        id
+        metadata {
+          chapterId
+          name
+          rewardPoints
+          suggestedDate
+          tagNames
+        }
+        assessmentMetadata {
+          initialLearningInterval
+          skillPoints
+          skillTypes
+        }
+      }
+    }
+    mutateUmlExercise(assessmentId: $assessmentId) {
+      updateUmlExercise(input: $umlExercise) {
+        id
+        description
+        totalPoints
+        requiredPercentage
+        showSolution
+        tutorSolution {
+          diagramCode
+          semanticModel
+        }
+      }
+    }
+  }
+`;
+
 export const umlApiGetStudentSolutionsQuery = graphql`
   query UmlApiGetStudentSolutionsQuery(
     $assessmentId: UUID!
