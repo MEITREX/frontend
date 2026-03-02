@@ -197,6 +197,21 @@ export const umlApiGetLecturerExerciseOverviewQuery = graphql`
         diagramCode
         semanticModel
       }
+      studentSubmissions {
+        studentId
+        solutions {
+          id
+          submittedAt
+          diagram {
+            diagramCode
+            semanticModel
+          }
+          feedback {
+            points
+            comment
+          }
+        }
+      }
     }
 
     findContentsByIds(ids: [$assessmentId]) {
