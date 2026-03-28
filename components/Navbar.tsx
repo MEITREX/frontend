@@ -116,6 +116,15 @@ const NAVBAR_NOTIFICATION_ADDED_SUB = graphql`
   }
 `;
 
+const XP_CACHE_TTL_MS = 30000;
+const XP_POLL_INTERVAL_MS = 30000;
+type XpLevelInfo = {
+  level: number;
+  xpInLevel: number;
+  xpRequiredForLevelUp: number;
+};
+const xpLevelCache = new Map<string, { value: XpLevelInfo; timestamp: number }>();
+
 /** ---------------- Utilities ---------------- */
 function useIsTutor(_frag: NavbarIsTutor$key) {
   const data = useFragment(
@@ -557,16 +566,27 @@ function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
   );
 
   // XP/Level (keeps your HEAD logic)
-  const [levelInfo, setLevelInfo] = useState<{
-    level: number;
-    xpInLevel: number;
-    xpRequiredForLevelUp: number;
-  } | null>(null);
+  const [levelInfo, setLevelInfo] = useState<XpLevelInfo | null>(null);
+  const xpFetchInFlightRef = useRef(false);
+  const xpLastFetchAtRef = useRef(0);
 
   // central XP fetcher (Relay)
   const relayEnv = useRelayEnvironment();
-  const fetchXP = useCallback(async () => {
+  const fetchXP = useCallback(async (force = false) => {
     if (!userId) return;
+
+    const now = Date.now();
+    const cached = xpLevelCache.get(userId);
+    if (!force && cached && now - cached.timestamp < XP_CACHE_TTL_MS) {
+      setLevelInfo(cached.value);
+      return;
+    }
+    if (!force && xpFetchInFlightRef.current) return;
+    if (!force && now - xpLastFetchAtRef.current < 1500) return;
+
+    xpFetchInFlightRef.current = true;
+    xpLastFetchAtRef.current = now;
+
     try {
       const query = graphql`
         query NavbarGetUserXPQuery($userID: ID!) {
@@ -591,52 +611,48 @@ function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
         : rawUser ?? null;
 
       if (!payload) {
-        setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
+        const fallback = { level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 };
+        setLevelInfo(fallback);
+        xpLevelCache.set(userId, { value: fallback, timestamp: Date.now() });
         return;
       }
       const requiredXP = Number(payload.requiredXP ?? 0);
       const exceedingXP = Number(payload.exceedingXP ?? 0);
       const level = Number(payload.level ?? 0);
-      setLevelInfo({
+      const nextLevelInfo = {
         level: Number.isFinite(level) ? level : 0,
         xpInLevel: Number.isFinite(exceedingXP) ? exceedingXP : 0,
         xpRequiredForLevelUp:
           Number.isFinite(requiredXP) && requiredXP > 0 ? requiredXP : 1,
-      });
+      };
+      setLevelInfo(nextLevelInfo);
+      xpLevelCache.set(userId, { value: nextLevelInfo, timestamp: Date.now() });
     } catch (e) {
       console.error("[Navbar XP] fetch failed", e);
       setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
+    } finally {
+      xpFetchInFlightRef.current = false;
     }
   }, [relayEnv, userId]);
 
   // initial fetch and on identity changes
   useEffect(() => {
+    if (!userId) return;
+    const cached = xpLevelCache.get(userId);
+    if (cached) {
+      setLevelInfo(cached.value);
+    }
     fetchXP();
   }, [fetchXP]);
 
-  // refresh when window regains focus / becomes visible / custom XP events fire
+  // periodic refresh only (no focus/visibility/custom event triggers)
   useEffect(() => {
-    const handleFocus = () => fetchXP();
-    const handleVisible = () => {
-      if (document.visibilityState === "visible") fetchXP();
-    };
-    const handleCustom = () => fetchXP(); // dispatch window.dispatchEvent(new Event('xp:updated')) elsewhere
+    const interval = window.setInterval(() => {
+      fetchXP(true);
+    }, XP_POLL_INTERVAL_MS);
 
-    window.addEventListener("focus", handleFocus);
-    document.addEventListener("visibilitychange", handleVisible);
-    window.addEventListener("xp:updated", handleCustom as EventListener);
-    window.addEventListener(
-      "meitrex:xp-updated",
-      handleCustom as EventListener
-    );
     return () => {
-      window.removeEventListener("focus", handleFocus);
-      document.removeEventListener("visibilitychange", handleVisible);
-      window.removeEventListener("xp:updated", handleCustom as EventListener);
-      window.removeEventListener(
-        "meitrex:xp-updated",
-        handleCustom as EventListener
-      );
+      window.clearInterval(interval);
     };
   }, [fetchXP]);
 
@@ -652,7 +668,7 @@ function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
 
     if ((remaining <= 0 || perc >= 100) && xpRetryRef.current < 3) {
       xpRetryRef.current += 1;
-      const t = setTimeout(() => fetchXP(), 1200);
+      const t = setTimeout(() => fetchXP(true), 1200);
       return () => clearTimeout(t);
     }
     // reset retries once things look normal

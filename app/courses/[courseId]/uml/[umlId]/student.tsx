@@ -4,10 +4,10 @@ import { StudentCourseLayoutCourseIdQuery$data } from "@/__generated__/StudentCo
 import { useCourseData } from "@/components/courses/context/CourseDataContext";
 import ContentViewer from "@/components/forum/richTextEditor/ContentViewer";
 import {
-  umlApiCreateUmlSolutionMutation,
-  umlApiEvaluateLatestSolutionMutation,
-  umlApiGetStudentSolutionsQuery,
-  umlApiSubmitStudentSolutionMutation,
+    umlApiCreateUmlSolutionMutation,
+    umlApiEvaluateLatestSolutionMutation,
+    umlApiGetStudentSolutionsQuery,
+    umlApiSubmitStudentSolutionMutation,
 } from "@/components/hylimo/api/UmlApi";
 import FullscreenEditorDialog from "@/components/hylimo/FullscreenEditorDialog";
 import MainHylimoEditor from "@/components/hylimo/MainHylimoEditor";
@@ -15,14 +15,14 @@ import { getSemanticModel } from "@/components/hylimo/semanticModelGenerator";
 import AssignmentResult from "@/components/uml-assignment/AssignmentResult";
 import AttemptSelectionHeader from "@/components/uml-assignment/AttemptSelectionHeader";
 import {
-  Alert,
-  Box,
-  Button,
-  Container,
-  Paper,
-  Snackbar,
-  Stack,
-  Typography,
+    Alert,
+    Box,
+    Button,
+    Container,
+    Paper,
+    Snackbar,
+    Stack,
+    Typography,
 } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -364,6 +364,8 @@ return (
         showInfo={showInfo}
         setShowInfo={setShowInfo}
         invisible={autoFullscreenHackActive && fullscreen}
+        sourceCode={diagramCode}
+        fileName="diagram"
         infoContent={
           <Box bgcolor="#e3f2fd" p={2}>
             <ContentViewer htmlContent={exercise.description} />

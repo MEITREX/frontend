@@ -1,16 +1,18 @@
 ﻿"use client";
 
 import { language, LanguageClientProxy, setupLanguageClient } from "@/components/hylimo/lspPlugin";
+import type { Root } from "@hylimo/diagram-common";
 import { DiagramActionNotification, DiagramCloseNotification, DiagramOpenNotification } from "@hylimo/diagram-protocol";
 import { createContainer, DiagramServerProxy, ResetCanvasBoundsAction, TYPES } from "@hylimo/diagram-ui";
 import { Box } from "@mui/material";
 import type * as monaco from "monaco-editor";
 import { EditorApp, type EditorAppConfig } from "monaco-languageclient/editorApp";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Split from "react-split";
 import type { ActionHandlerRegistry, IActionDispatcher, IActionHandler } from "sprotty";
 import { FitToScreenAction, RequestModelAction } from "sprotty-protocol";
 import type { Disposable } from "vscode-languageserver-protocol";
+import { DiagramDownload } from "./DownloadDigram";
 
 import "@hylimo/diagram-ui/css/hylimo.css";
 import "@hylimo/diagram-ui/css/toolbox.css";
@@ -39,6 +41,8 @@ export default function HylimoEditor({
   onChange (value: string): void;
   readOnly?: boolean;
 }) {
+  const [sourceCode, setSourceCode] = useState(initialValue);
+  const [diagram, setDiagram] = useState<Root | undefined>();
   const editorElement = useRef<HTMLDivElement | null>(null);
   const sprottyWrapperRef = useRef<HTMLDivElement | null>(null);
   const disposablesRef = useRef<(Disposable)[]>([]);
@@ -147,7 +151,9 @@ export default function HylimoEditor({
 
         const changeDisposable = monacoEditor.onDidChangeModelContent(() => {
             if (!readOnlyRef.current && !isUpdatingModelRef.current) {
-                onChange(monacoEditor.getValue());
+                const newValue = monacoEditor.getValue();
+                onChange(newValue);
+                setSourceCode(newValue);
 
                 if (transactionStatus.state === TransactionState.Committed) {
                     transactionStatus.state = TransactionState.None;
@@ -170,6 +176,10 @@ export default function HylimoEditor({
                 super.initialize(registry);
                 registry.register('toolboxEditPredictionResponseAction', { handle: () => {} } as IActionHandler);
             const notificationDisposable = currentLanguageClient.onNotification(DiagramActionNotification.type, (msg: any) => {
+                    // Extract diagram from action if available (similar to Hylimo Vue version)
+                    if (msg.action?.newRoot !== undefined && msg.clientId === this.clientId) {
+                        setDiagram(msg.action.newRoot as Root);
+                    }
                     if (msg.clientId === this.clientId) this.messageReceived(msg);
                 });
             disposablesRef.current.push(notificationDisposable);
@@ -269,8 +279,8 @@ export default function HylimoEditor({
   return (
     <Box
       sx={{
-        height: "100%", width: "100%", overflow: "hidden",
-        "& .split": { display: "flex", height: "100%" },
+        height: "100%", width: "100%", overflow: "hidden", display: "flex", flexDirection: "column",
+        "& .split": { display: "flex", height: "100%", flex: 1 },
         "& .gutter": { backgroundColor: "action.hover", width: "10px !important", cursor: "col-resize" },
         "& .toolbox-wrapper, & .toolbox-root": {
           display: readOnly ? "none !important" : "block"
@@ -284,6 +294,14 @@ export default function HylimoEditor({
         }
       }}
     >
+      <Box sx={{ p: 1, borderBottom: "1px solid", borderColor: "divider", display: "flex", justifyContent: "flex-end", gap: 1 }}>
+        <DiagramDownload
+          diagram={diagram}
+          fileName="diagram"
+          sourceCode={sourceCode}
+          variant="icon"
+        />
+      </Box>
       <Split className="split" sizes={[50, 50]} minSize={100} gutterSize={10}>
         <div
           ref={editorElement}

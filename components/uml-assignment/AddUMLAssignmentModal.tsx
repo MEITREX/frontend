@@ -5,16 +5,16 @@ import { useState } from "react";
 import { useMutation } from "react-relay";
 
 import {
-  Box,
-  Button,
-  Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  Divider,
-  Stack,
-  TextField,
-  Typography
+    Box,
+    Button,
+    Container,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    Divider,
+    Stack,
+    TextField,
+    Typography
 } from "@mui/material";
 
 import { ContentType } from "@/__generated__/AddCodeAssignmentModalMutation.graphql";
@@ -24,8 +24,8 @@ import { AssessmentMetadataFormSection } from "@/components/AssessmentMetadataFo
 import type { ContentMetadataPayload } from "@/components/ContentMetadataFormSection";
 import { ContentMetadataFormSection } from "@/components/ContentMetadataFormSection";
 import {
-  umlApiCreateAssessmentMutation,
-  umlApiUpdateUmlAssignmentMutation,
+    umlApiCreateAssessmentMutation,
+    umlApiUpdateUmlAssignmentMutation,
 } from "@/components/hylimo/api/UmlApi";
 import FullscreenEditorDialog from "@/components/hylimo/FullscreenEditorDialog";
 import MainHylimoEditor from "@/components/hylimo/MainHylimoEditor";
@@ -284,6 +284,8 @@ export function AddUMLAssignmentModal({
         title="HyLiMo Editor"
         showInfo={showInfo}
         setShowInfo={setShowInfo}
+        sourceCode={diagramCode}
+        fileName="diagram"
         infoContent={
           <>
             <TextField

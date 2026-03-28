@@ -3,16 +3,16 @@ import FullscreenEditorDialog from "@/components/hylimo/FullscreenEditorDialog";
 import MainHylimoEditor from "@/components/hylimo/MainHylimoEditor";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
-  Alert,
-  Box,
-  Collapse,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  Paper,
-  Stack,
-  Typography
+    Alert,
+    Box,
+    Collapse,
+    IconButton,
+    List,
+    ListItem,
+    ListItemText,
+    Paper,
+    Stack,
+    Typography
 } from "@mui/material";
 import Button from "@mui/material/Button";
 import { useEffect, useState } from "react";
@@ -144,6 +144,8 @@ export default function ExerciseInfoTab({
         showInfo={showInfo}
         setShowInfo={setShowInfo}
         invisible={autoFullscreenHackActive && fullscreen}
+        sourceCode={localTutorCode}
+        fileName="diagram"
         infoContent={
           <Box sx={{ bgcolor: "action.hover", p: 2, borderRadius: 1 }}>
             <ContentViewer htmlContent={exercise.description} />
