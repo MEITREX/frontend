@@ -1,18 +1,17 @@
 import CloseIcon from "@mui/icons-material/Close";
 import InfoIcon from "@mui/icons-material/Info";
 import {
-    AppBar,
-    Box,
-    Dialog,
-    IconButton,
-    Paper,
-    Slide,
-    Stack,
-    Toolbar,
-    Typography
+  AppBar,
+  Box,
+  Dialog,
+  IconButton,
+  Paper,
+  Slide,
+  Stack,
+  Toolbar,
+  Typography
 } from "@mui/material";
 import React from "react";
-import { DiagramDownload } from "./DownloadDigram";
 
 interface FullscreenEditorDialogProps {
   open: boolean;
@@ -36,8 +35,6 @@ export default function FullscreenEditorDialog({
   infoContent,
   children,
   invisible = false,
-  sourceCode = "",
-  fileName = "diagram"
 }: FullscreenEditorDialogProps) {
   return (
     <Dialog
@@ -57,11 +54,6 @@ export default function FullscreenEditorDialog({
           <Typography sx={{ ml: 2, flex: 1 }} variant="h6">
             {title}
           </Typography>
-          <DiagramDownload
-            diagram={undefined}
-            fileName={fileName}
-            sourceCode={sourceCode}
-          />
           {infoContent && (
             <IconButton color="inherit" onClick={() => setShowInfo(!showInfo)}>
               <InfoIcon />
