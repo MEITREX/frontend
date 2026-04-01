@@ -158,6 +158,8 @@ export default function ExerciseInfoTab({
         showInfo={showInfo}
         setShowInfo={setShowInfo}
         invisible={autoFullscreenHackActive && fullscreen}
+        sourceCode={localTutorCode}
+        fileName="diagram"
         infoContent={
           <Box sx={{ bgcolor: "action.hover", p: 2, borderRadius: 1 }}>
             <ContentViewer htmlContent={exercise.description} />
@@ -200,7 +202,12 @@ export default function ExerciseInfoTab({
 
           <Divider />
 
-          <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+            flexWrap="wrap"
+          >
             <Typography variant="body2" color="text.secondary">
               Attempt Policy:
             </Typography>

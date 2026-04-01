@@ -22,6 +22,8 @@ interface FullscreenEditorDialogProps {
   infoContent?: React.ReactNode;
   children: React.ReactNode;
   invisible?: boolean;
+  sourceCode?: string;
+  fileName?: string;
 }
 
 export default function FullscreenEditorDialog({
@@ -32,7 +34,7 @@ export default function FullscreenEditorDialog({
   setShowInfo,
   infoContent,
   children,
-  invisible = false
+  invisible = false,
 }: FullscreenEditorDialogProps) {
   return (
     <Dialog

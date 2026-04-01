@@ -172,7 +172,10 @@ export function AddUMLAssignmentModal({
   ]);
 
   function stripHtml(input: string) {
-    return input.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+    return input
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .trim();
   }
 
   function validateUmlExerciseInput(): UmlInputErrors {
@@ -187,7 +190,8 @@ export function AddUMLAssignmentModal({
     }
 
     if (!Number.isInteger(totalPoints) || totalPoints < 0) {
-      nextErrors.totalPoints = "Total points must be an integer greater than or equal to 0.";
+      nextErrors.totalPoints =
+        "Total points must be an integer greater than or equal to 0.";
     }
 
     if (
@@ -399,7 +403,9 @@ export function AddUMLAssignmentModal({
                       label="Total Points"
                       type="number"
                       value={totalPoints}
-                      onChange={(e) => setTotalPoints(Number(e.target.value || 0))}
+                      onChange={(e) =>
+                        setTotalPoints(Number(e.target.value || 0))
+                      }
                       inputProps={{ min: 0, step: 1 }}
                       error={Boolean(errors.totalPoints)}
                       helperText={errors.totalPoints}
@@ -411,7 +417,10 @@ export function AddUMLAssignmentModal({
                       value={Math.round((requiredPercentage || 0) * 100)}
                       onChange={(e) => {
                         const nextPercentage = Number(e.target.value || 0);
-                        const clamped = Math.max(0, Math.min(100, nextPercentage));
+                        const clamped = Math.max(
+                          0,
+                          Math.min(100, nextPercentage)
+                        );
                         setRequiredPercentage(clamped / 100);
                       }}
                       inputProps={{ min: 0, max: 100, step: 1 }}
@@ -433,8 +442,13 @@ export function AddUMLAssignmentModal({
                     }
                     label="Allow only one submission per student"
                   />
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: -1 }}>
-                    If enabled, students can submit only once. If disabled, they can create and submit additional attempts.
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: -1 }}
+                  >
+                    If enabled, students can submit only once. If disabled, they
+                    can create and submit additional attempts.
                   </Typography>
 
                   <Box>
@@ -461,7 +475,9 @@ export function AddUMLAssignmentModal({
                       sx={{
                         height: "50vh",
                         border: "1px solid",
-                        borderColor: errors.diagramCode ? "error.main" : "divider",
+                        borderColor: errors.diagramCode
+                          ? "error.main"
+                          : "divider",
                         borderRadius: 1,
                         overflow: "hidden",
                         mb: 2,
@@ -511,6 +527,8 @@ export function AddUMLAssignmentModal({
         title="HyLiMo Editor"
         showInfo={showInfo}
         setShowInfo={setShowInfo}
+        sourceCode={diagramCode}
+        fileName="diagram"
         infoContent={
           <>
             <TextField

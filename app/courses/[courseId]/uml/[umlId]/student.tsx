@@ -480,6 +480,8 @@ export default function StudentUMLAssignment() {
         showInfo={showInfo}
         setShowInfo={setShowInfo}
         invisible={autoFullscreenHackActive && fullscreen}
+        sourceCode={diagramCode}
+        fileName="diagram"
         infoContent={
           <Box bgcolor="#e3f2fd" p={2}>
             <ContentViewer htmlContent={exercise.description} />
