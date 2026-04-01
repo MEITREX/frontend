@@ -145,13 +145,7 @@ export default function AttemptSelectionHeader({
           variant="contained"
           color="primary"
           onClick={() => onAction("submit")}
-          endIcon={
-            isLoading.submitting ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              <SendIcon />
-            )
-          }
+          endIcon={<SendIcon />}
           disabled={isSubmitted || isAnyLoading}
         >
           {isLoading.submitting ? "Submitting..." : "Submit"}

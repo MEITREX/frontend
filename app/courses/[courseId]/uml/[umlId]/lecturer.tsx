@@ -119,7 +119,7 @@ export default function LecturerUmlAssignment() {
       </Box>
       {isEditModalOpen && exercise && content && (
         <AddUMLAssignmentModal
-          key={umlId + '-' + String(isEditModalOpen)}
+          key={umlId + "-" + String(isEditModalOpen)}
           open={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           onUpdated={() => setRefreshKey((prev) => prev + 1)}
@@ -127,9 +127,11 @@ export default function LecturerUmlAssignment() {
           chapterId={content.metadata?.chapterId}
           initialData={{
             description: exercise.description,
+            gradingRules: exercise.gradingRules || "",
             diagramCode: exercise.tutorSolution?.diagramCode,
             totalPoints: exercise.totalPoints,
             requiredPercentage: exercise.requiredPercentage,
+            showSolution: exercise.showSolution ?? true,
             metadata: {
               name: content.metadata?.name || "",
               rewardPoints: content.metadata?.rewardPoints || 0,
@@ -139,8 +141,9 @@ export default function LecturerUmlAssignment() {
             assessmentMetadata: {
               skillPoints: content.assessmentMetadata?.skillPoints || 0,
               skillTypes: content.assessmentMetadata?.skillTypes || [],
-              initialLearningInterval: content.assessmentMetadata?.initialLearningInterval || 1,
-            }
+              initialLearningInterval:
+                content.assessmentMetadata?.initialLearningInterval || 1,
+            },
           }}
         />
       )}

@@ -30,7 +30,7 @@ export default function StudentRow({ sub, exercise }: StudentRowProps) {
 
   const solutions = sub.solutions || [];
   const submittedSolutions = solutions.filter((s: any) => s.submittedAt);
-  const latestSol = submittedSolutions[submittedSolutions.length - 1];
+  const latestSol = submittedSolutions[0];
   const hasDraft = solutions.some((s: any) => !s.submittedAt);
 
   const total = exercise.totalPoints || 0;

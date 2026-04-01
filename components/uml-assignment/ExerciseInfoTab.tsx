@@ -5,14 +5,13 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   Alert,
   Box,
+  Chip,
   Collapse,
+  Divider,
   IconButton,
-  List,
-  ListItem,
-  ListItemText,
   Paper,
   Stack,
-  Typography
+  Typography,
 } from "@mui/material";
 import Button from "@mui/material/Button";
 import { useEffect, useState } from "react";
@@ -52,27 +51,39 @@ export default function ExerciseInfoTab({
 
   return (
     <Stack spacing={3}>
-         <Alert
-                      severity="info"
-                      variant="outlined"
-                      sx={{
-                        width: "100%",
-                        borderRadius: 2,
-                        borderWidth: "1px",
-                        backgroundColor: "info.lighter",
-                        "& .MuiAlert-message": {
-                          fontWeight: 500,
-                        },
-                      }}
-                    >
-                      <strong>Read-Only:</strong> To edit the tutor solution, select the 'Edit Exercise' button.
-        </Alert>
+      <Alert
+        severity="info"
+        variant="outlined"
+        sx={{
+          width: "100%",
+          borderRadius: 2,
+          borderWidth: "1px",
+          backgroundColor: "info.lighter",
+          "& .MuiAlert-message": {
+            fontWeight: 500,
+          },
+        }}
+      >
+        <strong>Read-Only:</strong> To edit the tutor solution, select the
+        &apos;Edit Exercise&apos; button.
+      </Alert>
       <Paper elevation={0} variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
         <Typography variant="h6" fontWeight="bold" gutterBottom>
           Task Description
         </Typography>
         <Box sx={{ bgcolor: "action.hover", p: 2, borderRadius: 1 }}>
           <ContentViewer htmlContent={exercise.description} />
+        </Box>
+      </Paper>
+
+      <Paper elevation={0} variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
+        <Typography variant="h6" fontWeight="bold" gutterBottom>
+          Grading Rules
+        </Typography>
+        <Box sx={{ bgcolor: "action.hover", p: 2, borderRadius: 1 }}>
+          <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+            {exercise.gradingRules || "No grading rules defined."}
+          </Typography>
         </Box>
       </Paper>
 
@@ -94,7 +105,10 @@ export default function ExerciseInfoTab({
           </Typography>
           <Box>
             <Button
-              onClick={e => { e.stopPropagation(); setFullscreen(true); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setFullscreen(true);
+              }}
               variant="outlined"
               size="small"
               sx={{ mr: 1 }}
@@ -162,22 +176,45 @@ export default function ExerciseInfoTab({
 
       <Paper elevation={0} variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
         <Typography variant="h6" fontWeight="bold" gutterBottom>
-          Requirements
+          Exercise Overview
         </Typography>
-        <List disablePadding>
-          <ListItem divider sx={{ px: 0 }}>
-            <ListItemText
-              primary="Max Points"
-              secondary={`${exercise.totalPoints} Achievement Points`}
+        <Stack spacing={2}>
+          <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+            <Paper variant="outlined" sx={{ flex: 1, p: 2, borderRadius: 2 }}>
+              <Typography variant="overline" color="text.secondary">
+                Total Points
+              </Typography>
+              <Typography variant="h5" fontWeight="bold">
+                {exercise.totalPoints}
+              </Typography>
+            </Paper>
+            <Paper variant="outlined" sx={{ flex: 1, p: 2, borderRadius: 2 }}>
+              <Typography variant="overline" color="text.secondary">
+                Passing Threshold
+              </Typography>
+              <Typography variant="h5" fontWeight="bold">
+                {Math.round((exercise.requiredPercentage || 0) * 100)}%
+              </Typography>
+            </Paper>
+          </Stack>
+
+          <Divider />
+
+          <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
+            <Typography variant="body2" color="text.secondary">
+              Attempt Policy:
+            </Typography>
+            <Chip
+              size="small"
+              color={exercise.showSolution ? "warning" : "success"}
+              label={
+                exercise.showSolution
+                  ? "One Submission Per Student"
+                  : "Multiple Submissions Allowed"
+              }
             />
-          </ListItem>
-          <ListItem sx={{ px: 0 }}>
-            <ListItemText
-              primary="Passing Threshold"
-              secondary={`${(exercise.requiredPercentage || 0.5) * 100}%`}
-            />
-          </ListItem>
-        </List>
+          </Stack>
+        </Stack>
       </Paper>
     </Stack>
   );

@@ -569,6 +569,7 @@ input CreateSubexerciseInput {
 input CreateUmlExerciseInput {
   courseId: UUID!
   description: String!
+  gradingRules: String
   requiredPercentage: Float! = 0.5
   showSolution: Boolean! = false
   totalPoints: Int!
@@ -1833,6 +1834,7 @@ type UmlExercise {
   assessmentId: UUID!
   courseId: UUID!
   description: String!
+  gradingRules: String
   id: UUID!
   latestSolution(studentId: UUID!): UmlStudentSolution
   requiredPercentage: Float

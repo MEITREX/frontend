@@ -1,12 +1,11 @@
-import React from "react";
-import Image from "next/image";
-import { getUnlockedItemAndEquiped } from "@/components/items/logic/GetItems";
-import { useLazyLoadQuery } from "react-relay";
 import { WidgetApiItemInventoryForUserQuery } from "@/__generated__/WidgetApiItemInventoryForUserQuery.graphql";
+import logo from "@/assets/logo.svg";
+import { getUnlockedItemAndEquiped } from "@/components/items/logic/GetItems";
 import { widgetApiItemInventoryForUserQuery } from "@/components/widgets/api/WidgetApi";
 import { Box } from "@mui/material";
+import Image from "next/image";
 import { useAuth } from "react-oidc-context";
-import logo from "@/assets/logo.svg";
+import { useLazyLoadQuery } from "react-relay";
 
 export default function TutorAvatar() {
   const auth = useAuth();
@@ -16,7 +15,8 @@ export default function TutorAvatar() {
   const { inventoryForUser } =
     useLazyLoadQuery<WidgetApiItemInventoryForUserQuery>(
       widgetApiItemInventoryForUserQuery,
-      { fetchPolicy: "network-only" }
+      {},
+      { fetchPolicy: "store-or-network" }
     );
 
   let avatarProps;

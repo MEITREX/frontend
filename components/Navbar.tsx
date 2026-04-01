@@ -548,7 +548,8 @@ function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
   const { inventoryForUser } =
     useLazyLoadQuery<WidgetApiItemInventoryForUserQuery>(
       widgetApiItemInventoryForUserQuery,
-      { fetchPolicy: "network-only" }
+      {},
+      { fetchPolicy: "store-or-network" }
     );
   const profilePic = getUnlockedItemAndEquiped(inventoryForUser, "profilePics");
   const profilePicFrame = getUnlockedItemAndEquiped(

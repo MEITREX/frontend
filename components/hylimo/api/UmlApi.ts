@@ -2,11 +2,11 @@
 
 export const umlApiCreateAssessmentMutation = graphql`
   mutation UmlApiCreateAssessmentMutation(
-    $assessmentInput: CreateAssessmentInput!,
+    $assessmentInput: CreateAssessmentInput!
     $createUmlExerciseInput: CreateUmlExerciseInput!
   ) {
     createUMLAssessment(
-      assessmentInput: $assessmentInput,
+      assessmentInput: $assessmentInput
       createUmlExerciseInput: $createUmlExerciseInput
     ) {
       id
@@ -28,6 +28,7 @@ export const umlApiGetUmlExerciseByAssessmentIdQuery = graphql`
       ... on UmlExercise {
         id
         description
+        gradingRules
         totalPoints
         tutorSolution {
           diagramCode
@@ -109,6 +110,7 @@ export const umlApiUpdateUmlAssignmentMutation = graphql`
       updateUmlExercise(input: $umlExercise) {
         id
         description
+        gradingRules
         totalPoints
         requiredPercentage
         showSolution
@@ -129,6 +131,7 @@ export const umlApiGetStudentSolutionsQuery = graphql`
     getUmlExerciseByAssessmentId(assessmentId: $assessmentId) {
       id
       description
+      gradingRules
       totalPoints
       requiredPercentage
       solutionsByStudent(studentId: $studentId) {
@@ -191,8 +194,10 @@ export const umlApiGetLecturerExerciseOverviewQuery = graphql`
     getUmlExerciseByAssessmentId(assessmentId: $assessmentId) {
       id
       description
+      gradingRules
       totalPoints
       requiredPercentage
+      showSolution
       tutorSolution {
         diagramCode
         semanticModel
