@@ -440,15 +440,15 @@ export function AddUMLAssignmentModal({
                         onChange={(e) => setShowSolution(e.target.checked)}
                       />
                     }
-                    label="Allow only one submission per student"
+                    label="Show tutor solution to students after submission"
                   />
                   <Typography
                     variant="caption"
                     color="text.secondary"
                     sx={{ mt: -1 }}
                   >
-                    If enabled, students can submit only once. If disabled, they
-                    can create and submit additional attempts.
+                    If enabled, students can view the reference solution after
+                    submitting.
                   </Typography>
 
                   <Box>
@@ -580,7 +580,7 @@ export function AddUMLAssignmentModal({
                   onChange={(e) => setShowSolution(e.target.checked)}
                 />
               }
-              label="Allow only one submission per student"
+              label="Show tutor solution to students after submission"
             />
           </>
         }

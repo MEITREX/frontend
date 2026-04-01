@@ -12,6 +12,7 @@ import {
   Menu,
   MenuItem,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { useState } from "react";
@@ -21,6 +22,9 @@ interface AttemptSelectionHeaderProps {
   totalAttempts: number;
   attemptDate: string;
   isSubmitted: boolean;
+  canCreateNewAttempt: boolean;
+  newAttemptHint?: string;
+  readOnlyHint?: string;
   isLoading: { saving: boolean; submitting: boolean; creating: boolean };
   onNavigate: (dir: "prev" | "next") => void;
   onAction: (type: "save" | "submit") => void;
@@ -51,6 +55,9 @@ export default function AttemptSelectionHeader({
   totalAttempts,
   attemptDate,
   isSubmitted,
+  canCreateNewAttempt,
+  newAttemptHint,
+  readOnlyHint,
   isLoading,
   onNavigate,
   onAction,
@@ -58,6 +65,9 @@ export default function AttemptSelectionHeader({
 }: AttemptSelectionHeaderProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isAnyLoading = Object.values(isLoading).some(Boolean);
+  const mergedTooltipHint = [readOnlyHint, newAttemptHint]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -83,47 +93,64 @@ export default function AttemptSelectionHeader({
       </IconButton>
 
       <Box display="flex" alignItems="center" gap={1}>
-        {currentIdx === totalAttempts - 1 && isSubmitted && (
-          <>
-            <Button
-              variant="outlined"
-              onClick={(e) => setAnchorEl(e.currentTarget)}
-              startIcon={
-                isLoading.creating ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : (
-                  <AddIcon />
-                )
-              }
-              endIcon={<KeyboardArrowDownIcon />}
-              disabled={isAnyLoading}
-            >
-              {isLoading.creating ? "Creating..." : "New Attempt"}
-            </Button>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={() => setAnchorEl(null)}
-            >
-              <MenuItem
-                onClick={() => {
-                  onCreate(false);
-                  setAnchorEl(null);
-                }}
+        {currentIdx === totalAttempts - 1 &&
+          isSubmitted &&
+          !canCreateNewAttempt &&
+          newAttemptHint && (
+            <Tooltip title={mergedTooltipHint}>
+              <span>
+                <Button variant="outlined" startIcon={<AddIcon />} disabled>
+                  New Attempt
+                </Button>
+              </span>
+            </Tooltip>
+          )}
+
+        {currentIdx === totalAttempts - 1 &&
+          isSubmitted &&
+          canCreateNewAttempt && (
+            <>
+              <Tooltip title={mergedTooltipHint}>
+                <Button
+                  variant="outlined"
+                  onClick={(e) => setAnchorEl(e.currentTarget)}
+                  startIcon={
+                    isLoading.creating ? (
+                      <CircularProgress size={20} color="inherit" />
+                    ) : (
+                      <AddIcon />
+                    )
+                  }
+                  endIcon={<KeyboardArrowDownIcon />}
+                  disabled={isAnyLoading}
+                >
+                  {isLoading.creating ? "Creating..." : "New Attempt"}
+                </Button>
+              </Tooltip>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={() => setAnchorEl(null)}
               >
-                Start from scratch
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  onCreate(true);
-                  setAnchorEl(null);
-                }}
-              >
-                Copy from previous
-              </MenuItem>
-            </Menu>
-          </>
-        )}
+                <MenuItem
+                  onClick={() => {
+                    onCreate(false);
+                    setAnchorEl(null);
+                  }}
+                >
+                  Start from scratch
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    onCreate(true);
+                    setAnchorEl(null);
+                  }}
+                >
+                  Copy from previous
+                </MenuItem>
+              </Menu>
+            </>
+          )}
 
         <Button
           variant="outlined"

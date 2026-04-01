@@ -134,6 +134,11 @@ export const umlApiGetStudentSolutionsQuery = graphql`
       gradingRules
       totalPoints
       requiredPercentage
+      showSolution
+      tutorSolution {
+        diagramCode
+        semanticModel
+      }
       solutionsByStudent(studentId: $studentId) {
         id
         diagram {
@@ -145,6 +150,14 @@ export const umlApiGetStudentSolutionsQuery = graphql`
           id
           comment
           points
+        }
+      }
+    }
+
+    findContentsByIds(ids: [$assessmentId]) {
+      ... on Assessment {
+        assessmentMetadata {
+          initialLearningInterval
         }
       }
     }

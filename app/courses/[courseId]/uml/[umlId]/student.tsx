@@ -19,11 +19,14 @@ import {
   AlertColor,
   Box,
   Button,
+  Chip,
+  CircularProgress,
   Container,
   LinearProgress,
   Paper,
   Snackbar,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { useParams } from "next/navigation";
@@ -59,6 +62,7 @@ export default function StudentUMLAssignment() {
   const [hasLoadedInitially, setHasLoadedInitially] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [isTutorSolutionVisible, setIsTutorSolutionVisible] = useState(false);
   const [autoFullscreenHackActive, setAutoFullscreenHackActive] =
     useState(true);
   const [feedbackGenerationAttemptUuid, setFeedbackGenerationAttemptUuid] =
@@ -81,6 +85,10 @@ export default function StudentUMLAssignment() {
   );
 
   const exercise = data?.getUmlExerciseByAssessmentId;
+  const assessmentMetadata = data?.findContentsByIds?.[0]?.assessmentMetadata;
+  const retryIntervalDays = assessmentMetadata?.initialLearningInterval;
+  const isRepeatable =
+    assessmentMetadata?.initialLearningInterval != null ? true : false;
 
   useEffect(() => {
     if (!exercise?.solutionsByStudent) return;
@@ -148,6 +156,44 @@ export default function StudentUMLAssignment() {
     submitted: false,
     date: new Date().toISOString(),
   };
+  const hasSubmittedBefore = attempts.some((a: any) => a.submitted);
+  const latestSubmittedTimestamp = attempts
+    .filter((a: any) => a.submitted)
+    .map((a: any) => new Date(a.date).getTime())
+    .filter((ts: number) => !Number.isNaN(ts))
+    .reduce((max: number, ts: number) => Math.max(max, ts), 0);
+  const nextAttemptAvailableAt =
+    isRepeatable && latestSubmittedTimestamp > 0 && retryIntervalDays != null
+      ? new Date(latestSubmittedTimestamp + retryIntervalDays * 24 * 60 * 60 * 1000)
+      : null;
+  const remainingUntilNextAttemptMs =
+    nextAttemptAvailableAt != null
+      ? nextAttemptAvailableAt.getTime() - Date.now()
+      : 0;
+  const canCreateNewAttemptNow =
+    isRepeatable &&
+    (!hasSubmittedBefore ||
+      nextAttemptAvailableAt == null ||
+      remainingUntilNextAttemptMs <= 0);
+  const nextAttemptHint =
+    isRepeatable && hasSubmittedBefore && remainingUntilNextAttemptMs > 0
+      ? `You can create your next attempt in ${Math.ceil(
+          remainingUntilNextAttemptMs / (24 * 60 * 60 * 1000)
+        )} day(s), starting ${nextAttemptAvailableAt?.toLocaleString("de-DE", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })}.`
+      : null;
+  const isSingleSubmissionOnly = !isRepeatable;
+  const tutorSolutionCode = exercise?.tutorSolution?.diagramCode ?? "";
+  const canShowTutorSolution =
+    isSingleSubmissionOnly &&
+    hasSubmittedBefore &&
+    Boolean(exercise?.showSolution) &&
+    Boolean(tutorSolutionCode);
   const isCurrentAttemptGeneratingFeedback =
     Boolean(feedbackGenerationAttemptUuid) &&
     attempt.uuid === feedbackGenerationAttemptUuid;
@@ -177,6 +223,26 @@ export default function StudentUMLAssignment() {
     const isSubmit = type === "submit";
 
     if (!isSubmit && codeToSave === attempts[currentAttempt]?.diagram) {
+      return;
+    }
+
+    const hasSubmittedBefore = attempts.some((a: any) => a.submitted);
+    if (!attempt.uuid && hasSubmittedBefore && !isRepeatable) {
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message:
+          "This UML exercise is not repeatable. You cannot create another solution after submission.",
+      });
+      return;
+    }
+
+    if (!attempt.uuid && hasSubmittedBefore && nextAttemptHint) {
+      setSnackbar({
+        open: true,
+        severity: "info",
+        message: nextAttemptHint,
+      });
       return;
     }
 
@@ -300,12 +366,18 @@ export default function StudentUMLAssignment() {
           const newSol = res.mutateUmlExercise.createUmlSolution;
           performSave(newSol.id);
         },
-        onError: () => {
+        onError: (err: any) => {
           setIsSubmittingMode(false);
+          const errorMsg = err?.message || "";
+          const isNonRepeatableError =
+            errorMsg.includes("not repeatable") ||
+            errorMsg.includes("cannot create");
           setSnackbar({
             open: true,
             severity: "error",
-            message: "Could not create a submission attempt.",
+            message: isNonRepeatableError
+              ? "This UML exercise is not repeatable. You cannot create another solution after submission."
+              : "Could not create a submission attempt.",
           });
         },
       });
@@ -333,6 +405,26 @@ export default function StudentUMLAssignment() {
   };
 
   const onHandleCreate = (fromPrevious: boolean) => {
+    const hasSubmittedBefore = attempts.some((a: any) => a.submitted);
+    if (hasSubmittedBefore && !isRepeatable) {
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message:
+          "This UML exercise is not repeatable. You cannot create another solution after submission.",
+      });
+      return;
+    }
+
+    if (hasSubmittedBefore && nextAttemptHint) {
+      setSnackbar({
+        open: true,
+        severity: "info",
+        message: nextAttemptHint,
+      });
+      return;
+    }
+
     createSolution({
       variables: {
         assessmentId: umlId,
@@ -358,20 +450,32 @@ export default function StudentUMLAssignment() {
           message: "New attempt created!",
         });
       },
-      onError: () => {
+      onError: (err: any) => {
+        const errorMsg = err?.message || "";
+        const isNonRepeatableError =
+          errorMsg.includes("not repeatable") ||
+          errorMsg.includes("cannot create");
         setSnackbar({
           open: true,
           severity: "error",
-          message: "Could not create a new attempt.",
+          message: isNonRepeatableError
+            ? "This UML exercise is not repeatable. You cannot create another solution after submission."
+            : "Could not create a new attempt.",
         });
       },
     });
   };
 
-  if (!exercise)
+  console.log("Rendering student UML assignment", {
+    exercise,
+    attempts,
+    assessmentMetadata,
+  });
+
+  if (!exercise || assessmentMetadata === undefined)
     return (
       <Box p={4} textAlign="center">
-        Loading Exercise...
+        <CircularProgress />
       </Box>
     );
 
@@ -385,6 +489,35 @@ export default function StudentUMLAssignment() {
         <ContentViewer htmlContent={exercise.description} />
       </Box>
 
+      {isSingleSubmissionOnly && (
+        <Box mb={2}>
+          <Tooltip title="This UML exercise allows exactly one submission attempt.">
+            <Chip
+              color="warning"
+              variant="outlined"
+              label="One submission only"
+            />
+          </Tooltip>
+        </Box>
+      )}
+
+      {!isRepeatable && hasSubmittedBefore && (
+        <Alert
+          severity="info"
+          variant="outlined"
+          sx={{ borderRadius: 2, mb: 3 }}
+        >
+          <strong>Non-repeatable:</strong> This exercise can only be submitted
+          once. You have already submitted your solution.
+        </Alert>
+      )}
+
+      {nextAttemptHint && (
+        <Alert severity="info" variant="outlined" sx={{ borderRadius: 2, mb: 3 }}>
+          <strong>Next attempt:</strong> {nextAttemptHint}
+        </Alert>
+      )}
+
       <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         <Stack spacing={3}>
           <AttemptSelectionHeader
@@ -392,14 +525,21 @@ export default function StudentUMLAssignment() {
             totalAttempts={attempts.length}
             attemptDate={attempt.date}
             isSubmitted={attempt.submitted}
+            canCreateNewAttempt={canCreateNewAttemptNow}
+            newAttemptHint={nextAttemptHint ?? undefined}
+            readOnlyHint={
+              attempt.submitted
+                ? "Read-only: This attempt has already been submitted."
+                : undefined
+            }
+            onNavigate={onHandleNavigation}
+            onAction={onHandleAction}
+            onCreate={onHandleCreate}
             isLoading={{
               saving: isSaving && !isSubmittingMode,
               submitting: isSaving && isSubmittingMode,
               creating: isCreating,
             }}
-            onNavigate={onHandleNavigation}
-            onAction={onHandleAction}
-            onCreate={onHandleCreate}
           />
 
           {attempt.submitted && !isCurrentAttemptGeneratingFeedback && (
@@ -409,6 +549,50 @@ export default function StudentUMLAssignment() {
               totalPoints={exercise.totalPoints}
               requiredPercentage={exercise.requiredPercentage}
             />
+          )}
+
+          {canShowTutorSolution && (
+            <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+              <Stack spacing={1.5}>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Tutor Solution
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Since this exercise allows one submission and solutions are
+                  visible after submission, you can review the tutor solution
+                  below.
+                </Typography>
+                <Box>
+                  <Button
+                    variant={isTutorSolutionVisible ? "outlined" : "contained"}
+                    onClick={() =>
+                      setIsTutorSolutionVisible((prevVisible) => !prevVisible)
+                    }
+                  >
+                    {isTutorSolutionVisible ? "Hide solution" : "Show solution"}
+                  </Button>
+                </Box>
+                {isTutorSolutionVisible && (
+                  <Box
+                    sx={{
+                      height: "40vh",
+                      minHeight: 360,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      borderRadius: 2,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <MainHylimoEditor
+                      initialValue={tutorSolutionCode}
+                      onChange={() => {}}
+                      readOnly
+                      key="student-tutor-solution-editor"
+                    />
+                  </Box>
+                )}
+              </Stack>
+            </Paper>
           )}
 
           {isCurrentAttemptGeneratingFeedback && (
@@ -426,22 +610,25 @@ export default function StudentUMLAssignment() {
             </Paper>
           )}
 
-          {attempt.submitted && (
-            <Alert severity="info" variant="outlined" sx={{ borderRadius: 2 }}>
-              <strong>Read-Only:</strong> This attempt has already been
-              submitted.
-            </Alert>
-          )}
-
           <Box display="flex" alignItems="center">
             <Typography
               variant="subtitle2"
               color="text.secondary"
               fontWeight="bold"
-              flex={1}
+              mr={1}
             >
               HYLIMO EDITOR
             </Typography>
+            {attempt.submitted && (
+              <Chip
+                size="small"
+                color="warning"
+                variant="outlined"
+                label="Read-only mode"
+                sx={{ mr: 1 }}
+              />
+            )}
+            <Box flex={1} />
             <Button
               onClick={() => setFullscreen(true)}
               variant="outlined"

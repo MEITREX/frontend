@@ -142,7 +142,7 @@ export default function LecturerUmlAssignment() {
               skillPoints: content.assessmentMetadata?.skillPoints || 0,
               skillTypes: content.assessmentMetadata?.skillTypes || [],
               initialLearningInterval:
-                content.assessmentMetadata?.initialLearningInterval || 1,
+                content.assessmentMetadata?.initialLearningInterval ?? null,
             },
           }}
         />
