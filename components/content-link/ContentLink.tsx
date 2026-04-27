@@ -17,6 +17,7 @@ import {
   Quiz,
   Terminal,
 } from "@mui/icons-material";
+import SchemaIcon from "@mui/icons-material/Schema";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import { Chip, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
@@ -35,6 +36,7 @@ export const ContentTypeToColor: Record<string, string> = {
   QuizAssessment: colors.rose[200],
   AssignmentAssessment: colors.blue[200],
   SubmissionAssessment: colors.orange[200],
+  UmlAssessment: colors.cyan[200],
 };
 
 export type ContentChip = { key: string; label: string; color?: string };
@@ -138,6 +140,8 @@ export function ContentLink({
   const typeString =
     content.__typename === "MediaContent"
       ? "Media"
+      : content.__typename === "UmlAssessment"
+        ? "UML"
       : content.__typename === "FlashcardSetAssessment"
       ? "Flashcard"
       : content.__typename === "QuizAssessment"
@@ -176,6 +180,12 @@ export function ContentLink({
   const frameSize = size == "small" ? "w-10 h-10" : "w-12 h-12";
 
   let icon =
+    content.__typename === "UmlAssessment" ? (
+        <SchemaIcon
+          className="!w-1/2 !h-1/2"
+          sx={{ color: disabled ? "text.disabled" : "text.secondary" }}
+        />
+      ) :
     content.__typename === "MediaContent" ? (
       <div
         className={
@@ -221,7 +231,9 @@ export function ContentLink({
     );
 
   let link =
-    content.__typename === "MediaContent"
+    content.__typename === "UmlAssessment"
+      ? `/courses/${courseId}/uml/${content.id}`
+      : content.__typename === "MediaContent"
       ? `/courses/${courseId}/media/${content.id}`
       : content.__typename === "SubmissionAssessment"
       ? `/courses/${courseId}/submissions/${content.id}`

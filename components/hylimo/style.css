@@ -1,0 +1,62 @@
+﻿.sprotty-wrapper {
+    width: 100%;
+    height: 100%;
+    container-type: size;
+    container-name: sprotty;
+    position: relative;
+}
+
+.sprotty {
+    width: 100%;
+    height: 100%;
+}
+
+.sprotty-hidden {
+    height: 0px !important;
+}
+
+.sprotty svg {
+    width: 100%;
+    height: 100%;
+    border-style: none;
+    border-width: 0px;
+    outline: none;
+}
+
+.sprotty .toolbox * {
+    font-variant-ligatures: no-contextual;
+}
+
+@container sprotty (width < 350px) or (height < 350px) {
+    .hylimo.toolbox-wrapper {
+        visibility: collapse;
+    }
+}
+:root {
+    --diagram-background:white;
+    --diagram-layout-color: #606770;
+    --diagram-layout-color-selected: #007fd4;
+    --diagram-layout-color-snap: #00b300;
+    --diagram-grid: #bbb;
+    --editor-background: #ffffff;
+    --toolbox-background: #f9f9f9;
+    --toolbox-primary: #007fd4;
+    --toolbox-box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    --toolbox-background-1: #f0f0f0;
+    --toolbox-background-2: #e0e0e0;
+    --toolbox-background-3: #d0d0d0;
+    --toolbox-scrollbar-thumb-background: #999999;
+    --toolbox-error-background: #ffe5e5;
+    --toolbox-error-color: #d32f2f;
+}
+
+
+/* Monaco fixes */
+
+.monaco-editor :focus-visible {
+    outline: 1px solid var(--vscode-focusBorder);
+}
+
+.monaco-editor .button {
+    color: inherit;
+}
