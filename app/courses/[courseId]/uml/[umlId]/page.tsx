@@ -5,8 +5,7 @@ import StudentUMLAssignment from "@/app/courses/[courseId]/uml/[umlId]/student";
 import { PageError } from "@/components/PageError";
 import { PageView, usePageView } from "@/src/currentView";
 import { isUUID } from "@/src/utils";
-import ConstructionIcon from "@mui/icons-material/Construction";
-import { Alert, AlertTitle, Container } from "@mui/material";
+import { Container } from "@mui/material";
 import { useParams } from "next/navigation";
 
 export default function UMLAssignmentPage() {
@@ -24,20 +23,6 @@ export default function UMLAssignmentPage() {
     case PageView.Lecturer:
       return (
         <Container maxWidth={false} sx={{ py: 2 }}>
-          {/* WIP Disclaimer */}
-          <Alert
-            severity="warning"
-            icon={<ConstructionIcon fontSize="inherit" />}
-            sx={{ mb: 3, borderRadius: 2 }}
-          >
-            <AlertTitle sx={{ fontWeight: "bold" }}>
-              Work in Progress (WIP)
-            </AlertTitle>
-            The Lecturer view for UML assignments is currently under
-            development. Features like manual feedback overrides and class
-            statistics are not yet finalized.
-          </Alert>
-
           <LecturerUmlAssignment />
         </Container>
       );

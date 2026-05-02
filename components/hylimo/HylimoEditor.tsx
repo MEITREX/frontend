@@ -290,7 +290,7 @@ export default function HylimoEditor({
         },
         "& .readonly-mode .monaco-editor .view-lines": {
           userSelect: "text !important",
-          cursor: "text !important"
+          cursor: "not-allowed !important"
         }
       }}
     >

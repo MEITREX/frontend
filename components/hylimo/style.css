@@ -60,3 +60,12 @@
 .monaco-editor .button {
     color: inherit;
 }
+
+/* Read-only mode styling */
+.readonly-mode .monaco-editor {
+    background-color: rgba(128, 128, 128, 0.25) !important;
+}
+
+.readonly-mode .monaco-editor .view-lines {
+    cursor: not-allowed !important;
+}

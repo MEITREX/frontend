@@ -13,9 +13,11 @@ import {
   Tabs,
 } from "@mui/material";
 import { useParams } from "next/navigation";
+import { useMemo, useState } from "react";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 
 import {
+  umlApiFindUserInfosQuery,
   umlApiGetLecturerExerciseOverviewQuery,
   umlApiUpdateTutorSolutionMutation,
 } from "@/components/hylimo/api/UmlApi";
@@ -23,7 +25,6 @@ import { getSemanticModel } from "@/components/hylimo/semanticModelGenerator";
 import { AddUMLAssignmentModal } from "@/components/uml-assignment/AddUMLAssignmentModal";
 import ExerciseInfoTab from "@/components/uml-assignment/ExerciseInfoTab";
 import SubmissionsTab from "@/components/uml-assignment/SubmissionsTab";
-import { useState } from "react";
 
 export default function LecturerUmlAssignment() {
   const { umlId } = useParams();
@@ -37,6 +38,36 @@ export default function LecturerUmlAssignment() {
     { assessmentId: umlId },
     { fetchPolicy: "network-only", fetchKey: refreshKey }
   );
+
+  const studentIds = useMemo(() => {
+    const ids =
+      data?.getUmlExerciseByAssessmentId?.studentSubmissions?.map(
+        (sub: any) => sub.studentId
+      ) || [];
+
+    // Defensive: filter out empty values and duplicates before querying user infos.
+    return Array.from(new Set(ids.filter((id: any) => typeof id === "string" && id.length > 0)));
+  }, [data?.getUmlExerciseByAssessmentId?.studentSubmissions]);
+
+  // Fetch user infos for all students
+  const userInfosData = useLazyLoadQuery<any>(
+    umlApiFindUserInfosQuery,
+    { ids: studentIds },
+    { fetchPolicy: "network-only" }
+  );
+
+  const userInfos = useMemo(() => {
+    const userMap: Record<string, any> = {};
+    if (userInfosData?.findUserInfos) {
+      userInfosData.findUserInfos.forEach((user: any) => {
+        // Backend may return null entries when referenced users no longer exist.
+        if (user?.id) {
+          userMap[user.id] = user;
+        }
+      });
+    }
+    return userMap;
+  }, [userInfosData?.findUserInfos]);
 
   const [updateTutorSolution, isUpdating] = useMutation(
     umlApiUpdateTutorSolutionMutation
@@ -114,7 +145,7 @@ export default function LecturerUmlAssignment() {
             isUpdating={isUpdating}
           />
         ) : tabIndex === 1 ? (
-          <SubmissionsTab exercise={exercise} />
+          <SubmissionsTab exercise={exercise} userInfos={userInfos} />
         ) : null}
       </Box>
       {isEditModalOpen && exercise && content && (

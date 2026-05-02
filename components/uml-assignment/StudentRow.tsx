@@ -18,14 +18,17 @@ import {
   useTheme,
 } from "@mui/material";
 import { Fragment, useState } from "react";
+import InspectSolutionDialog from "./InspectSolutionDialog";
 
 interface StudentRowProps {
   sub: any;
   exercise: any;
+  userInfo?: any;
 }
 
-export default function StudentRow({ sub, exercise }: StudentRowProps) {
+export default function StudentRow({ sub, exercise, userInfo }: StudentRowProps) {
   const [open, setOpen] = useState(false);
+  const [inspectOpen, setInspectOpen] = useState(false);
   const theme = useTheme();
 
   const solutions = sub.solutions || [];
@@ -35,6 +38,36 @@ export default function StudentRow({ sub, exercise }: StudentRowProps) {
 
   const total = exercise.totalPoints || 0;
   const passThreshold = exercise.requiredPercentage || 0.5;
+
+  const studentName = userInfo?.nickname || userInfo?.firstName || "Student";
+  const studentId = sub.studentId;
+
+  const getStatusChip = () => {
+    if (hasDraft) {
+      return <Chip label="In Progress" size="small" color="info" variant="filled" />;
+    }
+    if (!latestSol) {
+      return <Chip label="No Submission" size="small" variant="outlined" />;
+    }
+    if (latestSol?.evaluationStatus === "ENQUEUED") {
+      return <Chip label="Enqueued" size="small" color="warning" variant="filled" />;
+    }
+    if (latestSol?.evaluationStatus === "PROCESSING") {
+      return <Chip label="Processing" size="small" color="warning" variant="filled" />;
+    }
+    if (latestSol?.feedback?.points !== null && latestSol?.feedback?.points !== undefined) {
+      const isPassed = latestSol.feedback.points / total >= passThreshold;
+      return (
+        <Chip
+          label={isPassed ? "Passed" : "Failed"}
+          size="small"
+          color={isPassed ? "success" : "error"}
+          variant="filled"
+        />
+      );
+    }
+    return <Chip label="Submitted" size="small" variant="outlined" />;
+  };
 
   /**
    * Internal helper to render the score chip with consistent alignment logic
@@ -75,17 +108,12 @@ export default function StudentRow({ sub, exercise }: StudentRowProps) {
 
         <TableCell align="center">
           <Typography variant="body2" fontWeight="bold">
-            {sub.studentId.split("-")[0]}...
+            {studentName}
           </Typography>
-          {hasDraft && (
-            <Chip
-              label="Draft in progress"
-              size="small"
-              variant="outlined"
-              color="info"
-              sx={{ mt: 0.5, height: 20, fontSize: "0.65rem" }}
-            />
-          )}
+        </TableCell>
+
+        <TableCell align="center">
+          {getStatusChip()}
         </TableCell>
 
         <TableCell align="center">
@@ -107,16 +135,30 @@ export default function StudentRow({ sub, exercise }: StudentRowProps) {
             variant="text"
             onClick={(e) => {
               e.stopPropagation();
+              setInspectOpen(true);
             }}
+            disabled={!latestSol && !hasDraft}
           >
             Inspect
           </Button>
         </TableCell>
       </TableRow>
 
+      {/* Inspect Dialog */}
+      {(latestSol || hasDraft) && (
+        <InspectSolutionDialog
+          open={inspectOpen}
+          onClose={() => setInspectOpen(false)}
+          studentId={studentId}
+          solution={latestSol || solutions.find((s: any) => !s.submittedAt)}
+          exercise={exercise}
+          userInfo={userInfo}
+        />
+      )}
+
       {/* --- Collapsible History --- */}
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={7}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box
               sx={{

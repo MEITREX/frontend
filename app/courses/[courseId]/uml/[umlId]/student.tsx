@@ -31,7 +31,12 @@ import {
 } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useLazyLoadQuery, useMutation } from "react-relay";
+import {
+  fetchQuery,
+  useLazyLoadQuery,
+  useMutation,
+  useRelayEnvironment,
+} from "react-relay";
 
 const defaultValue = `classDiagram {
   class("HelloWorld") {
@@ -45,6 +50,7 @@ export default function StudentUMLAssignment() {
   const courseData = useCourseData() as StudentCourseLayoutCourseIdQuery$data;
   const userId = courseData.currentUserInfo.id;
   const { umlId } = useParams();
+  const relayEnvironment = useRelayEnvironment();
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -65,13 +71,11 @@ export default function StudentUMLAssignment() {
   const [isTutorSolutionVisible, setIsTutorSolutionVisible] = useState(false);
   const [autoFullscreenHackActive, setAutoFullscreenHackActive] =
     useState(true);
-  const [feedbackGenerationAttemptUuid, setFeedbackGenerationAttemptUuid] =
-    useState<string | null>(null);
 
   const [saveSolution, isSaving] = useMutation(
     umlApiSubmitStudentSolutionMutation
   );
-  const [evaluate, isEvaluating] = useMutation(
+  const [requeueEvaluation, isRequeueing] = useMutation(
     umlApiEvaluateLatestSolutionMutation
   );
   const [createSolution, isCreating] = useMutation(
@@ -98,6 +102,7 @@ export default function StudentUMLAssignment() {
       uuid: sol.id,
       date: sol.submittedAt || new Date().toISOString(),
       submitted: !!sol.submittedAt,
+      evaluationStatus: sol.evaluationStatus,
       score: sol.feedback?.points,
       feedback: sol.feedback?.comment,
       diagram: sol.diagram?.diagramCode ?? defaultValue,
@@ -128,6 +133,42 @@ export default function StudentUMLAssignment() {
       setHasLoadedInitially(true);
     }
   }, [exercise, hasLoadedInitially]);
+
+  const refreshSolutions = async () => {
+    await fetchQuery(relayEnvironment, umlApiGetStudentSolutionsQuery, {
+      assessmentId: umlId,
+      studentId: userId,
+    }).toPromise();
+  };
+
+  const pendingEvaluationExists = attempts.some((attemptItem: any) =>
+    ["ENQUEUED", "PROCESSING"].includes(attemptItem.evaluationStatus)
+  );
+
+  useEffect(() => {
+    if (!pendingEvaluationExists) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const poll = async () => {
+      if (cancelled) return;
+      try {
+        await refreshSolutions();
+      } catch (error) {
+        console.error("Failed to refresh UML solution status", error);
+      }
+    };
+
+    void poll();
+    const interval = window.setInterval(poll, 3000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [pendingEvaluationExists, relayEnvironment, umlId, userId]);
 
   useEffect(() => {}, []);
 
@@ -164,7 +205,9 @@ export default function StudentUMLAssignment() {
     .reduce((max: number, ts: number) => Math.max(max, ts), 0);
   const nextAttemptAvailableAt =
     isRepeatable && latestSubmittedTimestamp > 0 && retryIntervalDays != null
-      ? new Date(latestSubmittedTimestamp + retryIntervalDays * 24 * 60 * 60 * 1000)
+      ? new Date(
+          latestSubmittedTimestamp + retryIntervalDays * 24 * 60 * 60 * 1000
+        )
       : null;
   const remainingUntilNextAttemptMs =
     nextAttemptAvailableAt != null
@@ -194,22 +237,79 @@ export default function StudentUMLAssignment() {
     hasSubmittedBefore &&
     Boolean(exercise?.showSolution) &&
     Boolean(tutorSolutionCode);
-  const isCurrentAttemptGeneratingFeedback =
-    Boolean(feedbackGenerationAttemptUuid) &&
-    attempt.uuid === feedbackGenerationAttemptUuid;
+  const currentEvaluationStatus = attempt.evaluationStatus;
+  const isCurrentAttemptGeneratingFeedback = [
+    "ENQUEUED",
+    "PROCESSING",
+  ].includes(currentEvaluationStatus);
+  const isCurrentAttemptFailed = currentEvaluationStatus === "FAILED";
+  const isCurrentAttemptDone = currentEvaluationStatus === "DONE";
+
+  const requeueFailedEvaluation = () => {
+    if (!attempt.uuid || !isCurrentAttemptFailed) {
+      return;
+    }
+
+    requeueEvaluation({
+      variables: {
+        assessmentId: umlId,
+        studentId: userId,
+      },
+      onCompleted: (res: any) => {
+        const requeued = res.mutateUmlExercise?.evaluateLatestSolution;
+
+        if (requeued?.id) {
+          updateAttemptInState(
+            currentAttempt,
+            requeued.id,
+            attempt.diagram,
+            true,
+            requeued.evaluationStatus ?? "ENQUEUED",
+            attempt.feedback,
+            attempt.score
+          );
+        }
+
+        setSnackbar({
+          open: true,
+          severity: "success",
+          message:
+            "Feedback generation has been queued again. You can leave this page and you will be notified once it is ready.",
+        });
+      },
+      onError: (error: unknown) => {
+        console.error("Failed to requeue UML feedback generation", error);
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message:
+            "Could not requeue the feedback generation. Please try again.",
+        });
+      },
+    });
+  };
 
   const updateAttemptInState = (
     attemptIndex: number,
     uuid: string,
     diagram: string,
     submitted: boolean,
+    evaluationStatus?: string,
     feedback?: string,
     score?: number
   ) => {
-    setAttempts((prev) =>
-      prev.map((a, i) =>
+    setAttempts((prev: any[]) =>
+      prev.map((a: any, i: number) =>
         i === attemptIndex
-          ? { ...a, uuid, diagram, submitted, feedback, score }
+          ? {
+              ...a,
+              uuid,
+              diagram,
+              submitted,
+              evaluationStatus,
+              feedback,
+              score,
+            }
           : a
       )
     );
@@ -252,7 +352,8 @@ export default function StudentUMLAssignment() {
       setSnackbar({
         open: true,
         severity: "info",
-        message: "Submitting... AI-generated feedback may take a short while.",
+        message:
+          "Submitting... feedback is generated in the background and you will be notified when it is ready.",
       });
     }
 
@@ -282,57 +383,25 @@ export default function StudentUMLAssignment() {
               targetAttemptIndex,
               saved.id,
               saved.diagram.diagramCode,
-              true
+              true,
+              saved.evaluationStatus ?? "ENQUEUED",
+              saved.feedback?.comment,
+              saved.feedback?.points
             );
-            setFeedbackGenerationAttemptUuid(saved.id);
+            setIsSubmittingMode(false);
             setSnackbar({
               open: true,
               severity: "success",
               message:
-                "Submission received. AI feedback generation is now running.",
-            });
-
-            evaluate({
-              variables: {
-                assessmentId: umlId,
-                studentId: userId,
-              },
-              onCompleted: (evalRes: any) => {
-                const result =
-                  evalRes.mutateUmlExercise?.evaluateLatestSolution;
-                updateAttemptInState(
-                  targetAttemptIndex,
-                  saved.id,
-                  saved.diagram.diagramCode,
-                  true,
-                  result.feedback?.comment,
-                  result.feedback?.points
-                );
-                setFeedbackGenerationAttemptUuid(null);
-                setIsSubmittingMode(false);
-                setSnackbar({
-                  open: true,
-                  severity: "success",
-                  message: "AI feedback generated successfully!",
-                });
-              },
-              onError: () => {
-                setFeedbackGenerationAttemptUuid(null);
-                setIsSubmittingMode(false);
-                setSnackbar({
-                  open: true,
-                  severity: "error",
-                  message:
-                    "Submission succeeded, but feedback generation failed. Please try again later.",
-                });
-              },
+                "Submission received. Feedback is now being generated in the background. You can leave this page and you will receive a notification when it is ready.",
             });
           } else {
             updateAttemptInState(
               targetAttemptIndex,
               saved.id,
               saved.diagram.diagramCode,
-              false
+              false,
+              saved.evaluationStatus
             );
             setIsSubmittingMode(false);
             setSnackbar({
@@ -513,7 +582,11 @@ export default function StudentUMLAssignment() {
       )}
 
       {nextAttemptHint && (
-        <Alert severity="info" variant="outlined" sx={{ borderRadius: 2, mb: 3 }}>
+        <Alert
+          severity="info"
+          variant="outlined"
+          sx={{ borderRadius: 2, mb: 3 }}
+        >
           <strong>Next attempt:</strong> {nextAttemptHint}
         </Alert>
       )}
@@ -542,7 +615,48 @@ export default function StudentUMLAssignment() {
             }}
           />
 
-          {attempt.submitted && !isCurrentAttemptGeneratingFeedback && (
+          {attempt.submitted && isCurrentAttemptGeneratingFeedback && (
+            <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+              <Stack spacing={1.5}>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Feedback queued
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Your submission is being evaluated in the background. You can
+                  leave this page and come back later, or wait here until the
+                  status changes.
+                </Typography>
+                <LinearProgress />
+              </Stack>
+            </Paper>
+          )}
+
+          {attempt.submitted && isCurrentAttemptFailed && (
+            <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
+              <Stack spacing={1}>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Feedback generation failed
+                </Typography>
+                <Typography variant="body2">
+                  This submission could not be evaluated automatically. You can
+                  requeue the feedback generation and leave this page; you will
+                  receive a notification once it finishes.
+                </Typography>
+                <Box>
+                  <Button
+                    variant="outlined"
+                    color="inherit"
+                    onClick={requeueFailedEvaluation}
+                    disabled={isRequeueing}
+                  >
+                    {isRequeueing ? "Requeuing..." : "Requeue feedback"}
+                  </Button>
+                </Box>
+              </Stack>
+            </Alert>
+          )}
+
+          {attempt.submitted && isCurrentAttemptDone && (
             <AssignmentResult
               feedback={attempt.feedback ?? ""}
               score={attempt.score ?? 0}
@@ -595,20 +709,7 @@ export default function StudentUMLAssignment() {
             </Paper>
           )}
 
-          {isCurrentAttemptGeneratingFeedback && (
-            <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
-              <Stack spacing={1.5}>
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Submission successful
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Your diagram has been submitted. The AI Tutor is generating
-                  feedback now, this can take a short while.
-                </Typography>
-                <LinearProgress />
-              </Stack>
-            </Paper>
-          )}
+          {/* The pending feedback card above covers queued submissions. */}
 
           <Box display="flex" alignItems="center">
             <Typography
