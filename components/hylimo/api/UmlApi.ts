@@ -60,6 +60,7 @@ export const umlApiSubmitStudentSolutionMutation = graphql`
           semanticModel
         }
         submittedAt
+        evaluationStatus
         feedback {
           comment
           points
@@ -146,6 +147,7 @@ export const umlApiGetStudentSolutionsQuery = graphql`
           semanticModel
         }
         submittedAt
+        evaluationStatus
         feedback {
           id
           comment
@@ -171,6 +173,9 @@ export const umlApiEvaluateLatestSolutionMutation = graphql`
   ) {
     mutateUmlExercise(assessmentId: $assessmentId) {
       evaluateLatestSolution(studentId: $studentId) {
+        id
+        submittedAt
+        evaluationStatus
         feedback {
           comment
           points
@@ -197,6 +202,7 @@ export const umlApiCreateUmlSolutionMutation = graphql`
           semanticModel
         }
         submittedAt
+        evaluationStatus
       }
     }
   }
@@ -220,6 +226,7 @@ export const umlApiGetLecturerExerciseOverviewQuery = graphql`
         solutions {
           id
           submittedAt
+          evaluationStatus
           diagram {
             diagramCode
             semanticModel
@@ -247,6 +254,18 @@ export const umlApiGetLecturerExerciseOverviewQuery = graphql`
           initialLearningInterval
         }
       }
+    }
+  }
+`;
+
+export const umlApiFindUserInfosQuery = graphql`
+  query UmlApiFindUserInfosQuery($ids: [UUID!]!) {
+    findUserInfos(ids: $ids) {
+      id
+      nickname
+      firstName
+      lastName
+      userName
     }
   }
 `;

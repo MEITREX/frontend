@@ -1857,6 +1857,13 @@ input UmlDiagramInput {
   semanticModel: String
 }
 
+enum UmlEvaluationStatus {
+  DONE
+  ENQUEUED
+  FAILED
+  PROCESSING
+}
+
 type UmlExercise {
   assessmentId: UUID!
   courseId: UUID!
@@ -1889,6 +1896,7 @@ type UmlFeedback {
 
 type UmlStudentSolution {
   diagram: UmlDiagram!
+  evaluationStatus: UmlEvaluationStatus
   feedback: UmlFeedback
   id: UUID!
   submittedAt: DateTime
