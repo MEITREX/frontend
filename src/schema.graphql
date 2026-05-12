@@ -1622,7 +1622,7 @@ type Skill {
   skillCategory: String!
   skillLevels: SkillLevels
   skillName: String!
-  skillValue: Float!
+    skillValue: Float!
 }
 
 type SkillAllUsersStats {

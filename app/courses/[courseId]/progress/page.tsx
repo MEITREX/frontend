@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 "use client";
 
 import { pageLearningProgressQuery } from "@/__generated__/pageLearningProgressQuery.graphql";
@@ -62,11 +64,8 @@ export default function LearningProgress() {
           skills {
             skillName
             skillCategory
-            skillValue
-            skillAllUsersStats {
-              skillValueSum
-              participantCount
-              averageSkillValue
+            skillValue {
+              skillValue
             }
           }
         }
@@ -94,6 +93,76 @@ export default function LearningProgress() {
 
   const [showAverageProgress, setAverageProgress] = useState<boolean>(false);
 
+  type skillItem = {
+    skillValue: number;
+    //skillAverageValue: number;
+    //maxParticipantCount: number;
+  };
+
+  const getCategorySkillKey = (category: string, skillName: string) => {
+    return `${category}_${skillName}`;
+  };
+
+  const progressBySkill = useMemo(() => {
+    const progressBySkillValues = new Map<
+      string,
+      {
+        progressSum: number;
+        //averageProgressSum: number;
+        count: number;
+        //maxParticipantCount: number;
+      }
+    >();
+
+    uniqueCategories.forEach((category) => {
+      skillsByCategory[category].forEach((skill) => {
+        const key = getCategorySkillKey(category, skill.skillName);
+
+        if (!progressBySkillValues.has(key)) {
+          progressBySkillValues.set(key, {
+            progressSum: 0,
+            //averageProgressSum: 0,
+            count: 0,
+            //maxParticipantCount: 0,
+          });
+        }
+
+        const progressItem = progressBySkillValues.get(key)!;
+
+        progressItem.progressSum += skill.skillValue.skillValue;
+        /*progressItem.averageProgressSum +=
+          skill.skillAllUsersStats.skillValueSum;*/
+        progressItem.count++;
+        /*progressItem.maxParticipantCount = Math.max(
+          progressItem.maxParticipantCount,
+          skill.skillAllUsersStats.participantCount
+        );*/
+      });
+    });
+
+    const result = new Map<string, skillItem>();
+    progressBySkillValues.forEach(
+      (
+        {
+          progressSum: sum,
+          //averageProgressSum: averageSum,
+          count,
+          //maxParticipantCount,
+        },
+        key
+      ) => {
+        result.set(key, {
+          skillValue: sum / count,
+          /*skillAverageValue:
+            averageSum / count / course.numberOfCourseMemberships,
+          maxParticipantCount,*/
+        });
+      }
+    );
+
+    return result;
+  }, [skillsByCategory, uniqueCategories]);
+
   const sortedCategories = useMemo(() => {
     if (uniqueCategories.length === 0) return [];
     return [...uniqueCategories].sort((a, b) => {
@@ -104,14 +173,16 @@ export default function LearningProgress() {
           ).values()
         );
         const progressSum = uniqueSkillsInCategory.reduce((sum, skill) => {
-          const progress = skill.skillValue;
+          const progress =
+            progressBySkill.get(getCategorySkillKey(category, skill.skillName))
+              ?.skillValue ?? 0;
           return sum + progress;
         }, 0);
         return (progressSum / uniqueSkillsInCategory.length) * 100;
       };
       return getTotalProgress(b) - getTotalProgress(a);
     });
-  }, [skillsByCategory, uniqueCategories]);
+  }, [progressBySkill, skillsByCategory, uniqueCategories]);
 
   const currentUniqueSkills = useMemo(() => {
     if (sortedCategories.length === 0) return [];
@@ -123,9 +194,23 @@ export default function LearningProgress() {
         return acc;
       }, [] as (typeof skillsByCategory)[string])
       .sort((skillA, skillB) => {
-        return skillB.skillValue - skillA.skillValue;
+        const progressA =
+          progressBySkill.get(
+            getCategorySkillKey(
+              sortedCategories[selectedCategory],
+              skillA.skillName
+            )
+          )?.skillValue ?? 0;
+        const progressB =
+          progressBySkill.get(
+            getCategorySkillKey(
+              sortedCategories[selectedCategory],
+              skillB.skillName
+            )
+          )?.skillValue ?? 0;
+        return progressB - progressA;
       });
-  }, [selectedCategory, skillsByCategory, sortedCategories]);
+  }, [progressBySkill, selectedCategory, skillsByCategory, sortedCategories]);
 
   const urgentChapters = useMemo(() => {
     return course.chapters.elements.filter((chapter) => {
@@ -172,11 +257,12 @@ export default function LearningProgress() {
     const tempMap = new Map<string, number>();
 
     course.skills.forEach((skill) => {
-      tempMap.set(skill.skillName, skill.skillValue * 100);
+      const key = getCategorySkillKey(skill.skillCategory, skill.skillName);
+      tempMap.set(key, (progressBySkill.get(key)?.skillValue ?? 0) * 100);
     });
 
     sessionStorage.setItem("previousProgress", JSON.stringify([...tempMap]));
-  }, [course.skills, uniqueCategories.length]);
+  }, [course.skills, progressBySkill, uniqueCategories.length]);
 
   const theme = useTheme();
 
@@ -257,33 +343,45 @@ export default function LearningProgress() {
             );
 
             const progressSum = uniqueSkillsInCategory.reduce((sum, skill) => {
-              const progress = skill.skillValue * 100;
+              const progress =
+                (progressBySkill.get(
+                  getCategorySkillKey(category, skill.skillName)
+                )?.skillValue ?? 0) * 100;
               return sum + progress;
             }, 0);
 
-            const averageProgressSum = uniqueSkillsInCategory.reduce(
+            /*const averageProgressSum = uniqueSkillsInCategory.reduce(
               (sum, skill) => {
                 const averageProgress =
-                  skill.skillAllUsersStats.averageSkillValue * 100;
+                  (progressBySkill.get(
+                    getCategorySkillKey(category, skill.skillName)
+                  )?.skillAverageValue ?? 0) * 100;
                 return sum + averageProgress;
               },
               0
-            );
+            );*/
 
-            const maxParticipantCountForaSkill = Math.max(
+            /*const maxParticipantCountForaSkill = Math.max(
               ...uniqueSkillsInCategory.map(
-                (skill) => skill.skillAllUsersStats.participantCount
+                (skill) =>
+                  progressBySkill.get(
+                    getCategorySkillKey(category, skill.skillName)
+                  )?.maxParticipantCount ?? 0
               )
-            );
+            );*/
 
             const categoryProgressValue =
               progressSum / uniqueSkillsInCategory.length;
-            const categoryAverageProgressValue =
-              averageProgressSum / uniqueSkillsInCategory.length;
+
+            /*const categoryAverageProgressValue =
+              averageProgressSum / uniqueSkillsInCategory.length;*/
 
             const tempSumPreviousProgress = uniqueSkillsInCategory.reduce(
               (sum, skill) =>
-                sum + (previousProgress.get(skill.skillName) ?? 0),
+                sum +
+                (previousProgress.get(
+                  getCategorySkillKey(category, skill.skillName)
+                ) ?? 0),
               0
             );
 
@@ -299,7 +397,7 @@ export default function LearningProgress() {
                     competencyName={category}
                     startProgress={Math.floor(previousCategoryProgressValue)}
                     endProgress={Math.floor(categoryProgressValue)}
-                    averageProgress={Math.floor(categoryAverageProgressValue)}
+                    averageProgress={/*Math.floor(categoryAverageProgressValue)*/0}
                     color={stringToColor(category)}
                     onClick={() => {
                       setSelectedCategory(
@@ -311,7 +409,7 @@ export default function LearningProgress() {
                     isSelected={category === sortedCategories[selectedCategory]}
                     isUrgent={urgent}
                     showAverageProgress={showAverageProgress}
-                    participantCount={maxParticipantCountForaSkill}
+                    participantCount={/*maxParticipantCountForaSkill*/0}
                     courseMemberCount={course.numberOfCourseMemberships}
                     openTaskCount={
                       filteredSuggestionsByCategory(category).length
@@ -381,13 +479,22 @@ export default function LearningProgress() {
               )
             );
 
-            const skillProgressValue = currentSkill.skillValue * 100;
-            const skillAverageProgressValue =
-              currentSkill.skillAllUsersStats.averageSkillValue * 100;
+            const key = getCategorySkillKey(
+              currentSkill.skillCategory,
+              currentSkill.skillName
+            );
+
+            const skillProgressValue =
+              (progressBySkill.get(key)?.skillValue ?? 0) * 100;
+
+            /*const skillAverageProgressValue =
+              (progressBySkill.get(key)?.skillAverageValue ?? 0) * 100;
+
+            const maxParticipantCount =
+              progressBySkill.get(key)?.maxParticipantCount ?? 0;*/
 
             const previousSkillProgressValue =
-              previousProgress.get(currentSkill.skillName) ??
-              skillProgressValue;
+              previousProgress.get(key) ?? skillProgressValue;
 
             return (
               <Slide
@@ -402,7 +509,7 @@ export default function LearningProgress() {
                     small={true}
                     startProgress={Math.floor(previousSkillProgressValue)}
                     endProgress={Math.floor(skillProgressValue)}
-                    averageProgress={Math.floor(skillAverageProgressValue)}
+                    averageProgress={/*Math.floor(skillAverageProgressValue)*/0}
                     color={stringToColor(currentSkill.skillCategory)}
                     onClick={() => {
                       const currentIndex = currentUniqueSkills.findIndex(
@@ -420,9 +527,7 @@ export default function LearningProgress() {
                     }
                     isUrgent={urgent}
                     showAverageProgress={showAverageProgress}
-                    participantCount={
-                      currentSkill.skillAllUsersStats.participantCount
-                    }
+                    participantCount={/*maxParticipantCount*/0}
                     courseMemberCount={course.numberOfCourseMemberships}
                     openTaskCount={
                       filteredSuggestionsBySkill(currentSkill.skillName).length

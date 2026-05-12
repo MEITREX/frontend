@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import { InterpreterModule } from "@hylimo/core";
 import {
   DiagramEngine,

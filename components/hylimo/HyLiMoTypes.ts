@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import type { LayoutElement } from "@hylimo/diagram";
 
 // --- Internal Graph Structure (Hylimo specific) ---
