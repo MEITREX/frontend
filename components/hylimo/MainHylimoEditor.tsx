@@ -32,8 +32,6 @@ export default function MainHylimoEditor({
   onChange(value: string): void;
   readOnly?: boolean;
 }) {
-
-
   // Registriere Service Worker
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -43,7 +41,6 @@ export default function MainHylimoEditor({
         .catch((err) => console.log("[HyLimo] SW registration failed:", err));
     }
   }, []);
-
 
   return (
     <HylimoEditor

@@ -19,7 +19,12 @@ interface DiagramDownloadProps {
   variant?: "button" | "icon";
 }
 
-export function DiagramDownload({ diagram, fileName, sourceCode, variant = "button" }: DiagramDownloadProps) {
+export function DiagramDownload({
+  diagram,
+  fileName,
+  sourceCode,
+  variant = "button",
+}: DiagramDownloadProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isOpen = Boolean(anchorEl);
 
@@ -42,7 +47,7 @@ export function DiagramDownload({ diagram, fileName, sourceCode, variant = "butt
       try {
         const svgContent = await svgRenderer.render(diagram, textAsPath);
         const svgBlob = new Blob([svgContent], {
-          type: "image/svg+xml;charset=utf-8"
+          type: "image/svg+xml;charset=utf-8",
         });
         saveAs(svgBlob, `${fileName}.svg`);
         handleClose();
@@ -53,20 +58,17 @@ export function DiagramDownload({ diagram, fileName, sourceCode, variant = "butt
     [diagram, fileName, svgRenderer]
   );
 
-  const downloadPDF = useCallback(
-    async () => {
-      if (!diagram) return;
+  const downloadPDF = useCallback(async () => {
+    if (!diagram) return;
 
-      try {
-        const pdf = await pdfRenderer.render(diagram, "#ffffff");
-        saveAs(new Blob(pdf, { type: "application/pdf" }), `${fileName}.pdf`);
-        handleClose();
-      } catch (error) {
-        console.error("Error downloading PDF:", error);
-      }
-    },
-    [diagram, fileName, pdfRenderer]
-  );
+    try {
+      const pdf = await pdfRenderer.render(diagram, "#ffffff");
+      saveAs(new Blob(pdf, { type: "application/pdf" }), `${fileName}.pdf`);
+      handleClose();
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+    }
+  }, [diagram, fileName, pdfRenderer]);
 
   const downloadSource = useCallback(() => {
     if (!sourceCode) return;
@@ -104,34 +106,25 @@ export function DiagramDownload({ diagram, fileName, sourceCode, variant = "butt
         onClose={handleClose}
         anchorOrigin={{
           vertical: "bottom",
-          horizontal: "left"
+          horizontal: "left",
         }}
         transformOrigin={{
           vertical: "top",
-          horizontal: "left"
+          horizontal: "left",
         }}
       >
-        <MenuItem
-          onClick={() => downloadSVG(false)}
-          disabled={!diagram}
-        >
+        <MenuItem onClick={() => downloadSVG(false)} disabled={!diagram}>
           SVG
         </MenuItem>
         <Tooltip
           title="Powerpoint and many others do not support embedded fonts, so the text is converted to a path instead"
           placement="right"
         >
-          <MenuItem
-            onClick={() => downloadSVG(true)}
-            disabled={!diagram}
-          >
+          <MenuItem onClick={() => downloadSVG(true)} disabled={!diagram}>
             SVG (text as path)
           </MenuItem>
         </Tooltip>
-        <MenuItem
-          onClick={downloadPDF}
-          disabled={!diagram}
-        >
+        <MenuItem onClick={downloadPDF} disabled={!diagram}>
           PDF
         </MenuItem>
         <MenuItem onClick={downloadSource} disabled={!sourceCode}>

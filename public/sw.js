@@ -8,13 +8,16 @@ self.addEventListener("install", () => {
   self.skipWaiting();
 });
 
-
 self.addEventListener("activate", (event) => {
   // Clean up old caches
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+        )
+      )
   );
   console.log("[SW] Activated");
   self.clients.claim();

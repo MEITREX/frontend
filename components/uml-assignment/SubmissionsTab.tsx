@@ -135,7 +135,9 @@ export default function SubmissionsTab({ exercise, userInfos = {} }: any) {
           <Chip
             label={
               stats.averagePoints !== null
-                ? `Avg Points: ${stats.averagePoints.toFixed(1)} / ${exercise.totalPoints || 0}`
+                ? `Avg Points: ${stats.averagePoints.toFixed(1)} / ${
+                    exercise.totalPoints || 0
+                  }`
                 : "Avg Points: -"
             }
             color="primary"

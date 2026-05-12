@@ -141,7 +141,7 @@ export function ContentLink({
     content.__typename === "MediaContent"
       ? "Media"
       : content.__typename === "UmlAssessment"
-        ? "UML"
+      ? "UML"
       : content.__typename === "FlashcardSetAssessment"
       ? "Flashcard"
       : content.__typename === "QuizAssessment"
@@ -181,12 +181,11 @@ export function ContentLink({
 
   let icon =
     content.__typename === "UmlAssessment" ? (
-        <SchemaIcon
-          className="!w-1/2 !h-1/2"
-          sx={{ color: disabled ? "text.disabled" : "text.secondary" }}
-        />
-      ) :
-    content.__typename === "MediaContent" ? (
+      <SchemaIcon
+        className="!w-1/2 !h-1/2"
+        sx={{ color: disabled ? "text.disabled" : "text.secondary" }}
+      />
+    ) : content.__typename === "MediaContent" ? (
       <div
         className={
           content.mediaRecords && content.mediaRecords.length > 1

@@ -123,7 +123,10 @@ type XpLevelInfo = {
   xpInLevel: number;
   xpRequiredForLevelUp: number;
 };
-const xpLevelCache = new Map<string, { value: XpLevelInfo; timestamp: number }>();
+const xpLevelCache = new Map<
+  string,
+  { value: XpLevelInfo; timestamp: number }
+>();
 
 /** ---------------- Utilities ---------------- */
 function useIsTutor(_frag: NavbarIsTutor$key) {
@@ -573,68 +576,74 @@ function UserInfo({ tutor, userId }: { tutor: boolean; userId: string }) {
 
   // central XP fetcher (Relay)
   const relayEnv = useRelayEnvironment();
-  const fetchXP = useCallback(async (force = false) => {
-    if (!userId) return;
+  const fetchXP = useCallback(
+    async (force = false) => {
+      if (!userId) return;
 
-    const now = Date.now();
-    const cached = xpLevelCache.get(userId);
-    if (!force && cached && now - cached.timestamp < XP_CACHE_TTL_MS) {
-      setLevelInfo(cached.value);
-      return;
-    }
-    if (!force && xpFetchInFlightRef.current) return;
-    if (!force && now - xpLastFetchAtRef.current < 1500) return;
-
-    xpFetchInFlightRef.current = true;
-    xpLastFetchAtRef.current = now;
-
-    try {
-      const query = graphql`
-        query NavbarGetUserXPQuery($userID: ID!) {
-          getUser(userID: $userID) {
-            refUserID
-            name
-            email
-            xpValue
-            requiredXP
-            exceedingXP
-            level
-          }
-        }
-      `;
-      const levelData = await fetchQuery(relayEnv, query, {
-        userID: userId,
-      }).toPromise();
-
-      const rawUser = (levelData as any)?.getUser;
-      const payload: any = Array.isArray(rawUser)
-        ? rawUser[0] ?? null
-        : rawUser ?? null;
-
-      if (!payload) {
-        const fallback = { level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 };
-        setLevelInfo(fallback);
-        xpLevelCache.set(userId, { value: fallback, timestamp: Date.now() });
+      const now = Date.now();
+      const cached = xpLevelCache.get(userId);
+      if (!force && cached && now - cached.timestamp < XP_CACHE_TTL_MS) {
+        setLevelInfo(cached.value);
         return;
       }
-      const requiredXP = Number(payload.requiredXP ?? 0);
-      const exceedingXP = Number(payload.exceedingXP ?? 0);
-      const level = Number(payload.level ?? 0);
-      const nextLevelInfo = {
-        level: Number.isFinite(level) ? level : 0,
-        xpInLevel: Number.isFinite(exceedingXP) ? exceedingXP : 0,
-        xpRequiredForLevelUp:
-          Number.isFinite(requiredXP) && requiredXP > 0 ? requiredXP : 1,
-      };
-      setLevelInfo(nextLevelInfo);
-      xpLevelCache.set(userId, { value: nextLevelInfo, timestamp: Date.now() });
-    } catch (e) {
-      console.error("[Navbar XP] fetch failed", e);
-      setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
-    } finally {
-      xpFetchInFlightRef.current = false;
-    }
-  }, [relayEnv, userId]);
+      if (!force && xpFetchInFlightRef.current) return;
+      if (!force && now - xpLastFetchAtRef.current < 1500) return;
+
+      xpFetchInFlightRef.current = true;
+      xpLastFetchAtRef.current = now;
+
+      try {
+        const query = graphql`
+          query NavbarGetUserXPQuery($userID: ID!) {
+            getUser(userID: $userID) {
+              refUserID
+              name
+              email
+              xpValue
+              requiredXP
+              exceedingXP
+              level
+            }
+          }
+        `;
+        const levelData = await fetchQuery(relayEnv, query, {
+          userID: userId,
+        }).toPromise();
+
+        const rawUser = (levelData as any)?.getUser;
+        const payload: any = Array.isArray(rawUser)
+          ? rawUser[0] ?? null
+          : rawUser ?? null;
+
+        if (!payload) {
+          const fallback = { level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 };
+          setLevelInfo(fallback);
+          xpLevelCache.set(userId, { value: fallback, timestamp: Date.now() });
+          return;
+        }
+        const requiredXP = Number(payload.requiredXP ?? 0);
+        const exceedingXP = Number(payload.exceedingXP ?? 0);
+        const level = Number(payload.level ?? 0);
+        const nextLevelInfo = {
+          level: Number.isFinite(level) ? level : 0,
+          xpInLevel: Number.isFinite(exceedingXP) ? exceedingXP : 0,
+          xpRequiredForLevelUp:
+            Number.isFinite(requiredXP) && requiredXP > 0 ? requiredXP : 1,
+        };
+        setLevelInfo(nextLevelInfo);
+        xpLevelCache.set(userId, {
+          value: nextLevelInfo,
+          timestamp: Date.now(),
+        });
+      } catch (e) {
+        console.error("[Navbar XP] fetch failed", e);
+        setLevelInfo({ level: 0, xpInLevel: 0, xpRequiredForLevelUp: 1 });
+      } finally {
+        xpFetchInFlightRef.current = false;
+      }
+    },
+    [relayEnv, userId]
+  );
 
   // initial fetch and on identity changes
   useEffect(() => {

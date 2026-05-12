@@ -1,9 +1,13 @@
-﻿import type { NotificationHandler, NotificationType, Disposable } from "vscode-languageserver-protocol/browser.js";
+﻿import type {
+  NotificationHandler,
+  NotificationType,
+  Disposable,
+} from "vscode-languageserver-protocol/browser.js";
 import { MonacoLanguageClient } from "monaco-languageclient";
 import {
   BrowserMessageReader,
   BrowserMessageWriter,
-  createProtocolConnection
+  createProtocolConnection,
 } from "vscode-languageserver-protocol/browser.js";
 import { LogLevel } from "@codingame/monaco-vscode-api";
 import { useWorkerFactory } from "monaco-languageclient/workerFactory";
@@ -12,7 +16,7 @@ import {
   customDarkTheme,
   customLightTheme,
   languageConfiguration,
-  monarchTokenProvider
+  monarchTokenProvider,
 } from "@hylimo/monaco-editor-support";
 import { CloseAction, ErrorAction } from "vscode-languageclient";
 import {
@@ -20,12 +24,12 @@ import {
   UpdateEditorConfigNotification,
   RemoteNotification,
   RemoteRequest,
-  SetLanguageServerIdNotification
+  SetLanguageServerIdNotification,
 } from "@hylimo/diagram-protocol";
 import {
   getEnhancedMonacoEnvironment,
   MonacoVscodeApiWrapper,
-  type MonacoVscodeApiConfig
+  type MonacoVscodeApiConfig,
 } from "monaco-languageclient/vscodeApiWrapper";
 
 export const defaultDiagramConfig = {
@@ -33,13 +37,13 @@ export const defaultDiagramConfig = {
   primaryColor: "#000000",
   backgroundColor: "#ffffff",
   enableFontSubsetting: true,
-  enableExternalFonts: false
+  enableExternalFonts: false,
 };
 
 export const defaultEditorConfig = {
   toolboxEnabled: true,
   snappingEnabled: true,
-  gridEnabled: true
+  gridEnabled: true,
 };
 
 /**
@@ -54,7 +58,10 @@ export const language = "syncscript";
  */
 export async function setupLanguageClient() {
   const [worker, secondaryWorker] = [0, 1].map(
-    () => new Worker(new URL("./languageServer.ts", import.meta.url), { type: "module" })
+    () =>
+      new Worker(new URL("./languageServer.ts", import.meta.url), {
+        type: "module",
+      })
   );
   const secondaryConnection = createProtocolConnection(
     new BrowserMessageReader(secondaryWorker),
@@ -68,7 +75,7 @@ export async function setupLanguageClient() {
   const vscodeApiConfig: MonacoVscodeApiConfig = {
     $type: "classic",
     viewsConfig: {
-      $type: "EditorService"
+      $type: "EditorService",
     },
     logLevel: LogLevel.Warning,
     monacoWorkerFactory: () => {
@@ -76,16 +83,18 @@ export async function setupLanguageClient() {
       envEnhanced.getWorker = (workerId, label) => {
         if (label === "editorWorkerService") {
           return new Worker(
-            new URL("@codingame/monaco-vscode-editor-api/esm/vs/editor/editor.worker.js", import.meta.url),
+            new URL(
+              "@codingame/monaco-vscode-editor-api/esm/vs/editor/editor.worker.js",
+              import.meta.url
+            ),
             { type: "module" }
           );
         } else {
           throw new Error(`Unknown worker label: ${label}`);
         }
       };
-    }
+    },
   };
-
 
   const vscodeApi = new MonacoVscodeApiWrapper(vscodeApiConfig);
   await vscodeApi.start();
@@ -102,10 +111,10 @@ export async function setupLanguageClient() {
       documentSelector: [{ language }],
       errorHandler: {
         error: () => ({ action: ErrorAction.Continue }),
-        closed: () => ({ action: CloseAction.DoNotRestart })
-      }
+        closed: () => ({ action: CloseAction.DoNotRestart }),
+      },
     },
-    messageTransports: { reader, writer }
+    messageTransports: { reader, writer },
   });
   await client.start();
 
@@ -121,17 +130,19 @@ export async function setupLanguageClient() {
   secondaryConnection.onRequest(RemoteRequest.type, (request) => {
     return client.sendRequest(RemoteRequest.type, request);
   });
-  await secondaryConnection.sendNotification(SetLanguageServerIdNotification.type, 1);
+  await secondaryConnection.sendNotification(
+    SetLanguageServerIdNotification.type,
+    1
+  );
 
   await client.sendNotification(ConfigNotification.type, {
     diagramConfig: defaultDiagramConfig,
     editorConfig: defaultEditorConfig,
-    settings: {}
+    settings: {},
   });
 
   return new LanguageClientProxy(client);
 }
-
 
 /**
  * A proxy for the language client that allows for multiple subscriptions to the same notification type.
@@ -140,7 +151,8 @@ export class LanguageClientProxy {
   /**
    * A map of notification handlers for each method.
    */
-  private readonly handlers: Map<string, Set<NotificationHandler<any>>> = new Map();
+  private readonly handlers: Map<string, Set<NotificationHandler<any>>> =
+    new Map();
 
   /**
    * Creates a new LanguageClientProxy with the given client.
@@ -151,7 +163,10 @@ export class LanguageClientProxy {
   /**
    * @see MonacoLanguageClient.onNotification
    */
-  onNotification<P>(type: NotificationType<P>, handler: NotificationHandler<P>): Disposable {
+  onNotification<P>(
+    type: NotificationType<P>,
+    handler: NotificationHandler<P>
+  ): Disposable {
     if (!this.handlers.has(type.method)) {
       this.handlers.set(type.method, new Set());
       this.client.onNotification(type, (params) => {
@@ -162,7 +177,7 @@ export class LanguageClientProxy {
     return {
       dispose: () => {
         this.handlers.get(type.method)?.delete(handler);
-      }
+      },
     };
   }
 

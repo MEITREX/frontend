@@ -46,7 +46,9 @@ export default function LecturerUmlAssignment() {
       ) || [];
 
     // Defensive: filter out empty values and duplicates before querying user infos.
-    return Array.from(new Set(ids.filter((id: any) => typeof id === "string" && id.length > 0)));
+    return Array.from(
+      new Set(ids.filter((id: any) => typeof id === "string" && id.length > 0))
+    );
   }, [data?.getUmlExerciseByAssessmentId?.studentSubmissions]);
 
   // Fetch user infos for all students

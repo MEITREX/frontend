@@ -1,4 +1,8 @@
-﻿import { createConnection, BrowserMessageReader, BrowserMessageWriter } from "vscode-languageserver/browser.js";
+﻿import {
+  createConnection,
+  BrowserMessageReader,
+  BrowserMessageWriter,
+} from "vscode-languageserver/browser.js";
 import { LanguageServer } from "@hylimo/language-server";
 
 const messageReader = new BrowserMessageReader(self);
@@ -13,17 +17,17 @@ const languageServer = new LanguageServer({
       primaryColor: "#1e1e1e",
       backgroundColor: "#ffffff",
       enableFontSubsetting: true,
-      enableExternalFonts: false
+      enableExternalFonts: false,
     },
     settings: {},
     editorConfig: {
       toolboxEnabled: true,
       snappingEnabled: true,
-      gridEnabled: true
-    }
+      gridEnabled: true,
+    },
   },
   connection,
   additionalInterpreterModules: [],
-  maxExecutionSteps: 1000000
+  maxExecutionSteps: 1000000,
 });
 languageServer.listen();

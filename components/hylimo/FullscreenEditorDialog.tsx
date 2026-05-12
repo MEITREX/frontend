@@ -9,7 +9,7 @@ import {
   Slide,
   Stack,
   Toolbar,
-  Typography
+  Typography,
 } from "@mui/material";
 import React from "react";
 
@@ -68,7 +68,7 @@ export default function FullscreenEditorDialog({
           width: "100%",
           overflow: "auto",
           display: "flex",
-          flexDirection: "column"
+          flexDirection: "column",
         }}
       >
         {infoContent && (
@@ -85,7 +85,9 @@ export default function FullscreenEditorDialog({
             </Paper>
           </Slide>
         )}
-        <Box sx={{ flex: 1, minHeight: 0, width: "100%" }}>{open ? children : null}</Box>
+        <Box sx={{ flex: 1, minHeight: 0, width: "100%" }}>
+          {open ? children : null}
+        </Box>
       </Box>
     </Dialog>
   );

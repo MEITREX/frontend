@@ -26,7 +26,11 @@ interface StudentRowProps {
   userInfo?: any;
 }
 
-export default function StudentRow({ sub, exercise, userInfo }: StudentRowProps) {
+export default function StudentRow({
+  sub,
+  exercise,
+  userInfo,
+}: StudentRowProps) {
   const [open, setOpen] = useState(false);
   const [inspectOpen, setInspectOpen] = useState(false);
   const theme = useTheme();
@@ -44,18 +48,32 @@ export default function StudentRow({ sub, exercise, userInfo }: StudentRowProps)
 
   const getStatusChip = () => {
     if (hasDraft) {
-      return <Chip label="In Progress" size="small" color="info" variant="filled" />;
+      return (
+        <Chip label="In Progress" size="small" color="info" variant="filled" />
+      );
     }
     if (!latestSol) {
       return <Chip label="No Submission" size="small" variant="outlined" />;
     }
     if (latestSol?.evaluationStatus === "ENQUEUED") {
-      return <Chip label="Enqueued" size="small" color="warning" variant="filled" />;
+      return (
+        <Chip label="Enqueued" size="small" color="warning" variant="filled" />
+      );
     }
     if (latestSol?.evaluationStatus === "PROCESSING") {
-      return <Chip label="Processing" size="small" color="warning" variant="filled" />;
+      return (
+        <Chip
+          label="Processing"
+          size="small"
+          color="warning"
+          variant="filled"
+        />
+      );
     }
-    if (latestSol?.feedback?.points !== null && latestSol?.feedback?.points !== undefined) {
+    if (
+      latestSol?.feedback?.points !== null &&
+      latestSol?.feedback?.points !== undefined
+    ) {
       const isPassed = latestSol.feedback.points / total >= passThreshold;
       return (
         <Chip
@@ -112,9 +130,7 @@ export default function StudentRow({ sub, exercise, userInfo }: StudentRowProps)
           </Typography>
         </TableCell>
 
-        <TableCell align="center">
-          {getStatusChip()}
-        </TableCell>
+        <TableCell align="center">{getStatusChip()}</TableCell>
 
         <TableCell align="center">
           {latestSol?.submittedAt

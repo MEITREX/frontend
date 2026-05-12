@@ -21,7 +21,6 @@ const nextConfig = {
     config.module.rules.push({
       test: /\.node/,
       use: "raw-loader",
-
     });
     config.externals.push("module");
     config.externals.push("canvas");

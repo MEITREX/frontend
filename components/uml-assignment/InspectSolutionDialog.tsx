@@ -51,7 +51,13 @@ export default function InspectSolutionDialog({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <DialogTitle
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <Stack direction="row" alignItems="center" spacing={1}>
           <Typography variant="h6" fontWeight="bold">
             {studentName}
@@ -70,8 +76,17 @@ export default function InspectSolutionDialog({
       <DialogContent sx={{ p: 3 }}>
         <Stack spacing={3}>
           {/* Submission Info */}
-          <Paper elevation={0} variant="outlined" sx={{ p: 2, borderRadius: 1 }}>
-            <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+          <Paper
+            elevation={0}
+            variant="outlined"
+            sx={{ p: 2, borderRadius: 1 }}
+          >
+            <Stack
+              direction="row"
+              spacing={2}
+              alignItems="center"
+              flexWrap="wrap"
+            >
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography variant="body2" color="text.secondary">
                   Status:
@@ -148,34 +163,49 @@ export default function InspectSolutionDialog({
                 <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                   Feedback
                 </Typography>
-                <Paper elevation={0} variant="outlined" sx={{ p: 2, borderRadius: 1 }}>
+                <Paper
+                  elevation={0}
+                  variant="outlined"
+                  sx={{ p: 2, borderRadius: 1 }}
+                >
                   <Stack spacing={2}>
-                    {feedback.points !== null && feedback.points !== undefined && (
-                      <Stack direction="row" spacing={2} alignItems="center">
-                        <Typography variant="body2" color="text.secondary">
-                          Points:
-                        </Typography>
-                        <Chip
-                          label={`${feedback.points} / ${exercise.totalPoints}`}
-                          size="small"
-                          color={
-                            feedback.points / exercise.totalPoints >=
-                            (exercise.requiredPercentage || 0.5)
-                              ? "success"
-                              : "error"
-                          }
-                          variant="filled"
-                          sx={{ fontWeight: "bold", minWidth: 80 }}
-                        />
-                      </Stack>
-                    )}
+                    {feedback.points !== null &&
+                      feedback.points !== undefined && (
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <Typography variant="body2" color="text.secondary">
+                            Points:
+                          </Typography>
+                          <Chip
+                            label={`${feedback.points} / ${exercise.totalPoints}`}
+                            size="small"
+                            color={
+                              feedback.points / exercise.totalPoints >=
+                              (exercise.requiredPercentage || 0.5)
+                                ? "success"
+                                : "error"
+                            }
+                            variant="filled"
+                            sx={{ fontWeight: "bold", minWidth: 80 }}
+                          />
+                        </Stack>
+                      )}
 
                     {feedback.comment && (
                       <Box>
-                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          gutterBottom
+                        >
                           Comment:
                         </Typography>
-                        <Box sx={{ bgcolor: "action.hover", p: 1.5, borderRadius: 1 }}>
+                        <Box
+                          sx={{
+                            bgcolor: "action.hover",
+                            p: 1.5,
+                            borderRadius: 1,
+                          }}
+                        >
                           <ContentViewer htmlContent={feedback.comment} />
                         </Box>
                       </Box>
@@ -187,7 +217,11 @@ export default function InspectSolutionDialog({
           )}
 
           {!feedback && !isDraft && (
-            <Paper elevation={0} variant="outlined" sx={{ p: 2, borderRadius: 1, bgcolor: "warning.lighter" }}>
+            <Paper
+              elevation={0}
+              variant="outlined"
+              sx={{ p: 2, borderRadius: 1, bgcolor: "warning.lighter" }}
+            >
               <Typography variant="body2" color="text.secondary">
                 No feedback provided yet.
               </Typography>
