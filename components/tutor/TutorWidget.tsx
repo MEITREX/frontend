@@ -54,10 +54,6 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
 
   const [showWelcome, setShowWelcome] = useState(true);
 
-  if (!isAuthenticated) {
-    return null;
-  }
-
   // Welcome Bubble auto-hide timer
   useEffect(() => {
     if (!showWelcome) return;
@@ -165,6 +161,10 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
 
   function handleCloseWelcome() {
     setShowWelcome(false);
+  }
+
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (
