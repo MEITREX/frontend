@@ -300,7 +300,6 @@ type Course {
   id: UUID!
   mediaRecords: [MediaRecord!]!
   memberships: [CourseMembership!]!
-  numberOfCourseMemberships: Int!
   published: Boolean!
   rewardScores: RewardScores!
   scoreboard: [ScoreboardItem!]!
@@ -1618,15 +1617,12 @@ directive @Size(min: Int = 0, max: Int = 2147483647, message: String = "graphql.
 type Skill {
   id: UUID!
   isCustomSkill: Boolean!
-  skillAllUsersStats: SkillAllUsersStats!
   skillCategory: String!
   skillLevels: SkillLevels
   skillName: String!
-  skillValue: Float!
 }
 
 type SkillAllUsersStats {
-  averageSkillValue: Float!
   participantCount: Int!
   skillId: UUID!
   skillValueSum: Float!
