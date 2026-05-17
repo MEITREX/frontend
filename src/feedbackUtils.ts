@@ -1,10 +1,10 @@
 import { graphql, useMutation } from "react-relay";
 
-import { useAITutorStore } from "@/stores/aiTutorStore";
 import {
   feedbackUtilsSendMessageMutation,
   feedbackUtilsSendMessageMutation$variables,
 } from "@/__generated__/feedbackUtilsSendMessageMutation.graphql";
+import { useAITutorStore } from "@/stores/aiTutorStore";
 
 const sendMessageMutation = graphql`
   mutation feedbackUtilsSendMessageMutation(

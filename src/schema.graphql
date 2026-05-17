@@ -1356,6 +1356,7 @@ type Query {
   inventoryForUser: Inventory!
   isAccessTokenAvailable(provider: ExternalServiceProviderDto!): Boolean!
   itemsByUserId(userId: UUID!): [UserItem!]!
+  latestProactiveFeedback: String
   mediaRecords: [MediaRecord!]! @deprecated(reason: "In production there should probably be no way to get all media records of the system.")
   mediaRecordsByContentIds(contentIds: [UUID!]!): [[MediaRecord!]!]!
   mediaRecordsByIds(ids: [UUID!]!): [MediaRecord!]!
@@ -1622,11 +1623,10 @@ type Skill {
   skillCategory: String!
   skillLevels: SkillLevels
   skillName: String!
-  skillValue: Float!
+  skillValue: SkillValue!
 }
 
 type SkillAllUsersStats {
-  averageSkillValue: Float!
   participantCount: Int!
   skillId: UUID!
   skillValueSum: Float!
