@@ -18,7 +18,6 @@ import {
   TYPES,
 } from "@hylimo/diagram-ui";
 import { Box } from "@mui/material";
-import type * as monaco from "monaco-editor";
 import {
   EditorApp,
   type EditorAppConfig,
@@ -68,10 +67,9 @@ export default function HylimoEditor({
   const disposablesRef = useRef<Disposable[]>([]);
   const languageClientRef = useRef<Promise<LanguageClientProxy> | null>(null);
   const editorStartedRef = useRef(false);
+  type MonacoEditor = NonNullable<ReturnType<EditorApp["getEditor"]>>;
 
-  const monacoEditorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(
-    null
-  );
+  const monacoEditorRef = useRef<MonacoEditor | null>(null);
   const readOnlyRef = useRef(readOnly);
   const isUpdatingModelRef = useRef(false);
   const actionDispatcherRef = useRef<IActionDispatcher | null>(null);
