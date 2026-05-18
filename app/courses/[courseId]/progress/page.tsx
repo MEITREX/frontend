@@ -13,7 +13,6 @@ import {
   IconButton,
   Slide,
   Typography,
-  useTheme,
 } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -127,7 +126,7 @@ export default function LearningProgress() {
 
         const progressItem = progressBySkillValues.get(key)!;
 
-        progressItem.progressSum += skill.skillValue.skillValue;
+        progressItem.progressSum += skill.skillValue?.skillValue ?? 0;
         /*progressItem.averageProgressSum +=
           skill.skillAllUsersStats.skillValueSum;*/
         progressItem.count++;
@@ -262,8 +261,6 @@ export default function LearningProgress() {
     sessionStorage.setItem("previousProgress", JSON.stringify([...tempMap]));
   }, [course.skills, progressBySkill, uniqueCategories.length]);
 
-  const theme = useTheme();
-
   if (uniqueCategories.length === 0) {
     return (
       <Typography variant="body1">
@@ -395,7 +392,9 @@ export default function LearningProgress() {
                     competencyName={category}
                     startProgress={Math.floor(previousCategoryProgressValue)}
                     endProgress={Math.floor(categoryProgressValue)}
-                    averageProgress={/*Math.floor(categoryAverageProgressValue)*/0}
+                    averageProgress={
+                      /*Math.floor(categoryAverageProgressValue)*/ 0
+                    }
                     color={stringToColor(category)}
                     onClick={() => {
                       setSelectedCategory(
@@ -407,7 +406,7 @@ export default function LearningProgress() {
                     isSelected={category === sortedCategories[selectedCategory]}
                     isUrgent={urgent}
                     showAverageProgress={showAverageProgress}
-                    participantCount={/*maxParticipantCountForaSkill*/0}
+                    participantCount={/*maxParticipantCountForaSkill*/ 0}
                     courseMemberCount={course.numberOfCourseMemberships}
                     openTaskCount={
                       filteredSuggestionsByCategory(category).length
@@ -507,7 +506,9 @@ export default function LearningProgress() {
                     small={true}
                     startProgress={Math.floor(previousSkillProgressValue)}
                     endProgress={Math.floor(skillProgressValue)}
-                    averageProgress={/*Math.floor(skillAverageProgressValue)*/0}
+                    averageProgress={
+                      /*Math.floor(skillAverageProgressValue)*/ 0
+                    }
                     color={stringToColor(currentSkill.skillCategory)}
                     onClick={() => {
                       const currentIndex = currentUniqueSkills.findIndex(
@@ -525,7 +526,7 @@ export default function LearningProgress() {
                     }
                     isUrgent={urgent}
                     showAverageProgress={showAverageProgress}
-                    participantCount={/*maxParticipantCount*/0}
+                    participantCount={/*maxParticipantCount*/ 0}
                     courseMemberCount={course.numberOfCourseMemberships}
                     openTaskCount={
                       filteredSuggestionsBySkill(currentSkill.skillName).length

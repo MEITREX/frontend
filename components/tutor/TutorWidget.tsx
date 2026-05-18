@@ -31,10 +31,6 @@ function getClosestPosition(
   return positions[minIdx];
 }
 
-type Recommendation = {
-  id: string;
-  text: string;
-};
 type TutorWidgetProps = {
   isAuthenticated: boolean;
 };
@@ -56,34 +52,7 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
   const openChat = useAITutorStore((state) => state.openChat);
   const closeChat = useAITutorStore((state) => state.closeChat);
 
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [showWelcome, setShowWelcome] = useState(true);
-
-  // API call for recommendations (on mount)
-  useEffect(() => {
-    fetch("/api/graphql", {
-      // Pfad anpassen
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: `
-          query {
-            recommendations {
-              id
-              text
-            }
-          }
-        `,
-      }),
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.data?.recommendations) {
-          setRecommendations(res.data.recommendations);
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   // Welcome Bubble auto-hide timer
   useEffect(() => {
@@ -190,18 +159,18 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
     filter: "drop-shadow(0 1px 3px rgba(80,80,80,0.10))",
   };
 
-  function clearRecommendations() {
-    setRecommendations([]);
-  }
-
   function handleCloseWelcome() {
     setShowWelcome(false);
+  }
+
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (
     <div ref={widgetRef} style={style}>
       {/* Recommendation/Welcome Bubble */}
-      {(showWelcome || recommendations.length > 0) && (
+      {showWelcome && (
         <div
           style={{
             ...recommendationBubbleStyle,
@@ -211,104 +180,37 @@ export default function TutorWidget({ isAuthenticated }: TutorWidgetProps) {
           tabIndex={-1}
         >
           <span style={bubbleArrowStyle as any}></span>
-          {showWelcome ? (
-            <div
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              width: "100%",
+            }}
+          >
+            <span style={{ flex: 1 }}>
+              Hello, welcome to Meitrex!
+              <br />
+              If you have any questions, just reach out!
+            </span>
+            <button
+              onClick={handleCloseWelcome}
               style={{
-                display: "flex",
-                alignItems: "flex-start",
-                width: "100%",
+                background: "none",
+                border: "none",
+                color: "#888",
+                fontSize: 20,
+                marginLeft: 8,
+                cursor: "pointer",
+                lineHeight: 1,
+                padding: 0,
+                alignSelf: "flex-start",
               }}
+              aria-label="Close welcome message"
+              title="Close welcome message"
             >
-              <span style={{ flex: 1 }}>
-                Hello, welcome to Meitrex!
-                <br />
-                If you have any questions, just reach out!
-              </span>
-              <button
-                onClick={handleCloseWelcome}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#888",
-                  fontSize: 20,
-                  marginLeft: 8,
-                  cursor: "pointer",
-                  lineHeight: 1,
-                  padding: 0,
-                  alignSelf: "flex-start",
-                }}
-                aria-label="Close welcome message"
-                title="Close welcome message"
-              >
-                ×
-              </button>
-            </div>
-          ) : (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 8,
-                maxHeight: 200,
-                overflowY: "auto",
-                minWidth: 0,
-              }}
-            >
-              {recommendations.map((r) => (
-                <div
-                  key={r.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    wordBreak: "break-word",
-                  }}
-                >
-                  <span style={{ flex: 1 }}>{r.text}</span>
-                  <button
-                    onClick={() =>
-                      setRecommendations((old) =>
-                        old.filter((x) => x.id !== r.id)
-                      )
-                    }
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "#888",
-                      fontSize: 20,
-                      marginLeft: 8,
-                      cursor: "pointer",
-                      lineHeight: 1,
-                      padding: 0,
-                      alignSelf: "flex-start",
-                    }}
-                    aria-label="Close recommendations"
-                    title="Close recommendations"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-              {recommendations.length > 1 && (
-                <button
-                  onClick={clearRecommendations}
-                  style={{
-                    marginTop: 8,
-                    alignSelf: "flex-end",
-                    color: "#888",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: 16,
-                  }}
-                  aria-label="Close all recommendations"
-                  title="Close all recommendations"
-                >
-                  Close all
-                </button>
-              )}
-            </div>
-          )}
+              ×
+            </button>
+          </div>
         </div>
       )}
 
