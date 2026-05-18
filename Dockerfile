@@ -2,12 +2,20 @@ FROM node:22-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat git
+RUN apk add --no-cache libc6-compat git build-base cairo-dev pango-dev giflib-dev libjpeg-turbo-dev libpng-dev python3 make g++ pkgconfig
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml* ./
-# Approve build scripts as needed for dependencies using pnpm
-RUN yarn global add pnpm && pnpm approve-builds && pnpm i --no-frozen-lockfile
+ENV PNPM_ALLOW_NEW_BUILDS=true
+ENV HUSKY=0
+ENV CI=true
+# Approve build scripts non-interactively and install dependencies.
+# First install attempt populates pending builds (may exit non-zero),
+# then approve all and install again to run build scripts.
+RUN yarn global add pnpm \
+    && (pnpm i --no-frozen-lockfile || true) \
+    && pnpm approve-builds --all \
+    && pnpm i --no-frozen-lockfile
 
 # Rebuild the source code only when needed
 FROM base AS builder
